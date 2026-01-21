@@ -1,4 +1,4 @@
-# Maritrack Frontend Technical Documentation
+# Maritrack Frontend Documentation
 
 ## 1. Project Overview
 
