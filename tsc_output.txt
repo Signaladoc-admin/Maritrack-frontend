@@ -1,0 +1,13 @@
+[96mapp/components/apps-container.tsx[0m:[93m6[0m:[93m10[0m - [91merror[0m[90m TS2724: [0m'"react-icons/fa"' has no exported member named 'Fawhatsapp'. Did you mean 'FaWhatsapp'?
+
+[7m6[0m import { Fawhatsapp, FaYoutube, FaInstagram } from "react-icons/fa";
+[7m [0m [91m         ~~~~~~~~~~[0m
+
+  [96mnode_modules/react-icons/fa/index.d.ts[0m:[93m433[0m:[93m22[0m
+    [7m433[0m export declare const FaWhatsapp: IconType;
+    [7m   [0m [96m                     ~~~~~~~~~~[0m
+    'FaWhatsapp' is declared here.
+
+
+Found 1 error in app/components/apps-container.tsx[90m:6[0m
+
