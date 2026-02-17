@@ -1,108 +1,405 @@
 "use client";
 
-import { Sidebar } from "@/shared/ui/layout/sidebar";
-import { Header } from "@/shared/ui/layout/header";
-import { StatCard } from "@/shared/ui/dashboard/stat-card";
-import { DeviceCard } from "@/shared/ui/dashboard/device-card";
-import { AlertBox } from "@/shared/ui/dashboard/alert-box";
-import { TopApps } from "@/shared/ui/dashboard/top-apps";
-import { User } from "lucide-react";
-import ChildSwitcher from "@/shared/ui/child-switcher";
-import { useUserStore } from "@/shared/stores/user-store";
+import { Button } from "@/shared/ui/Button/button";
+import { useState } from "react";
+import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
+import { AccountTypeModal } from "@/shared/ui/Modal/Modals/AccountTypeSelectionModal";
+import { EditChildModal } from "@/shared/ui/Modal/Modals/ChildDetailsModal";
+import { BlockedWebsitesModal } from "@/shared/ui/Modal/Modals/BlockedWebsitesModal";
+import { GeofencingModal } from "@/shared/ui/Modal/Modals/GeofencingModal";
+import { SetTimeLimitModal } from "@/shared/ui/Modal/Modals/TimeLimitModal";
+import { PairDeviceModal } from "@/shared/ui/Modal/Modals/PairDeviceModal";
+import { LoaderModal } from "@/shared/ui/Modal/Modals/LoaderModal";
+import { PricingCard, PricingFeatureItem } from "@/shared/ui/PricingCard/PricingCard";
+import { DeviceUsageCard } from "@/shared/ui/DeviceStatusCard/DeviceStatusCard";
+import { UserSelect } from "@/shared/ui/UserDropdown/UserDropdown";
+import { DashboardCard } from "@/shared/ui/DashboardWidget/DashboardWidget";
+import { InfoListCard, InfoListItem } from "@/shared/ui/AppListCard/AppListCard";
+import { AlertTriangle, Ban, BarChart, Clock, Globe, Smartphone } from "lucide-react";
+import { BarChartCard, ChartDataPoint } from "@/shared/ui/BarChart/BarChartCard";
+import { TimelineCard, TimelineItemData } from "@/shared/ui/TimelineCard/TimelineCard";
+import { MostUsedAppsCard } from "@/shared/ui/MostUsedAppsCard/MostUsedAppsCard";
+import { RecentLocationCard } from "@/shared/ui/LocationHistoryCard/LocationHistoryCard";
+import GeofencingCard, { GeofencingLocation } from "@/shared/ui/GeofencingCard/GeofencingCard";
+
+const mockUsers = [
+  {
+    id: "1",
+    name: "Mide A.",
+    image: "https://github.com/shadcn.png", // Example image URL
+    email: "mide@example.com",
+  },
+  {
+    id: "2",
+    name: "David K.",
+    // No image provided, will fallback to "DK"
+    email: "david@example.com",
+  },
+  {
+    id: "3",
+    name: "Sarah J.",
+    image: "https://i.pravatar.cc/150?u=a042581f4e29026024d",
+    email: "sarah@example.com",
+  },
+];
 
 export default function Home() {
-  const { selectedChildId, getDashboardData } = useUserStore();
-  const data = getDashboardData();
+  const [showSignOut, setShowSignOut] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
+  const [showAccountType, setShowAccountType] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  const [showBlockedWebsites, setShowBlockedWebsites] = useState(false);
+  const [showGeofencing, setShowGeofencing] = useState(false);
+  const [showTimeLimit, setShowTimeLimit] = useState(false);
+  const [showPairDevice, setShowPairDevice] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedChild, setSelectedChild] = useState<string>("");
 
-  const showSolomon = selectedChildId === "all" || selectedChildId === "solomon";
-  const showKuroebi = selectedChildId === "all" || selectedChildId === "kuroebi";
+  // Geofencing State
+  const [isGeofencingActive, setIsGeofencingActive] = useState(true);
+
+  const geofencingLocations: GeofencingLocation[] = [
+    { id: "1", name: "Oshodi, Lagos", radius: "2km" },
+    { id: "2", name: "Maryland, Lagos", radius: "1km" },
+    { id: "3", name: "Ikeja, Lagos", radius: "3km" },
+  ];
+
+  const handlePairingProcess = () => {
+    setIsLoading(true);
+
+    // Simulate a 3-second API call or process
+    setTimeout(() => {
+      setIsLoading(false);
+      console.log("Process complete!");
+    }, 3000);
+  };
+
+  // Data for the Basic Plan
+  const basicFeatures: PricingFeatureItem[] = [
+    { text: "Customer Support", included: true },
+    { text: "Free User Account", included: true },
+    { text: "Monthly Reports", included: false },
+    { text: "Multiple Devices", included: false },
+  ];
+
+  // Data for the Premium Plan
+  const premiumFeatures: PricingFeatureItem[] = [
+    { text: "Customer Support", included: true },
+    { text: "Upto 10 Users", included: true },
+    { text: "Monthly Reports", included: true },
+    { text: "Multiple Devices Supported", included: true },
+  ];
+
+  const appData: InfoListItem[] = [
+    {
+      id: "1",
+      title: "WhatsApp",
+      subtitle: "Social Media",
+      value: "1hr 20min",
+      icon: (
+        <div className="flex h-full w-full items-center justify-center rounded-lg bg-[#25D366] text-xs font-bold text-white">
+          WA
+        </div>
+      ),
+    },
+    {
+      id: "2",
+      title: "Instagram",
+      subtitle: "Social Media",
+      value: "45min",
+      icon: (
+        <div className="flex h-full w-full items-center justify-center rounded-lg bg-gradient-to-tr from-yellow-400 to-purple-600 text-xs font-bold text-white">
+          IG
+        </div>
+      ),
+    },
+    {
+      id: "3",
+      title: "YouTube",
+      subtitle: "Entertainment",
+      value: "30min",
+      icon: (
+        <div className="flex h-full w-full items-center justify-center rounded-lg bg-[#FF0000] text-xs font-bold text-white">
+          YT
+        </div>
+      ),
+    },
+  ];
+
+  // 2. Data for Websites
+  const websiteData: InfoListItem[] = [
+    {
+      id: "1",
+      title: "www.medium.com",
+      value: "Just now",
+      icon: <Globe className="h-5 w-5 text-slate-600" />,
+    },
+    {
+      id: "2",
+      title: "www.figma.com",
+      value: "2 mins ago",
+      icon: <Globe className="h-5 w-5 text-slate-600" />,
+    },
+    {
+      id: "3",
+      title: "www.dribbble.com",
+      value: "10 mins ago",
+      icon: <Globe className="h-5 w-5 text-slate-600" />,
+    },
+  ];
+
+  const weeklyUsageData: ChartDataPoint[] = [
+    { name: "Mon", value: 2.5 },
+    { name: "Tue", value: 3.8 },
+    { name: "Wed", value: 1.5 },
+    { name: "Thu", value: 4.2 }, // Peak usage
+    { name: "Fri", value: 3.0 },
+    { name: "Sat", value: 5.5 },
+    { name: "Sun", value: 2.0 },
+  ];
+
+  const activityData: TimelineItemData[] = [
+    {
+      id: "1",
+      title: "Device Paired",
+      app: "Whatsapp",
+      time: "10:20 AM",
+      variant: "success", // Green
+    },
+    {
+      id: "2",
+      title: "Website Blocked",
+      app: "Instagram",
+      time: "9:45 AM",
+      variant: "danger", // Red
+    },
+    {
+      id: "3",
+      title: "Time Limit Reached",
+      app: "Twitter",
+      time: "Yesterday",
+      variant: "warning", // Yellow
+    },
+    {
+      id: "4",
+      title: "New Alert",
+      app: "Tiktok",
+      time: "Mon, 24",
+      variant: "default", // Primary Blue
+    },
+  ];
 
   return (
-    <div className="flex h-screen w-full bg-slate-50 dark:bg-slate-950">
-      <Sidebar
-        brandLogo={
-          <div className="flex rounded-xl bg-slate-900 p-2 text-white">
-            <User className="h-6 w-6" />
-          </div>
-        }
-        userAvatar={
-          <div className="h-10 w-10 overflow-hidden rounded-full border-2 border-white shadow-sm">
-            <img
-              src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80"
-              alt="User"
-              className="h-full w-full object-cover"
-            />
-          </div>
-        }
-      />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Header title="Hello Janet" subtitle="January 10, 2026" action={<ChildSwitcher />} />
-        <main className="flex-1 overflow-y-auto p-8">
-          <div className="mx-auto max-w-5xl space-y-8">
-            {/* Stats Row */}
-            <div className="grid gap-8 md:grid-cols-2">
-              <StatCard
-                title="Total Screen Time"
-                value={data.stats.screenTime}
-                trend={data.stats.screenTimeTrend}
-                chartData={data.stats.screenTimeChart}
-                className="border-0 bg-white shadow-none dark:bg-slate-900"
-              />
-              <StatCard
-                title="Battery health"
-                value={data.stats.battery}
-                trend={data.stats.batteryTrend}
-                chartData={data.stats.batteryChart}
-                className="border-0 bg-white shadow-none dark:bg-slate-900"
-              />
-            </div>
-
-            {/* Devices Row */}
-            <div className="grid gap-8 md:grid-cols-2">
-              {showSolomon && (
-                <DeviceCard
-                  ownerName="Solomon Grundy"
-                  model="iPhone 14 Pro"
-                  batteryLevel={70}
-                  className="border-0 bg-slate-950 dark:bg-slate-900"
-                  brandIcon={
-                    <svg viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6 text-white">
-                      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-0.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.21-1.98 1.07-3.12-1.05.05-2.31.72-3.06 1.61-.69.8-1.29 2.07-1.12 3.15 1.18.09 2.37-.81 3.11-1.64z" />
-                    </svg>
-                  }
-                />
-              )}
-              {showKuroebi && (
-                <DeviceCard
-                  ownerName="Kuroebi Grundy"
-                  model="Samsung Galaxy XY"
-                  batteryLevel={60}
-                  className="border-0 bg-slate-950 dark:bg-slate-900"
-                  brandIcon={
-                    <h4 className="mb-1 text-[10px] font-bold tracking-widest text-white uppercase">
-                      SAMSUNG
-                    </h4>
-                  }
-                />
-              )}
-            </div>
-
-            {/* Bottom Row */}
-            <div className="grid gap-8 md:grid-cols-2">
-              <TopApps apps={data.apps} />
-              <div className="h-full">
-                <AlertBox
-                  type={data.alert.type}
-                  title={data.alert.title}
-                  message={data.alert.message}
-                  actionLabel="View details"
-                  className="h-full border-0 bg-white shadow-none dark:bg-slate-900"
-                />
-              </div>
-            </div>
-          </div>
-        </main>
+    <>
+      <div className="flex flex-col items-center gap-2 font-sans dark:bg-black">
+        <Button variant="default">Default</Button>
+        <Button variant="destructive">Destructive</Button>
+        <Button variant="secondary">Secondary</Button>
+        <Button variant="link">Link</Button>
       </div>
-    </div>
+
+      <div className="space-y-4 p-10">
+        {/* Triggers */}
+        <Button onClick={() => setShowSignOut(true)}>Open Sign Out Modal</Button>
+        <Button onClick={() => setShowDelete(true)} variant="destructive">
+          Open Delete Modal
+        </Button>
+        <Button onClick={() => setShowAccountType(true)} variant="secondary">
+          Open Account Type
+        </Button>
+        <Button onClick={() => setShowEdit(true)} variant="secondary">
+          Open Edit Child
+        </Button>
+        <Button onClick={() => setShowBlockedWebsites(true)} variant="secondary">
+          Open Blocked Websites
+        </Button>
+        <Button onClick={() => setShowGeofencing(true)} variant="secondary">
+          Open Geofencing
+        </Button>
+        <Button onClick={() => setShowTimeLimit(true)} variant="secondary">
+          Open Time Limit
+        </Button>
+        <Button onClick={() => setShowPairDevice(true)} variant="secondary">
+          Open Pair Device
+        </Button>
+
+        <Button onClick={handlePairingProcess}>Start Pairing</Button>
+
+        {/* The Loader Modal */}
+        <LoaderModal
+          open={isLoading}
+          text="Pairing..."
+          gifSrc="/assets/loader.gif" // Ensure the GIF is in your public folder
+        />
+
+        {/* 1. Sign Out Modal Instance */}
+        <ConfirmationModal
+          open={showSignOut}
+          onOpenChange={setShowSignOut}
+          title="Are you sure you want to sign out?"
+          confirmText="Sign out"
+          onConfirm={() => console.log("Signed out")}
+          variant="destructive"
+        />
+
+        {/* 2. Delete App Modal Instance */}
+        <ConfirmationModal
+          open={showDelete}
+          onOpenChange={setShowDelete}
+          title="Are you sure you want to delete this app?"
+          description="Deleting WhatsApp cannot be reverted. Are you sure?"
+          confirmText="Delete"
+          onConfirm={() => console.log("Deleted")}
+          variant="destructive"
+        />
+
+        {/* 3. Account Type Modal Instance */}
+        <AccountTypeModal
+          open={showAccountType}
+          onOpenChange={setShowAccountType}
+          onSelect={(type) => console.log("Selected:", type)}
+        />
+
+        {/* 4. Edit Child Modal Instance */}
+        <EditChildModal
+          open={showEdit}
+          onOpenChange={setShowEdit}
+          initialData={{ name: "Solomon Grundy", age: "23", gender: "Male" }}
+        />
+
+        <BlockedWebsitesModal open={showBlockedWebsites} onOpenChange={setShowBlockedWebsites} />
+
+        <GeofencingModal open={showGeofencing} onOpenChange={setShowGeofencing} />
+
+        <SetTimeLimitModal open={showTimeLimit} onOpenChange={setShowTimeLimit} />
+
+        <PairDeviceModal open={showPairDevice} onOpenChange={setShowPairDevice} />
+      </div>
+
+      <div className="flex flex-col items-center justify-center gap-8 p-10 md:flex-row">
+        {/* 1. Basic Card Instance */}
+        <PricingCard
+          title="Basic Plan"
+          price="0"
+          description="Joy horrible moreover man feelings own shy. Request norland neither mistake for yet."
+          features={basicFeatures}
+          buttonText="Get Basic"
+          isPremium={false}
+          onButtonClick={() => console.log("Basic clicked")}
+        />
+
+        {/* 2. Premium Card Instance */}
+        <PricingCard
+          title="Premium Plan"
+          price="49"
+          description="On even feet time have an no at. Relation so in confined smallest children unpacked delicate."
+          features={premiumFeatures}
+          buttonText="Get the premium"
+          isPremium={true}
+          onButtonClick={() => console.log("Premium clicked")}
+        />
+      </div>
+
+      <div className="flex flex-col items-center justify-center gap-6 p-10">
+        {/* Instance 1: Active State (Top card in your image) */}
+        <DeviceUsageCard
+          deviceName="Mide's iPhone"
+          status="active"
+          percentage={37.5}
+          device="Google Pixel 9"
+        />
+
+        {/* Instance 2: Locked/Limit Reached State (Bottom card in your image) */}
+        <DeviceUsageCard
+          deviceName="Mide's iPhone"
+          status="locked"
+          percentage={100}
+          device="Iphone 14"
+        />
+      </div>
+
+      <div className="mx-auto max-w-md p-10">
+        <UserSelect
+          label="Select Child Profile"
+          placeholder="Choose a child..."
+          users={mockUsers}
+          value={selectedChild}
+          onChange={setSelectedChild}
+          className="rounded-full"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 items-start gap-6 bg-white p-8 md:grid-cols-3">
+        {/* --- Instance 1: Recent Activity --- */}
+        <DashboardCard title="Recent Activity" onActionClick={() => console.log("View Activity")}>
+          Welcome
+        </DashboardCard>
+      </div>
+
+      <div className="grid gap-8 p-10 md:grid-cols-2">
+        {/* Instance 1: Most Used Apps */}
+        <div className="h-[400px]">
+          <InfoListCard
+            title="Most used apps"
+            actionText="View all"
+            onActionClick={() => console.log("View Apps")}
+            items={appData}
+          />
+        </div>
+
+        {/* Instance 2: Recent Websites */}
+        <div className="h-[400px]">
+          <InfoListCard
+            title="Recent Websites"
+            actionText="View history"
+            onActionClick={() => console.log("View History")}
+            items={websiteData}
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center p-10">
+        {/* The Chart Widget */}
+        <div className="h-[400px] w-full max-w-lg">
+          <BarChartCard
+            title="Time Used"
+            time="22hr 30m"
+            subtitle="+1h better than yesterday"
+            data={weeklyUsageData}
+            filterLabel="This Week"
+            onFilterClick={() => console.log("Filter clicked")}
+            height={300} // Adjust internal chart height
+          />
+        </div>
+      </div>
+
+      <div className="flex p-10">
+        {/* The Timeline Widget Instance */}
+        <div className="w-full max-w-md">
+          <TimelineCard
+            title="Recent Activity"
+            actionText="View all"
+            onActionClick={() => console.log("View all clicked")}
+            items={activityData}
+          />
+        </div>
+      </div>
+
+      <div className="flex items-start p-10">
+        <MostUsedAppsCard />
+      </div>
+
+      <div className="flex p-10">
+        <RecentLocationCard onSeeMore={() => console.log("See more clicked")} />
+      </div>
+
+      <div className="flex p-10">
+        <GeofencingCard
+          locations={geofencingLocations}
+          isActive={isGeofencingActive}
+          onSetGeofencing={() => setIsGeofencingActive(!isGeofencingActive)}
+        />
+      </div>
+    </>
   );
 }
