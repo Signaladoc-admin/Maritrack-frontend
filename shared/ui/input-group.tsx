@@ -43,7 +43,10 @@ export function InputGroup({
               {...props}
             />
           )}
-          <Label htmlFor={inputId} className={cn("font-normal", error ? "text-destructive" : "")}>
+          <Label
+            htmlFor={inputId}
+            className={cn("font-normal opacity-80", error ? "text-destructive" : "")}
+          >
             {label}
           </Label>
         </div>
@@ -54,8 +57,8 @@ export function InputGroup({
   }
 
   return (
-    <div className={cn("flex flex-col gap-y-2", className)}>
-      <Label htmlFor={inputId} className={error ? "text-destructive" : ""}>
+    <div className={cn("flex flex-col gap-y-3", className)}>
+      <Label htmlFor={inputId} className={cn("text-neutral-700", error ? "text-destructive" : "")}>
         {label}
       </Label>
       {children ? (
@@ -63,7 +66,8 @@ export function InputGroup({
       ) : (
         <Input
           id={inputId}
-          className={error ? "border-destructive focus-visible:ring-destructive" : ""}
+          wrapperClassName="max-w-none"
+          className={cn("w-full", error ? "border-destructive focus-visible:ring-destructive" : "")}
           {...props}
         />
       )}

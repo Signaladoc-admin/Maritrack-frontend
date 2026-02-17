@@ -131,7 +131,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             {...props}
             type={resolvedType}
-            className="placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none disabled:cursor-not-allowed"
+            className="placeholder:text-muted-foreground w-full min-w-0 flex-1 bg-transparent file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none disabled:cursor-not-allowed"
             ref={ref}
             id={inputId}
           />

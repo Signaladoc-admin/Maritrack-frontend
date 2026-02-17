@@ -29,7 +29,7 @@ export function H1({ className, variant, ...props }: HeadingProps) {
   return (
     <h1
       className={cn(
-        "scroll-m-20 text-4xl font-medium tracking-tight lg:text-5xl",
+        "scroll-m-20 text-4xl font-medium tracking-tight",
         headingVariants({ variant }),
         className
       )}
@@ -42,7 +42,7 @@ export function H2({ className, variant, ...props }: HeadingProps) {
   return (
     <h2
       className={cn(
-        "scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0",
+        "scroll-m-20 pb-2 text-3xl font-medium tracking-tight first:mt-0",
         headingVariants({ variant }),
         className
       )}
@@ -55,7 +55,7 @@ export function H3({ className, variant, ...props }: HeadingProps) {
   return (
     <h3
       className={cn(
-        "scroll-m-20 text-2xl font-semibold tracking-tight",
+        "scroll-m-20 text-2xl font-medium tracking-tight",
         headingVariants({ variant }),
         className
       )}
@@ -68,7 +68,7 @@ export function H4({ className, variant, ...props }: HeadingProps) {
   return (
     <h4
       className={cn(
-        "scroll-m-20 text-xl font-semibold tracking-tight",
+        "scroll-m-20 text-xl font-medium tracking-tight",
         headingVariants({ variant }),
         className
       )}

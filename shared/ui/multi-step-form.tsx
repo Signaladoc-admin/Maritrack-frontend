@@ -22,7 +22,9 @@ export function MultiStepForm({ steps, currentStep, className }: MultiStepFormPr
         <VerticalStepper steps={steps} currentStep={currentStep} />
       </aside>
 
-      <main className="min-w-0 flex-1">{currentStepData ? currentStepData.component : null}</main>
+      <main className="max-w-xl min-w-0 flex-1">
+        {currentStepData ? currentStepData.component : null}
+      </main>
     </div>
   );
 }

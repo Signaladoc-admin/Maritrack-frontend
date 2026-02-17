@@ -2,6 +2,7 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/shared/lib/utils";
+import { H4, P } from "./typography";
 // We will import Card components after creating them, or define them locally if simple.
 // For now, I'll assume standard Card structure.
 
@@ -13,7 +14,7 @@ const cardWrapperVariants = cva("w-full rounded-2xl bg-card text-card-foreground
         "bg-slate-900 text-slate-50 dark:bg-slate-50 dark:text-slate-900 border-slate-900 dark:border-slate-50",
       destructive: "bg-red-500 text-white border-red-500",
       warning: "bg-[#f87171] text-white",
-      outline: "bg-transparent border-2",
+      outline: "bg-transparent border-1 border-[#e5e7eb]",
       ghost: "border-none shadow-none bg-transparent",
     },
     padding: {
@@ -63,5 +64,16 @@ function CardWrapper({
     </div>
   );
 }
+
+function CardHeader({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="space-y-3">
+      <H4 variant="primary">{title}</H4>
+      <P className="text-muted-foreground text-sm">{description}</P>
+    </div>
+  );
+}
+
+CardWrapper.Header = CardHeader;
 
 export { CardWrapper, cardWrapperVariants };
