@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
 import { ToastProvider } from "@/shared/ui/toast";
+import { Sidebar } from "@/shared/ui/Sidebar/Sidebar";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -23,7 +24,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${jakarta.variable} antialiased`}>
         <Providers>
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            <Sidebar />
+            <main className="ml-[100px] flex-1">{children}</main>
+          </ToastProvider>
         </Providers>
       </body>
     </html>
