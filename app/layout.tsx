@@ -25,8 +25,9 @@ export default function RootLayout({
       <body className={`${jakarta.variable} antialiased`}>
         <Providers>
           <ToastProvider>
-            <Sidebar />
-            <main className="ml-[100px] flex-1">{children}</main>
+            <main>{children}</main>
+            {/* <Sidebar />
+            <main className="ml-[100px] flex-1">{children}</main> */}
           </ToastProvider>
         </Providers>
       </body>
