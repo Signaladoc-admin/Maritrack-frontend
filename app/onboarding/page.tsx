@@ -1,8 +1,8 @@
 "use client";
 
-import BasicInformationForm from "@/features/user/ui/BasicInformationForm";
-import ChildrenProfilesForm from "@/features/user/ui/ChildrenProfilesForm";
-import ParentalControlForm from "@/features/user/ui/ParentalControlForm";
+import BasicInformationForm from "@/features/onboarding/ui/BasicInformationForm";
+import ChildrenProfilesForm from "@/features/onboarding/ui/ChildrenProfilesForm";
+import ParentalControlForm from "@/features/onboarding/ui/ParentalControlForm";
 import { MultiStepForm } from "@/shared/ui/multi-step-form";
 import { useState } from "react";
 
