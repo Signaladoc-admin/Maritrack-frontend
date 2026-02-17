@@ -100,20 +100,16 @@ export function InputsSection() {
                 <InputGroup
                   label="Country"
                   type="select"
+                  placeholder="Select a country"
+                  options={[
+                    { value: "ng", label: "Nigeria" },
+                    { value: "gh", label: "Ghana" },
+                    { value: "ke", label: "Kenya" },
+                    { value: "za", label: "South Africa" },
+                  ]}
                   error={form.formState.errors.country?.message}
-                >
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a country" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ng">Nigeria</SelectItem>
-                      <SelectItem value="gh">Ghana</SelectItem>
-                      <SelectItem value="ke">Kenya</SelectItem>
-                      <SelectItem value="za">South Africa</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </InputGroup>
+                  {...field}
+                />
               )}
             />
           </Section>
