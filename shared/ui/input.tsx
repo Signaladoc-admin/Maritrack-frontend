@@ -51,7 +51,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
     if (type === "select") {
       return (
-        <div className={cn("grid w-full max-w-sm items-center gap-1.5", wrapperClassName)}>
+        <div className={cn("grid w-full items-center gap-1.5", wrapperClassName)}>
           {label && <Label htmlFor={inputId}>{label}</Label>}
           <Select onValueChange={props.onValueChange} defaultValue={props.defaultValue as string}>
             <SelectTrigger id={inputId} className={className} icon={iconLeft}>
@@ -115,7 +115,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     }
 
     return (
-      <div className={cn("grid w-full max-w-sm items-center gap-1.5", wrapperClassName)}>
+      <div className={cn("grid w-full items-center gap-1.5", wrapperClassName)}>
         {label && <Label htmlFor={inputId}>{label}</Label>}
         <div
           className={cn(
