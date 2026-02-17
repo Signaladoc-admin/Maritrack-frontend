@@ -53,7 +53,16 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       return (
         <div className={cn("grid w-full items-center gap-1.5", wrapperClassName)}>
           {label && <Label htmlFor={inputId}>{label}</Label>}
-          <Select onValueChange={props.onValueChange} defaultValue={props.defaultValue as string}>
+          <Select
+            onValueChange={(val) => {
+              if (props.onChange) {
+                props.onChange(val as any);
+              }
+              props.onValueChange?.(val);
+            }}
+            value={props.value as string}
+            defaultValue={props.defaultValue as string}
+          >
             <SelectTrigger id={inputId} className={className} icon={iconLeft}>
               <SelectValue placeholder={props.placeholder} />
             </SelectTrigger>
