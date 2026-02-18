@@ -1,11 +1,13 @@
 import React from "react";
-import { H4, P } from "./typography";
+import { H3, P } from "./typography";
 
 export default function CardHeader({ title, description }: { title: string; description: string }) {
   return (
-    <div className="space-y-3">
-      <H4 variant="primary">{title}</H4>
-      <P>{description}</P>
+    <div className="mb-8 flex flex-col gap-y-2">
+      <H3 variant="primary" className="mb-0!">
+        {title}
+      </H3>
+      <P className="mt-0!">{description}</P>
     </div>
   );
 }

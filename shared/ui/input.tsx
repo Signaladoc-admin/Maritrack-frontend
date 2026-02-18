@@ -7,7 +7,7 @@ import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
 import { Label } from "./label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "value"> {
   label?: string;
   iconLeft?: React.ReactNode;
   iconRight?: React.ReactNode;
@@ -15,6 +15,7 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   options?: { label: string; value: string }[];
   onValueChange?: (value: string) => void;
   onCheckedChange?: (checked: boolean | "indeterminate") => void;
+  value?: string | number | readonly string[] | boolean | undefined;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
@@ -84,7 +85,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           className={cn("flex flex-col gap-2", wrapperClassName)}
           value={props.value as string}
           defaultValue={props.defaultValue as string}
-          onValueChange={props.onValueChange}
+          onValueChange={(val) => {
+            if (props.onChange) {
+              props.onChange(val as any);
+            }
+            props.onValueChange?.(val);
+          }}
           disabled={props.disabled}
           name={props.name || inputId}
         >
@@ -109,8 +115,13 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <Checkbox
             id={inputId}
             ref={ref as any}
-            checked={props.checked as boolean | "indeterminate"}
-            onCheckedChange={props.onCheckedChange}
+            checked={props.checked ?? (props.value as unknown as boolean) ?? false}
+            onCheckedChange={(val) => {
+              props.onCheckedChange?.(val);
+              if (props.onChange) {
+                props.onChange(val as any);
+              }
+            }}
             disabled={props.disabled}
             className={className}
           />
@@ -122,6 +133,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         </div>
       );
     }
+
+    const { value: inputValue, ...inputProps } = props;
 
     return (
       <div className={cn("grid w-full items-center gap-1.5", wrapperClassName)}>
@@ -138,7 +151,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             </div>
           )}
           <input
-            {...props}
+            {...inputProps}
+            value={inputValue as any}
             type={resolvedType}
             className="placeholder:text-muted-foreground w-full min-w-0 flex-1 bg-transparent file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none disabled:cursor-not-allowed"
             ref={ref}

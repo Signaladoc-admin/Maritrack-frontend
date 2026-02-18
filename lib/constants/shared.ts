@@ -1,6 +1,8 @@
 export const genderOptions = [
-  { value: "", label: "Select Gender" },
+  { value: "MALE", label: "Male" },
+  { value: "FEMALE", label: "Female" },
+];
+export const parentGenderOptions = [
   { value: "MOTHER", label: "Mother" },
   { value: "FATHER", label: "Father" },
-  { value: "GUARDIAN", label: "Guardian" },
 ];

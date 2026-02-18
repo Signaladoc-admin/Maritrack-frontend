@@ -3,9 +3,8 @@ import CardHeader from "@/shared/ui/card-header";
 import { CardWrapper } from "@/shared/ui/card-wrapper";
 import { Header } from "@/shared/ui/layout/header";
 import { SettingsToggle } from "@/shared/ui/settings-toggle";
-import { H4, P } from "@/shared/ui/typography";
 
-export default function ParentalControlForm({
+export default function ParentalControlSetup({
   goToPrevStep,
   goToNextStep,
 }: {
@@ -15,7 +14,7 @@ export default function ParentalControlForm({
   // Validation here
   return (
     <div className="space-y-4">
-      <Header title="Step 3" subtitle="Set up permissions" />
+      <Header title="" subtitle="Set up permissions" />
 
       <CardWrapper variant="outline">
         <CardWrapper.Header title="Set up permissions" description="Set up permissions" />

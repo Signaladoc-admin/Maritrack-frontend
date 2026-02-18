@@ -1,13 +1,13 @@
 "use client";
 
 import BasicInformationForm from "@/features/onboarding/ui/BasicInformationForm";
-import ChildrenProfilesForm from "@/features/onboarding/ui/ChildrenProfilesForm";
-import ParentalControlForm from "@/features/onboarding/ui/ParentalControlForm";
+import ChildrenProfilesList from "@/features/onboarding/ui/ChildrenProfilesForm";
+import ParentalControlSetup from "@/features/onboarding/ui/ParentalControlSetup";
 import { MultiStepForm } from "@/shared/ui/multi-step-form";
 import { useState } from "react";
 
 export default function OnboardingPage() {
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(2);
 
   const nextStep = () => setCurrentStep((p) => Math.min(p + 1, 2));
   const prevStep = () => setCurrentStep((p) => Math.max(p - 1, 0));
@@ -19,11 +19,11 @@ export default function OnboardingPage() {
     },
     {
       title: "Children Profiles",
-      component: <ChildrenProfilesForm goToPrevStep={prevStep} goToNextStep={nextStep} />,
+      component: <ChildrenProfilesList goToPrevStep={prevStep} goToNextStep={nextStep} />,
     },
     {
       title: "Parental Control & Consent Setup",
-      component: <ParentalControlForm goToPrevStep={prevStep} goToNextStep={nextStep} />,
+      component: <ParentalControlSetup goToPrevStep={prevStep} goToNextStep={nextStep} />,
     },
   ];
 

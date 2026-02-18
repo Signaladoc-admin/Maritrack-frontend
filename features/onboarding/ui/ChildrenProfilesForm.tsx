@@ -12,7 +12,7 @@ export default function ChildrenProfilesForm({
   // Validation here
   return (
     <div className="space-y-4">
-      <Header title="Step 2" subtitle="Add children" />
+      <Header title="Create your children's profile" subtitle="Create your children's profile" />
       <button className="bg-muted/30 hover:bg-muted/50 border-muted-foreground/20 flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed py-8 transition-colors">
         <Plus className="text-primary h-5 w-5" />
         <span className="text-primary font-medium">Add a profile</span>

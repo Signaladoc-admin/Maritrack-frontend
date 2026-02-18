@@ -116,39 +116,32 @@ export function InputsSection() {
 
           <Section title="Checkbox">
             <div className="flex flex-col gap-4">
-              <div className="flex items-center space-x-2">
-                <Controller
-                  control={form.control}
-                  name="terms"
-                  render={({ field }) => (
-                    <Checkbox id="terms" checked={field.value} onCheckedChange={field.onChange} />
-                  )}
-                />
-                <Label
-                  htmlFor="terms"
-                  className={form.formState.errors.terms ? "text-destructive" : ""}
-                >
-                  Accept terms and conditions
-                </Label>
-              </div>
-              {form.formState.errors.terms && (
-                <p className="text-destructive text-sm">{form.formState.errors.terms.message}</p>
-              )}
+              <Controller
+                control={form.control}
+                name="terms"
+                render={({ field }) => (
+                  <InputGroup
+                    label="Accept terms and conditions"
+                    type="checkbox"
+                    id="terms"
+                    error={form.formState.errors.terms?.message}
+                    {...field}
+                  />
+                )}
+              />
 
-              <div className="flex items-center space-x-2">
-                <Controller
-                  control={form.control}
-                  name="newsletter"
-                  render={({ field }) => (
-                    <Checkbox
-                      id="newsletter"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  )}
-                />
-                <Label htmlFor="newsletter">Subscribe to newsletter</Label>
-              </div>
+              <Controller
+                control={form.control}
+                name="newsletter"
+                render={({ field }) => (
+                  <InputGroup
+                    label="Subscribe to newsletter"
+                    type="checkbox"
+                    id="newsletter"
+                    {...field}
+                  />
+                )}
+              />
             </div>
           </Section>
 
@@ -157,24 +150,17 @@ export function InputsSection() {
               control={form.control}
               name="role"
               render={({ field }) => (
-                <RadioGroup
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  className="flex flex-col space-y-1"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="parent" id="r1" />
-                    <Label htmlFor="r1">Parent</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="guardian" id="r2" />
-                    <Label htmlFor="r2">Guardian</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="teacher" id="r3" />
-                    <Label htmlFor="r3">Teacher</Label>
-                  </div>
-                </RadioGroup>
+                <InputGroup
+                  label="Role"
+                  type="radio"
+                  options={[
+                    { label: "Parent", value: "parent" },
+                    { label: "Guardian", value: "guardian" },
+                    { label: "Teacher", value: "teacher" },
+                  ]}
+                  error={form.formState.errors.role?.message}
+                  {...field}
+                />
               )}
             />
           </Section>

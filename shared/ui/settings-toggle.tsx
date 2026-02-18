@@ -20,7 +20,7 @@ export function SettingsToggle({
   className,
 }: SettingsToggleProps) {
   return (
-    <div className={cn("flex items-center justify-between space-x-2", className)}>
+    <div className={cn("flex items-center justify-between space-x-2 py-4", className)}>
       <div className="space-y-0.5">
         <Label htmlFor={id} className="text-base">
           {label}
