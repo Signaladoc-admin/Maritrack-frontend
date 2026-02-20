@@ -19,6 +19,8 @@ export default function BasicInformationForm({ goToNextStep }: { goToNextStep: (
       address: "",
       country: "",
       state: "",
+      gender: undefined,
+      profileImage: undefined,
     },
   });
 
@@ -34,6 +36,8 @@ export default function BasicInformationForm({ goToNextStep }: { goToNextStep: (
     console.log("Form data:", data);
     goToNextStep();
   };
+
+  console.log(errors);
 
   return (
     <div className="space-y-4">

@@ -32,7 +32,7 @@ export function ChildProfileCard({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl bg-[#1e40af] px-6 py-6 text-white shadow-sm",
+        "bg-primary relative overflow-hidden rounded-2xl px-6 py-8 text-white shadow-sm",
         className
       )}
     >
@@ -56,15 +56,15 @@ export function ChildProfileCard({
 
       <div className="relative z-10 flex items-center justify-between gap-4">
         <div className="flex items-center gap-5">
-          <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-white/20 bg-white">
+          <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-white/20 bg-white">
             {image ? (
               <img src={image} alt={name} className="h-full w-full object-cover" />
             ) : (
-              <FilledUserIcon className="h-8 w-8 text-[#1e40af]" />
+              <FilledUserIcon className="text-primary h-6 w-6" />
             )}
           </div>
           <div className="space-y-1">
-            <h3 className="text-xl font-semibold tracking-tight">{name}</h3>
+            <h3 className="text-lg font-medium tracking-tight">{name}</h3>
             <p className="text-sm font-medium text-blue-100/80">
               {relation}, {age}
             </p>
@@ -83,7 +83,7 @@ export function ChildProfileCard({
           <Button
             size="icon"
             variant="ghost"
-            className="h-10 w-10 rounded-full bg-white/20 text-white hover:bg-white/30"
+            className="h-10 w-10 rounded-full bg-white/40 text-white hover:bg-white/30"
             onClick={() => onEdit?.({ id, name, age, gender, image, status })}
           >
             <Edit2 className="h-5 w-5" />

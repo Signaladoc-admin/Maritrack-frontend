@@ -26,7 +26,7 @@ export default function ParentalConfirmation() {
         />
 
         <div className="space-y-4">
-          <div className="divide-y divide-neutral-100 border-b border-neutral-100">
+          <div className="divide-y divide-neutral-100 border-neutral-100">
             <div>
               <Controller
                 control={control}

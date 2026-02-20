@@ -1,11 +1,11 @@
-import { genderOptions } from "@/lib/constants/shared";
 import z from "zod";
 
 const genderValues = ["MALE", "FEMALE"] as const;
+const parentGenderValues = ["FATHER", "MOTHER", "GUARDIAN"] as const;
 
 export const parentOnboardingProfileSchema = z.object({
   profileImage: z.instanceof(File).optional(),
-  gender: z.enum(genderValues, {
+  gender: z.enum(parentGenderValues, {
     error: () => ({
       message: "Select a gender",
     }),

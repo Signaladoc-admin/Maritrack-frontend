@@ -104,18 +104,22 @@ export default function ChildrenProfiles({
       <div className="flex gap-4 pt-4">
         <Button
           variant="secondary"
-          className="flex-1 bg-neutral-100 text-[#1e3a8a] hover:bg-neutral-200"
+          className="text-primary flex-1 bg-neutral-100 hover:bg-neutral-200"
           onClick={goToPrevStep}
         >
           Previous
         </Button>
-        <Button className="flex-1 bg-[#1e3a8a] hover:bg-[#1e3a8a]/90" onClick={goToNextStep}>
+        <Button
+          disabled={!childProfiles.length}
+          className="bg-primary hover:bg-primary/90 flex-1"
+          onClick={goToNextStep}
+        >
           Next
         </Button>
       </div>
 
       <div className="flex justify-center">
-        <Button variant="link" className="font-normal text-slate-500">
+        <Button onClick={goToNextStep} variant="link" className="font-normal text-slate-500">
           Skip for now
         </Button>
       </div>

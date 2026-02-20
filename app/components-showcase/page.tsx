@@ -1,6 +1,6 @@
 "use client";
 
-import { Sidebar, NavIcon } from "@/shared/ui/layout/sidebar";
+import { Sidebar } from "@/shared/ui/layout/sidebar";
 import { Header } from "@/shared/ui/layout/header";
 import { AppShell } from "@/shared/ui/layout/app-shell";
 import { StatCard } from "@/shared/ui/dashboard/stat-card";

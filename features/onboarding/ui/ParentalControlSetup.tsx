@@ -5,15 +5,16 @@ import ScreenTimeRules from "./parental-control-setup/ScreenTimeRules";
 import AppManagement from "./parental-control-setup/AppManagement";
 import AlertsAndNotifications from "./parental-control-setup/AlertsNotification";
 import ParentalConfirmation from "./parental-control-setup/ParentalConfirmation";
+import { useRouter } from "next/navigation";
 
-export default function ParentalControlSetup({
-  goToPrevStep,
-  goToNextStep,
-}: {
-  goToPrevStep: () => void;
-  goToNextStep: () => void;
-}) {
+export default function ParentalControlSetup({ goToPrevStep }: { goToPrevStep: () => void }) {
+  const router = useRouter();
   // Validation here
+  const handleSubmit = () => {
+    // Handle form submission
+    router.push("/dashboard");
+  };
+
   return (
     <div className="space-y-6">
       <Header
@@ -28,10 +29,10 @@ export default function ParentalControlSetup({
 
       <div className="flex gap-4">
         <Button variant="secondary" className="flex-1" onClick={goToPrevStep}>
-          Back
+          Previous
         </Button>
-        <Button className="flex-1" onClick={goToNextStep}>
-          Finish
+        <Button className="flex-1" onClick={handleSubmit}>
+          Submit
         </Button>
       </div>
     </div>

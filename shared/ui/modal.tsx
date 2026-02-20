@@ -30,8 +30,6 @@ export default function Modal({
   onCancel?: () => void;
   children: ReactNode;
 }) {
-  if (!isOpen) return null;
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-h-[calc(100vh-2rem)] overflow-y-auto p-5 sm:max-w-md">

@@ -91,7 +91,7 @@ export default function PlaygroundPage() {
             description="from last month"
           />
 
-          <ChildProfileCard name="Alice Doe" age={8} gender="female" status="active" />
+          <ChildProfileCard name="Alice Doe" age={8} gender="FEMALE" status="active" />
 
           <PricingCard
             planName="Pro"

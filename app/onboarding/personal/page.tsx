@@ -23,7 +23,7 @@ export default function OnboardingPage() {
     },
     {
       title: "Parental Control & Consent Setup",
-      component: <ParentalControlSetup goToPrevStep={prevStep} goToNextStep={nextStep} />,
+      component: <ParentalControlSetup goToPrevStep={prevStep} />,
     },
   ];
 

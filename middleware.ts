@@ -79,6 +79,14 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // 5. Handle Redirect to dashboard /dashboard from home route / when logged in
+  if (token && pathname === "/") {
+    const payload = decodeJwt(token);
+    const userRole = (payload as any).role as string | undefined;
+    const redirectPath = userRole === "ADMIN" ? "/admin" : "/dashboard";
+    return NextResponse.redirect(new URL(redirectPath, req.url));
+  }
+
   try {
     const payload = decodeJwt(token);
     const userRole = (payload as any).role as string | undefined;
