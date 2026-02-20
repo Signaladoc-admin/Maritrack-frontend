@@ -31,7 +31,7 @@ const childrenProfiles = [
 export function Sidebar() {
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="fixed top-0 left-0 z-40 flex h-screen w-[100px] flex-col items-center bg-[#F7F7F7] py-10">
+      <div className="fixed left-0 top-0 z-40 flex h-screen w-[100px] flex-col items-center bg-[#F7F7F7] py-10">
         {/* --- Top: Home --- */}
         <div className="flex w-full flex-col items-center">
           <Tooltip>

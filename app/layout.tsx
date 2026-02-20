@@ -1,16 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
+import { ToastProvider } from "@/shared/ui/toast";
 import { Sidebar } from "@/shared/ui/Sidebar/Sidebar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
 });
 
@@ -26,10 +22,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${jakarta.variable} antialiased`}>
         <Providers>
-          <Sidebar />
-          <main className="ml-[100px] flex-1">{children}</main>
+          <ToastProvider>
+            <main>{children}</main>
+            {/* <Sidebar />
+            <main className="ml-[100px] flex-1">{children}</main> */}
+          </ToastProvider>
         </Providers>
       </body>
     </html>
