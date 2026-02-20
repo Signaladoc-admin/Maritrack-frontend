@@ -1,13 +1,18 @@
-[96mapp/components/apps-container.tsx[0m:[93m6[0m:[93m10[0m - [91merror[0m[90m TS2724: [0m'"react-icons/fa"' has no exported member named 'Fawhatsapp'. Did you mean 'FaWhatsapp'?
-
-[7m6[0m import { Fawhatsapp, FaYoutube, FaInstagram } from "react-icons/fa";
-[7m [0m [91m         ~~~~~~~~~~[0m
-
-  [96mnode_modules/react-icons/fa/index.d.ts[0m:[93m433[0m:[93m22[0m
-    [7m433[0m export declare const FaWhatsapp: IconType;
-    [7m   [0m [96m                     ~~~~~~~~~~[0m
-    'FaWhatsapp' is declared here.
-
-
-Found 1 error in app/components/apps-container.tsx[90m:6[0m
-
+app/(auth)/register/page.tsx(3,24): error TS2307: Cannot find module '../layout' or its corresponding type declarations.
+app/playground/page.tsx(15,10): error TS2724: '"@/shared/ui/cards/child-profile-card"' has no exported member named 'ChildrenProfileCard'. Did you mean 'ChildProfileCard'?
+features/onboarding/ui/ChildProfiles.tsx(27,71): error TS2322: Type '(data: IChildProfile) => void' is not assignable to type '(data: { name: string; age: number; gender: string; profileImage?: File | undefined; }) => void'.
+  Types of parameters 'data' and 'data' are incompatible.
+    Type '{ name: string; age: number; gender: string; profileImage?: File | undefined; }' is not assignable to type 'IChildProfile'.
+      Types of property 'gender' are incompatible.
+        Type 'string' is not assignable to type '"MALE" | "FEMALE" | undefined'.
+features/onboarding/ui/CreateChildProfileForm.tsx(21,5): error TS2322: Type 'Resolver<{ name: string; age: unknown; gender: string; profileImage?: File | undefined; }, any, { name: string; age: number; gender: string; profileImage?: File | undefined; }>' is not assignable to type 'Resolver<{ name: string; age: number; gender: string; profileImage?: File | undefined; }, any, { name: string; age: number; gender: string; profileImage?: File | undefined; }>'.
+  Types of parameters 'options' and 'options' are incompatible.
+    Type 'ResolverOptions<{ name: string; age: number; gender: string; profileImage?: File | undefined; }>' is not assignable to type 'ResolverOptions<{ name: string; age: unknown; gender: string; profileImage?: File | undefined; }>'.
+      Types of property 'names' are incompatible.
+        Type 'string[] | undefined' is not assignable to type '("profileImage" | "gender" | "name" | "age")[] | undefined'.
+          Type 'string[]' is not assignable to type '("profileImage" | "gender" | "name" | "age")[]'.
+            Type 'string' is not assignable to type '"profileImage" | "gender" | "name" | "age"'.
+features/onboarding/ui/CreateChildProfileForm.tsx(37,63): error TS2345: Argument of type '(data: z.infer<typeof childProfileSchema>) => void' is not assignable to parameter of type 'SubmitHandler<TFieldValues>'.
+  Types of parameters 'data' and 'data' are incompatible.
+    Type 'TFieldValues' is not assignable to type '{ name: string; age: number; gender: string; profileImage?: File | undefined; }'.
+      Type 'FieldValues' is missing the following properties from type '{ name: string; age: number; gender: string; profileImage?: File | undefined; }': name, age, gender

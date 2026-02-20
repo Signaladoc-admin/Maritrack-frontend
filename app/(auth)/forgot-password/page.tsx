@@ -1,5 +1,5 @@
 import { Header } from "@/shared/ui/layout/header";
-import ForgotPasswordForm from "@/features/auth/ForgotPasswordForm";
+import ForgotPasswordForm from "@/features/auth/ui/ForgotPasswordForm";
 import AuthLayout from "@/features/auth/ui/AuthLayout";
 
 export default function ForgotPasswordPage() {

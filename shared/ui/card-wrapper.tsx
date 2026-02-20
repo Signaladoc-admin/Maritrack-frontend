@@ -68,8 +68,10 @@ function CardWrapper({
 function CardHeader({ title, description }: { title: string; description: string }) {
   return (
     <div className="space-y-3">
-      <H4 variant="primary">{title}</H4>
-      <P className="text-muted-foreground text-sm">{description}</P>
+      <H4 variant="primary" className="mt-0!">
+        {title}
+      </H4>
+      <P className="text-muted-foreground mt-0! text-sm">{description}</P>
     </div>
   );
 }

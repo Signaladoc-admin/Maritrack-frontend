@@ -12,7 +12,7 @@ import { H1, H2, H3, P } from "@/shared/ui/typography";
 import { CardWrapper } from "@/shared/ui/card-wrapper";
 import { PricingCard } from "@/shared/ui/cards/pricing-card";
 import { StatsCard } from "@/shared/ui/cards/stats-card";
-import { ChildrenProfileCard } from "@/shared/ui/cards/child-profile-card";
+import { ChildProfileCard } from "@/shared/ui/cards/child-profile-card";
 import { QRCodeCard } from "@/shared/ui/cards/qr-code-card";
 import { CreditCard, TrendingUp } from "lucide-react";
 
@@ -91,7 +91,7 @@ export default function PlaygroundPage() {
             description="from last month"
           />
 
-          <ChildrenProfileCard name="Alice Doe" age={8} status="active" />
+          <ChildProfileCard name="Alice Doe" age={8} gender="female" status="active" />
 
           <PricingCard
             planName="Pro"

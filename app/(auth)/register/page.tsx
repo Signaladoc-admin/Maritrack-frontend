@@ -1,6 +1,6 @@
 import { Header } from "@/shared/ui/layout/header";
-import RegisterForm from "@/features/auth/ui/RegisterForm";
-import AuthLayout from "../layout";
+import RegisterForm from "@/features/auth-register/ui/RegisterForm";
+import AuthLayout from "@/features/auth/ui/AuthLayout";
 
 export default function RegisterPage() {
   return (

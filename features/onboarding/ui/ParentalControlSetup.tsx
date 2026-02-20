@@ -1,8 +1,10 @@
 import { Button } from "@/shared/ui/button";
-import CardHeader from "@/shared/ui/card-header";
-import { CardWrapper } from "@/shared/ui/card-wrapper";
 import { Header } from "@/shared/ui/layout/header";
-import { SettingsToggle } from "@/shared/ui/settings-toggle";
+import MonitoringPermissionsSetup from "./parental-control-setup/MonitoringPermissionsSetup";
+import ScreenTimeRules from "./parental-control-setup/ScreenTimeRules";
+import AppManagement from "./parental-control-setup/AppManagement";
+import AlertsAndNotifications from "./parental-control-setup/AlertsNotification";
+import ParentalConfirmation from "./parental-control-setup/ParentalConfirmation";
 
 export default function ParentalControlSetup({
   goToPrevStep,
@@ -13,17 +15,19 @@ export default function ParentalControlSetup({
 }) {
   // Validation here
   return (
-    <div className="space-y-4">
-      <Header title="" subtitle="Set up permissions" />
+    <div className="space-y-6">
+      <Header
+        title="Parental Control & Consent Setup"
+        subtitle="Set up Set boundaries, permissions, and alerts for your child's device. These rules apply by default to all children and can be adjusted individually later."
+      />
+      <MonitoringPermissionsSetup />
+      <ScreenTimeRules />
+      <AppManagement />
+      <AlertsAndNotifications />
+      <ParentalConfirmation />
 
-      <CardWrapper variant="outline">
-        <CardWrapper.Header title="Set up permissions" description="Set up permissions" />
-      </CardWrapper>
-
-      <SettingsToggle label="Screen time duration" checked id="demo-st" />
-      <SettingsToggle label="App usage" id="demo-app" />
       <div className="flex gap-4">
-        <Button variant="outline" className="flex-1" onClick={goToPrevStep}>
+        <Button variant="secondary" className="flex-1" onClick={goToPrevStep}>
           Back
         </Button>
         <Button className="flex-1" onClick={goToNextStep}>

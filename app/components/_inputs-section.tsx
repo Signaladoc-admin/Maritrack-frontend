@@ -1,14 +1,11 @@
 "use client";
 
-import React from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/shared/ui/accordion";
 import { InputGroup } from "@/shared/ui/input-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
-import { Checkbox } from "@/shared/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
+import { RadioGroupItem } from "@/shared/ui/radio-group";
 import { Switch } from "@/shared/ui/switch";
 import { OTPInput } from "@/shared/ui/otp-input";
 import { FileUpload } from "@/shared/ui/image-upload";
@@ -16,6 +13,7 @@ import { SettingsToggle } from "@/shared/ui/settings-toggle";
 import { Label } from "@/shared/ui/label";
 import { FilledUserIcon } from "@/shared/ui/icons";
 import { Section } from "./_shared";
+import { cn } from "@/shared/lib/utils";
 
 const formSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters"),
@@ -160,6 +158,33 @@ export function InputsSection() {
                   ]}
                   error={form.formState.errors.role?.message}
                   {...field}
+                />
+              )}
+            />
+          </Section>
+
+          <Section title="Custom Radio Group (Flexible Styling)">
+            <Controller
+              control={form.control}
+              name="role"
+              render={({ field }) => (
+                <InputGroup
+                  label="Select Role"
+                  type="radio"
+                  {...field}
+                  wrapperClassName="space-y-4"
+                  options={["parent", "guardian", "teacher"].map((role) => ({
+                    label: role.charAt(0).toUpperCase() + role.slice(1),
+                    value: role,
+                    containerClassName: cn(
+                      "cursor-pointer rounded-xl border p-4 transition-all hover:bg-neutral-50",
+                      field.value === role
+                        ? "border-primary bg-primary/5 ring-1 ring-primary"
+                        : "border-neutral-200"
+                    ),
+                    labelClassName: "cursor-pointer font-semibold",
+                    description: `Access limited features for ${role} accounts.`,
+                  }))}
                 />
               )}
             />

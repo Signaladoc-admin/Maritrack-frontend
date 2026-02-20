@@ -16,31 +16,37 @@ export const InputGroup = React.forwardRef<HTMLInputElement, InputGroupProps>(
   ({ label, error, helpText, className, id, children, ...props }, ref) => {
     const generatedId = React.useId();
     const inputId = id || generatedId;
-    /* Check if it's a single checkbox or radio (no options provided) */
-    const isCheckboxOrRadio =
+
+    // Determine if the input should be rendered "inline" with the label (e.g. single checkbox)
+    // This applies when it's a checkbox or radio AND no options array is provided.
+    const isInlineType =
       (props.type === "checkbox" || props.type === "radio") && !props.options?.length;
 
-    if (isCheckboxOrRadio) {
+    if (children) {
       return (
         <div className={cn("flex flex-col gap-y-2", className)}>
-          <div className="flex items-center gap-2">
-            {children ? (
-              children
-            ) : (
-              <Input
-                id={inputId}
-                ref={ref}
-                className={cn(
-                  "h-4 w-4 shadow-none",
-                  error ? "border-destructive focus-visible:ring-destructive" : ""
-                )}
-                {...props}
-              />
-            )}
-            <Label htmlFor={inputId} className={cn("font-normal", error ? "text-destructive" : "")}>
+          {label && (
+            <Label htmlFor={inputId} className={error ? "text-destructive" : ""}>
               {label}
             </Label>
-          </div>
+          )}
+          {children}
+          {error && <p className="text-destructive text-sm">{error}</p>}
+          {helpText && !error && <p className="text-muted-foreground text-sm">{helpText}</p>}
+        </div>
+      );
+    }
+
+    if (isInlineType) {
+      return (
+        <div className={cn("flex flex-col gap-y-2", className)}>
+          <Input
+            id={inputId}
+            ref={ref}
+            label={label} // Pass label down to Input for horizontal rendering
+            className={error ? "border-destructive focus-visible:ring-destructive" : ""}
+            {...props}
+          />
           {error && <p className="text-destructive text-sm">{error}</p>}
           {helpText && !error && <p className="text-muted-foreground text-sm">{helpText}</p>}
         </div>
@@ -49,19 +55,17 @@ export const InputGroup = React.forwardRef<HTMLInputElement, InputGroupProps>(
 
     return (
       <div className={cn("flex flex-col gap-y-2", className)}>
-        <Label htmlFor={inputId} className={error ? "text-destructive" : ""}>
-          {label}
-        </Label>
-        {children ? (
-          children
-        ) : (
-          <Input
-            id={inputId}
-            ref={ref}
-            className={error ? "border-destructive focus-visible:ring-destructive" : ""}
-            {...props}
-          />
+        {label && (
+          <Label htmlFor={inputId} className={error ? "text-destructive" : ""}>
+            {label}
+          </Label>
         )}
+        <Input
+          id={inputId}
+          ref={ref}
+          className={error ? "border-destructive focus-visible:ring-destructive" : ""}
+          {...props}
+        />
         {error && <p className="text-destructive text-sm">{error}</p>}
         {helpText && !error && <p className="text-muted-foreground text-sm">{helpText}</p>}
       </div>

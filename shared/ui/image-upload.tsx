@@ -108,8 +108,10 @@ export function FileUpload({
                 className?.includes("rounded-full") ? "rounded-full" : "rounded-lg"
               )}
             >
-              {isImage ? (
-                <img src={preview || ""} alt="Preview" className="h-full w-full object-cover" />
+              {isImage && preview ? (
+                <img src={preview} alt="Preview" className="h-full w-full object-cover" />
+              ) : isImage ? (
+                <div className="flex h-full w-full items-center justify-center bg-gray-50" />
               ) : (
                 <div className="flex h-full w-full flex-col items-center justify-center p-4 text-center">
                   <FileText className="text-muted-foreground mb-2 h-8 w-8" />

@@ -76,6 +76,18 @@ export function H4({ className, variant, ...props }: HeadingProps) {
     />
   );
 }
+export function H5({ className, variant, ...props }: HeadingProps) {
+  return (
+    <h5
+      className={cn(
+        "scroll-m-20 text-lg font-medium tracking-tight",
+        headingVariants({ variant }),
+        className
+      )}
+      {...props}
+    />
+  );
+}
 
 export function P({ className, variant, ...props }: ParagraphProps) {
   return (

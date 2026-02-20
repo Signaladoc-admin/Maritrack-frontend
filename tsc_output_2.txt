@@ -1,0 +1,6 @@
+app/(auth)/register/page.tsx(3,24): error TS2307: Cannot find module '../layout' or its corresponding type declarations.
+app/playground/page.tsx(15,10): error TS2724: '"@/shared/ui/cards/child-profile-card"' has no exported member named 'ChildrenProfileCard'. Did you mean 'ChildProfileCard'?
+features/onboarding/ui/ChildProfiles.tsx(43,10): error TS2322: Type '{ name?: string | undefined; age?: number | undefined; gender?: "MALE" | "FEMALE" | undefined; image?: string | undefined; status?: "active" | "inactive" | undefined; key: number; onEdit: () => void; onViewQR: () => void; }' is not assignable to type 'ChildProfileCardProps'.
+  Types of property 'name' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.

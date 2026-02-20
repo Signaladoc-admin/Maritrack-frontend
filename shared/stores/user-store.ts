@@ -50,6 +50,16 @@ interface UserState {
   getDashboardData: () => DashboardData;
 }
 
+interface NewUserState {
+  email: string;
+  password: string;
+  token: string | null;
+  setEmail: (email: string) => void;
+  setPassword: (password: string) => void;
+  setToken: (token: string) => void;
+  clearCredentials: () => void;
+}
+
 // Mock icon for Spotify if needed, or just use generic
 const MusicIcon = Gamepad2;
 
@@ -196,4 +206,14 @@ export const useUserStore = create<UserState>((set, get) => ({
     const { selectedChildId } = get();
     return MOCK_DATA[selectedChildId] || MOCK_DATA.all;
   },
+}));
+
+export const useNewUserStore = create<NewUserState>((set) => ({
+  email: "",
+  password: "",
+  token: null,
+  setEmail: (email: string) => set({ email }),
+  setPassword: (password: string) => set({ password }),
+  setToken: (token: string) => set({ token }),
+  clearCredentials: () => set({ email: "", password: "", token: null }),
 }));

@@ -1,21 +1,47 @@
-import { genderOptions } from "@/lib/constants/shared";
+import { parentGenderOptions } from "@/lib/constants/shared";
 import { Button } from "@/shared/ui/button";
 import { FilledUserIcon } from "@/shared/ui/icons";
 import { FileUpload } from "@/shared/ui/image-upload";
 import { InputGroup } from "@/shared/ui/input-group";
 import { Header } from "@/shared/ui/layout/header";
-import React, { useState } from "react";
+import { CountryStateInput } from "@/shared/ui/inputs/country-state-input";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { parentOnboardingProfileSchema } from "../schema";
+import z from "zod";
+
+type ParentProfileValues = z.infer<typeof parentOnboardingProfileSchema>;
 
 export default function BasicInformationForm({ goToNextStep }: { goToNextStep: () => void }) {
-  const [avatar, setAvatar] = useState<File | null>(null);
-  // Validation here
+  const form = useForm<ParentProfileValues>({
+    resolver: zodResolver(parentOnboardingProfileSchema),
+    defaultValues: {
+      address: "",
+      country: "",
+      state: "",
+    },
+  });
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    control,
+    formState: { errors },
+  } = form;
+
+  const onSubmit = (data: ParentProfileValues) => {
+    console.log("Form data:", data);
+    goToNextStep();
+  };
+
   return (
     <div className="space-y-4">
       <Header title="Hi Grace, Tell us about you" subtitle="Give us more information about you" />
-      <div className="space-y-7">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-7">
         <FileUpload
-          value={avatar}
-          onChange={setAvatar}
+          value={form.watch("profileImage")}
+          onChange={(file) => setValue("profileImage", file as File)}
           accept="image/*"
           className="h-24 w-24 rounded-full"
           previewClassName="h-full w-full rounded-full object-cover"
@@ -24,14 +50,41 @@ export default function BasicInformationForm({ goToNextStep }: { goToNextStep: (
             <FilledUserIcon className="h-12 w-12 text-[#1b3c73]" />
           </div>
         </FileUpload>
-        <InputGroup options={genderOptions} type="select" label="Gender" />
-        <InputGroup label="Full Name" placeholder="John Doe" />
-        <InputGroup label="Email Address" placeholder="" />
-        <InputGroup label="Phone Number" placeholder="1234567890" />
-        <Button className="w-full" onClick={goToNextStep}>
+
+        <Controller
+          control={control}
+          name="gender"
+          render={({ field }) => (
+            <InputGroup
+              options={parentGenderOptions}
+              type="select"
+              label="What gender of parent are you?"
+              error={errors.gender?.message}
+              {...field}
+              onValueChange={field.onChange}
+            />
+          )}
+        />
+
+        <InputGroup
+          label="Address"
+          placeholder="Enter street address, apt. number, etc."
+          error={errors.address?.message}
+          {...register("address")}
+        />
+
+        <CountryStateInput
+          control={control}
+          countryName="country"
+          stateName="state"
+          errors={errors}
+          setValue={setValue}
+        />
+
+        <Button type="submit" className="w-full bg-[#1b3c73] hover:bg-[#152e5a]">
           Next
         </Button>
-      </div>
+      </form>
     </div>
   );
 }

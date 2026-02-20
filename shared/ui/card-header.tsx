@@ -7,7 +7,7 @@ export default function CardHeader({ title, description }: { title: string; desc
       <H3 variant="primary" className="mb-0!">
         {title}
       </H3>
-      <P className="mt-0!">{description}</P>
+      <P className="text-muted-foreground mt-0! text-sm">{description}</P>
     </div>
   );
 }

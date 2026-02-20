@@ -12,7 +12,13 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
   iconLeft?: React.ReactNode;
   iconRight?: React.ReactNode;
   wrapperClassName?: string;
-  options?: { label: string; value: string }[];
+  options?: {
+    label: string;
+    value: string;
+    description?: string;
+    containerClassName?: string;
+    labelClassName?: string;
+  }[];
   onValueChange?: (value: string) => void;
   onCheckedChange?: (checked: boolean | "indeterminate") => void;
   value?: string | number | readonly string[] | boolean | undefined;
@@ -57,7 +63,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <Select
             onValueChange={(val) => {
               if (props.onChange) {
-                props.onChange(val as any);
+                props.onChange({
+                  target: {
+                    name: props.name,
+                    value: val,
+                  },
+                } as React.ChangeEvent<HTMLInputElement>);
               }
               props.onValueChange?.(val);
             }}
@@ -87,7 +98,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           defaultValue={props.defaultValue as string}
           onValueChange={(val) => {
             if (props.onChange) {
-              props.onChange(val as any);
+              props.onChange({
+                target: {
+                  name: props.name || inputId,
+                  value: val,
+                },
+              } as React.ChangeEvent<HTMLInputElement>);
             }
             props.onValueChange?.(val);
           }}
@@ -97,11 +113,22 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {options.map((option) => {
             const optionId = `${inputId}-${option.value}`;
             return (
-              <div key={option.value} className="flex items-center gap-2">
-                <RadioGroupItem value={option.value} id={optionId} />
-                <Label htmlFor={optionId} className="font-normal">
-                  {option.label}
-                </Label>
+              <div
+                key={option.value}
+                className={cn("flex items-start gap-2", option.containerClassName)}
+              >
+                <RadioGroupItem value={option.value} id={optionId} className="mt-0.5" />
+                <div className="flex flex-col">
+                  <Label
+                    htmlFor={optionId}
+                    className={cn("leading-normal font-normal", option.labelClassName)}
+                  >
+                    {option.label}
+                  </Label>
+                  {option.description && (
+                    <p className="text-muted-foreground text-xs">{option.description}</p>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -111,7 +138,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
     if (type === "checkbox") {
       return (
-        <div className={cn("flex items-center gap-2", wrapperClassName)}>
+        <div className={cn("flex items-start gap-2", wrapperClassName)}>
           <Checkbox
             id={inputId}
             ref={ref as any}
@@ -119,14 +146,20 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             onCheckedChange={(val) => {
               props.onCheckedChange?.(val);
               if (props.onChange) {
-                props.onChange(val as any);
+                props.onChange({
+                  target: {
+                    name: props.name,
+                    value: val,
+                    checked: val === true,
+                  },
+                } as any);
               }
             }}
             disabled={props.disabled}
-            className={className}
+            className={cn("mt-1", className)}
           />
           {label && (
-            <Label htmlFor={inputId} className="font-normal">
+            <Label htmlFor={inputId} className="leading-normal font-normal">
               {label}
             </Label>
           )}
@@ -154,7 +187,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {...inputProps}
             value={inputValue as any}
             type={resolvedType}
-            className="placeholder:text-muted-foreground w-full min-w-0 flex-1 bg-transparent file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none disabled:cursor-not-allowed"
+            className={cn(
+              "placeholder:text-muted-foreground w-full min-w-0 flex-1 bg-transparent file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none disabled:cursor-not-allowed",
+              (type === "time" || type === "date") &&
+                "appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-clear-button]:hidden [&::-webkit-inner-spin-button]:hidden"
+            )}
             ref={ref}
             id={inputId}
           />
