@@ -39,6 +39,7 @@ export default function LoginForm() {
       console.log(profile);
       checkAndRedirect(profile);
     } catch (err) {
+      console.log(err);
       // Error handled by hook
     }
   };
