@@ -36,7 +36,7 @@ export function Sidebar() {
         <div className="flex w-full flex-col items-center">
           <Tooltip>
             <TooltipTrigger asChild>
-              <button className="cursor-pointer rounded-full bg-[#C5D5F1] p-3 text-[#1B3C73] transition-all">
+              <button className="cursor-pointer rounded-full bg-[#1B3C73] p-3 text-white transition-all">
                 <Home className="h-6 w-6" />
               </button>
             </TooltipTrigger>

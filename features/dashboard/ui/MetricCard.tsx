@@ -26,7 +26,7 @@ export function MetricCard({
   const isPositive = trendType === "positive";
 
   return (
-    <div className={cn("space-y-4 rounded-[32px] bg-[#F8F9FA] p-8 shadow-sm", className)}>
+    <div className={cn("space-y-4 rounded-[32px] bg-[#F8F9FA] p-8", className)}>
       <div className="flex items-start justify-between">
         <div className="space-y-4">
           <p className="text-sm font-medium text-slate-400">{title}</p>
