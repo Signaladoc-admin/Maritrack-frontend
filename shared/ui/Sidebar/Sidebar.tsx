@@ -4,28 +4,8 @@ import * as React from "react";
 import { Home, Settings, LogOut, Plus, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "../Tooltip/Tooltip";
-
-// --- 2. DUMMY DATA ---
-const childrenProfiles = [
-  {
-    id: "1",
-    name: "Mide",
-    status: "active",
-    image: "https://github.com/shadcn.png",
-  },
-  {
-    id: "2",
-    name: "David",
-    status: "locked",
-    image: "https://i.pravatar.cc/150?u=david",
-  },
-  {
-    id: "3",
-    name: "New User",
-    status: "active",
-    image: "", // Empty to test fallback
-  },
-];
+import Link from "next/link";
+import { childrenProfiles } from "@/app/(in-app)/child/[child]/data";
 
 // --- 3. SIDEBAR COMPONENT ---
 export function Sidebar() {
@@ -53,7 +33,7 @@ export function Sidebar() {
             {childrenProfiles.map((child) => (
               <Tooltip key={child.id}>
                 <TooltipTrigger asChild>
-                  <button className="group relative cursor-pointer">
+                  <Link href={`/child/${child.id}`} className="group relative cursor-pointer">
                     <div className="rounded-full p-[2px] transition-all duration-300 group-hover:scale-110">
                       <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#EEEEEE]">
                         {child.image ? (
@@ -67,7 +47,7 @@ export function Sidebar() {
                         )}
                       </div>
                     </div>
-                  </button>
+                  </Link>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="ml-2">
                   <p>{child.name}</p>

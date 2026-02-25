@@ -52,18 +52,21 @@ export default function Dashboard() {
           status="active"
           percentage={37.5}
           device="Google Pixel 9"
+          isRow={true}
         />
         <DeviceUsageCard
           deviceName="Mide's iPhone"
           status="locked"
           percentage={100}
           device="Iphone 14"
+          isRow={true}
         />
         <DeviceUsageCard
           deviceName="Mide's iPhone"
           status="locked"
           percentage={100}
           device="Iphone 14"
+          isRow={true}
         />
       </div>
 
