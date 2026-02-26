@@ -42,6 +42,7 @@ export default function LoginForm() {
       if (profile?.parentId) setParentId(profile.parentId);
       checkAndRedirect(profile);
     } catch (err) {
+      console.log(err);
       // Error handled by hook
     }
   };

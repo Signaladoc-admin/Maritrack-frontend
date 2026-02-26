@@ -4,7 +4,7 @@ import { Button } from "@/shared/ui/Button/button";
 import { useState } from "react";
 import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
 import { AccountTypeModal } from "@/shared/ui/Modal/Modals/AccountTypeSelectionModal";
-import { EditChildModal } from "@/shared/ui/Modal/Modals/ChildDetailsModal";
+import { EditChildModal } from "@/features/child-profile/ui/ChildDetailsModal";
 import { BlockedWebsitesModal } from "@/shared/ui/Modal/Modals/BlockedWebsitesModal";
 import { GeofencingModal } from "@/shared/ui/Modal/Modals/GeofencingModal";
 import { SetTimeLimitModal } from "@/shared/ui/Modal/Modals/TimeLimitModal";
@@ -243,28 +243,12 @@ export default function Home() {
         />
 
         {/* 2. Delete App Modal Instance */}
-        <ConfirmationModal
-          open={showDelete}
-          onOpenChange={setShowDelete}
-          title="Are you sure you want to delete this app?"
-          description="Deleting WhatsApp cannot be reverted. Are you sure?"
-          confirmText="Delete"
-          onConfirm={() => console.log("Deleted")}
-          variant="destructive"
-        />
 
         {/* 3. Account Type Modal Instance */}
         <AccountTypeModal
           open={showAccountType}
           onOpenChange={setShowAccountType}
           onSelect={(type) => console.log("Selected:", type)}
-        />
-
-        {/* 4. Edit Child Modal Instance */}
-        <EditChildModal
-          open={showEdit}
-          onOpenChange={setShowEdit}
-          initialData={{ name: "Solomon Grundy", age: "23", gender: "Male" }}
         />
 
         <BlockedWebsitesModal open={showBlockedWebsites} onOpenChange={setShowBlockedWebsites} />

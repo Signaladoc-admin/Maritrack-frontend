@@ -10,12 +10,7 @@ import {
 } from "@/shared/ui/Modal/dialog";
 import { Button } from "@/shared/ui/Button/button";
 import { User } from "lucide-react";
-
-interface EditChildModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  initialData?: { name: string; age: string; gender: string };
-}
+import { EditChildModalProps } from "../types";
 
 export function EditChildModal({ open, onOpenChange, initialData }: EditChildModalProps) {
   return (
