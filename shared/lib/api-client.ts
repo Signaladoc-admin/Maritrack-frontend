@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -17,13 +18,29 @@ export async function apiClient(endpoint: string, options: RequestInit = {}) {
     if (cookieString) {
       headers["Cookie"] = cookieString;
     }
+    const accessToken = cookieStore.get("accessToken")?.value;
+    if (accessToken) {
+      headers["Authorization"] = `Bearer ${accessToken}`;
+    }
   }
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-    credentials: "include",
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers,
+      credentials: "include",
+    });
+  } catch (error: any) {
+    // Detect network-level errors thrown naturally by fetch()
+    if (error.name === "TypeError" && error.message.includes("fetch failed")) {
+      throw new Error(
+        "Unable to connect to the server. Please check your internet connection and try again."
+      );
+    }
+    // Fallback for other catastrophic network failures
+    throw new Error(error.message || "A network error occurred.");
+  }
 
   // Handle Set-Cookie if on server
   if (isServer && response.headers.has("Set-Cookie")) {
@@ -57,8 +74,18 @@ export async function apiClient(endpoint: string, options: RequestInit = {}) {
   }
 
   if (!response.ok) {
+    if (
+      response.status === 401 &&
+      !endpoint.includes("/login") &&
+      !endpoint.includes("/register")
+    ) {
+      redirect("/login");
+    }
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || response.statusText || "An unexpected error occurred");
+    const errorMessage = Array.isArray(errorData.message)
+      ? errorData.message.join(", ")
+      : errorData.message;
+    throw new Error(errorMessage || response.statusText || "An unexpected error occurred");
   }
 
   return response.json();

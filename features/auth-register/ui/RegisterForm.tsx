@@ -8,10 +8,13 @@ import Link from "next/link";
 import HaveAnAccount from "../../auth/ui/HaveAnAccount";
 import { useRegister } from "../model/useRegister";
 import { registerSchema, type RegisterValues } from "@/entities/user/model/user.schema";
+import { useRouter } from "next/navigation";
 import { useNewUserStore } from "@/shared/stores/user-store";
 
 export default function RegisterForm() {
+  const router = useRouter();
   const { register: registerUser, isSubmitting, error } = useRegister();
+  const { setEmail, setPassword, setToken } = useNewUserStore();
 
   const {
     register,
@@ -21,15 +24,22 @@ export default function RegisterForm() {
     resolver: zodResolver(registerSchema),
   });
 
-  const { email, password, setEmail, setPassword } = useNewUserStore();
-
   const onSubmit = async (data: RegisterValues) => {
     try {
-      await registerUser(data);
+      const res: any = await registerUser(data);
+      console.log("Registered user response:", res);
+
+      // Save credentials for subsequent OTP verification and auto-login
       setEmail(data.email);
       setPassword(data.password);
+      if (res?.token) {
+        setToken(res.token);
+      }
+
+      router.push("/confirm-email");
     } catch (err) {
       // Error handled by hook
+      console.error("Registration error:", err);
     }
   };
 

@@ -28,6 +28,11 @@ export function useIsOnboarded() {
         return;
       }
 
+      if (userProfile.isEmailVerified === false) {
+        router.push("/confirm-email");
+        return;
+      }
+
       // Prioritize isFirstLogin flag
       const needsOnboarding =
         userProfile.isFirstLogin === true || !userProfile.firstName || !userProfile.lastName;

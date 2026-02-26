@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { loginAction } from "../api/login.action";
-import type { LoginValues, UserProfile } from "@/entities/user/model/user.schema";
 import { useToast } from "@/shared/ui/toast";
 
 export function useLogin() {

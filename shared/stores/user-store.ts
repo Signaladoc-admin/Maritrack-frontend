@@ -50,12 +50,51 @@ interface UserState {
   getDashboardData: () => DashboardData;
 }
 
+interface UserDetails {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  isEmailVerified: boolean;
+  role: "USER" | "ADMIN";
+  status: "ACTIVE" | "DEACTIVATED";
+  isOnline: boolean;
+  firstLogin: boolean;
+}
+
+// interface ParentUserState {
+//   id: string;
+//   userId: string;
+//   gender: "FATHER" | "MOTHER";
+//   address: string;
+//   state: string;
+//   country: string;
+//   createdAt: string;
+//   updatedAt: string;
+//   user: UserDetails;
+//   parentLinks: null;
+//   children: Child[];
+// }
+
+interface ParentUserState {
+  parentId: string;
+  userId: string;
+  selectedChildId: string;
+  children: Child[];
+  setSelectedChildId: (id: string) => void;
+  setParentId: (id: string) => void;
+  setChildren: (children: Child[]) => void;
+  getDashboardData: () => DashboardData;
+}
+
 interface NewUserState {
+  parentId: string;
   email: string;
   password: string;
   token: string | null;
   setEmail: (email: string) => void;
   setPassword: (password: string) => void;
+  setParentId: (parentId: string) => void;
   setToken: (token: string) => void;
   clearCredentials: () => void;
 }
@@ -208,12 +247,30 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
 }));
 
+export const useParentStore = create<ParentUserState>((set, get) => ({
+  parentId: "",
+  userId: "",
+  selectedChildId: "all",
+  children: [
+    { id: "solomon", name: "Solomon" },
+    { id: "kuroebi", name: "Kuroebi" },
+  ],
+  setParentId: (id) => set({ parentId: id }),
+  setSelectedChildId: (id) => set({ selectedChildId: id }),
+  setChildren: (children) => set({ children }),
+  getDashboardData: () => {
+    const { selectedChildId } = get();
+    return MOCK_DATA[selectedChildId] || MOCK_DATA.all;
+  },
+}));
 export const useNewUserStore = create<NewUserState>((set) => ({
+  parentId: "",
   email: "",
   password: "",
   token: null,
-  setEmail: (email: string) => set({ email }),
-  setPassword: (password: string) => set({ password }),
-  setToken: (token: string) => set({ token }),
+  setEmail: (email) => set({ email }),
+  setPassword: (password) => set({ password }),
+  setParentId: (parentId) => set({ parentId }),
+  setToken: (token) => set({ token }),
   clearCredentials: () => set({ email: "", password: "", token: null }),
 }));
