@@ -25,10 +25,20 @@ export default function PersonalRegistrationForm() {
 
   const { register, isSubmitting, error } = useRegister();
 
-  const onSubmit = (data: PersonalRegistrationFormValues) => {
-    console.log(data);
-    const payload = { ...data, role: "USER", status: "ACTIVE" };
-    register(payload);
+  const onSubmit = async (data: PersonalRegistrationFormValues) => {
+    console.log("Form values:", data);
+    const payload = {
+      email: data.email,
+      password: data.password,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      role: "USER",
+      status: "ACTIVE",
+    };
+
+    await register(payload);
+
+    router.push("/confirm-email");
   };
 
   return (

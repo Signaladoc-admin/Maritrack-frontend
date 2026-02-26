@@ -11,16 +11,15 @@ import UserAccountTypeSelectionCard from "../../auth/ui/UserAccountTypeSelection
 import { accountTypes } from "../../auth/constants";
 import { useLogin } from "../model/useLogin";
 import { loginSchema, type LoginValues } from "@/entities/user/model/user.schema";
-import { useRouter } from "next/navigation";
-import { useNewUserStore } from "@/shared/stores/user-store";
+import { useParentStore, useNewUserStore } from "@/shared/stores/user-store";
 import { useIsOnboarded } from "@/entities/user/model/useIsOnboarded";
 
 export default function LoginForm() {
   const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] = useState(false);
   const { login, isSubmitting, error } = useLogin();
-  const router = useRouter();
-  const { setEmail, setPassword } = useNewUserStore();
   const { checkAndRedirect } = useIsOnboarded();
+  const { setParentId } = useParentStore();
+  const { setEmail, setPassword } = useNewUserStore();
 
   const {
     register,
@@ -33,10 +32,14 @@ export default function LoginForm() {
   const onSubmit = async (data: LoginValues) => {
     try {
       const profile = await login(data);
+
+      console.log(profile);
+
+      // Save credentials for subsequent OTP verification and auto-login if needed
       setEmail(data.email);
       setPassword(data.password);
 
-      console.log(profile);
+      if (profile?.parentId) setParentId(profile.parentId);
       checkAndRedirect(profile);
     } catch (err) {
       // Error handled by hook

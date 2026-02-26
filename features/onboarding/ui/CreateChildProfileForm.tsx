@@ -17,6 +17,7 @@ interface ICreateChildProfileFormProps {
   onAddChild: (data: IChildProfile) => void;
   initialData?: IChildProfile;
   goToNextStep: () => void;
+  isLoading?: boolean;
 }
 
 export default function CreateChildProfileForm({
@@ -24,13 +25,14 @@ export default function CreateChildProfileForm({
   onAddChild,
   initialData,
   goToNextStep,
+  isLoading,
 }: ICreateChildProfileFormProps) {
   const form = useForm<z.infer<typeof childProfileSchema>>({
     resolver: zodResolver(childProfileSchema) as any,
     defaultValues: {
-      name: initialData?.name || "",
-      age: initialData?.age as any,
-      gender: initialData?.gender as any,
+      name: initialData?.name || "Obafemi Jnr",
+      age: (initialData?.age as any) || 11,
+      gender: (initialData?.gender as any) || "MALE",
     },
   });
 
@@ -40,6 +42,7 @@ export default function CreateChildProfileForm({
       id: initialData?.id,
       image: data.profileImage ? URL.createObjectURL(data.profileImage) : initialData?.image,
     };
+    console.log(formattedData);
     onAddChild(formattedData);
   };
 
@@ -94,8 +97,8 @@ export default function CreateChildProfileForm({
           />
         </div>
         <div className="flex gap-4 pt-4">
-          <Button type="submit" className="flex-1">
-            {initialData ? "Update Profile" : "Pair"}
+          <Button type="submit" className="flex-1" disabled={isLoading}>
+            {isLoading ? "Saving..." : initialData ? "Update Profile" : "Pair"}
           </Button>
         </div>
       </form>

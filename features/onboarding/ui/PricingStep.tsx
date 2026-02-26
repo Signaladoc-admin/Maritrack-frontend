@@ -5,22 +5,62 @@ import { PricingCard } from "@/shared/ui/PricingCard/PricingCard";
 import { Header } from "@/shared/ui/layout/header";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { Button } from "@/shared/ui/button";
+import { usePaymentPlans, useInitializePayment } from "@/entities/payments/model/usePayments";
+import { useUserProfile } from "@/entities/user/model/useUserProfile";
+import { useToast } from "@/shared/ui/toast";
+import { useRouter } from "next/navigation";
 
 interface PricingStepProps {
   onBack: () => void;
-  onSuccess: () => void;
+  onSuccess: () => void; // Used for basic plan skip
 }
 
 export default function PricingStep({ onBack, onSuccess }: PricingStepProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const { data: plans } = usePaymentPlans();
+  const { mutateAsync: initializePayment } = useInitializePayment();
+  const { data: user } = useUserProfile();
+  const { toast } = useToast();
+  const router = useRouter();
 
-  const handleSelectPlan = () => {
-    setIsLoading(true);
-    // Simulate payment gateway loading
-    setTimeout(() => {
+  const handleSelectBasicPlan = () => {
+    // Basic plan or skip
+    onSuccess();
+  };
+
+  const handleSelectPremiumPlan = async (planId: string) => {
+    if (!user?.zoneId?.[0]?.id) {
+      toast({
+        title: "Error",
+        message:
+          "No active zone setup found for your account. Please set up a child profile first.",
+        type: "error",
+      });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const host = window.location.origin;
+      const callbackUrl = `${host}/onboarding/personal`;
+
+      const response = await initializePayment({
+        planId,
+        zoneId: user.zoneId[0].id,
+        callbackUrl,
+      });
+
+      if (response?.checkoutUrl) {
+        // Redirect to paystack checkout window
+        window.location.href = response.checkoutUrl;
+      } else {
+        toast({ title: "Error", message: "Could not generate checkout session", type: "error" });
+        setIsLoading(false);
+      }
+    } catch (e: any) {
+      toast({ title: "Error", message: e.message || "Checkout failed", type: "error" });
       setIsLoading(false);
-      onSuccess();
-    }, 2000);
+    }
   };
 
   const features = [
@@ -46,6 +86,14 @@ export default function PricingStep({ onBack, onSuccess }: PricingStepProps) {
     );
   }
 
+  // Use the last plan in the array for the premium card
+  const premiumPlanData = Array.isArray(plans) && plans.length > 0 ? plans[plans.length - 1] : null;
+  const premiumPrice = premiumPlanData ? String(premiumPlanData.priceNGN) : "49";
+  const premiumTitle = premiumPlanData ? premiumPlanData.name.toUpperCase() : "PREMIUM PLAN";
+  const premiumDesc = premiumPlanData
+    ? premiumPlanData.description
+    : "On even feet time have an no at. Relation so in confined smallest children unpacked delicate. Why sir end believe.";
+
   return (
     <div className="space-y-10">
       <Button variant="link" onClick={onBack} className="flex items-center gap-1! px-0">
@@ -69,16 +117,26 @@ export default function PricingStep({ onBack, onSuccess }: PricingStepProps) {
           description="Joy horrible moreover man feelings own shy. Request norland neither mistake for yet. Between the for morning assured."
           features={features}
           buttonText="Get Basic"
-          onButtonClick={handleSelectPlan}
+          onButtonClick={handleSelectBasicPlan}
         />
         <PricingCard
-          title="PREMIUM PLAN"
-          price="49"
+          title={premiumTitle}
+          price={premiumPrice}
           isPremium
-          description="On even feet time have an no at. Relation so in confined smallest children unpacked delicate. Why sir end believe."
+          description={premiumDesc}
           features={premiumFeatures}
           buttonText="Get the premium"
-          onButtonClick={handleSelectPlan}
+          onButtonClick={() => {
+            if (premiumPlanData?.id) {
+              handleSelectPremiumPlan(premiumPlanData.id);
+            } else {
+              toast({
+                title: "Error",
+                message: "Premium plan not available right now",
+                type: "error",
+              });
+            }
+          }}
         />
       </div>
     </div>
