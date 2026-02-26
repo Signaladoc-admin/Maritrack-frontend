@@ -4,39 +4,19 @@ import * as React from "react";
 import { Home, Settings, LogOut, Plus, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "../Tooltip/Tooltip";
-
-// --- 2. DUMMY DATA ---
-const childrenProfiles = [
-  {
-    id: "1",
-    name: "Mide",
-    status: "active",
-    image: "https://github.com/shadcn.png",
-  },
-  {
-    id: "2",
-    name: "David",
-    status: "locked",
-    image: "https://i.pravatar.cc/150?u=david",
-  },
-  {
-    id: "3",
-    name: "New User",
-    status: "active",
-    image: "", // Empty to test fallback
-  },
-];
+import Link from "next/link";
+import { childrenProfiles } from "@/app/(in-app)/child/[child]/data";
 
 // --- 3. SIDEBAR COMPONENT ---
 export function Sidebar() {
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="fixed left-0 top-0 z-40 flex h-screen w-[100px] flex-col items-center bg-[#F7F7F7] py-10">
+      <div className="fixed top-0 left-0 z-40 flex h-screen w-[100px] flex-col items-center bg-[#F7F7F7] py-10">
         {/* --- Top: Home --- */}
         <div className="flex w-full flex-col items-center">
           <Tooltip>
             <TooltipTrigger asChild>
-              <button className="cursor-pointer rounded-full bg-[#C5D5F1] p-3 text-[#1B3C73] transition-all">
+              <button className="cursor-pointer rounded-full bg-[#1B3C73] p-3 text-white transition-all">
                 <Home className="h-6 w-6" />
               </button>
             </TooltipTrigger>
@@ -53,7 +33,7 @@ export function Sidebar() {
             {childrenProfiles.map((child) => (
               <Tooltip key={child.id}>
                 <TooltipTrigger asChild>
-                  <button className="group relative cursor-pointer">
+                  <Link href={`/child/${child.id}`} className="group relative cursor-pointer">
                     <div className="rounded-full p-[2px] transition-all duration-300 group-hover:scale-110">
                       <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#EEEEEE]">
                         {child.image ? (
@@ -67,7 +47,7 @@ export function Sidebar() {
                         )}
                       </div>
                     </div>
-                  </button>
+                  </Link>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="ml-2">
                   <p>{child.name}</p>
