@@ -40,7 +40,7 @@ export default function OtpConfirmForm() {
             name="otp"
             render={({ field }) => (
               <div className="space-y-2">
-                <OTPInput value={field.value} onChange={field.onChange} length={4} />
+                <OTPInput value={field.value} onChange={field.onChange} length={6} />
                 {form.formState.errors.otp && (
                   <p className="text-destructive text-sm">{form.formState.errors.otp.message}</p>
                 )}

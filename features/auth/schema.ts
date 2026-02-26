@@ -16,7 +16,7 @@ export const personalRegistrationFormSchema = z
 export type PersonalRegistrationFormValues = z.infer<typeof personalRegistrationFormSchema>;
 
 export const otpConfirmFormSchema = z.object({
-  otp: z.string().min(4, "OTP must be 4 digits"),
+  otp: z.string().min(6, "OTP must be 6 digits"),
 });
 
 export type OtpConfirmFormValues = z.infer<typeof otpConfirmFormSchema>;

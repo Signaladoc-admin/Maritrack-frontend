@@ -35,17 +35,25 @@ export function CountryStateInput<T extends FieldValues>({
     name: countryName,
   });
 
-  const countries = Country.getAllCountries().map((country) => ({
-    label: country.name,
-    value: country.isoCode,
-  }));
+  const countries = React.useMemo(
+    () =>
+      Country.getAllCountries().map((country) => ({
+        label: country.name,
+        value: country.isoCode,
+      })),
+    []
+  );
 
-  const states = selectedCountry
-    ? State.getStatesOfCountry(selectedCountry).map((state) => ({
-        label: state.name,
-        value: state.isoCode,
-      }))
-    : [];
+  const states = React.useMemo(
+    () =>
+      selectedCountry
+        ? State.getStatesOfCountry(selectedCountry).map((state) => ({
+            label: state.name,
+            value: state.isoCode,
+          }))
+        : [],
+    [selectedCountry]
+  );
 
   return (
     <div className={`grid gap-4 sm:grid-cols-2 ${className}`}>
@@ -60,7 +68,7 @@ export function CountryStateInput<T extends FieldValues>({
             options={countries}
             error={errors?.[countryName]?.message}
             {...field}
-            onChange={(val) => {
+            onValueChange={(val) => {
               field.onChange(val);
               setValue(stateName, "" as PathValue<T, Path<T>>);
             }}
@@ -80,6 +88,7 @@ export function CountryStateInput<T extends FieldValues>({
             disabled={!selectedCountry || states.length === 0}
             error={errors?.[stateName]?.message}
             {...field}
+            onValueChange={field.onChange}
           />
         )}
       />
