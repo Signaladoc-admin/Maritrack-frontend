@@ -14,6 +14,7 @@ interface ChildProfileCardProps {
   onEdit?: (data: IChildProfile) => void;
   onViewQR?: () => void;
   className?: string;
+  showActions?: boolean;
 }
 
 export function ChildProfileCard({
@@ -26,6 +27,7 @@ export function ChildProfileCard({
   onEdit,
   onViewQR,
   className,
+  showActions = true,
 }: ChildProfileCardProps) {
   const relation = gender === "MALE" ? "Son" : "Daughter";
 
@@ -71,24 +73,26 @@ export function ChildProfileCard({
           </div>
         </div>
 
-        <div className="flex items-center gap-1">
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-12 w-12 text-white hover:bg-white/10"
-            onClick={onViewQR}
-          >
-            <QrCode className="h-10! w-10! stroke-[1.5]" />
-          </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-10 w-10 rounded-full bg-white/40 text-white hover:bg-white/30"
-            onClick={() => onEdit?.({ id, name, age, gender, image, status })}
-          >
-            <Edit2 className="h-5 w-5" />
-          </Button>
-        </div>
+        {showActions && (
+          <div className="flex items-center gap-1">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-12 w-12 text-white hover:bg-white/10"
+              onClick={onViewQR}
+            >
+              <QrCode className="h-10! w-10! stroke-[1.5]" />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-10 w-10 rounded-full bg-white/40 text-white hover:bg-white/30"
+              onClick={() => onEdit?.({ id, name, age, gender, image, status })}
+            >
+              <Edit2 className="h-5 w-5" />
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

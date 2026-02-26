@@ -13,6 +13,7 @@ interface DeviceUsageCardProps {
   className?: string;
   device: string;
   isRow: boolean;
+  onClick: () => void;
 }
 
 export function DeviceUsageCard({
@@ -22,6 +23,7 @@ export function DeviceUsageCard({
   className,
   device = "Iphone 14",
   isRow = false,
+  onClick,
 }: DeviceUsageCardProps) {
   const isActive = status === "active";
 
@@ -42,9 +44,10 @@ export function DeviceUsageCard({
   return (
     <div
       className={cn(
-        `relative flex overflow-hidden rounded-[24px] border border-[#1B3C73] bg-[#081223] p-8 ${isRow ? "w-full max-w-xl flex-row items-center justify-between" : "flex-col"}`,
+        `relative flex cursor-pointer overflow-hidden rounded-[24px] border border-[#1B3C73] bg-[#081223] p-8 transition-colors hover:bg-[#0a172d] ${isRow ? "w-full max-w-xl flex-row items-center justify-between" : "flex-col"}`,
         className
       )}
+      onClick={onClick}
     >
       {/* --- Left Side: Text Info --- */}
       <div className="z-10 flex flex-col gap-2">
