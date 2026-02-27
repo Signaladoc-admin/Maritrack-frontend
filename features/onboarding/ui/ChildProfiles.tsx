@@ -9,6 +9,7 @@ import PricingStep from "./PricingStep";
 import PairingQRStep from "./PairingQRStep";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
 import { useParent } from "@/entities/parents/model/useParents";
+import { useParentStore } from "@/shared/stores/user-store";
 import { useCreateChild, useUpdateChild } from "@/entities/children/model/useChildren";
 import { createChildAction, getChildByIdAction } from "@/entities/children/api/child.actions";
 import { getProfileAction } from "@/entities/user/api/user.actions";
@@ -35,7 +36,14 @@ export default function ChildrenProfiles({
   const router = useRouter();
 
   const { data: user } = useUserProfile();
-  const { data: parent } = useParent(user?.parentId!);
+  const {
+    parentId: storedParentId,
+    zoneId: storedZoneId,
+    setParentId,
+    setZoneId,
+  } = useParentStore();
+
+  const { data: parent } = useParent(user?.parentId! || storedParentId);
 
   const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentZones();
   const { mutateAsync: createChild, isPending: isCreatingChild } = useCreateChild();
@@ -43,7 +51,12 @@ export default function ChildrenProfiles({
   const { toast } = useToast();
 
   useEffect(() => {
-    if (Array.isArray(parentZonesRes)) {
+    if (Array.isArray(parentZonesRes) && parentZonesRes.length > 0) {
+      // Sync parent ID and zone ID to the global store
+      const firstZone = parentZonesRes[0];
+      if (firstZone.id) setZoneId(firstZone.id);
+      if (firstZone.parentId) setParentId(firstZone.parentId);
+
       // Extract children from the zones list
       const extractedChildren = parentZonesRes.flatMap(
         (zone: any) => zone.parentChildren?.map((pc: any) => pc.child) || []
@@ -51,7 +64,7 @@ export default function ChildrenProfiles({
       // Remove any undefined/null values that might have snuck in and format
       setChildProfiles(extractedChildren.filter(Boolean) as any);
     }
-  }, [parentZonesRes]);
+  }, [parentZonesRes, setParentId, setZoneId]);
 
   const [currentView, setCurrentView] = useState<"form" | "list" | "pricing" | "qr">("list");
   const [selectedChildProfile, setSelectedChildProfile] = useState<IChildProfile | null>(null);
@@ -67,7 +80,6 @@ export default function ChildrenProfiles({
 
       try {
         const result = await createChildAction({ ...data, parentId: parent.id });
-        console.log(result);
 
         const res: any = await createChild({
           name: data.name,
@@ -75,7 +87,6 @@ export default function ChildrenProfiles({
           gender: data.gender as any,
           parentId: parent.id,
         });
-        console.log(res);
 
         if (res) {
           const newChildInfo = { ...data, ...res };
@@ -94,7 +105,10 @@ export default function ChildrenProfiles({
 
             // 3. Get updated user profile which now contains the newly created zoneId
             const updatedProfile = await getProfileAction();
-            const zoneId = (updatedProfile as any).zoneId?.[0]?.id || user?.zoneId?.[0]?.id;
+            const zoneId =
+              (updatedProfile as any).zoneId?.[0]?.id || user?.zoneId?.[0]?.id || storedZoneId;
+
+            if (zoneId) setZoneId(zoneId);
 
             // 4. Fetch the QR code
             if (zoneId && onboardingCode) {

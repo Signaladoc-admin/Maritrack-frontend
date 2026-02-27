@@ -79,10 +79,12 @@ interface UserDetails {
 interface ParentUserState {
   parentId: string;
   userId: string;
+  zoneId: string;
   selectedChildId: string;
   children: Child[];
   setSelectedChildId: (id: string) => void;
   setParentId: (id: string) => void;
+  setZoneId: (id: string) => void;
   setChildren: (children: Child[]) => void;
   getDashboardData: () => DashboardData;
 }
@@ -239,23 +241,6 @@ export const useUserStore = create<UserState>((set, get) => ({
     { id: "solomon", name: "Solomon" },
     { id: "kuroebi", name: "Kuroebi" },
   ],
-  setSelectedChildId: (id) => set({ selectedChildId: id }),
-  setChildren: (children) => set({ children }),
-  getDashboardData: () => {
-    const { selectedChildId } = get();
-    return MOCK_DATA[selectedChildId] || MOCK_DATA.all;
-  },
-}));
-
-export const useParentStore = create<ParentUserState>((set, get) => ({
-  parentId: "",
-  userId: "",
-  selectedChildId: "all",
-  children: [
-    { id: "solomon", name: "Solomon" },
-    { id: "kuroebi", name: "Kuroebi" },
-  ],
-  setParentId: (id) => set({ parentId: id }),
   setSelectedChildId: (id) => set({ selectedChildId: id }),
   setChildren: (children) => set({ children }),
   getDashboardData: () => {
