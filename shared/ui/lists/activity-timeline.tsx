@@ -1,5 +1,5 @@
 import { cn } from "@/shared/lib/utils";
-import { CardWrapper } from "@/shared/ui/card-wrapper";
+import { Card, CardContent, CardHeader, CardTitle } from "../Card/Card";
 
 /* ─── single timeline item ─── */
 interface TimelineItemProps {
@@ -73,13 +73,14 @@ export function ActivityTimeline({
   className,
 }: ActivityTimelineProps) {
   return (
-    <CardWrapper
-      padding="lg"
-      className={cn("border-0 bg-white shadow-none dark:bg-slate-900", className)}
+    <Card
+    // className={cn("border-0 bg-white shadow-none dark:bg-slate-900", className)}
     >
-      <h4 className="text-muted-foreground mb-4 text-sm font-medium">{title}</h4>
-      <div>{children}</div>
-    </CardWrapper>
+      <CardHeader>
+        <CardTitle className="text-muted-foreground mb-4 text-sm font-medium">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
   );
 }
 

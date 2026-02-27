@@ -38,7 +38,7 @@ export function InfoListCard({
               <div className="flex items-center gap-4">
                 {/* Icon Container */}
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-[#1B3C73]">
-                  <Icon size={50} />
+                  <Icon size={50} className="h-5 w-5 text-slate-600" />
                 </div>
 
                 {/* Text Info */}

@@ -8,9 +8,12 @@ import { DeviceUsageCard } from "@/shared/ui/DeviceStatusCard/DeviceStatusCard";
 import { InfoListCard } from "@/shared/ui/AppListCard/AppListCard";
 import { appData } from "@/app/(in-app)/dashboard/data";
 import { useDragScroll } from "@/shared/hooks/useDragScroll";
+import { useRouter } from "next/navigation";
 
 export default function Dashboard() {
   const { scrollContainerRef, events } = useDragScroll();
+
+  const router = useRouter();
 
   return (
     <div className="space-y-10">
@@ -53,6 +56,7 @@ export default function Dashboard() {
           percentage={37.5}
           device="Google Pixel 9"
           isRow={true}
+          onClick={() => router.push(`/device/1`)}
         />
         <DeviceUsageCard
           deviceName="Mide's iPhone"
@@ -60,6 +64,7 @@ export default function Dashboard() {
           percentage={100}
           device="Iphone 14"
           isRow={true}
+          onClick={() => router.push(`/device/2`)}
         />
         <DeviceUsageCard
           deviceName="Mide's iPhone"
@@ -67,6 +72,7 @@ export default function Dashboard() {
           percentage={100}
           device="Iphone 14"
           isRow={true}
+          onClick={() => router.push(`/device/3`)}
         />
       </div>
 

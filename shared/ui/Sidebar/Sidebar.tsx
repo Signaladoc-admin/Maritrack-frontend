@@ -16,9 +16,12 @@ export function Sidebar() {
         <div className="flex w-full flex-col items-center">
           <Tooltip>
             <TooltipTrigger asChild>
-              <button className="cursor-pointer rounded-full bg-[#1B3C73] p-3 text-white transition-all">
+              <Link
+                href={"/dashboard"}
+                className="cursor-pointer rounded-full bg-[#1B3C73] p-3 text-white transition-all"
+              >
                 <Home className="h-6 w-6" />
-              </button>
+              </Link>
             </TooltipTrigger>
             <TooltipContent side="right" className="ml-2">
               <p>Dashboard</p>

@@ -9,6 +9,7 @@ import { TabNavigation } from "@/shared/ui/tab-navigation";
 import { Trash, Trash2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import General from "./General";
 
 const Device = () => {
   const [activeTab, setActiveTab] = useState("general");
@@ -23,7 +24,7 @@ const Device = () => {
 
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <div className="mb-20 flex items-center justify-between">
         <Back label="Back to profile" />
 
         <div className="flex items-center gap-4">
@@ -45,6 +46,8 @@ const Device = () => {
         onConfirm={() => console.log("Deleted")}
         variant="destructive"
       />
+
+      {activeTab === "general" && <General />}
     </div>
   );
 };
