@@ -10,6 +10,7 @@ import { Trash, Trash2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import General from "./General";
+import WebHistory from "./WebHistory";
 
 const Device = () => {
   const [activeTab, setActiveTab] = useState("general");
@@ -24,7 +25,7 @@ const Device = () => {
 
   return (
     <div>
-      <div className="mb-20 flex items-center justify-between">
+      <div className="mb-10 flex items-center justify-between">
         <Back label="Back to profile" />
 
         <div className="flex items-center gap-4">
@@ -48,6 +49,7 @@ const Device = () => {
       />
 
       {activeTab === "general" && <General />}
+      {activeTab === "web-history" && <WebHistory />}
     </div>
   );
 };

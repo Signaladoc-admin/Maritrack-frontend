@@ -22,13 +22,13 @@ export function AlertBox({
   const bgMap = {
     success: "bg-emerald-50 border-emerald-200",
     warning: "bg-amber-50 border-amber-200",
-    danger: "bg-red-50 border-red-200",
+    danger: "bg-[#671A15]",
   };
 
   const iconBgMap = {
     success: "bg-emerald-100 text-emerald-600",
     warning: "bg-amber-100 text-amber-600",
-    danger: "bg-red-100 text-red-600",
+    danger: "text-[#D95D55]",
   };
 
   return (
@@ -53,7 +53,7 @@ export function AlertBox({
             className={cn(
               "text-sm font-semibold",
               type === "danger"
-                ? "text-red-900"
+                ? "text-white"
                 : type === "warning"
                   ? "text-amber-900"
                   : "text-emerald-900"
@@ -66,7 +66,7 @@ export function AlertBox({
               className={cn(
                 "text-xs",
                 type === "danger"
-                  ? "text-red-700"
+                  ? "text-[#D95D55]"
                   : type === "warning"
                     ? "text-amber-700"
                     : "text-emerald-700"
