@@ -20,9 +20,10 @@ export async function refreshSessionAction(): Promise<UserProfile> {
     throw new Error("No refresh token available");
   }
 
-  return apiClient(`/users/refreshToken?token=${refreshToken}`, {
+  const response = await apiClient(`/users/refreshToken?token=${refreshToken}`, {
     method: "POST",
   });
+  return response.data;
 }
 
 export async function logoutAction(): Promise<void> {

@@ -24,7 +24,6 @@ export default function PricingStep({ onBack, onSuccess }: PricingStepProps) {
   const router = useRouter();
 
   const handleSelectBasicPlan = () => {
-    // Basic plan or skip
     onSuccess();
   };
 

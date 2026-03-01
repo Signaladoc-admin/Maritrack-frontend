@@ -27,6 +27,7 @@ export async function getChildrenAction(params?: ChildFilterParams): Promise<Chi
 export async function getChildByIdAction(id: string): Promise<ChildProfile> {
   const response = await apiClient(`/children/${id}`, {
     method: "GET",
+    cache: "no-store",
   });
   return response.data;
 }

@@ -14,8 +14,8 @@ import { useToast } from "@/shared/ui/toast";
 function OnboardingContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const stepParam = searchParams.get("step");
-  const reference = searchParams.get("reference");
+  const stepParam = searchParams?.get("step");
+  const reference = searchParams?.get("reference");
 
   const [currentStep, setCurrentStep] = useState(() => {
     if (reference) return 2; // Payment is done, jump to step 3 (index 2)
@@ -26,17 +26,22 @@ function OnboardingContent() {
   const nextStep = () => {
     setCurrentStep((p) => {
       const next = Math.min(p + 1, 2);
-      router.push(`/onboarding/personal?step=${next}`);
       return next;
     });
+    // Get the new step directly from state queue or compute it manually to avoid stale closures
+    const currentParam = parseInt(stepParam || "0", 10);
+    const next = Math.min(currentParam + 1, 2);
+    router.push(`/onboarding/personal?step=${next}`);
   };
 
   const prevStep = () => {
     setCurrentStep((p) => {
       const prev = Math.max(p - 1, 0);
-      router.push(`/onboarding/personal?step=${prev}`);
       return prev;
     });
+    const currentParam = parseInt(stepParam || "0", 10);
+    const prev = Math.max(currentParam - 1, 0);
+    router.push(`/onboarding/personal?step=${prev}`);
   };
 
   const { parentId: storeParentId } = useParentStore();

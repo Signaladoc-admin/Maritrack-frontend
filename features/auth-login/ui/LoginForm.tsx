@@ -40,7 +40,7 @@ export default function LoginForm() {
       setPassword(data.password);
 
       if (profile?.parentId) setParentId(profile.parentId);
-      checkAndRedirect(profile);
+      checkAndRedirect(profile as any);
     } catch (err) {
       console.log(err);
       // Error handled by hook

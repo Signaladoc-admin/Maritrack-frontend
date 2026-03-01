@@ -27,6 +27,7 @@ export async function apiClient(endpoint: string, options: RequestInit = {}) {
   let response: Response;
   try {
     response = await fetch(url, {
+      cache: "no-store",
       ...options,
       headers,
       credentials: "include",
@@ -85,8 +86,45 @@ export async function apiClient(endpoint: string, options: RequestInit = {}) {
     const errorMessage = Array.isArray(errorData.message)
       ? errorData.message.join(", ")
       : errorData.message;
+    console.error(
+      `API Error on ${options.method || "GET"} ${endpoint}:`,
+      errorMessage || response.statusText
+    );
     throw new Error(errorMessage || response.statusText || "An unexpected error occurred");
   }
 
-  return response.json();
+  const parsedResponse = await response.json();
+
+  const accessToken =
+    parsedResponse.accessToken ||
+    parsedResponse.data?.access_token ||
+    parsedResponse.data?.accessToken;
+  const refreshToken =
+    parsedResponse.refreshToken ||
+    parsedResponse.data?.refresh_token ||
+    parsedResponse.data?.refreshToken;
+
+  if (isServer) {
+    const cookieStore = await cookies();
+    if (accessToken) {
+      cookieStore.set("accessToken", accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60, // 7 days
+      });
+    }
+    if (refreshToken) {
+      cookieStore.set("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60, // 7 days
+      });
+    }
+  }
+
+  return parsedResponse;
 }

@@ -12,8 +12,8 @@ interface DeviceUsageCardProps {
   percentage: number;
   className?: string;
   device: string;
-  isRow: boolean;
-  onClick: () => void;
+  isRow?: boolean;
+  onClick?: () => void;
 }
 
 export function DeviceUsageCard({

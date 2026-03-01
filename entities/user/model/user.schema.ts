@@ -25,6 +25,8 @@ export interface IUserProfile {
   lastName: string;
   role: "ADMIN" | "USER";
   imageUrl: string;
+  isFirstLogin?: boolean;
+  isEmailVerified?: boolean;
   parentId: string;
   zoneId: {
     name: string;

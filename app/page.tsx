@@ -14,7 +14,8 @@ import { PricingCard, PricingFeatureItem } from "@/shared/ui/PricingCard/Pricing
 import { DeviceUsageCard } from "@/shared/ui/DeviceStatusCard/DeviceStatusCard";
 import { UserSelect } from "@/shared/ui/UserDropdown/UserDropdown";
 import { DashboardCard } from "@/shared/ui/DashboardWidget/DashboardWidget";
-import { InfoListCard, InfoListItem } from "@/shared/ui/AppListCard/AppListCard";
+import { InfoListCard } from "@/shared/ui/AppListCard/AppListCard";
+import { InfoListItem } from "@/shared/ui/AppListCard/types";
 import { AlertTriangle, Ban, BarChart, Clock, Globe, Smartphone } from "lucide-react";
 import { BarChartCard, ChartDataPoint } from "@/shared/ui/BarChart/BarChartCard";
 import { TimelineCard, TimelineItemData } from "@/shared/ui/TimelineCard/TimelineCard";

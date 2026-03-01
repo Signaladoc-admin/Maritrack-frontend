@@ -1,0 +1,20 @@
+
+> maritrack@0.1.0 build
+> next build
+
+▲ Next.js 16.1.4 (Turbopack)
+- Environments: .env.local
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+✓ Compiled successfully in 34.7s
+  Running TypeScript ...
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/20) ...
+TypeError: Cannot read properties of undefined (reading 'name')
+    at <unknown> (C:\Users\Jasmond\Documents\Web Devpt\Projects\Collaborations\Maritrack-frontend\.next\server\chunks\ssr\[root-of-the-server]__a3ea9035._.js:1:11729)
+Error occurred prerendering page "/ChildDevices". Read more: https://nextjs.org/docs/messages/prerender-error
+TypeError: Cannot read properties of undefined (reading 'name')
+    at <unknown> (C:\Users\Jasmond\Documents\Web Devpt\Projects\Collaborations\Maritrack-frontend\.next\server\chunks\ssr\[root-of-the-server]__a3ea9035._.js:1:11729)
+Export encountered an error on /ChildDevices, exiting the build.
+⨯ Next.js build worker exited with code: 1 and signal: null

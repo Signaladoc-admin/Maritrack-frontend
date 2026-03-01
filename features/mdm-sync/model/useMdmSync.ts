@@ -32,6 +32,6 @@ export function useGetQrCode(zoneId: string | undefined, onboardingCode: string 
   );
 }
 
-export function useParentZones() {
-  return useServerActionQuery(mdmSyncKeys.parentZones, getParentZonesAction, []);
+export function useParentZones(options?: { enabled?: boolean }) {
+  return useServerActionQuery(mdmSyncKeys.parentZones, getParentZonesAction, [], options);
 }

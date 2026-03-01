@@ -42,7 +42,6 @@ export default function CreateChildProfileForm({
       id: initialData?.id,
       image: data.profileImage ? URL.createObjectURL(data.profileImage) : initialData?.image,
     };
-    console.log(formattedData);
     onAddChild(formattedData);
   };
 
@@ -103,7 +102,7 @@ export default function CreateChildProfileForm({
         </div>
       </form>
       <div className="flex justify-center">
-        <Button onClick={goToNextStep} variant="link">
+        <Button onClick={onCancel} variant="link">
           Skip for now
         </Button>
       </div>

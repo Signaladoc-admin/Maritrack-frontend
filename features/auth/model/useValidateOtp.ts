@@ -41,7 +41,7 @@ export function useValidateOtp() {
         try {
           const profile = await login({ email, password });
           clearCredentials();
-          checkAndRedirect(profile);
+          checkAndRedirect(profile as any);
         } catch (loginErr) {
           console.error("Auto-login failed:", loginErr);
           toast({

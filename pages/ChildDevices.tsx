@@ -94,7 +94,7 @@ const ChildDevices = () => {
         onOpenChange={setShowDelete}
         data={childData as IChildProfile}
         title="Are you sure you want to delete this child profile?"
-        description={`Deleting ${(childData as IChildProfile).name}’s profile cannot be reverted. Are you sure?`}
+        description={`Deleting ${childData?.name || "this child"}’s profile cannot be reverted. Are you sure?`}
         confirmText="Delete"
         cancelText="Cancel"
         onConfirm={() => console.log("Delete")}

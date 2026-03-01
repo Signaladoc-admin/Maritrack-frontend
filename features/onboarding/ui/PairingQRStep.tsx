@@ -18,6 +18,7 @@ export default function PairingQRStep({
   onBack,
   onComplete,
 }: PairingQRStepProps) {
+  console.log(qrCode);
   return (
     <div className="space-y-7">
       <Button variant="link" onClick={onBack} className="flex items-center gap-1! px-0">
@@ -50,6 +51,7 @@ export default function PairingQRStep({
         </p>
 
         <Button
+          disabled={!qrCode}
           onClick={onComplete}
           className="w-full max-w-[320px] bg-[#1B3C73] py-6 text-lg font-semibold hover:bg-[#1B3C73]/90"
         >

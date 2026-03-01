@@ -1,34 +1,14 @@
 import { InputGroup } from "@/shared/ui/input-group";
-import { Controller, useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useFormContext } from "react-hook-form";
 import { CardWrapper } from "@/shared/ui/card-wrapper";
 import CardHeader from "@/shared/ui/card-header";
 import SubHeading from "./SubHeading";
 
-const schema = z.object({
-  appInstallationApproval: z.enum(["require_approval", "allow_without_approval"]),
-  games: z.boolean().optional(),
-  social_media: z.boolean().optional(),
-  browsers: z.boolean().optional(),
-  streaming: z.boolean().optional(),
-  in_app_purchases: z.boolean().optional(),
-  adult_restricted_content: z.boolean().optional(),
-});
-
 export default function AppManagement() {
-  const { control, formState } = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema),
-    defaultValues: {
-      appInstallationApproval: undefined,
-      games: false,
-      social_media: false,
-      browsers: false,
-      streaming: false,
-      in_app_purchases: false,
-      adult_restricted_content: false,
-    },
-  });
+  const {
+    control,
+    formState: { errors },
+  } = useFormContext();
 
   return (
     <CardWrapper variant="outline">
@@ -46,19 +26,19 @@ export default function AppManagement() {
               <InputGroup
                 label=""
                 type="radio"
-                error={formState.errors.appInstallationApproval?.message}
+                error={errors.appInstallationApproval?.message as string}
                 {...field}
                 wrapperClassName="divide-y divide-neutral-100"
                 options={[
                   {
                     label: "Require parent approval before new apps are installed",
-                    value: "require_approval",
+                    value: "REQUIRE_APPROVAL",
                     containerClassName: "py-3",
                     labelClassName: "cursor-pointer text-slate-700",
                   },
                   {
                     label: "Allow installations without approval",
-                    value: "allow_without_approval",
+                    value: "ALLOW_WITHOUT_APPROVAL",
                     containerClassName: "py-3",
                     labelClassName: "cursor-pointer text-slate-700",
                   },
@@ -79,7 +59,7 @@ export default function AppManagement() {
                     label="Games"
                     type="checkbox"
                     id="games"
-                    error={formState.errors.games?.message}
+                    error={errors.games?.message as string}
                     {...field}
                   />
                 )}
@@ -94,7 +74,7 @@ export default function AppManagement() {
                     label="Social Media"
                     type="checkbox"
                     id="social_media"
-                    error={formState.errors.social_media?.message}
+                    error={errors.social_media?.message as string}
                     {...field}
                   />
                 )}
@@ -109,7 +89,7 @@ export default function AppManagement() {
                     label="Browsers"
                     type="checkbox"
                     id="browsers"
-                    error={formState.errors.browsers?.message}
+                    error={errors.browsers?.message as string}
                     {...field}
                   />
                 )}
@@ -124,7 +104,7 @@ export default function AppManagement() {
                     label="Streaming & entertainment"
                     type="checkbox"
                     id="streaming"
-                    error={formState.errors.streaming?.message}
+                    error={errors.streaming?.message as string}
                     {...field}
                   />
                 )}
@@ -139,7 +119,7 @@ export default function AppManagement() {
                     label="In-app purchases"
                     type="checkbox"
                     id="in_app_purchases"
-                    error={formState.errors.in_app_purchases?.message}
+                    error={errors.in_app_purchases?.message as string}
                     {...field}
                   />
                 )}
@@ -154,7 +134,7 @@ export default function AppManagement() {
                     label="Adult or age-restricted content"
                     type="checkbox"
                     id="adult_restricted_content"
-                    error={formState.errors.adult_restricted_content?.message}
+                    error={errors.adult_restricted_content?.message as string}
                     {...field}
                   />
                 )}

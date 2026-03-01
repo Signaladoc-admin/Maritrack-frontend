@@ -20,7 +20,7 @@ export function useIsOnboarded() {
   });
 
   const checkAndRedirect = useCallback(
-    (userProfile = profile) => {
+    (userProfile: any = profile) => {
       if (!userProfile) return;
 
       if (userProfile.role === "ADMIN") {

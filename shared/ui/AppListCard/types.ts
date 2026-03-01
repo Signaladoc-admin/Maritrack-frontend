@@ -1,8 +1,9 @@
 import { IconType } from "react-icons/lib";
+import React from "react";
 
 export interface InfoListItem {
   id: string;
-  icon: IconType;
+  icon: IconType | React.ReactNode;
   title: string;
   subtitle?: string;
   value?: string | React.ReactNode;
