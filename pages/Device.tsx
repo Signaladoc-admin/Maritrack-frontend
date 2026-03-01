@@ -7,23 +7,36 @@ import Back from "@/shared/ui/go-back";
 import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
 import { TabNavigation } from "@/shared/ui/tab-navigation";
 import { Trash, Trash2Icon } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import General from "./General";
+import WebHistory from "./WebHistory";
+import AppControl from "./AppControl";
 
 const Device = () => {
-  const [activeTab, setActiveTab] = useState("general");
+  const router = useRouter();
+  const params = useParams<{ device: string }>();
+  const searchParams = useSearchParams();
+
+  const tabParam = searchParams?.get("tab") || "general";
+  const [activeTab, setActiveTab] = useState(tabParam);
   const [showDelete, setShowDelete] = useState(false);
 
-  const router = useRouter();
+  useEffect(() => {
+    if (tabParam && tabParam !== activeTab) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam, activeTab]);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
-    router.push(`/device/device-id?tab=${tab}`);
+    const deviceId = params?.device || "device-id";
+    router.push(`/device/${deviceId}?tab=${tab}`);
   };
 
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <div className="mb-10 flex items-center justify-between">
         <Back label="Back to profile" />
 
         <div className="flex items-center gap-4">
@@ -45,6 +58,10 @@ const Device = () => {
         onConfirm={() => console.log("Deleted")}
         variant="destructive"
       />
+
+      {activeTab === "general" && <General />}
+      {activeTab === "web-history" && <WebHistory />}
+      {activeTab === "app-control" && <AppControl />}
     </div>
   );
 };

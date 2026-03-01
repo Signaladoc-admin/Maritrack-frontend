@@ -128,26 +128,6 @@ export default function Home() {
   ];
 
   // 2. Data for Websites
-  const websiteData: InfoListItem[] = [
-    {
-      id: "1",
-      title: "www.medium.com",
-      value: "Just now",
-      icon: <Globe className="h-5 w-5 text-slate-600" />,
-    },
-    {
-      id: "2",
-      title: "www.figma.com",
-      value: "2 mins ago",
-      icon: <Globe className="h-5 w-5 text-slate-600" />,
-    },
-    {
-      id: "3",
-      title: "www.dribbble.com",
-      value: "10 mins ago",
-      icon: <Globe className="h-5 w-5 text-slate-600" />,
-    },
-  ];
 
   const weeklyUsageData: ChartDataPoint[] = [
     { name: "Mon", value: 2.5 },
