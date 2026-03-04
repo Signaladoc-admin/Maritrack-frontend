@@ -49,9 +49,16 @@ export async function getUserByIdAction(id: string): Promise<UserProfile> {
 }
 
 export async function updateProfileAction(data: UpdateProfileDto): Promise<UserProfile> {
+  const formData = new FormData();
+  if (data.firstName) formData.append("firstName", data.firstName);
+  if (data.lastName) formData.append("lastName", data.lastName);
+  if (data.phone) formData.append("phone", data.phone);
+  if (data.imageUrl) formData.append("imageUrl", data.imageUrl);
+  if (data.profileImage instanceof File) formData.append("profileImage", data.profileImage);
+
   const response = await apiClient("/users/user/update", {
     method: "PATCH",
-    body: JSON.stringify(data),
+    body: formData,
   });
   return response.data;
 }

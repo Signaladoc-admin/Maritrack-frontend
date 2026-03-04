@@ -1,0 +1,17 @@
+{
+  "status": true,
+  "statusCode": 201,
+  "message": "Logged in successfully",
+  "data": {
+    "access_token_expires_on": "2026-04-01T08:49:00.778Z",
+    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoicmVmcmVzaCIsImlhdCI6MTc3MjQ0MTM0MCwiZXhwIjoxNzgwMjE3MzQwfQ.a5ZkMbLGa5IM-GJtdBhtSHsCcpqlp3vzBWGFZvQwH2A",
+    "date": "2026-03-02T08:49:00.802Z",
+    "isFirstLogin": false,
+    "role": "USER",
+    "email": "obafemilaredb@gmail.com",
+    "id": "f9bdd2a3-8e51-40db-b683-4fb0ac19f056",
+    "parentId": "4d1e1ffd-46c8-4afb-b9ce-f5c4798253f1",
+    "imageUrl": null
+  },
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiVVNFUiIsImVtYWlsIjoib2JhZmVtaWxhcmVkYkBnbWFpbC5jb20iLCJpZCI6ImY5YmRkMmEzLThlNTEtNDBkYi1iNjgzLTRmYjBhYzE5ZjA1NiIsInBhcmVudElkIjoiNGQxZTFmZmQtNDZjOC00YWZiLWI5Y2UtZjVjNDc5ODI1M2YxIiwiaW1hZ2VVcmwiOm51bGwsImlhdCI6MTc3MjQ0MTM0MCwiZXhwIjoxNzc1MDMzMzQwfQ.iL7QUjDsGAJQbqnPHDn75nDlhcuqD7rPHqJDin6Dcx8"
+}

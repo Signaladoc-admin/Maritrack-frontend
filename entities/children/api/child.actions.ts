@@ -4,9 +4,17 @@ import { apiClient } from "@/shared/lib/api-client";
 import type { ChildProfile, CreateChildDto, UpdateChildDto, ChildFilterParams } from "../schema";
 
 export async function createChildAction(data: CreateChildDto): Promise<ChildProfile> {
+  const formData = new FormData();
+  if (data.name) formData.append("name", data.name);
+  if (data.age !== undefined) formData.append("age", String(data.age));
+  if (data.gender) formData.append("gender", data.gender);
+  if (data.parentId) formData.append("parentId", data.parentId);
+  if (data.imageUrl) formData.append("imageUrl", data.imageUrl);
+  if (data.profilePicture instanceof File) formData.append("profilePicture", data.profilePicture);
+
   const response = await apiClient("/children", {
     method: "POST",
-    body: JSON.stringify(data),
+    body: formData,
   });
   return response.data;
 }

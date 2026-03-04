@@ -13,8 +13,8 @@ import {
   useParentalControlByParentId,
   useCreateParentalControl,
   useUpdateParentalControl,
-  ParentalControlDto,
 } from "@/entities/parental-controls/model/useParentalControls";
+import { ParentalControlDto } from "@/entities/parental-controls/model/parental-controls.schema";
 
 import MonitoringPermissionsSetup from "./parental-control-setup/MonitoringPermissionsSetup";
 import ScreenTimeRules from "./parental-control-setup/ScreenTimeRules";
@@ -24,39 +24,39 @@ import ParentalConfirmation from "./parental-control-setup/ParentalConfirmation"
 
 const formSchema = z.object({
   // Monitoring Permissions
-  monitorScreenTime: z.boolean().default(false),
-  monitorAppUsage: z.boolean().default(false),
-  monitorAppInstalls: z.boolean().default(false),
-  monitorWebBrowsing: z.boolean().default(false),
-  monitorLocation: z.boolean().default(false),
-  monitorDeviceUsageHours: z.boolean().default(false),
+  monitorScreenTime: z.boolean(),
+  monitorAppUsage: z.boolean(),
+  monitorAppInstalls: z.boolean(),
+  monitorWebBrowsing: z.boolean(),
+  monitorLocation: z.boolean(),
+  monitorDeviceUsageHours: z.boolean(),
 
   // Screen Time Rules
-  dailyScreenTimeLimit: z.string().default("NO_LIMIT"),
-  downtimeStart: z.string().optional().default("22:30"),
-  downtimeEnd: z.string().optional().default("05:00"),
-  schoolHoursRestriction: z.boolean().default(false),
+  dailyScreenTimeLimit: z.string(),
+  downtimeStart: z.string().optional(),
+  downtimeEnd: z.string().optional(),
+  schoolHoursRestriction: z.boolean(),
 
   // App Management
-  appInstallationApproval: z.string().default("ALLOW_WITHOUT_APPROVAL"),
-  games: z.boolean().default(false),
-  social_media: z.boolean().default(false),
-  browsers: z.boolean().default(false),
-  streaming: z.boolean().default(false),
-  in_app_purchases: z.boolean().default(false),
-  adult_restricted_content: z.boolean().default(false),
+  appInstallationApproval: z.string(),
+  games: z.boolean(),
+  social_media: z.boolean(),
+  browsers: z.boolean(),
+  streaming: z.boolean(),
+  in_app_purchases: z.boolean(),
+  adult_restricted_content: z.boolean(),
 
   // Alerts & Notifications
-  notify_at_daily_time_limit_exceeded: z.boolean().default(false),
-  notify_at_new_app_installation: z.boolean().default(false),
-  notify_at_restricted_content_access: z.boolean().default(false),
-  notify_at_device_inactivity: z.boolean().default(false),
-  notify_at_location_boundary_crossing: z.boolean().default(false),
+  notify_at_daily_time_limit_exceeded: z.boolean(),
+  notify_at_new_app_installation: z.boolean(),
+  notify_at_restricted_content_access: z.boolean(),
+  notify_at_device_inactivity: z.boolean(),
+  notify_at_location_boundary_crossing: z.boolean(),
 
   // Notification Methods
-  is_push_notification_enabled: z.boolean().default(false),
-  is_email_notification_enabled: z.boolean().default(false),
-  is_in_app_notification_enabled: z.boolean().default(false),
+  is_push_notification_enabled: z.boolean(),
+  is_email_notification_enabled: z.boolean(),
+  is_in_app_notification_enabled: z.boolean(),
 
   // Parental Confirmation
   parentalConsent: z.boolean().refine((val) => val === true, {
@@ -198,8 +198,8 @@ export default function ParentalControlSetup({ goToPrevStep }: { goToPrevStep: (
 
       screenTimeLimit,
       customScreenTimeHours,
-      downtimeStart: data.downtimeStart,
-      downtimeEnd: data.downtimeEnd,
+      downtimeStart: data.downtimeStart || "22:30",
+      downtimeEnd: data.downtimeEnd || "05:00",
       schoolHoursRestriction: data.schoolHoursRestriction,
 
       appInstallApproval: data.appInstallationApproval,

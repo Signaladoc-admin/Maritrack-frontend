@@ -57,6 +57,7 @@ export const updateProfileSchema = z.object({
   lastName: z.string().optional(),
   imageUrl: z.string().optional(),
   phone: z.string().optional(),
+  profileImage: z.any().optional(),
 });
 
 export type UpdateProfileDto = z.infer<typeof updateProfileSchema>;

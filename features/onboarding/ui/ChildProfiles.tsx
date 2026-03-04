@@ -12,10 +12,7 @@ import { useParent } from "@/entities/parents/model/useParents";
 import { useCreateChild, useUpdateChild } from "@/entities/children/model/useChildren";
 import { createChildAction, getChildByIdAction } from "@/entities/children/api/child.actions";
 import { getProfileAction } from "@/entities/user/api/user.actions";
-import {
-  createZoneAction,
-  getQrCodeAction,
-} from "@/features/mdm-sync/api/mdm-sync.actions";
+import { createZoneAction, getQrCodeAction } from "@/features/mdm-sync/api/mdm-sync.actions";
 import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
 import { useEffect, useCallback } from "react";
 import { useToast } from "@/shared/ui/toast";
@@ -38,6 +35,8 @@ export default function ChildrenProfiles({
   const storedParentId = useParentStore((state) => state.parentId);
   const activeParentId = user?.parentId || storedParentId;
 
+  console.log(user);
+  console.log(storedParentId);
   console.log(activeParentId);
 
   const { data: parent } = useParent(activeParentId!);
@@ -53,8 +52,6 @@ export default function ChildrenProfiles({
   const { data: userProfile } = useUserProfile();
 
   console.log(userProfile);
-
-
 
   useEffect(() => {
     if (Array.isArray(parentZonesRes)) {
@@ -251,6 +248,8 @@ export default function ChildrenProfiles({
   }
 
   const isInitialLoading = isLoadingUser || (!!activeParentId && isFetchingChildren);
+
+  console.log(isInitialLoading);
 
   console.log(isFetchingChildren);
 

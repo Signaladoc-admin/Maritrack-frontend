@@ -135,7 +135,7 @@ export default function BasicInformationForm({ goToNextStep }: { goToNextStep: (
 
       if (activeParentId) {
         // Update the existing parent record
-        await updateParent({
+        const res = await updateParent({
           id: activeParentId,
           data: {
             gender: data.gender as any,
@@ -144,7 +144,11 @@ export default function BasicInformationForm({ goToNextStep }: { goToNextStep: (
             country: data.country,
           },
         });
-        console.log("Parent profile updated successfully.");
+        if (res?.id) {
+          activeParentId = res.id;
+          setParentId(res.id);
+        }
+        console.log("Parent profile updated successfully.", res);
       } else {
         // Create the parent record
         const res: any = await createParent({
@@ -157,6 +161,9 @@ export default function BasicInformationForm({ goToNextStep }: { goToNextStep: (
 
         console.log("Parent profile created successfully.", res);
 
+        // if (res?.id) {
+        //   activeParentId = res.id;
+        //   setParentId(res.id);
         if (res?.data?.id) {
           activeParentId = res.data.id;
           setParentId(res.data.id);

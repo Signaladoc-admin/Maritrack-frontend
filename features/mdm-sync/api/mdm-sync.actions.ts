@@ -39,7 +39,7 @@ export async function getParentZonesAction(): Promise<ActionResult<any>> {
     const response = await apiClient("/mdm-sync/zones/parent", {
       method: "GET",
     });
-    return { success: true, data: response.data };
+    return { success: true, data: response.data ?? response };
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to fetch parent zones" };
   }
