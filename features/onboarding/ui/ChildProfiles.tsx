@@ -42,6 +42,8 @@ export default function ChildrenProfiles({
   const { mutateAsync: updateChild, isPending: isUpdatingChild } = useUpdateChild();
   const { toast } = useToast();
 
+  console.log("zone:", parentZonesRes);
+
   useEffect(() => {
     if (Array.isArray(parentZonesRes)) {
       // Extract children from the zones list

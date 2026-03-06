@@ -9,11 +9,14 @@ import { InfoListCard } from "@/shared/ui/AppListCard/AppListCard";
 import { appData } from "@/app/(in-app)/dashboard/data";
 import { useDragScroll } from "@/shared/hooks/useDragScroll";
 import { useRouter } from "next/navigation";
+import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
 
 export default function Dashboard() {
   const { scrollContainerRef, events } = useDragScroll();
 
   const router = useRouter();
+
+  const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentZones();
 
   return (
     <div className="space-y-10">
@@ -48,7 +51,7 @@ export default function Dashboard() {
       <div
         ref={scrollContainerRef}
         {...events}
-        className="flex w-full cursor-grab gap-6 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] active:cursor-grabbing [&::-webkit-scrollbar]:hidden [&>*]:min-w-[85%] [&>*]:shrink-0 md:[&>*]:max-w-[calc((100%-48px)/2.5)] md:[&>*]:min-w-[calc((100%-48px)/2.5)]"
+        className="flex w-full cursor-grab gap-6 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] *:min-w-[85%] *:shrink-0 active:cursor-grabbing md:*:max-w-[calc((100%-48px)/2.5)] md:*:min-w-[calc((100%-48px)/2.5)] [&::-webkit-scrollbar]:hidden"
       >
         <DeviceUsageCard
           deviceName="Mide's iPhone"
