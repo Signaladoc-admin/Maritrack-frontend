@@ -13,6 +13,11 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { DeleteChildModal } from "@/features/child-profile/ui/ChildDeleteModal";
 import { IChildProfile } from "@/features/onboarding/types";
+import { useGetChild } from "@/features/child-profile/model/useGetChildrenProfile";
+
+import { ChildDevicesSkeleton } from "./ChildDevicesSkeleton";
+
+import { getInitials } from "@/shared/lib/utils";
 
 const ChildDevices = () => {
   const [showEdit, setShowEdit] = useState<boolean>(false);
@@ -22,7 +27,12 @@ const ChildDevices = () => {
   const child = params?.child;
   const router = useRouter();
 
-  const childData = childrenProfiles.find((item) => item.id === child);
+  const { data: childData, isLoading } = useGetChild(child as string);
+
+  if (isLoading) {
+    return <ChildDevicesSkeleton />;
+  }
+
   return (
     <div>
       <div className="">
@@ -32,7 +42,7 @@ const ChildDevices = () => {
           <div className="flex items-center gap-5">
             <Avatar className="h-[80px] w-[80px]">
               <AvatarImage src={childData?.image} alt={childData?.name} />
-              <AvatarFallback>{childData?.name}</AvatarFallback>
+              <AvatarFallback>{getInitials(childData?.name)}</AvatarFallback>
             </Avatar>
 
             <div className="">

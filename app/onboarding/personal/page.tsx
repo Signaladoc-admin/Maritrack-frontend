@@ -14,8 +14,8 @@ import { useToast } from "@/shared/ui/toast";
 function OnboardingContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const stepParam = searchParams.get("step");
-  const reference = searchParams.get("reference");
+  const stepParam = searchParams?.get("step");
+  const reference = searchParams?.get("reference");
 
   const [currentStep, setCurrentStep] = useState(() => {
     if (reference) return 2; // Payment is done, jump to step 3 (index 2)
