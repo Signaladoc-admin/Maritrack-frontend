@@ -3,22 +3,63 @@
 import { Header } from "@/shared/ui/layout/header";
 import { Button } from "@/shared/ui/button";
 import { ChevronLeft } from "lucide-react";
-import Image from "next/image";
+import { useEffect, useState } from "react";
+import { getQrCodeAction } from "@/features/mdm-sync/api/mdm-sync.actions";
+import { useToast } from "@/shared/ui/toast";
 
 interface PairingQRStepProps {
   childName: string;
-  qrCode?: string | null;
+  zoneId: string;
+  onboardingCode: string;
   onBack: () => void;
   onComplete: () => void;
+  onRollback?: () => void;
 }
 
 export default function PairingQRStep({
   childName,
-  qrCode,
+  zoneId,
+  onboardingCode,
   onBack,
   onComplete,
+  onRollback,
 }: PairingQRStepProps) {
-  console.log(qrCode);
+  const [qrCodeData, setQrCodeData] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    async function fetchQR() {
+      if (!zoneId || !onboardingCode) return;
+
+      setIsGenerating(true);
+      try {
+        const qrCodeRes = await getQrCodeAction(zoneId, onboardingCode);
+        if (qrCodeRes.success) {
+          setQrCodeData(qrCodeRes.data as string);
+        } else {
+          throw new Error(qrCodeRes.error || "Failed to generate QR code");
+        }
+      } catch (e: any) {
+        console.error("QR Fetch failed:", e);
+        toast({
+          title: "Error",
+          message: "Child profile could not be created. Please try again.",
+          type: "error",
+        });
+        if (onRollback) {
+          onRollback();
+        } else {
+          onBack();
+        }
+      } finally {
+        setIsGenerating(false);
+      }
+    }
+
+    fetchQR();
+  }, [zoneId, onboardingCode, toast, onBack, onRollback]);
+
   return (
     <div className="space-y-7">
       <Button variant="link" onClick={onBack} className="flex items-center gap-1! px-0">
@@ -32,9 +73,13 @@ export default function PairingQRStep({
 
       <div className="flex flex-col items-center justify-center space-y-8 py-10">
         <div className="relative flex aspect-square w-full max-w-[320px] items-center justify-center overflow-hidden rounded-[40px] border border-slate-200 bg-slate-50 p-6 shadow-2xl transition-transform hover:scale-[1.02]">
-          {qrCode ? (
+          {qrCodeData ? (
             <img
-              src={qrCode.startsWith("data:image") ? qrCode : `data:image/png;base64,${qrCode}`}
+              src={
+                qrCodeData.startsWith("data:image")
+                  ? qrCodeData
+                  : `data:image/png;base64,${qrCodeData}`
+              }
               alt="QR Code"
               className="h-full w-full rounded-2xl object-contain"
             />
@@ -51,7 +96,7 @@ export default function PairingQRStep({
         </p>
 
         <Button
-          disabled={!qrCode}
+          disabled={isGenerating || !qrCodeData}
           onClick={onComplete}
           className="w-full max-w-[320px] bg-[#1B3C73] py-6 text-lg font-semibold hover:bg-[#1B3C73]/90"
         >

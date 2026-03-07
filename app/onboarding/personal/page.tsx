@@ -1,7 +1,6 @@
 "use client";
 
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
-import BasicInformationForm from "@/features/onboarding/ui/BasicInformationForm";
 import ChildrenProfiles from "@/features/onboarding/ui/ChildProfiles";
 import ParentalControlSetup from "@/features/onboarding/ui/ParentalControlSetup";
 import { useParentStore } from "@/shared/stores/user-store";
@@ -10,6 +9,9 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useVerifyPayment } from "@/entities/payments/model/usePayments";
 import { useToast } from "@/shared/ui/toast";
+import { Button } from "@/shared/ui/button";
+import { useLogout } from "@/features/auth/model/useLogout";
+import { useQueryClient } from "@tanstack/react-query";
 
 function OnboardingContent() {
   const searchParams = useSearchParams();
@@ -18,19 +20,19 @@ function OnboardingContent() {
   const reference = searchParams?.get("reference");
 
   const [currentStep, setCurrentStep] = useState(() => {
-    if (reference) return 2; // Payment is done, jump to step 3 (index 2)
+    if (reference) return 1; // Payment is done, jump to step 2 (index 1)
     if (stepParam) return parseInt(stepParam, 10);
-    return 0; // Default to basic info
+    return 0; // Default to children profiles
   });
 
   const nextStep = () => {
     setCurrentStep((p) => {
-      const next = Math.min(p + 1, 2);
+      const next = Math.min(p + 1, 1);
       return next;
     });
     // Get the new step directly from state queue or compute it manually to avoid stale closures
     const currentParam = parseInt(stepParam || "0", 10);
-    const next = Math.min(currentParam + 1, 2);
+    const next = Math.min(currentParam + 1, 1);
     router.push(`/onboarding/personal?step=${next}`);
   };
 
@@ -46,6 +48,8 @@ function OnboardingContent() {
 
   const { parentId: storeParentId } = useParentStore();
   const { mutateAsync: verifyPayment } = useVerifyPayment();
+  const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -59,7 +63,7 @@ function OnboardingContent() {
       verifyPayment(reference)
         .then(() => {
           toast({ title: "Success", message: "Payment verified successfully", type: "success" });
-          router.replace("/onboarding/personal?step=2");
+          router.replace("/onboarding/personal?step=1");
         })
         .catch((err) => {
           toast({
@@ -68,19 +72,15 @@ function OnboardingContent() {
             type: "error",
           });
           // If it fails, maybe drop them back to the children profiles mapping to restart payment
-          router.replace("/onboarding/personal?step=1");
+          router.replace("/onboarding/personal?step=0");
         });
     }
   }, [reference, verifyPayment, toast, router]);
 
   const steps = [
     {
-      title: "Basic Information",
-      component: <BasicInformationForm goToNextStep={nextStep} />,
-    },
-    {
       title: "Children Profiles",
-      component: <ChildrenProfiles goToPrevStep={prevStep} goToNextStep={nextStep} />,
+      component: <ChildrenProfiles goToNextStep={nextStep} />,
     },
     {
       title: "Parental Control & Consent Setup",
@@ -88,8 +88,26 @@ function OnboardingContent() {
     },
   ];
 
+  async function handleLogout() {
+    try {
+      await logout();
+      queryClient.clear();
+      router.push("/login");
+    } catch (e) {
+      console.error("Logout failed", e);
+    }
+  }
+
   return (
-    <div className="p-14">
+    <div className="relative p-14">
+      <Button
+        variant="ghost"
+        className="text-muted-foreground hover:text-foreground absolute top-14 right-14 font-medium transition-colors hover:bg-transparent"
+        onClick={handleLogout}
+        disabled={isLoggingOut}
+      >
+        {isLoggingOut ? "Signing out..." : "Sign out"}
+      </Button>
       <MultiStepForm steps={steps} currentStep={currentStep} />
     </div>
   );

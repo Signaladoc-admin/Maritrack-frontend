@@ -25,7 +25,8 @@ const authRoutes = [
   "/register",
   "/register/personal",
   "/register/business",
-  "/confirm-email",
+  // DO NOT add /confirm-email here! If you do, users who just registered (and have a token)
+  // will be aggressively redirected to /dashboard, which then yields a 401 and points them to /login.
 ];
 
 function canAccess(role: string, pathname: string): boolean {

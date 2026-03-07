@@ -17,6 +17,8 @@ export function useValidateOtp() {
   const queryClient = useQueryClient();
   const { checkAndRedirect } = useIsOnboarded();
 
+  console.log(password, email);
+
   const mutation = useMutation({
     mutationFn: (data: OtpConfirmFormValues) => {
       if (!email || !token) {
@@ -50,10 +52,10 @@ export function useValidateOtp() {
             message:
               "Your account is verified, but we couldn't log you in automatically. Please log in manually.",
           });
-          router.push("/login");
+          // router.push("/login");
         }
       } else {
-        router.push("/login");
+        // router.push("/login");
       }
     },
     onError: (err: any) => {

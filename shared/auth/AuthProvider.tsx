@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { refreshSessionAction, logoutAction } from "@/entities/user/api/user.actions";
+import { getSessionAction, logoutAction } from "@/features/auth/api/auth.actions";
 import type { UserProfile } from "@/entities/user/model/user.schema";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refetch,
   } = useQuery({
     queryKey: ["session"],
-    queryFn: refreshSessionAction,
+    queryFn: getSessionAction,
     retry: false,
     staleTime: Infinity, // Keep session until manually invalidated or refreshed
   });

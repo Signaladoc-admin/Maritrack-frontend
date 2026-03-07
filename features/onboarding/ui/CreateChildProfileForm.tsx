@@ -30,9 +30,9 @@ export default function CreateChildProfileForm({
   const form = useForm<z.infer<typeof childProfileSchema>>({
     resolver: zodResolver(childProfileSchema) as any,
     defaultValues: {
-      name: initialData?.name || "Obafemi Jnr",
-      age: (initialData?.age as any) || 11,
-      gender: (initialData?.gender as any) || "MALE",
+      name: initialData?.name || "Lala",
+      age: (initialData?.age as any) || 5,
+      gender: (initialData?.gender as any) || "FEMALE",
     },
   });
 

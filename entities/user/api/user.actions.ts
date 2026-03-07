@@ -8,29 +8,6 @@ import type {
   UserFilterParams,
   IUserProfile,
 } from "../model/user.schema";
-import { cookies } from "next/headers";
-
-// --- Session ---
-
-export async function refreshSessionAction(): Promise<UserProfile> {
-  const cookieStore = await cookies();
-  const refreshToken = cookieStore.get("refreshToken")?.value;
-
-  if (!refreshToken) {
-    throw new Error("No refresh token available");
-  }
-
-  const response = await apiClient(`/users/refreshToken?token=${refreshToken}`, {
-    method: "POST",
-  });
-  return response.data;
-}
-
-export async function logoutAction(): Promise<void> {
-  return apiClient("/users/logout", {
-    method: "POST",
-  });
-}
 
 // --- Profile ---
 

@@ -5,4 +5,5 @@ export interface IChildProfile {
   gender: "MALE" | "FEMALE";
   image?: string;
   status?: "active" | "inactive";
+  onboardingCode?: string;
 }

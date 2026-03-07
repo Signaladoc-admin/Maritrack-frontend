@@ -8,8 +8,8 @@ export function useLogin() {
 
   const mutation = useMutation({
     mutationFn: loginAction,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["session"] });
+    onSuccess: (profile) => {
+      queryClient.setQueryData(["session"], profile);
     },
     onError: (err: any) => {
       const errorMessage = err.message || "An unexpected error occurred. Please try again.";

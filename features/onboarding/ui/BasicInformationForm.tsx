@@ -20,7 +20,7 @@ import type { UserProfile } from "@/entities/user/model/user.schema";
 import { Loader } from "@/shared/ui/loader";
 import { cn } from "@/shared/lib/utils";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
-import { refreshSessionAction } from "@/entities/user/api/user.actions";
+// import { refreshSessionAction } from "@/features/auth/api/auth.actions";
 
 type ParentProfileValues = z.infer<typeof parentOnboardingProfileSchema>;
 
@@ -174,7 +174,7 @@ export default function BasicInformationForm({ goToNextStep }: { goToNextStep: (
 
         // Refresh session token so the browser cookie reflects the new parentId.
         // This must succeed before navigation — let any error propagate to the outer catch.
-        await refreshSessionAction();
+        // await refreshSessionAction();
         queryClient.invalidateQueries({ queryKey: ["user-profile"] });
       }
 

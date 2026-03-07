@@ -4,11 +4,11 @@ import AuthLayout from "@/features/auth/ui/AuthLayout";
 
 export default function ForgotPasswordPage() {
   return (
-    <AuthLayout>
-      <div className="space-y-6">
-        <Header title="Forgot password" subtitle="Let's reset your password" />
-        <ForgotPasswordForm />
-      </div>
-    </AuthLayout>
+    // <AuthLayout>
+    <div className="space-y-6">
+      <Header title="Forgot password" subtitle="Let's reset your password" />
+      <ForgotPasswordForm />
+    </div>
+    // </AuthLayout>
   );
 }

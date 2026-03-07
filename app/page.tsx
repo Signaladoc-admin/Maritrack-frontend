@@ -22,6 +22,7 @@ import { TimelineCard, TimelineItemData } from "@/shared/ui/TimelineCard/Timelin
 import { MostUsedAppsCard } from "@/shared/ui/MostUsedAppsCard/MostUsedAppsCard";
 import { RecentLocationCard } from "@/shared/ui/LocationHistoryCard/LocationHistoryCard";
 import GeofencingCard, { GeofencingLocation } from "@/shared/ui/GeofencingCard/GeofencingCard";
+import { websiteData } from "@/features/general/data";
 
 const mockUsers = [
   {
