@@ -52,7 +52,7 @@ export default function ChildrenProfiles({
   const { data: parent } = useParent(activeParentId!);
 
   const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentZones({
-    enabled: !!activeParentId,
+    enabled: !!activeParentId && !!user?.zoneId?.length,
   });
   console.log(parentZonesRes);
   const { mutateAsync: createChild, isPending: isCreatingChild } = useCreateChild();
@@ -81,8 +81,6 @@ export default function ChildrenProfiles({
 
   const [selectedChildProfile, setSelectedChildProfile] = useState<IChildProfile | null>(null);
   const [pendingChild, setPendingChild] = useState<IChildProfile | null>(null);
-
-  console.log(user);
 
   console.log(user);
 
@@ -133,6 +131,8 @@ export default function ChildrenProfiles({
           } else {
             setCurrentView("list");
           }
+
+          setCurrentView("qr");
         }
       } catch (e: any) {
         toast({
