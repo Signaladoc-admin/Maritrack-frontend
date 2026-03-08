@@ -17,11 +17,10 @@ export async function createParentalControlAction(
 }
 
 export async function updateParentalControlAction(
-  id: string,
   data: Partial<ParentalControlDto>
 ): Promise<ParentalControlResponse> {
-  const response = await apiClient(`/parental-controls/${id}`, {
-    method: "PATCH",
+  const response = await apiClient(`/parental-controls`, {
+    method: "PUT",
     body: JSON.stringify(data),
   });
   return response.data;
@@ -38,6 +37,13 @@ export async function getParentalControlByParentIdAction(
 
 export async function getMdmPolicyByParentIdAction(parentId: string): Promise<any> {
   const response = await apiClient(`/parental-controls/policy/${parentId}`, {
+    method: "GET",
+  });
+  return response.data;
+}
+
+export async function getParentalControlMeAction(): Promise<ParentalControlResponse> {
+  const response = await apiClient("/parental-controls/me", {
     method: "GET",
   });
   return response.data;

@@ -12,6 +12,7 @@ import { useToast } from "@/shared/ui/toast";
 import { Button } from "@/shared/ui/button";
 import { useLogout } from "@/features/auth/model/useLogout";
 import { useQueryClient } from "@tanstack/react-query";
+import { cn } from "@/shared/lib/utils";
 
 function OnboardingContent() {
   const searchParams = useSearchParams();
@@ -52,9 +53,14 @@ function OnboardingContent() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  const [isFullWidth, setIsFullWidth] = useState(false);
+
   useEffect(() => {
     if (stepParam && !reference) {
-      setCurrentStep(parseInt(stepParam, 10));
+      const step = parseInt(stepParam, 10);
+      setCurrentStep(step);
+      // Reset full width when switching main steps
+      setIsFullWidth(false);
     }
   }, [stepParam, reference]);
 
@@ -80,7 +86,12 @@ function OnboardingContent() {
   const steps = [
     {
       title: "Children Profiles",
-      component: <ChildrenProfiles goToNextStep={nextStep} />,
+      component: (
+        <ChildrenProfiles
+          goToNextStep={nextStep}
+          onViewChange={(view) => setIsFullWidth(view === "pricing")}
+        />
+      ),
     },
     {
       title: "Parental Control & Consent Setup",
@@ -99,16 +110,21 @@ function OnboardingContent() {
   }
 
   return (
-    <div className="relative p-14">
+    <div className={cn("relative p-14", isFullWidth ? "p-0" : "p-14")}>
       <Button
         variant="ghost"
-        className="text-muted-foreground hover:text-foreground absolute top-14 right-14 font-medium transition-colors hover:bg-transparent"
+        className={cn(
+          "text-muted-foreground hover:text-foreground absolute h-auto p-0! font-medium transition-colors hover:bg-transparent",
+          isFullWidth ? "top-6 right-6" : "top-14 right-14"
+        )}
         onClick={handleLogout}
         disabled={isLoggingOut}
       >
         {isLoggingOut ? "Signing out..." : "Sign out"}
       </Button>
-      <MultiStepForm steps={steps} currentStep={currentStep} />
+      <div className={cn(isFullWidth ? "mx-auto w-full max-w-7xl px-14 py-20" : "")}>
+        <MultiStepForm steps={steps} currentStep={currentStep} isFullWidth={isFullWidth} />
+      </div>
     </div>
   );
 }

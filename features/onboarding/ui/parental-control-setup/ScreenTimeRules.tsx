@@ -8,7 +8,12 @@ import { TimePicker } from "@/shared/ui/time-picker";
 import { cn } from "@/shared/lib/utils";
 
 export default function ScreenTimeRules() {
-  const { control, setValue, watch } = useFormContext();
+  const {
+    control,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useFormContext();
 
   return (
     <CardWrapper variant="outline">
@@ -21,8 +26,12 @@ export default function ScreenTimeRules() {
           <Controller
             control={control}
             name="dailyScreenTimeLimit"
-            render={({ field }) => (
-              <DailyScreenTimeRadioInputs value={field.value} onChange={field.onChange} />
+            render={({ field, fieldState }) => (
+              <DailyScreenTimeRadioInputs
+                value={field.value}
+                onChange={field.onChange}
+                error={fieldState.error?.message}
+              />
             )}
           />
         </div>
@@ -60,20 +69,32 @@ export default function ScreenTimeRules() {
 
         <div className="space-y-5">
           <SubHeading title="School hours restriction" />
-          <div
-            className="flex cursor-pointer items-center gap-3 py-2"
-            onClick={() => setValue("schoolHoursRestriction", !watch("schoolHoursRestriction"))}
-          >
-            <div
-              className={cn(
-                "border-primary flex h-5 w-5 items-center justify-center rounded-full border transition-all",
-                watch("schoolHoursRestriction") ? "border-[6px]" : "border-neutral-300"
-              )}
-            />
-            <span className="text-base font-normal text-slate-700">
-              Limit phone use during school hours
-            </span>
-          </div>
+          <Controller
+            control={control}
+            name="schoolHoursRestriction"
+            render={({ field, fieldState }) => (
+              <div
+                className="flex cursor-pointer items-center gap-3 py-2"
+                onClick={() => field.onChange(!field.value)}
+              >
+                <div
+                  className={cn(
+                    "flex h-5 w-5 items-center justify-center rounded-full border transition-all",
+                    field.value ? "border-primary border-[6px]" : "border-neutral-300",
+                    fieldState.error && "border-red-500"
+                  )}
+                />
+                <span className="text-base font-normal text-slate-700">
+                  Limit phone use during school hours
+                </span>
+              </div>
+            )}
+          />
+          {errors.schoolHoursRestriction && (
+            <p className="mt-2 text-sm font-medium text-red-500">
+              {errors.schoolHoursRestriction.message as string}
+            </p>
+          )}
         </div>
       </div>
     </CardWrapper>

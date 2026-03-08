@@ -13,6 +13,7 @@ import {
   useParentalControlByParentId,
   useCreateParentalControl,
   useUpdateParentalControl,
+  useParentalControlMe,
 } from "@/entities/parental-controls/model/useParentalControls";
 import { ParentalControlDto } from "@/entities/parental-controls/model/parental-controls.schema";
 
@@ -22,47 +23,124 @@ import AppManagement from "./parental-control-setup/AppManagement";
 import AlertsAndNotifications from "./parental-control-setup/AlertsNotification";
 import ParentalConfirmation from "./parental-control-setup/ParentalConfirmation";
 
-const formSchema = z.object({
-  // Monitoring Permissions
-  monitorScreenTime: z.boolean(),
-  monitorAppUsage: z.boolean(),
-  monitorAppInstalls: z.boolean(),
-  monitorWebBrowsing: z.boolean(),
-  monitorLocation: z.boolean(),
-  monitorDeviceUsageHours: z.boolean(),
+const formSchema = z
+  .object({
+    // Monitoring Permissions
+    monitorScreenTime: z.boolean(),
+    monitorAppUsage: z.boolean(),
+    monitorAppInstalls: z.boolean(),
+    monitorWebBrowsing: z.boolean(),
+    monitorLocation: z.boolean(),
+    monitorDeviceUsageHours: z.boolean(),
 
-  // Screen Time Rules
-  dailyScreenTimeLimit: z.string(),
-  downtimeStart: z.string().optional(),
-  downtimeEnd: z.string().optional(),
-  schoolHoursRestriction: z.boolean(),
+    // Screen Time Rules
+    dailyScreenTimeLimit: z.string().min(1, "Daily screen time limit is required"),
+    downtimeStart: z.string().optional(),
+    downtimeEnd: z.string().optional(),
+    schoolHoursRestriction: z.boolean(),
 
-  // App Management
-  appInstallationApproval: z.string(),
-  games: z.boolean(),
-  social_media: z.boolean(),
-  browsers: z.boolean(),
-  streaming: z.boolean(),
-  in_app_purchases: z.boolean(),
-  adult_restricted_content: z.boolean(),
+    // App Management
+    appInstallationApproval: z.string().min(1, "App installation approval is required"),
+    games: z.boolean(),
+    social_media: z.boolean(),
+    browsers: z.boolean(),
+    streaming: z.boolean(),
+    in_app_purchases: z.boolean(),
+    adult_restricted_content: z.boolean(),
 
-  // Alerts & Notifications
-  notify_at_daily_time_limit_exceeded: z.boolean(),
-  notify_at_new_app_installation: z.boolean(),
-  notify_at_restricted_content_access: z.boolean(),
-  notify_at_device_inactivity: z.boolean(),
-  notify_at_location_boundary_crossing: z.boolean(),
+    // Alerts & Notifications
+    notify_at_daily_time_limit_exceeded: z.boolean(),
+    notify_at_new_app_installation: z.boolean(),
+    notify_at_restricted_content_access: z.boolean(),
+    notify_at_device_inactivity: z.boolean(),
+    notify_at_location_boundary_crossing: z.boolean(),
 
-  // Notification Methods
-  is_push_notification_enabled: z.boolean(),
-  is_email_notification_enabled: z.boolean(),
-  is_in_app_notification_enabled: z.boolean(),
+    // Notification Methods
+    is_push_notification_enabled: z.boolean(),
+    is_email_notification_enabled: z.boolean(),
+    is_in_app_notification_enabled: z.boolean(),
 
-  // Parental Confirmation
-  parentalConsent: z.boolean().refine((val) => val === true, {
-    message: "You must confirm to proceed",
-  }),
-});
+    // Parental Confirmation
+    parentalConsent: z.boolean().refine((val) => val === true, {
+      message: "You must confirm to proceed",
+    }),
+  })
+  .superRefine((data, ctx) => {
+    // 1. Monitoring Permissions group validation
+    const hasAtLeastOneMonitor =
+      data.monitorScreenTime ||
+      data.monitorAppUsage ||
+      data.monitorAppInstalls ||
+      data.monitorWebBrowsing ||
+      data.monitorLocation ||
+      data.monitorDeviceUsageHours;
+
+    if (!hasAtLeastOneMonitor) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Please select at least one activity to monitor",
+        path: ["monitorScreenTime"],
+      });
+    }
+
+    // 2. App Management Categories group validation
+    const hasAtLeastOneCategory =
+      data.games ||
+      data.social_media ||
+      data.browsers ||
+      data.streaming ||
+      data.in_app_purchases ||
+      data.adult_restricted_content;
+
+    if (!hasAtLeastOneCategory) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Please select at least one category to restrict",
+        path: ["games"],
+      });
+    }
+
+    // 3. Screen Time Rules group validation
+    const hasAnyScreenRule = data.dailyScreenTimeLimit !== "NONE" || data.schoolHoursRestriction;
+
+    if (!hasAnyScreenRule) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Please enable at least one screen time rule (Limits or Restrictions)",
+        path: ["schoolHoursRestriction"],
+      });
+    }
+
+    // 4. Alerts & Notifications group validation
+    const hasAtLeastOneAlert =
+      data.notify_at_daily_time_limit_exceeded ||
+      data.notify_at_new_app_installation ||
+      data.notify_at_restricted_content_access ||
+      data.notify_at_device_inactivity ||
+      data.notify_at_location_boundary_crossing;
+
+    if (!hasAtLeastOneAlert) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Please select at least one event to be notified about",
+        path: ["notify_at_daily_time_limit_exceeded"],
+      });
+    }
+
+    // 4. Notification Methods group validation
+    const hasAtLeastOneNotifyMethod =
+      data.is_push_notification_enabled ||
+      data.is_email_notification_enabled ||
+      data.is_in_app_notification_enabled;
+
+    if (!hasAtLeastOneNotifyMethod) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Please select at least one notification method",
+        path: ["is_push_notification_enabled"],
+      });
+    }
+  });
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -73,6 +151,14 @@ export default function ParentalControlSetup({ goToPrevStep }: { goToPrevStep: (
 
   const { data: existingSettings, isLoading: isLoadingSettings } =
     useParentalControlByParentId(parentId);
+  const { data: meSettings, isLoading: isLoadingMe } = useParentalControlMe();
+
+  useEffect(() => {
+    if (meSettings) {
+      console.log("Parental Controls (/me) response:", meSettings);
+    }
+  }, [meSettings]);
+
   const { mutateAsync: createSettings, isPending: isCreating } = useCreateParentalControl();
   const { mutateAsync: updateSettings, isPending: isUpdating } = useUpdateParentalControl();
 
@@ -110,27 +196,31 @@ export default function ParentalControlSetup({ goToPrevStep }: { goToPrevStep: (
 
   // Populate existing data when loaded
   useEffect(() => {
-    if (existingSettings) {
-      const cats = existingSettings.restrictedCategories || [];
-      const alerts = existingSettings.alertEvents || [];
-      const methodsConfig = existingSettings.notificationMethod || "";
+    const settings = meSettings || existingSettings;
+    if (settings) {
+      const cats = settings.restrictedCategories || [];
+      const alerts = settings.alertEvents || [];
+      const methodsConfig = settings.notificationMethod || "";
 
       methods.reset({
-        monitorScreenTime: existingSettings.monitorScreenTime,
-        monitorAppUsage: existingSettings.monitorAppUsage,
-        monitorAppInstalls: existingSettings.monitorAppInstalls,
-        monitorWebBrowsing: existingSettings.monitorWebBrowsing,
-        monitorLocation: existingSettings.monitorLocation,
-        monitorDeviceUsageHours: existingSettings.monitorDeviceUsageHours,
+        monitorScreenTime: settings.monitorScreenTime,
+        monitorAppUsage: settings.monitorAppUsage,
+        monitorAppInstalls: settings.monitorAppInstalls,
+        monitorWebBrowsing: settings.monitorWebBrowsing,
+        monitorLocation: settings.monitorLocation,
+        monitorDeviceUsageHours: settings.monitorDeviceUsageHours,
 
-        dailyScreenTimeLimit: existingSettings.customScreenTimeHours
-          ? `${existingSettings.customScreenTimeHours}H`
-          : existingSettings.screenTimeLimit,
-        downtimeStart: existingSettings.downtimeStart || "22:30",
-        downtimeEnd: existingSettings.downtimeEnd || "05:00",
-        schoolHoursRestriction: existingSettings.schoolHoursRestriction,
+        dailyScreenTimeLimit:
+          settings.screenTimeLimit === "NO_LIMIT"
+            ? "NONE"
+            : settings.customScreenTimeHours
+              ? `${settings.customScreenTimeHours}H`
+              : settings.screenTimeLimit || "NONE",
+        downtimeStart: settings.downtimeStart || "22:30",
+        downtimeEnd: settings.downtimeEnd || "05:00",
+        schoolHoursRestriction: settings.schoolHoursRestriction,
 
-        appInstallationApproval: existingSettings.appInstallApproval,
+        appInstallationApproval: settings.appInstallApproval,
         games: cats.includes("GAMES"),
         social_media: cats.includes("SOCIAL_MEDIA"),
         browsers: cats.includes("BROWSERS"),
@@ -148,13 +238,16 @@ export default function ParentalControlSetup({ goToPrevStep }: { goToPrevStep: (
         is_email_notification_enabled: methodsConfig === "EMAIL" || methodsConfig === "BOTH",
         is_in_app_notification_enabled: methodsConfig === "IN_APP" || methodsConfig === "BOTH",
 
-        parentalConsent: existingSettings.parentalConsent,
+        parentalConsent: settings.parentalConsent,
       });
     }
-  }, [existingSettings, methods]);
+  }, [meSettings, existingSettings, methods]);
 
   const onSubmit = async (data: FormValues) => {
+    console.log("Form submitted successfully with valid data:", data);
     // Transform flat inputs into array fields
+    // ... rest of the transform logic
+    // ...
     const restrictedCategories: string[] = [];
     if (data.games) restrictedCategories.push("GAMES");
     if (data.social_media) restrictedCategories.push("SOCIAL_MEDIA");
@@ -171,10 +264,11 @@ export default function ParentalControlSetup({ goToPrevStep }: { goToPrevStep: (
     if (data.notify_at_location_boundary_crossing) alertEvents.push("LOCATION_BOUNDARY_CROSSING");
 
     let notificationMethod = "NONE";
-    const pushOrInApp = data.is_push_notification_enabled || data.is_in_app_notification_enabled;
-    if (pushOrInApp && data.is_email_notification_enabled) {
+    if (data.is_in_app_notification_enabled) {
       notificationMethod = "BOTH";
-    } else if (pushOrInApp) {
+    } else if (data.is_push_notification_enabled && data.is_email_notification_enabled) {
+      notificationMethod = "BOTH";
+    } else if (data.is_push_notification_enabled) {
       notificationMethod = "PUSH";
     } else if (data.is_email_notification_enabled) {
       notificationMethod = "EMAIL";
@@ -212,21 +306,25 @@ export default function ParentalControlSetup({ goToPrevStep }: { goToPrevStep: (
       parentalConsent: data.parentalConsent,
     };
 
+    console.log("Final payload to be sent:", payload);
+
     try {
-      if (existingSettings && existingSettings.id) {
-        await updateSettings({ id: existingSettings.id, data: payload });
+      const currentSettingsId = existingSettings?.id || meSettings?.id;
+      if (currentSettingsId) {
+        await updateSettings(payload);
       } else {
         await createSettings(payload);
       }
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 500);
     } catch (err) {
       console.error("Failed to save parental controls", err);
     }
   };
 
-  if (isLoadingUser || (parentId && isLoadingSettings)) {
+  const onError = (errors: any) => {
+    console.log("Form validation errors:", errors);
+  };
+
+  if (isLoadingUser || (parentId && isLoadingSettings) || isLoadingMe) {
     return (
       <div className="flex min-h-[400px] w-full items-center justify-center">
         <Loader size="lg" />
@@ -244,7 +342,7 @@ export default function ParentalControlSetup({ goToPrevStep }: { goToPrevStep: (
       />
 
       <FormProvider {...methods}>
-        <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={methods.handleSubmit(onSubmit, onError)} className="space-y-6">
           <MonitoringPermissionsSetup />
           <ScreenTimeRules />
           <AppManagement />

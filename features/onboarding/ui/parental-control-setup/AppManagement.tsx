@@ -55,13 +55,7 @@ export default function AppManagement() {
                 control={control}
                 name="games"
                 render={({ field }) => (
-                  <InputGroup
-                    label="Games"
-                    type="checkbox"
-                    id="games"
-                    error={errors.games?.message as string}
-                    {...field}
-                  />
+                  <InputGroup label="Games" type="checkbox" id="games" {...field} />
                 )}
               />
             </div>
@@ -70,13 +64,7 @@ export default function AppManagement() {
                 control={control}
                 name="social_media"
                 render={({ field }) => (
-                  <InputGroup
-                    label="Social Media"
-                    type="checkbox"
-                    id="social_media"
-                    error={errors.social_media?.message as string}
-                    {...field}
-                  />
+                  <InputGroup label="Social Media" type="checkbox" id="social_media" {...field} />
                 )}
               />
             </div>
@@ -89,8 +77,8 @@ export default function AppManagement() {
                     label="Browsers"
                     type="checkbox"
                     id="browsers"
-                    error={errors.browsers?.message as string}
                     {...field}
+                    disabled={true}
                   />
                 )}
               />
@@ -104,8 +92,8 @@ export default function AppManagement() {
                     label="Streaming & entertainment"
                     type="checkbox"
                     id="streaming"
-                    error={errors.streaming?.message as string}
                     {...field}
+                    disabled={true}
                   />
                 )}
               />
@@ -119,8 +107,8 @@ export default function AppManagement() {
                     label="In-app purchases"
                     type="checkbox"
                     id="in_app_purchases"
-                    error={errors.in_app_purchases?.message as string}
                     {...field}
+                    disabled={true}
                   />
                 )}
               />
@@ -134,13 +122,17 @@ export default function AppManagement() {
                     label="Adult or age-restricted content"
                     type="checkbox"
                     id="adult_restricted_content"
-                    error={errors.adult_restricted_content?.message as string}
                     {...field}
                   />
                 )}
               />
             </div>
           </div>
+          {errors.games && (
+            <p className="mt-2 text-sm font-medium text-red-500">
+              {errors.games.message as string}
+            </p>
+          )}
         </div>
       </div>
     </CardWrapper>

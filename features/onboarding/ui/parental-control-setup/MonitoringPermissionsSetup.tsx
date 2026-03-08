@@ -5,7 +5,10 @@ import { SettingsToggle } from "@/shared/ui/settings-toggle";
 import { useFormContext, Controller } from "react-hook-form";
 
 export default function MonitoringPermissionsSetup() {
-  const { control } = useFormContext();
+  const {
+    control,
+    formState: { errors },
+  } = useFormContext();
 
   return (
     <CardWrapper variant="outline">
@@ -96,6 +99,11 @@ export default function MonitoringPermissionsSetup() {
               )}
             />
           </div>
+          {errors.monitorScreenTime && (
+            <p className="mt-2 text-sm font-medium text-red-500">
+              {errors.monitorScreenTime.message as string}
+            </p>
+          )}
         </div>
       </div>
     </CardWrapper>

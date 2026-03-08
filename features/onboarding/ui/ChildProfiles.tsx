@@ -25,7 +25,13 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useParentStore } from "@/shared/stores/user-store";
 import { useQueryClient } from "@tanstack/react-query";
 
-export default function ChildrenProfiles({ goToNextStep }: { goToNextStep: () => void }) {
+export default function ChildrenProfiles({
+  goToNextStep,
+  onViewChange,
+}: {
+  goToNextStep: () => void;
+  onViewChange?: (view: "form" | "list" | "pricing" | "qr") => void;
+}) {
   const [childProfiles, setChildProfiles] = useState<IChildProfile[]>([]);
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -66,6 +72,11 @@ export default function ChildrenProfiles({ goToNextStep }: { goToNextStep: () =>
   }, [parentZonesRes]);
 
   const [currentView, setCurrentView] = useState<"form" | "list" | "pricing" | "qr">("list");
+
+  useEffect(() => {
+    onViewChange?.(currentView);
+  }, [currentView, onViewChange]);
+
   const [selectedChildProfile, setSelectedChildProfile] = useState<IChildProfile | null>(null);
   const [pendingChild, setPendingChild] = useState<IChildProfile | null>(null);
 
