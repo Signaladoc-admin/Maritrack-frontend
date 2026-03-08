@@ -17,6 +17,7 @@ import {
 } from "@/entities/parental-controls/model/useParentalControls";
 import { ParentalControlDto } from "@/entities/parental-controls/model/parental-controls.schema";
 
+import { LoaderModal } from "@/shared/ui/Modal/Modals/LoaderModal";
 import MonitoringPermissionsSetup from "./parental-control-setup/MonitoringPermissionsSetup";
 import ScreenTimeRules from "./parental-control-setup/ScreenTimeRules";
 import AppManagement from "./parental-control-setup/AppManagement";
@@ -315,6 +316,8 @@ export default function ParentalControlSetup({ goToPrevStep }: { goToPrevStep: (
       } else {
         await createSettings(payload);
       }
+
+      router.push("/dashboard");
     } catch (err) {
       console.error("Failed to save parental controls", err);
     }
@@ -341,6 +344,8 @@ export default function ParentalControlSetup({ goToPrevStep }: { goToPrevStep: (
         subtitle="Set boundaries, permissions, and alerts for your child's device. These rules apply by default to all children and can be adjusted individually later."
       />
 
+      <LoaderModal open={isPending} text="Setting up your account" />
+
       <FormProvider {...methods}>
         <form onSubmit={methods.handleSubmit(onSubmit, onError)} className="space-y-6">
           <MonitoringPermissionsSetup />
@@ -360,7 +365,7 @@ export default function ParentalControlSetup({ goToPrevStep }: { goToPrevStep: (
               Previous
             </Button>
             <Button type="submit" className="flex-1" disabled={isPending}>
-              {isPending ? "Saving..." : "Submit"}
+              Submit
             </Button>
           </div>
         </form>

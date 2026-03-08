@@ -20,8 +20,20 @@ function OnboardingContent() {
   const stepParam = searchParams?.get("step");
   const reference = searchParams?.get("reference");
 
+  const [hasPaid, setHasPaid] = useState(false);
+
+  // Check for persisted payment state on mount
+  useEffect(() => {
+    const paid = localStorage.getItem("maritrack_onboarding_paid") === "true";
+    if (paid) setHasPaid(true);
+  }, []);
+
+  const handleHasPaid = (value: boolean) => {
+    setHasPaid(value);
+    localStorage.setItem("maritrack_onboarding_paid", String(value));
+  };
   const [currentStep, setCurrentStep] = useState(() => {
-    if (reference) return 1; // Payment is done, jump to step 2 (index 1)
+    // If we have a reference, we stay on step 0 to allow pairing before moving on
     if (stepParam) return parseInt(stepParam, 10);
     return 0; // Default to children profiles
   });
@@ -31,7 +43,6 @@ function OnboardingContent() {
       const next = Math.min(p + 1, 1);
       return next;
     });
-    // Get the new step directly from state queue or compute it manually to avoid stale closures
     const currentParam = parseInt(stepParam || "0", 10);
     const next = Math.min(currentParam + 1, 1);
     router.push(`/onboarding/personal?step=${next}`);
@@ -69,7 +80,9 @@ function OnboardingContent() {
       verifyPayment(reference)
         .then(() => {
           toast({ title: "Success", message: "Payment verified successfully", type: "success" });
-          router.replace("/onboarding/personal?step=1");
+          setHasPaid(true);
+          // Stay on step 0 to allow device pairing
+          router.replace("/onboarding/personal?step=0");
         })
         .catch((err) => {
           toast({
@@ -77,7 +90,6 @@ function OnboardingContent() {
             message: err.message || "Could not verify payment",
             type: "error",
           });
-          // If it fails, maybe drop them back to the children profiles mapping to restart payment
           router.replace("/onboarding/personal?step=0");
         });
     }
@@ -86,15 +98,29 @@ function OnboardingContent() {
   const steps = [
     {
       title: "Children Profiles",
+      onClick: () => handleStepClick(0),
       component: (
         <ChildrenProfiles
           goToNextStep={nextStep}
           onViewChange={(view) => setIsFullWidth(view === "pricing")}
+          hasPaid={hasPaid}
+          setHasPaid={handleHasPaid}
         />
       ),
     },
     {
       title: "Parental Control & Consent Setup",
+      onClick: () => {
+        if (!hasPaid) {
+          toast({
+            title: "Access Restricted",
+            message: "Please select a plan before configuring parental controls",
+            type: "warning",
+          });
+          return;
+        }
+        handleStepClick(1);
+      },
       component: <ParentalControlSetup goToPrevStep={prevStep} />,
     },
   ];
@@ -108,6 +134,11 @@ function OnboardingContent() {
       console.error("Logout failed", e);
     }
   }
+
+  const handleStepClick = (index: number) => {
+    setCurrentStep(index);
+    router.push(`/onboarding/personal?step=${index}`);
+  };
 
   return (
     <div className={cn("relative p-14", isFullWidth ? "p-0" : "p-14")}>
@@ -123,7 +154,12 @@ function OnboardingContent() {
         {isLoggingOut ? "Signing out..." : "Sign out"}
       </Button>
       <div className={cn(isFullWidth ? "mx-auto w-full max-w-7xl px-14 py-20" : "")}>
-        <MultiStepForm steps={steps} currentStep={currentStep} isFullWidth={isFullWidth} />
+        <MultiStepForm
+          steps={steps}
+          currentStep={currentStep}
+          onStepClick={handleStepClick}
+          isFullWidth={isFullWidth}
+        />
       </div>
     </div>
   );

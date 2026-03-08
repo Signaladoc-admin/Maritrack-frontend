@@ -28,9 +28,13 @@ import { useQueryClient } from "@tanstack/react-query";
 export default function ChildrenProfiles({
   goToNextStep,
   onViewChange,
+  hasPaid,
+  setHasPaid,
 }: {
   goToNextStep: () => void;
   onViewChange?: (view: "form" | "list" | "pricing" | "qr") => void;
+  hasPaid: boolean;
+  setHasPaid: (value: boolean) => void;
 }) {
   const [childProfiles, setChildProfiles] = useState<IChildProfile[]>([]);
   const searchParams = useSearchParams();
@@ -48,17 +52,13 @@ export default function ChildrenProfiles({
   const { data: parent } = useParent(activeParentId!);
 
   const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentZones({
-    enabled: !!activeParentId && !!user?.zoneId?.length,
+    enabled: !!activeParentId,
   });
   console.log(parentZonesRes);
   const { mutateAsync: createChild, isPending: isCreatingChild } = useCreateChild();
   const { mutateAsync: updateChild, isPending: isUpdatingChild } = useUpdateChild();
   const { mutateAsync: deleteChild } = useDeleteChild();
   const { toast } = useToast();
-
-  const { data: userProfile } = useUserProfile();
-
-  console.log(userProfile);
 
   useEffect(() => {
     if (Array.isArray(parentZonesRes)) {
@@ -100,9 +100,6 @@ export default function ChildrenProfiles({
         console.log("Create child result:", res);
 
         if (res) {
-          // The API might not return the onboardingCode in the create response,
-          // or we might need to fetch the full child details later.
-          // For now, we'll try to get it from the response or use what's available.
           const onboardingCode = res.onboardingCode || res.data?.onboardingCode;
 
           const newChildInfo = {
@@ -124,7 +121,14 @@ export default function ChildrenProfiles({
             queryClient.invalidateQueries({ queryKey: ["user-profile"] });
           }
 
-          setCurrentView("qr");
+          toast({ title: "Success", message: "Child profile created", type: "success" });
+
+          // If not paid, go to pricing. Otherwise, return to list.
+          if (!hasPaid) {
+            setCurrentView("pricing");
+          } else {
+            setCurrentView("list");
+          }
         }
       } catch (e: any) {
         toast({
@@ -134,7 +138,7 @@ export default function ChildrenProfiles({
         });
       }
     },
-    [activeParentId, createChild, toast, user?.zoneId, queryClient]
+    [activeParentId, createChild, toast, user?.zoneId, queryClient, hasPaid]
   );
 
   const handleEditChild = async (data: IChildProfile) => {
@@ -146,8 +150,14 @@ export default function ChildrenProfiles({
         } as any);
       }
       setChildProfiles((prev) => prev.map((child) => (child.id === data.id ? data : child)));
-      setCurrentView("list");
+
       toast({ title: "Success", message: "Child profile updated", type: "success" });
+
+      if (!hasPaid) {
+        setCurrentView("pricing");
+      } else {
+        setCurrentView("list");
+      }
     } catch (e: any) {
       toast({ title: "Error", message: e.message || "Failed to update profile", type: "error" });
     }
@@ -193,7 +203,25 @@ export default function ChildrenProfiles({
   }
 
   if (currentView === "pricing") {
-    return <PricingStep onBack={() => setCurrentView("list")} onSuccess={() => goToNextStep()} />;
+    return (
+      <PricingStep
+        onBack={() => setCurrentView("list")}
+        onSuccess={() => {
+          setHasPaid(true);
+          // If we have a pending child that needs pairing, go to QR. Otherwise, go to list.
+          if (pendingChild) {
+            setCurrentView("qr");
+          } else {
+            setCurrentView("list");
+          }
+          toast({
+            title: "Plan Selected",
+            message: "You can now pair your children's devices",
+            type: "success",
+          });
+        }}
+      />
+    );
   }
 
   if (currentView === "qr") {
@@ -235,25 +263,44 @@ export default function ChildrenProfiles({
 
   if (isInitialLoading) {
     return (
-      <div className="flex min-h-[400px] w-full items-center justify-center">
-        <Loader size="lg" />
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm">
+        <Loader size="lg" className="scale-150" />
       </div>
     );
   }
 
   return (
     <div className="space-y-5">
-      <Header title="Create your children's profile" subtitle="Create your children's accounts" />
+      <div className="flex items-start justify-between">
+        <Header title="Create your children's profile" subtitle="Create your children's accounts" />
+        {hasPaid && (
+          <div className="flex flex-col items-end gap-2">
+            <span className="animate-in fade-in slide-in-from-right-4 rounded-full border border-green-200 bg-green-100 px-3 py-1 text-xs font-bold tracking-wider text-green-700 uppercase shadow-sm">
+              Plan Active
+            </span>
+            <button
+              onClick={() => setHasPaid(false)}
+              className="text-[10px] text-slate-400 underline transition-colors hover:text-red-400"
+            >
+              Reset for testing
+            </button>
+          </div>
+        )}
+      </div>
       <div>
         <div className="space-y-4">
           {childProfiles.map((childProfile, index) => (
             <ChildProfileCard
               key={childProfile.id || index}
               onEdit={() => handleOpenForm(childProfile)}
-              onViewQR={() => {
-                setPendingChild(childProfile);
-                setCurrentView("qr");
-              }}
+              onViewQR={
+                hasPaid
+                  ? () => {
+                      setPendingChild(childProfile);
+                      setCurrentView("qr");
+                    }
+                  : undefined // Hide or disable QR view if not paid
+              }
               {...childProfile}
             />
           ))}
@@ -271,9 +318,15 @@ export default function ChildrenProfiles({
           <Button
             disabled={!childProfiles.length}
             className="bg-primary hover:bg-primary/90 w-full"
-            onClick={() => setCurrentView("pricing")}
+            onClick={() => {
+              if (hasPaid) {
+                goToNextStep();
+              } else {
+                setCurrentView("pricing");
+              }
+            }}
           >
-            Next
+            {hasPaid ? "Continue to Setup" : "Next"}
           </Button>
         </div>
         <div className="flex justify-center">

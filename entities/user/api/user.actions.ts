@@ -1,6 +1,7 @@
 "use server";
 
 import { apiClient } from "@/shared/lib/api-client";
+import { cookies } from "next/headers";
 import type {
   UserProfile,
   UpdateProfileDto,
@@ -11,11 +12,21 @@ import type {
 
 // --- Profile ---
 
-export async function getProfileAction(): Promise<IUserProfile> {
-  const response = await apiClient("/users/user", {
-    method: "GET",
-  });
-  return response.data;
+export async function getProfileAction(): Promise<IUserProfile | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("accessToken")?.value || cookieStore.get("refreshToken")?.value;
+
+  if (!token) return null;
+
+  try {
+    const response = await apiClient("/users/user", {
+      method: "GET",
+      noRedirect: true,
+    });
+    return response.data;
+  } catch (error) {
+    return null;
+  }
 }
 
 export async function getUserByIdAction(id: string): Promise<UserProfile> {

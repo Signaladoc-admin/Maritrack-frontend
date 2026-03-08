@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import { useQrCode } from "@/features/mdm-sync/model/useQrCode";
 import { useToast } from "@/shared/ui/toast";
 
+import { QRCodeCard } from "@/shared/ui/cards/qr-code-card";
+
 interface PairingQRStepProps {
   childName: string;
   zoneId: string;
@@ -54,33 +56,22 @@ export default function PairingQRStep({
         subtitle="Pair your child's account by scanning the code"
       />
 
-      <div className="flex flex-col items-center justify-center space-y-8">
-        <div className="relative flex aspect-square w-full max-w-[350px] items-center justify-center overflow-hidden rounded-[40px] border border-slate-200 bg-slate-50 p-6 shadow-2xl transition-transform hover:scale-[1.02]">
-          {qrCodeSrc ? (
-            <img
-              src={qrCodeSrc}
-              alt="QR Code"
-              className="h-full w-full rounded-2xl object-contain"
-            />
-          ) : (
-            <div className="flex flex-col items-center justify-center space-y-4 text-slate-400">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-300 border-t-orange-500" />
-              <p className="text-sm font-medium">Generating QR Code...</p>
-            </div>
-          )}
-        </div>
-
-        <p className="max-w-[280px] text-center text-sm leading-relaxed font-medium text-slate-500">
-          Scan this QR Code on the child's device to pair
-        </p>
-
-        <Button
+      <div className="space-y-8">
+        <button
+          className="cursor-pointer"
           disabled={isGenerating || !qrCodeSrc}
           onClick={onComplete}
-          className="w-full max-w-[320px] bg-[#1B3C73] py-6 text-lg font-semibold hover:bg-[#1B3C73]/90"
+        >
+          <QRCodeCard src={qrCodeSrc || ""} isLoading={isGenerating} />
+        </button>
+
+        {/* <Button
+          disabled={isGenerating || !qrCodeSrc}
+          onClick={onComplete}
+          className="w-full max-w-[400px] rounded-2xl bg-[#1B3C73] py-7 text-lg font-semibold shadow-lg transition-all hover:bg-[#1B3C73]/90 active:scale-95"
         >
           Finish Pairing
-        </Button>
+        </Button> */}
       </div>
     </div>
   );

@@ -95,9 +95,19 @@ export async function logoutAction() {
   return { success: true };
 }
 
-export async function getSessionAction(): Promise<UserProfile> {
-  const response = await apiClient("/users/user", {
-    method: "GET",
-  });
-  return response.data;
+export async function getSessionAction(): Promise<UserProfile | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("accessToken")?.value || cookieStore.get("refreshToken")?.value;
+
+  if (!token) return null;
+
+  try {
+    const response = await apiClient("/users/user", {
+      method: "GET",
+      noRedirect: true,
+    });
+    return response.data;
+  } catch (error) {
+    return null;
+  }
 }

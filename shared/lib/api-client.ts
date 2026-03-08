@@ -6,18 +6,22 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
 
 let refreshPromise: Promise<string | null> | null = null;
 
-export async function apiClient<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
+export async function apiClient<T = any>(
+  endpoint: string,
+  options: RequestInit & { noRedirect?: boolean } = {}
+): Promise<T> {
   const isServer = typeof window === "undefined";
+  const { noRedirect, ...fetchOptions } = options;
   const url = `${API_BASE_URL}${endpoint}`;
 
   const cookieStore = isServer ? await cookies() : null;
   let accessToken = cookieStore?.get("accessToken")?.value;
 
   const headers: Record<string, string> = {
-    ...(options.headers as Record<string, string>),
+    ...(fetchOptions.headers as Record<string, string>),
   };
 
-  if (!(options.body instanceof FormData) && !headers["Content-Type"]) {
+  if (!(fetchOptions.body instanceof FormData) && !headers["Content-Type"]) {
     headers["Content-Type"] = "application/json";
   }
 
@@ -27,16 +31,16 @@ export async function apiClient<T = any>(endpoint: string, options: RequestInit 
 
   console.log(`\n================ API REQUEST ================`);
   console.log(`[URL]: ${url}`);
-  console.log(`[METHOD]: ${options.method || "GET"}`);
+  console.log(`[METHOD]: ${fetchOptions.method || "GET"}`);
   console.log(`[HEADERS]:`, JSON.stringify(headers, null, 2));
-  if (options.body) {
-    console.log(`[BODY]:`, options.body);
+  if (fetchOptions.body) {
+    console.log(`[BODY]:`, fetchOptions.body);
   }
   console.log(`=============================================\n`);
   let response: Response;
   try {
     response = await fetch(url, {
-      ...options,
+      ...fetchOptions,
       headers,
       cache: "no-store",
     });
@@ -49,6 +53,7 @@ export async function apiClient<T = any>(endpoint: string, options: RequestInit 
   if (
     response.status === 401 &&
     isServer &&
+    !noRedirect &&
     !endpoint.includes("/login") &&
     !endpoint.includes("/refresh")
   ) {
@@ -62,17 +67,25 @@ export async function apiClient<T = any>(endpoint: string, options: RequestInit 
       const newAccessToken = await refreshPromise;
 
       if (!newAccessToken) {
+        if (isServer && cookieStore) {
+          cookieStore.delete("accessToken");
+          cookieStore.delete("refreshToken");
+        }
         redirect("/login");
       }
 
       headers["Authorization"] = `Bearer ${newAccessToken}`;
 
       response = await fetch(url, {
-        ...options,
+        ...fetchOptions,
         headers,
         cache: "no-store",
       });
     } catch {
+      if (isServer && cookieStore) {
+        cookieStore.delete("accessToken");
+        cookieStore.delete("refreshToken");
+      }
       redirect("/login");
     }
   }
