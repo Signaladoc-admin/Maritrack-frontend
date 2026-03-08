@@ -60,6 +60,8 @@ export default function ChildrenProfiles({
   const { mutateAsync: deleteChild } = useDeleteChild();
   const { toast } = useToast();
 
+  console.log("zone:", parentZonesRes);
+
   useEffect(() => {
     if (Array.isArray(parentZonesRes)) {
       // Extract children from the zones list

@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useServerActionMutation, useServerActionQuery } from "@/shared/api/server-action-hooks";
 import { createZoneAction, getQrCodeAction, getParentZonesAction } from "../api/mdm-sync.actions";
 

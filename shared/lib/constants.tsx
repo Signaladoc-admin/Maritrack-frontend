@@ -5,3 +5,9 @@ export const TABS = [
   { label: "Location", value: "location" },
   { label: "Configuration", value: "configuration" },
 ];
+
+export enum Gender {
+  MALE = "MALE",
+  FEMALE = "FEMALE",
+  OTHER = "OTHER",
+}

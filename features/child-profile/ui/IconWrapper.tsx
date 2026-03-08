@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/shared/ui/Button/button";
-import { IconProps } from "../types";
+import { IconProps } from "../model/types";
 
 const IconWrapper = ({ action, icon }: IconProps) => {
   return (

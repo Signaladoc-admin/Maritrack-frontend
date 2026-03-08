@@ -10,7 +10,7 @@ import {
 } from "@/shared/ui/Modal/dialog";
 import { Button } from "@/shared/ui/Button/button";
 import { User } from "lucide-react";
-import { EditChildModalProps } from "../types";
+import { EditChildModalProps } from "../model/types";
 
 export function EditChildModal({ open, onOpenChange, initialData }: EditChildModalProps) {
   return (
