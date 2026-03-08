@@ -36,7 +36,6 @@ function OnboardingContent() {
       const next = Math.min(p + 1, 1);
       return next;
     });
-    // Get the new step directly from state queue or compute it manually to avoid stale closures
     const currentParam = parseInt(stepParam || "0", 10);
     const next = Math.min(currentParam + 1, 1);
     router.push(`/onboarding/personal?step=${next}`);
@@ -188,6 +187,11 @@ function OnboardingContent() {
       console.error("Logout failed", e);
     }
   }
+
+  const handleStepClick = (index: number) => {
+    setCurrentStep(index);
+    router.push(`/onboarding/personal?step=${index}`);
+  };
 
   return (
     <div className={cn("relative p-14", isFullWidth ? "p-0" : "p-14")}>
