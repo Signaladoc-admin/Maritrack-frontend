@@ -1,6 +1,6 @@
 "use client";
 
-import { useUserProfile } from "@/entities/user/model/useUserProfile";
+import { useIsOnboarded } from "@/entities/user/model/useIsOnboarded";
 import ChildrenProfiles from "@/features/onboarding/ui/ChildProfiles";
 import ParentalControlSetup from "@/features/onboarding/ui/ParentalControlSetup";
 import { useParentStore } from "@/shared/stores/user-store";
@@ -13,6 +13,7 @@ import { Button } from "@/shared/ui/button";
 import { useLogout } from "@/features/auth/model/useLogout";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/shared/lib/utils";
+import { Loader } from "@/shared/ui/loader";
 
 function OnboardingContent() {
   const searchParams = useSearchParams();
@@ -20,7 +21,29 @@ function OnboardingContent() {
   const stepParam = searchParams?.get("step");
   const reference = searchParams?.get("reference");
 
+  // 1. All hooks at the very top
+  const { profile, pcSettings, isLoading: isAuthLoading, checkAndRedirect } = useIsOnboarded();
+
   const [hasPaid, setHasPaid] = useState(false);
+  const [isFullWidth, setIsFullWidth] = useState(false);
+  const [currentStep, setCurrentStep] = useState(() => {
+    if (stepParam) return parseInt(stepParam, 10);
+    return 0;
+  });
+
+  const { parentId: storeParentId } = useParentStore();
+  const { mutateAsync: verifyPayment } = useVerifyPayment();
+  const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  // Redirect if already onboarded
+  useEffect(() => {
+    if (profile && pcSettings) {
+      checkAndRedirect(profile, pcSettings);
+      // checkAndRedirect(profile, null);
+    }
+  }, [profile, pcSettings, checkAndRedirect]);
 
   // Check for persisted payment state on mount
   useEffect(() => {
@@ -28,15 +51,47 @@ function OnboardingContent() {
     if (paid) setHasPaid(true);
   }, []);
 
+  useEffect(() => {
+    if (stepParam && !reference) {
+      const step = parseInt(stepParam, 10);
+      setCurrentStep(step);
+      setIsFullWidth(false);
+    }
+  }, [stepParam, reference]);
+
+  useEffect(() => {
+    if (reference) {
+      verifyPayment(reference)
+        .then(() => {
+          toast({ title: "Success", message: "Payment verified successfully", type: "success" });
+          setHasPaid(true);
+          router.replace("/onboarding/personal?step=0");
+        })
+        .catch((err) => {
+          toast({
+            title: "Verification Failed",
+            message: err.message || "Could not verify payment",
+            type: "error",
+          });
+          router.replace("/onboarding/personal?step=0");
+        });
+    }
+  }, [reference, verifyPayment, toast, router]);
+
+  // 2. Early returns AFTER all hooks
+  if (isAuthLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader size="lg" />
+      </div>
+    );
+  }
+
+  // 3. Helper functions and render logic
   const handleHasPaid = (value: boolean) => {
     setHasPaid(value);
     localStorage.setItem("maritrack_onboarding_paid", String(value));
   };
-  const [currentStep, setCurrentStep] = useState(() => {
-    // If we have a reference, we stay on step 0 to allow pairing before moving on
-    if (stepParam) return parseInt(stepParam, 10);
-    return 0; // Default to children profiles
-  });
 
   const nextStep = () => {
     setCurrentStep((p) => {
@@ -58,42 +113,20 @@ function OnboardingContent() {
     router.push(`/onboarding/personal?step=${prev}`);
   };
 
-  const { parentId: storeParentId } = useParentStore();
-  const { mutateAsync: verifyPayment } = useVerifyPayment();
-  const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
+  const handleStepClick = (index: number) => {
+    setCurrentStep(index);
+    router.push(`/onboarding/personal?step=${index}`);
+  };
 
-  const [isFullWidth, setIsFullWidth] = useState(false);
-
-  useEffect(() => {
-    if (stepParam && !reference) {
-      const step = parseInt(stepParam, 10);
-      setCurrentStep(step);
-      // Reset full width when switching main steps
-      setIsFullWidth(false);
+  async function handleLogout() {
+    try {
+      await logout();
+      queryClient.clear();
+      router.push("/login");
+    } catch (e) {
+      console.error("Logout failed", e);
     }
-  }, [stepParam, reference]);
-
-  useEffect(() => {
-    if (reference) {
-      verifyPayment(reference)
-        .then(() => {
-          toast({ title: "Success", message: "Payment verified successfully", type: "success" });
-          setHasPaid(true);
-          // Stay on step 0 to allow device pairing
-          router.replace("/onboarding/personal?step=0");
-        })
-        .catch((err) => {
-          toast({
-            title: "Verification Failed",
-            message: err.message || "Could not verify payment",
-            type: "error",
-          });
-          router.replace("/onboarding/personal?step=0");
-        });
-    }
-  }, [reference, verifyPayment, toast, router]);
+  }
 
   const steps = [
     {
@@ -124,21 +157,6 @@ function OnboardingContent() {
       component: <ParentalControlSetup goToPrevStep={prevStep} />,
     },
   ];
-
-  async function handleLogout() {
-    try {
-      await logout();
-      queryClient.clear();
-      router.push("/login");
-    } catch (e) {
-      console.error("Logout failed", e);
-    }
-  }
-
-  const handleStepClick = (index: number) => {
-    setCurrentStep(index);
-    router.push(`/onboarding/personal?step=${index}`);
-  };
 
   return (
     <div className={cn("relative p-14", isFullWidth ? "p-0" : "p-14")}>

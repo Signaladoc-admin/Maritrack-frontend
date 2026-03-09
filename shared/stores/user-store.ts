@@ -237,8 +237,9 @@ const MOCK_DATA: Record<string, DashboardData> = {
 export const useUserStore = create<UserState>((set, get) => ({
   selectedChildId: "all",
   children: [
-    { id: "solomon", name: "Solomon" },
-    { id: "kuroebi", name: "Kuroebi" },
+    { id: "solomon", name: "Solomon Grundy" },
+    { id: "kuroebi", name: "Kuroebi Grundy" },
+    { id: "sammie", name: "Sammie Grundy" },
   ],
   setSelectedChildId: (id) => set({ selectedChildId: id }),
   setChildren: (children) => set({ children }),
@@ -253,8 +254,9 @@ export const useParentStore = create<ParentUserState>((set, get) => ({
   userId: "",
   selectedChildId: "all",
   children: [
-    { id: "solomon", name: "Solomon" },
-    { id: "kuroebi", name: "Kuroebi" },
+    { id: "solomon", name: "Solomon Grundy" },
+    { id: "kuroebi", name: "Kuroebi Grundy" },
+    { id: "sammie", name: "Sammie Grundy" },
   ],
   setParentId: (id) => set({ parentId: id }),
   setSelectedChildId: (id) => set({ selectedChildId: id }),

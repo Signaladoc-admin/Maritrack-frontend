@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { getProfileAction } from "../api/user.actions";
+import { useParentalControlMe } from "@/entities/parental-controls/model/useParentalControls";
 import { useCallback } from "react";
 
 export function useIsOnboarded() {
@@ -10,17 +11,19 @@ export function useIsOnboarded() {
 
   const {
     data: profile,
-    isLoading,
-    refetch,
+    isLoading: isProfileLoading,
+    refetch: refetchProfile,
   } = useQuery({
     queryKey: ["user-profile"],
     queryFn: getProfileAction,
-    staleTime: 0, // Always get fresh data for onboarding check
+    staleTime: 0,
     retry: false,
   });
 
+  const { data: pcSettings, isLoading: isPcLoading, refetch: refetchPc } = useParentalControlMe();
+
   const checkAndRedirect = useCallback(
-    (userProfile: any = profile) => {
+    (userProfile: any = profile, settings: any = pcSettings) => {
       if (!userProfile) return;
 
       if (userProfile.role === "ADMIN") {
@@ -28,14 +31,8 @@ export function useIsOnboarded() {
         return;
       }
 
-      if (userProfile.isEmailVerified === false) {
-        router.push("/confirm-email");
-        return;
-      }
-
-      // Prioritize isFirstLogin flag
-      const needsOnboarding =
-        userProfile.isFirstLogin === true || !userProfile.firstName || !userProfile.lastName;
+      // If no PC settings exist yet, user needs onboarding
+      const needsOnboarding = !settings;
 
       if (needsOnboarding) {
         router.push("/onboarding/personal");
@@ -43,13 +40,16 @@ export function useIsOnboarded() {
         router.push("/dashboard");
       }
     },
-    [profile, router]
+    [profile, pcSettings, router]
   );
 
   return {
     profile,
-    isLoading,
+    pcSettings,
+    isLoading: isProfileLoading || isPcLoading,
     checkAndRedirect,
-    refetch,
+    refetch: async () => {
+      await Promise.all([refetchProfile(), refetchPc()]);
+    },
   };
 }

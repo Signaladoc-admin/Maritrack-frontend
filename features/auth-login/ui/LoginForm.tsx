@@ -13,6 +13,7 @@ import { useLogin } from "../model/useLogin";
 import { loginSchema, type LoginValues } from "@/entities/user/model/user.schema";
 import { useParentStore, useNewUserStore } from "@/shared/stores/user-store";
 import { useIsOnboarded } from "@/entities/user/model/useIsOnboarded";
+import { getParentalControlMeAction } from "@/entities/parental-controls/api/parental-controls.actions";
 
 export default function LoginForm() {
   const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] = useState(false);
@@ -33,14 +34,17 @@ export default function LoginForm() {
     try {
       const profile = await login(data);
 
-      console.log(profile);
+      console.log("Login profile:", profile);
 
       // Save credentials for subsequent OTP verification and auto-login if needed
       setEmail(data.email);
       setPassword(data.password);
 
       if (profile?.parentId) setParentId(profile.parentId);
-      checkAndRedirect(profile as any);
+
+      // Fetch parental controls to determine onboarding status accurately
+      const pcSettings = await getParentalControlMeAction();
+      checkAndRedirect(profile as any, pcSettings);
     } catch (err) {
       console.log(err);
       // Error handled by hook

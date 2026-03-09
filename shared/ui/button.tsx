@@ -6,7 +6,7 @@ import { cn } from "@/shared/lib/utils";
 import Link from "next/link";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md cursor-pointer text-sm font-medium transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 ring-ring/10 dark:ring-ring/20 dark:outline-ring/40 outline-ring/50 focus-visible:ring-4 focus-visible:outline-1 aria-invalid:focus-visible:ring-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl cursor-pointer text-base font-bold transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-5 [&_svg]:shrink-0 ring-ring/10 dark:ring-ring/20 dark:outline-ring/40 outline-ring/50 focus-visible:ring-4 focus-visible:outline-1 aria-invalid:focus-visible:ring-0",
   {
     variants: {
       variant: {
@@ -20,10 +20,10 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-12 px-4 py-2 rounded-lg",
-        sm: "h-8 rounded-md px-3 text-xs rounded-md",
-        lg: "h-14 rounded-md px-8 rounded-lg",
-        icon: "h-12 w-12 rounded-sm",
+        default: "h-[50px] px-6 rounded-xl",
+        sm: "h-10 rounded-lg px-4 text-sm",
+        lg: "h-[56px] rounded-xl px-10 text-lg",
+        icon: "h-12 w-12 rounded-xl",
       },
     },
     defaultVariants: {

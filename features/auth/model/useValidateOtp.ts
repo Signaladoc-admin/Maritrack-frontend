@@ -8,6 +8,7 @@ import { useLogin } from "@/features/auth-login/model/useLogin";
 import { useToast } from "@/shared/ui/toast";
 import type { OtpConfirmFormValues } from "../schema";
 import { useIsOnboarded } from "@/entities/user/model/useIsOnboarded";
+import { getParentalControlMeAction } from "@/entities/parental-controls/api/parental-controls.actions";
 
 export function useValidateOtp() {
   const router = useRouter();
@@ -43,7 +44,10 @@ export function useValidateOtp() {
         try {
           const profile = await login({ email, password });
           clearCredentials();
-          checkAndRedirect(profile as any);
+
+          // Fetch parental controls to determine onboarding status accurately
+          const pcSettings = await getParentalControlMeAction();
+          checkAndRedirect(profile as any, pcSettings);
         } catch (loginErr) {
           console.error("Auto-login failed:", loginErr);
           toast({

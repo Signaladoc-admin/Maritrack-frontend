@@ -42,9 +42,14 @@ export async function getMdmPolicyByParentIdAction(parentId: string): Promise<an
   return response.data;
 }
 
-export async function getParentalControlMeAction(): Promise<ParentalControlResponse> {
-  const response = await apiClient("/parental-controls/me", {
-    method: "GET",
-  });
-  return response.data;
+export async function getParentalControlMeAction(): Promise<ParentalControlResponse | null> {
+  try {
+    const response = await apiClient("/parental-controls/me", {
+      method: "GET",
+      noRedirect: true,
+    });
+    return response.data;
+  } catch (error) {
+    return null;
+  }
 }
