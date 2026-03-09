@@ -3,7 +3,7 @@ import { Header } from "@/shared/ui/layout/header";
 
 export default function BusinessRegistrationPage() {
   return (
-    <div className="mx-auto max-w-2xl px-5 py-10">
+    <div className="space-y-7">
       <Header
         className="pt-0"
         title="Hi Grace, Tell us about your business"

@@ -5,20 +5,22 @@ import { FileUpload } from "@/shared/ui/image-upload";
 import { InputGroup } from "@/shared/ui/input-group";
 import { Header } from "@/shared/ui/layout/header";
 import { CountryStateInput } from "@/shared/ui/inputs/country-state-input";
+import { SearchableSelect } from "@/shared/ui/searchable-select";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { parentOnboardingProfileSchema } from "../schema";
 import z from "zod";
-import { parentHooks } from "@/shared/api/resources";
+import { parentHooks, userHooks } from "@/shared/api/resources";
 import { useParentStore } from "@/shared/stores/user-store";
 import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Country, State } from "country-state-city";
-import { useCreateZone } from "@/features/mdm-sync/model/useMdmSync";
 import { useToast } from "@/shared/ui/toast";
 import type { UserProfile } from "@/entities/user/model/user.schema";
 import { Loader } from "@/shared/ui/loader";
 import { cn } from "@/shared/lib/utils";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
+// import { refreshSessionAction } from "@/features/auth/api/auth.actions";
 
 type ParentProfileValues = z.infer<typeof parentOnboardingProfileSchema>;
 
@@ -45,19 +47,23 @@ export default function BasicInformationForm({ goToNextStep }: { goToNextStep: (
 
   const { toast } = useToast();
 
-  const { data: user } = useUserProfile();
+  const { data: user, isLoading: isLoadingUser } = useUserProfile();
   console.log("user", user);
 
   const { data: existingParent, isLoading: isFetchingParent } = parentHooks.useGetById(
     user?.parentId || ""
   );
 
+  const { data: userFull, isLoading: isLoadingUserFull } = userHooks.useGetById(user?.id || "");
+
+  console.log("userFull", userFull);
+
   console.log("existingParent", existingParent);
 
   const { mutateAsync: createParent, isPending: isCreating } = parentHooks.useCreate();
   const { mutateAsync: updateParent, isPending: isUpdating } = parentHooks.useUpdate();
-  const { mutateAsync: createZone, isPending: isCreatingZone } = useCreateZone();
   const setParentId = useParentStore((state) => state.setParentId);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (existingParent && !isFetchingParent) {
@@ -92,7 +98,7 @@ export default function BasicInformationForm({ goToNextStep }: { goToNextStep: (
       setValue("address", existingParent.address || "", { shouldDirty: false });
 
       if (existingParent.gender) {
-        const gender = existingParent.gender.toUpperCase();
+        const gender = existingParent.gender.trim().toUpperCase();
         console.log("Setting gender to:", gender);
         setValue("gender", gender as any, { shouldDirty: false });
       }
@@ -129,7 +135,7 @@ export default function BasicInformationForm({ goToNextStep }: { goToNextStep: (
 
       if (activeParentId) {
         // Update the existing parent record
-        await updateParent({
+        const res = await updateParent({
           id: activeParentId,
           data: {
             gender: data.gender as any,
@@ -138,7 +144,11 @@ export default function BasicInformationForm({ goToNextStep }: { goToNextStep: (
             country: data.country,
           },
         });
-        console.log("Parent profile updated successfully.");
+        if (res?.id) {
+          activeParentId = res.id;
+          setParentId(res.id);
+        }
+        console.log("Parent profile updated successfully.", res);
       } else {
         // Create the parent record
         const res: any = await createParent({
@@ -151,10 +161,21 @@ export default function BasicInformationForm({ goToNextStep }: { goToNextStep: (
 
         console.log("Parent profile created successfully.", res);
 
+        // if (res?.id) {
+        //   activeParentId = res.id;
+        //   setParentId(res.id);
         if (res?.data?.id) {
           activeParentId = res.data.id;
           setParentId(res.data.id);
         }
+
+        // Wait a small amount for backend DB replicas to sync before refreshing token
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        // Refresh session token so the browser cookie reflects the new parentId.
+        // This must succeed before navigation — let any error propagate to the outer catch.
+        // await refreshSessionAction();
+        queryClient.invalidateQueries({ queryKey: ["user-profile"] });
       }
 
       toast({
@@ -176,14 +197,18 @@ export default function BasicInformationForm({ goToNextStep }: { goToNextStep: (
 
   console.log(errors);
 
+  const isInitialLoading = isLoadingUser || (!!user?.parentId && isFetchingParent);
+
+  if (isInitialLoading) {
+    return (
+      <div className="flex min-h-[400px] w-full items-center justify-center">
+        <Loader size="lg" />
+      </div>
+    );
+  }
+
   return (
     <div className="relative space-y-4">
-      {isFetchingParent && (
-        <div className="bg-background/80 absolute inset-0 z-10 flex items-center justify-center backdrop-blur-sm">
-          <Loader size="lg" />
-        </div>
-      )}
-
       <Header title="Hi Grace, Tell us about you" subtitle="Give us more information about you" />
       <form
         onSubmit={handleSubmit(onSubmit)}
@@ -207,14 +232,15 @@ export default function BasicInformationForm({ goToNextStep }: { goToNextStep: (
           control={control}
           name="gender"
           render={({ field }) => (
-            <InputGroup
-              options={parentGenderOptions}
-              type="select"
-              label="What gender of parent are you?"
-              error={errors.gender?.message}
-              {...field}
-              onValueChange={field.onChange}
-            />
+            <InputGroup label="What gender of parent are you?" error={errors.gender?.message}>
+              <SearchableSelect
+                options={parentGenderOptions}
+                placeholder="Select Gender"
+                value={field.value}
+                onValueChange={field.onChange}
+                isSearchable={false}
+              />
+            </InputGroup>
           )}
         />
 
@@ -236,9 +262,9 @@ export default function BasicInformationForm({ goToNextStep }: { goToNextStep: (
         <Button
           type="submit"
           className="w-full bg-[#1b3c73] hover:bg-[#152e5a]"
-          disabled={isPending || isFetchingParent || isCreatingZone}
+          disabled={isPending}
         >
-          {isPending || isCreatingZone ? "Saving..." : isFetchingParent ? "Loading..." : "Next"}
+          {isPending ? "Saving..." : "Next"}
         </Button>
       </form>
     </div>

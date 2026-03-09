@@ -12,6 +12,7 @@ import {
 } from "react-hook-form";
 import { Country, State } from "country-state-city";
 import { InputGroup } from "@/shared/ui/input-group";
+import { SearchableSelect } from "@/shared/ui/searchable-select";
 
 interface CountryStateInputProps<T extends FieldValues> {
   control: Control<T>;
@@ -61,18 +62,18 @@ export function CountryStateInput<T extends FieldValues>({
         control={control}
         name={countryName}
         render={({ field }) => (
-          <InputGroup
-            label="Country"
-            type="select"
-            placeholder="Select Country"
-            options={countries}
-            error={errors?.[countryName]?.message}
-            {...field}
-            onValueChange={(val) => {
-              field.onChange(val);
-              setValue(stateName, "" as PathValue<T, Path<T>>);
-            }}
-          />
+          <InputGroup label="Country" error={errors?.[countryName]?.message}>
+            <SearchableSelect
+              options={countries}
+              placeholder="Select Country"
+              value={field.value}
+              onValueChange={(val) => {
+                field.onChange(val);
+                setValue(stateName, "" as PathValue<T, Path<T>>);
+              }}
+              isSearchable={true}
+            />
+          </InputGroup>
         )}
       />
 
@@ -80,16 +81,16 @@ export function CountryStateInput<T extends FieldValues>({
         control={control}
         name={stateName}
         render={({ field }) => (
-          <InputGroup
-            label="State"
-            type="select"
-            placeholder="Select State"
-            options={states}
-            disabled={!selectedCountry || states.length === 0}
-            error={errors?.[stateName]?.message}
-            {...field}
-            onValueChange={field.onChange}
-          />
+          <InputGroup label="State" error={errors?.[stateName]?.message}>
+            <SearchableSelect
+              options={states}
+              placeholder="Select State"
+              value={field.value}
+              onValueChange={field.onChange}
+              disabled={!selectedCountry || states.length === 0}
+              isSearchable={true}
+            />
+          </InputGroup>
         )}
       />
     </div>

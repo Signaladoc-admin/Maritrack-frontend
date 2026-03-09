@@ -24,9 +24,10 @@ export default function PricingStep({ onBack, onSuccess }: PricingStepProps) {
   const router = useRouter();
 
   const handleSelectBasicPlan = () => {
-    // Basic plan or skip
     onSuccess();
   };
+
+  console.log(plans);
 
   const handleSelectPremiumPlan = async (planId: string) => {
     if (!user?.zoneId?.[0]?.id) {
@@ -70,13 +71,6 @@ export default function PricingStep({ onBack, onSuccess }: PricingStepProps) {
     { text: "Multiple Devices", included: false },
   ];
 
-  const premiumFeatures = [
-    { text: "Customer Support", included: true },
-    { text: "Upto 10 Users", included: true },
-    { text: "Monthly Reports", included: true },
-    { text: "Multiple Devices Supported", included: true },
-  ];
-
   if (isLoading) {
     return (
       <div className="flex h-[400px] flex-col items-center justify-center space-y-4">
@@ -94,50 +88,61 @@ export default function PricingStep({ onBack, onSuccess }: PricingStepProps) {
     ? premiumPlanData.description
     : "On even feet time have an no at. Relation so in confined smallest children unpacked delicate. Why sir end believe.";
 
+  const premiumFeatures = [
+    { text: premiumPlanData?.name!, included: true },
+    { text: "Customer Support", included: true },
+    { text: "Monthly Reports", included: true },
+    { text: "Multiple Devices Supported", included: true },
+  ];
+
   return (
     <div className="space-y-10">
       <Button variant="link" onClick={onBack} className="flex items-center gap-1! px-0">
         <ChevronLeft className="h-6! w-6! text-orange-500" /> Go back
       </Button>
 
-      <div className="space-y-4 text-center">
-        <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 md:text-5xl">
-          Start today, with free or premium plan, you choose
-        </h1>
-        <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
-          With lots of unique and useful features, you can easily manage your wallet easily without
-          any problem.
-        </p>
-      </div>
-
-      <div className="mx-auto grid gap-8 pb-10 md:grid-cols-2 lg:max-w-4xl">
-        <PricingCard
-          title="BASIC PLAN"
-          price="0"
-          description="Joy horrible moreover man feelings own shy. Request norland neither mistake for yet. Between the for morning assured."
-          features={features}
-          buttonText="Get Basic"
-          onButtonClick={handleSelectBasicPlan}
-        />
-        <PricingCard
-          title={premiumTitle}
-          price={premiumPrice}
-          isPremium
-          description={premiumDesc}
-          features={premiumFeatures}
-          buttonText="Get the premium"
-          onButtonClick={() => {
-            if (premiumPlanData?.id) {
-              handleSelectPremiumPlan(premiumPlanData.id);
-            } else {
-              toast({
-                title: "Error",
-                message: "Premium plan not available right now",
-                type: "error",
-              });
-            }
-          }}
-        />
+      <div className="mx-auto max-w-5xl space-y-6 px-10">
+        <div className="space-y-4 text-center">
+          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 md:text-5xl">
+            Start today, with free or premium plan, you choose
+          </h1>
+          <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
+            With lots of unique and useful features, you can easily manage your wallet easily
+            without any problem.
+          </p>
+        </div>
+        <div className="grid justify-center gap-8 md:grid-cols-2">
+          <PricingCard
+            title="BASIC PLAN"
+            price="0"
+            description="Get started with our free plan and enjoy basic features."
+            features={features}
+            buttonText="Get Basic"
+            onButtonClick={handleSelectBasicPlan}
+          />
+          <PricingCard
+            title={premiumTitle}
+            price={premiumPrice}
+            isPremium
+            description={premiumDesc}
+            features={premiumFeatures}
+            frequency={premiumPlanData?.billingCycle}
+            buttonText="Get the premium"
+            onButtonClick={() => {
+              if (premiumPlanData?.id) {
+                console.log(premiumPlanData.id);
+                // handleSelectPremiumPlan(premiumPlanData.id);
+                onSuccess();
+              } else {
+                toast({
+                  title: "Error",
+                  message: "Premium plan not available right now",
+                  type: "error",
+                });
+              }
+            }}
+          />
+        </div>
       </div>
     </div>
   );

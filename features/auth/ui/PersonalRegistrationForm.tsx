@@ -2,89 +2,207 @@
 
 import { Button } from "@/shared/ui/button";
 import { InputGroup } from "@/shared/ui/input-group";
-import Link from "next/link";
-import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { personalRegistrationFormSchema, PersonalRegistrationFormValues } from "../schema";
+import { parentRegistrationFormSchema, ParentRegistrationFormValues } from "../schema";
 import { useRouter } from "next/navigation";
 import HaveAnAccount from "./HaveAnAccount";
-import { useRegister } from "@/features/auth-register/model/useRegister";
+import { useRegisterParent } from "@/features/auth-register/model/useRegisterParent";
+import { parentGenderOptions } from "@/lib/constants/shared";
+import { SearchableSelect } from "@/shared/ui/searchable-select";
+import { ChevronLeft } from "lucide-react";
+import { useNewUserStore } from "@/shared/stores/user-store";
+import { CountryStateInput } from "@/shared/ui/inputs/country-state-input";
 
 export default function PersonalRegistrationForm() {
   const router = useRouter();
-  const form = useForm<PersonalRegistrationFormValues>({
-    resolver: zodResolver(personalRegistrationFormSchema),
+  const [step, setStep] = useState(1);
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    trigger,
+    setValue,
+    formState: { errors },
+  } = useForm<ParentRegistrationFormValues>({
+    resolver: zodResolver(parentRegistrationFormSchema),
     defaultValues: {
       firstName: "",
       lastName: "",
       email: "",
       password: "",
       confirmPassword: "",
+      gender: undefined,
+      address: "",
+      country: "",
+      state: "",
     },
+    mode: "onTouched",
   });
 
-  const { register, isSubmitting, error } = useRegister();
+  const { registerParent, isSubmitting, error } = useRegisterParent();
+  const { setEmail, setPassword, setToken } = useNewUserStore();
 
-  const onSubmit = async (data: PersonalRegistrationFormValues) => {
+  const handleNextStep = async () => {
+    const isValid = await trigger([
+      "firstName",
+      "lastName",
+      "email",
+      "password",
+      "confirmPassword",
+    ]);
+    if (isValid) {
+      setStep(2);
+    }
+  };
+
+  const onSubmit = async (data: ParentRegistrationFormValues) => {
     console.log("Form values:", data);
-    const payload = {
-      email: data.email,
-      password: data.password,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      role: "USER",
-      status: "ACTIVE",
-    };
 
-    await register(payload);
+    const formData = new FormData();
+    formData.append("email", data.email);
+    formData.append("password", data.password);
+    formData.append("firstName", data.firstName);
+    formData.append("lastName", data.lastName);
+    formData.append("role", "USER");
+    formData.append("status", "ACTIVE");
+    formData.append("gender", data.gender);
+    formData.append("address", data.address);
+    formData.append("country", data.country);
+    formData.append("state", data.state);
+
+    console.log("Form values:", data);
+    console.log("Form data contents:", Object.fromEntries(formData.entries()));
+
+    const res: any = await registerParent(formData);
+
+    setEmail(data.email);
+    setPassword(data.password);
+    if (res?.token) {
+      setToken(res.token);
+    }
 
     router.push("/confirm-email");
   };
 
-  return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-7">
-      <div className="grid gap-5 sm:grid-cols-2">
-        <InputGroup
-          label="First name"
-          type="text"
-          placeholder="First name here"
-          {...form.register("firstName")}
-          error={form.formState.errors.firstName?.message}
-        />
-        <InputGroup
-          label="Last name"
-          type="text"
-          placeholder="Last name here"
-          {...form.register("lastName")}
-          error={form.formState.errors.lastName?.message}
-        />
-      </div>
-      <InputGroup
-        label="Email"
-        type="email"
-        placeholder="Email here"
-        {...form.register("email")}
-        error={form.formState.errors.email?.message}
-      />
-      <InputGroup
-        type="password"
-        label="Password"
-        placeholder="Password here"
-        {...form.register("password")}
-        error={form.formState.errors.password?.message}
-      />
-      <InputGroup
-        type="password"
-        label="Confirm password"
-        placeholder="Confirm password here"
-        {...form.register("confirmPassword")}
-        error={form.formState.errors.confirmPassword?.message}
-      />
+  console.log("Form errors:", errors);
 
-      <Button type="submit" className="w-full">
-        {isSubmitting ? "Creating account..." : "Create Account"}
-      </Button>
-      <HaveAnAccount />
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    const target = e.target as HTMLElement;
+    if (
+      e.key === "Enter" &&
+      step === 1 &&
+      (target.tagName === "INPUT" || target.tagName === "SELECT")
+    ) {
+      e.preventDefault();
+      handleNextStep();
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} onKeyDown={handleKeyDown} className="space-y-7">
+      {error && (
+        <div className="bg-destructive/15 text-destructive rounded-md p-3 text-sm">{error}</div>
+      )}
+      {step === 1 && (
+        <>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <InputGroup
+              label="First name"
+              type="text"
+              placeholder="First name here"
+              {...register("firstName")}
+              error={errors.firstName?.message}
+            />
+            <InputGroup
+              label="Last name"
+              type="text"
+              placeholder="Last name here"
+              {...register("lastName")}
+              error={errors.lastName?.message}
+            />
+          </div>
+          <InputGroup
+            label="Email"
+            type="email"
+            placeholder="Email here"
+            {...register("email")}
+            error={errors.email?.message}
+          />
+          <InputGroup
+            type="password"
+            label="Password"
+            placeholder="Password here"
+            {...register("password")}
+            error={errors.password?.message}
+          />
+          <InputGroup
+            type="password"
+            label="Confirm password"
+            placeholder="Confirm password here"
+            {...register("confirmPassword")}
+            error={errors.confirmPassword?.message}
+          />
+
+          <Button type="button" onClick={handleNextStep} className="w-full">
+            Next
+          </Button>
+          <HaveAnAccount />
+        </>
+      )}
+
+      {step === 2 && (
+        <div className="animate-in fade-in slide-in-from-right-4 space-y-7 duration-300">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              className="flex shrink-0 items-center justify-center rounded-md p-2 transition-colors hover:bg-gray-100"
+            >
+              <ChevronLeft className="h-5 w-5 text-gray-500" />
+            </button>
+            <h3 className="text-xl font-semibold">Basic Information</h3>
+          </div>
+
+          <Controller
+            control={control}
+            name="gender"
+            render={({ field }) => (
+              <InputGroup label="What gender of parent are you?" error={errors.gender?.message}>
+                <SearchableSelect
+                  options={parentGenderOptions}
+                  placeholder="Select Gender"
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  isSearchable={false}
+                />
+              </InputGroup>
+            )}
+          />
+
+          <InputGroup
+            label="Address"
+            type="text"
+            placeholder="Enter street address, apt. number, etc."
+            {...register("address")}
+            error={errors.address?.message}
+          />
+
+          <CountryStateInput
+            control={control}
+            countryName="country"
+            stateName="state"
+            errors={errors}
+            setValue={setValue}
+          />
+
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Creating account..." : "Complete Registration"}
+          </Button>
+        </div>
+      )}
     </form>
   );
 }

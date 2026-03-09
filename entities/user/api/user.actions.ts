@@ -1,6 +1,7 @@
 "use server";
 
 import { apiClient } from "@/shared/lib/api-client";
+import { cookies } from "next/headers";
 import type {
   UserProfile,
   UpdateProfileDto,
@@ -8,36 +9,24 @@ import type {
   UserFilterParams,
   IUserProfile,
 } from "../model/user.schema";
-import { cookies } from "next/headers";
-
-// --- Session ---
-
-export async function refreshSessionAction(): Promise<UserProfile> {
-  const cookieStore = await cookies();
-  const refreshToken = cookieStore.get("refreshToken")?.value;
-
-  if (!refreshToken) {
-    throw new Error("No refresh token available");
-  }
-
-  return apiClient(`/users/refreshToken?token=${refreshToken}`, {
-    method: "POST",
-  });
-}
-
-export async function logoutAction(): Promise<void> {
-  return apiClient("/users/logout", {
-    method: "POST",
-  });
-}
 
 // --- Profile ---
 
-export async function getProfileAction(): Promise<IUserProfile> {
-  const response = await apiClient("/users/user", {
-    method: "GET",
-  });
-  return response.data;
+export async function getProfileAction(): Promise<IUserProfile | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("accessToken")?.value || cookieStore.get("refreshToken")?.value;
+
+  if (!token) return null;
+
+  try {
+    const response = await apiClient("/users/user", {
+      method: "GET",
+      noRedirect: true,
+    });
+    return response.data;
+  } catch (error) {
+    return null;
+  }
 }
 
 export async function getUserByIdAction(id: string): Promise<UserProfile> {
@@ -48,9 +37,16 @@ export async function getUserByIdAction(id: string): Promise<UserProfile> {
 }
 
 export async function updateProfileAction(data: UpdateProfileDto): Promise<UserProfile> {
+  const formData = new FormData();
+  if (data.firstName) formData.append("firstName", data.firstName);
+  if (data.lastName) formData.append("lastName", data.lastName);
+  if (data.phone) formData.append("phone", data.phone);
+  if (data.imageUrl) formData.append("imageUrl", data.imageUrl);
+  if (data.profileImage instanceof File) formData.append("profileImage", data.profileImage);
+
   const response = await apiClient("/users/user/update", {
     method: "PATCH",
-    body: JSON.stringify(data),
+    body: formData,
   });
   return response.data;
 }

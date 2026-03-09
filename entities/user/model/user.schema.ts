@@ -25,6 +25,8 @@ export interface IUserProfile {
   lastName: string;
   role: "ADMIN" | "USER";
   imageUrl: string;
+  isFirstLogin?: boolean;
+  isEmailVerified?: boolean;
   parentId: string;
   zoneId: {
     name: string;
@@ -55,6 +57,7 @@ export const updateProfileSchema = z.object({
   lastName: z.string().optional(),
   imageUrl: z.string().optional(),
   phone: z.string().optional(),
+  profileImage: z.any().optional(),
 });
 
 export type UpdateProfileDto = z.infer<typeof updateProfileSchema>;

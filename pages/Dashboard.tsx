@@ -51,7 +51,7 @@ export default function Dashboard() {
       <div
         ref={scrollContainerRef}
         {...events}
-        className="flex w-full cursor-grab gap-6 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] *:min-w-[85%] *:shrink-0 active:cursor-grabbing md:*:max-w-[calc((100%-48px)/2.5)] md:*:min-w-[calc((100%-48px)/2.5)] [&::-webkit-scrollbar]:hidden"
+        className="flex w-full cursor-grab gap-6 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] *:min-w-[92%] *:shrink-0 active:cursor-grabbing md:*:max-w-[calc((100%-48px)/1.8)] md:*:min-w-[calc((100%-48px)/1.8)] lg:*:max-w-[calc((100%-48px)/2.2)] lg:*:min-w-[calc((100%-48px)/2.2)] [&::-webkit-scrollbar]:hidden"
       >
         <DeviceUsageCard
           deviceName="Mide's iPhone"

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Dialog, DialogContent } from "@/shared/ui/Modal/dialog"; // Adjust path to your Dialog component
+import { Dialog, DialogContent, DialogTitle } from "@/shared/ui/Modal/dialog"; // Adjust path to your Dialog component
 import { cn } from "@/lib/utils";
 
 interface LoaderModalProps {
@@ -30,6 +30,7 @@ export function LoaderModal({
         showCloseButton={false}
         className="flex flex-col items-center justify-center gap-6 p-10 outline-none sm:max-w-[300px]"
       >
+        <DialogTitle className="sr-only">{text}</DialogTitle>
         {/* Loader GIF */}
         <div className="relative h-24 w-24">
           <img src={gifSrc} alt="Loading spinner" className="h-full w-full object-contain" />

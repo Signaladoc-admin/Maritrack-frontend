@@ -59,7 +59,7 @@ function CardWrapper({
   return (
     <div className={cn(cardWrapperVariants({ variant, padding, radius, className }))} {...props}>
       {header && <div className="mb-4">{header}</div>}
-      <div className="h-full w-full">{children}</div>
+      <div>{children}</div>
       {footer && <div className="mt-4">{footer}</div>}
     </div>
   );

@@ -9,37 +9,55 @@ import PricingStep from "./PricingStep";
 import PairingQRStep from "./PairingQRStep";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
 import { useParent } from "@/entities/parents/model/useParents";
-import { useCreateChild, useUpdateChild } from "@/entities/children/model/useChildren";
+import {
+  useCreateChild,
+  useUpdateChild,
+  useDeleteChild,
+} from "@/entities/children/model/useChildren";
 import { createChildAction, getChildByIdAction } from "@/entities/children/api/child.actions";
 import { getProfileAction } from "@/entities/user/api/user.actions";
-import {
-  createZoneAction,
-  getQrCodeAction,
-  getParentZonesAction,
-} from "@/features/mdm-sync/api/mdm-sync.actions";
+import { createZoneAction, getQrCodeAction } from "@/features/mdm-sync/api/mdm-sync.actions";
 import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
 import { useEffect, useCallback } from "react";
 import { useToast } from "@/shared/ui/toast";
 import { Loader } from "@/shared/ui/loader";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useParentStore } from "@/shared/stores/user-store";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function ChildrenProfiles({
-  goToPrevStep,
   goToNextStep,
+  onViewChange,
+  hasPaid,
+  setHasPaid,
 }: {
-  goToPrevStep: () => void;
   goToNextStep: () => void;
+  onViewChange?: (view: "form" | "list" | "pricing" | "qr") => void;
+  hasPaid: boolean;
+  setHasPaid: (value: boolean) => void;
 }) {
   const [childProfiles, setChildProfiles] = useState<IChildProfile[]>([]);
   const searchParams = useSearchParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
-  const { data: user } = useUserProfile();
-  const { data: parent } = useParent(user?.parentId!);
+  const { data: user, isLoading: isLoadingUser } = useUserProfile();
+  const storedParentId = useParentStore((state) => state.parentId);
+  const activeParentId = user?.parentId || storedParentId;
 
-  const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentZones();
+  console.log(user);
+  console.log(storedParentId);
+  console.log(activeParentId);
+
+  const { data: parent } = useParent(activeParentId!);
+
+  const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentZones({
+    enabled: !!activeParentId,
+  });
+  console.log(parentZonesRes);
   const { mutateAsync: createChild, isPending: isCreatingChild } = useCreateChild();
   const { mutateAsync: updateChild, isPending: isUpdatingChild } = useUpdateChild();
+  const { mutateAsync: deleteChild } = useDeleteChild();
   const { toast } = useToast();
 
   console.log("zone:", parentZonesRes);
@@ -56,79 +74,73 @@ export default function ChildrenProfiles({
   }, [parentZonesRes]);
 
   const [currentView, setCurrentView] = useState<"form" | "list" | "pricing" | "qr">("list");
+
+  useEffect(() => {
+    onViewChange?.(currentView);
+  }, [currentView, onViewChange]);
+
   const [selectedChildProfile, setSelectedChildProfile] = useState<IChildProfile | null>(null);
   const [pendingChild, setPendingChild] = useState<IChildProfile | null>(null);
-  const [qrCodeData, setQrCodeData] = useState<string | null>(null);
+
+  console.log(user);
 
   const handleAddChild = useCallback(
     async (data: IChildProfile) => {
-      if (!parent?.id) {
+      if (!activeParentId) {
         toast({ title: "Error", message: "Parent profile not found", type: "error" });
         return;
       }
 
       try {
-        const result = await createChildAction({ ...data, parentId: parent.id });
-        console.log(result);
-
         const res: any = await createChild({
           name: data.name,
           age: Number(data.age),
           gender: data.gender as any,
-          parentId: parent.id,
+          parentId: activeParentId,
         });
-        console.log(res);
+
+        console.log("Create child result:", res);
 
         if (res) {
-          const newChildInfo = { ...data, ...res };
+          const onboardingCode = res.onboardingCode || res.data?.onboardingCode;
+
+          const newChildInfo = {
+            ...data,
+            ...res,
+            id: res.id || res.data?.id,
+            onboardingCode: onboardingCode,
+          };
+
           setChildProfiles((prev) => [...prev, newChildInfo as any]);
           setPendingChild(newChildInfo as any);
 
-          try {
-            // 1. Get child details to extract onboardingCode
-            const childDetails = await getChildByIdAction(res.id);
-            const onboardingCode = (childDetails as any).onboardingCode;
-
-            // 2. Create zone completely conditionally if one doesn't exist AND we now have a child
-            if (!user?.zoneId?.length) {
-              await createZoneAction({});
-            }
-
-            // 3. Get updated user profile which now contains the newly created zoneId
+          // Ensure we have a zone
+          let activeZoneId = user?.zoneId?.[0]?.id;
+          if (!activeZoneId) {
+            await createZoneAction();
             const updatedProfile = await getProfileAction();
-            const zoneId = (updatedProfile as any).zoneId?.[0]?.id || user?.zoneId?.[0]?.id;
-
-            // 4. Fetch the QR code
-            if (zoneId && onboardingCode) {
-              const qrCodeRes = await getQrCodeAction(zoneId, onboardingCode);
-              if (qrCodeRes.success) {
-                setQrCodeData(qrCodeRes.data as string);
-              }
-            }
-          } catch (e) {
-            console.error("Failed to generate QR code", e);
+            activeZoneId = (updatedProfile as any).zoneId?.[0]?.id;
+            queryClient.invalidateQueries({ queryKey: ["user-profile"] });
           }
-        } else {
-          const dummyChild = { ...data, id: "pending-" + crypto.randomUUID() };
-          setChildProfiles((prev) => [...prev, dummyChild]);
-          setPendingChild(dummyChild);
+
+          toast({ title: "Success", message: "Child profile created", type: "success" });
+
+          // If not paid, go to pricing. Otherwise, return to list.
+          if (!hasPaid) {
+            setCurrentView("pricing");
+          } else {
+            setCurrentView("list");
+          }
         }
-        toast({
-          title: "Success",
-          message: "Child profile created successfully!",
-          type: "success",
-        });
-        setCurrentView("qr");
       } catch (e: any) {
-        const errorMsg = e.message || "";
         toast({
           title: "Error",
-          message: errorMsg || "Failed to create child profile",
+          message: e.message || "Failed to create child profile",
           type: "error",
         });
       }
     },
-    [parent, user, createChild, toast]
+    [activeParentId, createChild, toast, user?.zoneId, queryClient, hasPaid]
   );
 
   const handleEditChild = async (data: IChildProfile) => {
@@ -140,8 +152,14 @@ export default function ChildrenProfiles({
         } as any);
       }
       setChildProfiles((prev) => prev.map((child) => (child.id === data.id ? data : child)));
-      setCurrentView("list");
+
       toast({ title: "Success", message: "Child profile updated", type: "success" });
+
+      if (!hasPaid) {
+        setCurrentView("pricing");
+      } else {
+        setCurrentView("list");
+      }
     } catch (e: any) {
       toast({ title: "Error", message: e.message || "Failed to update profile", type: "error" });
     }
@@ -155,6 +173,20 @@ export default function ChildrenProfiles({
   const handleOpenForm = (profile?: IChildProfile) => {
     setSelectedChildProfile(profile || null);
     setCurrentView("form");
+  };
+
+  const handlePairingRollback = async () => {
+    if (pendingChild?.id) {
+      console.log("Rolling back: deleting child", pendingChild.id);
+      try {
+        await deleteChild(pendingChild.id);
+        setChildProfiles((prev) => prev.filter((cp) => cp.id !== pendingChild.id));
+      } catch (deleteError) {
+        console.error("Failed to delete child during rollback:", deleteError);
+      }
+    }
+    setPendingChild(null);
+    setCurrentView("list");
   };
 
   if (currentView === "form") {
@@ -173,112 +205,151 @@ export default function ChildrenProfiles({
   }
 
   if (currentView === "pricing") {
-    return <PricingStep onBack={() => setCurrentView("list")} onSuccess={() => goToNextStep()} />;
-  }
-
-  if (currentView === "qr") {
     return (
-      <PairingQRStep
-        childName={pendingChild?.name || "Child"}
-        qrCode={qrCodeData}
+      <PricingStep
         onBack={() => setCurrentView("list")}
-        onComplete={handleFinishPairing}
+        onSuccess={() => {
+          setHasPaid(true);
+          // If we have a pending child that needs pairing, go to QR. Otherwise, go to list.
+          if (pendingChild) {
+            setCurrentView("qr");
+          } else {
+            setCurrentView("list");
+          }
+          toast({
+            title: "Plan Selected",
+            message: "You can now pair your children's devices",
+            type: "success",
+          });
+        }}
       />
     );
   }
 
-  async function handleSubmit() {
-    if (!childProfiles.length) {
-      toast({
-        title: "Error",
-        message: "Please add at least one child profile",
-        type: "error",
-      });
-      return;
+  if (currentView === "qr") {
+    // Find the onboarding code. If it's a freshly created child, it's in pendingChild.
+    // If it's an existing child we just clicked "View QR" for, we might need to find it
+    // in parentZonesRes based on the childId.
+    let onboardingCode = pendingChild?.onboardingCode;
+
+    if (!onboardingCode && pendingChild?.id) {
+      // Fallback: search in the parentZonesRes structure provided by the user
+      const zoneWithChild = parentZonesRes?.find((zone: any) =>
+        zone.parentChildren?.some((pc: any) => pc.childId === pendingChild.id)
+      );
+      const childRecord = zoneWithChild?.parentChildren?.find(
+        (pc: any) => pc.childId === pendingChild.id
+      )?.child;
+      onboardingCode = childRecord?.onboardingCode;
     }
 
-    // Create children
-    await Promise.all(
-      childProfiles.map((child) => {
-        createChild({
-          name: child.name,
-          age: Number(child.age),
-          gender: child.gender as any,
-          parentId: user?.parentId || parent?.id || "",
-        });
-      })
+    const activeZoneId = user?.zoneId?.[0]?.id || parentZonesRes?.[0]?.id;
+
+    return (
+      <PairingQRStep
+        childName={pendingChild?.name || "Child"}
+        zoneId={activeZoneId || ""}
+        onboardingCode={onboardingCode || ""}
+        onBack={() => setCurrentView("list")}
+        onComplete={handleFinishPairing}
+        onRollback={handlePairingRollback}
+      />
     );
+  }
 
-    toast({
-      title: "Success",
-      message: "Children profiles created successfully!",
-      type: "success",
-    });
+  const isInitialLoading = isLoadingUser || (!!activeParentId && isFetchingChildren);
 
-    goToNextStep();
+  console.log(isInitialLoading);
+
+  console.log(isFetchingChildren);
+
+  if (isInitialLoading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm">
+        <Loader size="lg" className="scale-150" />
+      </div>
+    );
   }
 
   return (
     <div className="space-y-5">
-      <Header title="Create your children's profile" subtitle="Create your children's accounts" />
-
-      <div className="space-y-4">
-        {childProfiles.map((childProfile, index) => (
-          <ChildProfileCard
-            key={childProfile.id || index}
-            onEdit={() => handleOpenForm(childProfile)}
-            onViewQR={() => {
-              setPendingChild(childProfile);
-              setCurrentView("qr");
+      <div className="flex items-start justify-between">
+        <Header title="Create your children's profile" subtitle="Create your children's accounts" />
+        {hasPaid && (
+          <div className="flex flex-col items-end gap-2">
+            <span className="animate-in fade-in slide-in-from-right-4 rounded-full border border-green-200 bg-green-100 px-3 py-1 text-xs font-bold tracking-wider text-green-700 uppercase shadow-sm">
+              Plan Active
+            </span>
+            <button
+              onClick={() => setHasPaid(false)}
+              className="text-[10px] text-slate-400 underline transition-colors hover:text-red-400"
+            >
+              Reset for testing
+            </button>
+          </div>
+        )}
+      </div>
+      <div>
+        <div className="space-y-4">
+          {childProfiles.map((childProfile, index) => (
+            <ChildProfileCard
+              key={childProfile.id || index}
+              onEdit={() => handleOpenForm(childProfile)}
+              onViewQR={
+                hasPaid
+                  ? () => {
+                      setPendingChild(childProfile);
+                      setCurrentView("qr");
+                    }
+                  : undefined // Hide or disable QR view if not paid
+              }
+              {...childProfile}
+            />
+          ))}
+        </div>
+        {childProfiles.length === 0 && (
+          <button
+            onClick={() => handleOpenForm()}
+            className="border-muted-foreground/20 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed bg-neutral-50/50 py-12 transition-colors hover:bg-neutral-100/50"
+          >
+            <Plus className="text-primary/70 h-5 w-5" />
+            <span className="font-medium text-slate-500">Add a profile</span>
+          </button>
+        )}
+        <div className="flex gap-4 pt-4">
+          <Button
+            disabled={!childProfiles.length}
+            className="bg-primary hover:bg-primary/90 w-full"
+            onClick={() => {
+              if (hasPaid) {
+                goToNextStep();
+              } else {
+                setCurrentView("pricing");
+              }
             }}
-            {...childProfile}
-          />
-        ))}
-      </div>
-
-      <button
-        onClick={() => handleOpenForm()}
-        className="border-muted-foreground/20 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed bg-neutral-50/50 py-12 transition-colors hover:bg-neutral-100/50"
-      >
-        <Plus className="text-primary/70 h-5 w-5" />
-        <span className="font-medium text-slate-500">Add a profile</span>
-      </button>
-
-      <div className="flex gap-4 pt-4">
-        <Button
-          variant="secondary"
-          className="text-primary flex-1 bg-neutral-100 hover:bg-neutral-200"
-          onClick={goToPrevStep}
-        >
-          Previous
-        </Button>
-        <Button
-          disabled={!childProfiles.length}
-          className="bg-primary hover:bg-primary/90 flex-1"
-          onClick={() => setCurrentView("pricing")}
-        >
-          Next
-        </Button>
-      </div>
-
-      <div className="flex justify-center">
-        <Button
-          onClick={() => {
-            if (!childProfiles.length) {
-              toast({
-                title: "Error",
-                message: "Please add at least one child profile",
-                type: "error",
-              });
-              return;
-            }
-            goToNextStep();
-          }}
-          variant="link"
-          className="font-normal text-slate-500"
-        >
-          Skip for now
-        </Button>
+          >
+            {hasPaid ? "Continue to Setup" : "Next"}
+          </Button>
+        </div>
+        <div className="flex justify-center">
+          {/* <Button
+            onClick={() => {
+              if (!childProfiles.length) {
+                toast({
+                  title: "Error",
+                  message: "Please add at least one child profile",
+                  type: "error",
+                });
+                return;
+              }
+              goToNextStep();
+            }}
+            variant="link"
+            className="font-normal text-slate-500"
+          >
+            Skip for now
+          </Button> */}
+        </div>
       </div>
     </div>
   );

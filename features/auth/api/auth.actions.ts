@@ -6,7 +6,9 @@ import type {
   ForgotPasswordDto,
   ResetForgottenPasswordDto,
   ResetPasswordDto,
+  UserProfile,
 } from "@/entities/user/model/user.schema";
+import { cookies } from "next/headers";
 
 // --- Existing ---
 
@@ -74,4 +76,38 @@ export async function resendVerificationAction(method: string) {
   return apiClient(`/users/resend-verification/${method}`, {
     method: "POST",
   });
+}
+
+export async function logoutAction() {
+  const cookieStore = await cookies();
+
+  try {
+    await apiClient("/users/logout", {
+      method: "POST",
+    });
+  } catch (error) {
+    console.error("Backend logout failed:", error);
+  }
+
+  cookieStore.delete("accessToken");
+  cookieStore.delete("refreshToken");
+
+  return { success: true };
+}
+
+export async function getSessionAction(): Promise<UserProfile | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("accessToken")?.value || cookieStore.get("refreshToken")?.value;
+
+  if (!token) return null;
+
+  try {
+    const response = await apiClient("/users/user", {
+      method: "GET",
+      noRedirect: true,
+    });
+    return response.data;
+  } catch (error) {
+    return null;
+  }
 }

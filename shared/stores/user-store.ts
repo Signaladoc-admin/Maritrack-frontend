@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import {
   MessageCircle,
   Clapperboard,
@@ -236,8 +237,9 @@ const MOCK_DATA: Record<string, DashboardData> = {
 export const useUserStore = create<UserState>((set, get) => ({
   selectedChildId: "all",
   children: [
-    { id: "solomon", name: "Solomon" },
-    { id: "kuroebi", name: "Kuroebi" },
+    { id: "solomon", name: "Solomon Grundy" },
+    { id: "kuroebi", name: "Kuroebi Grundy" },
+    { id: "sammie", name: "Sammie Grundy" },
   ],
   setSelectedChildId: (id) => set({ selectedChildId: id }),
   setChildren: (children) => set({ children }),
@@ -252,8 +254,9 @@ export const useParentStore = create<ParentUserState>((set, get) => ({
   userId: "",
   selectedChildId: "all",
   children: [
-    { id: "solomon", name: "Solomon" },
-    { id: "kuroebi", name: "Kuroebi" },
+    { id: "solomon", name: "Solomon Grundy" },
+    { id: "kuroebi", name: "Kuroebi Grundy" },
+    { id: "sammie", name: "Sammie Grundy" },
   ],
   setParentId: (id) => set({ parentId: id }),
   setSelectedChildId: (id) => set({ selectedChildId: id }),
@@ -263,14 +266,21 @@ export const useParentStore = create<ParentUserState>((set, get) => ({
     return MOCK_DATA[selectedChildId] || MOCK_DATA.all;
   },
 }));
-export const useNewUserStore = create<NewUserState>((set) => ({
-  parentId: "",
-  email: "",
-  password: "",
-  token: null,
-  setEmail: (email) => set({ email }),
-  setPassword: (password) => set({ password }),
-  setParentId: (parentId) => set({ parentId }),
-  setToken: (token) => set({ token }),
-  clearCredentials: () => set({ email: "", password: "", token: null }),
-}));
+export const useNewUserStore = create<NewUserState>()(
+  persist(
+    (set) => ({
+      parentId: "",
+      email: "",
+      password: "",
+      token: null,
+      setEmail: (email: string) => set({ email }),
+      setPassword: (password: string) => set({ password }),
+      setParentId: (parentId: string) => set({ parentId }),
+      setToken: (token: string) => set({ token }),
+      clearCredentials: () => set({ email: "", password: "", token: null }),
+    }),
+    {
+      name: "maritrack-new-user-storage",
+    }
+  )
+);

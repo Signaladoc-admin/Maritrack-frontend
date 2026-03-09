@@ -2,93 +2,153 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { refreshAccessToken } from "./api/refresh-token";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
 
-export async function apiClient(endpoint: string, options: RequestInit = {}) {
+let refreshPromise: Promise<string | null> | null = null;
+
+export async function apiClient<T = any>(
+  endpoint: string,
+  options: RequestInit & { noRedirect?: boolean } = {}
+): Promise<T> {
   const isServer = typeof window === "undefined";
+  const { noRedirect, ...fetchOptions } = options;
   const url = `${API_BASE_URL}${endpoint}`;
 
-  let headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...(options.headers as Record<string, string>),
+  const cookieStore = isServer ? await cookies() : null;
+  let accessToken = cookieStore?.get("accessToken")?.value;
+
+  const headers: Record<string, string> = {
+    ...(fetchOptions.headers as Record<string, string>),
   };
 
-  if (isServer) {
-    const cookieStore = await cookies();
-    const cookieString = cookieStore.toString();
-    if (cookieString) {
-      headers["Cookie"] = cookieString;
-    }
-    const accessToken = cookieStore.get("accessToken")?.value;
-    if (accessToken) {
-      headers["Authorization"] = `Bearer ${accessToken}`;
-    }
+  if (!(fetchOptions.body instanceof FormData) && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
   }
 
+  if (accessToken) {
+    headers["Authorization"] = `Bearer ${accessToken}`;
+  }
+
+  console.log(`\n================ API REQUEST ================`);
+  console.log(`[URL]: ${url}`);
+  console.log(`[METHOD]: ${fetchOptions.method || "GET"}`);
+  console.log(`[HEADERS]:`, JSON.stringify(headers, null, 2));
+  if (fetchOptions.body) {
+    console.log(`[BODY]:`, fetchOptions.body);
+  }
+  console.log(`=============================================\n`);
   let response: Response;
   try {
     response = await fetch(url, {
-      ...options,
+      ...fetchOptions,
       headers,
-      credentials: "include",
+      cache: "no-store",
     });
-  } catch (error: any) {
-    // Detect network-level errors thrown naturally by fetch()
-    if (error.name === "TypeError" && error.message.includes("fetch failed")) {
-      throw new Error(
-        "Unable to connect to the server. Please check your internet connection and try again."
-      );
-    }
-    // Fallback for other catastrophic network failures
-    throw new Error(error.message || "A network error occurred.");
+  } catch (error) {
+    console.error(`[apiClient] Fetch error for ${url}:`, error);
+    throw error;
   }
+  console.log(`[apiClient] Response status for ${url}: ${response.status}`);
 
-  // Handle Set-Cookie if on server
-  if (isServer && response.headers.has("Set-Cookie")) {
-    const setCookieHeader = response.headers.get("Set-Cookie");
-    if (setCookieHeader) {
-      const cookieStore = await cookies();
-
-      // Simple parse for cookies (splits multiple cookies if present)
-      // Note: In a real-world scenario, you might need a more robust parser like 'cookie'
-      const cookiesToSet = setCookieHeader.split(/,(?=[^;]+;)/);
-
-      for (const cookieStr of cookiesToSet) {
-        const [nameValue, ...parts] = cookieStr.split(";");
-        const [name, value] = nameValue.split("=");
-        if (name && value) {
-          const cookieOptions: any = {};
-          parts.forEach((part) => {
-            const [k, v] = part.trim().split("=");
-            const key = k.toLowerCase();
-            if (key === "httponly") cookieOptions.httpOnly = true;
-            if (key === "secure") cookieOptions.secure = true;
-            if (key === "path") cookieOptions.path = v;
-            if (key === "samesite") cookieOptions.sameSite = v.toLowerCase();
-            if (key === "max-age") cookieOptions.maxAge = parseInt(v);
-            if (key === "expires") cookieOptions.expires = new Date(v);
-          });
-          cookieStore.set(name.trim(), value.trim(), cookieOptions);
-        }
+  if (
+    response.status === 401 &&
+    isServer &&
+    !noRedirect &&
+    !endpoint.includes("/login") &&
+    !endpoint.includes("/refresh")
+  ) {
+    try {
+      if (!refreshPromise) {
+        refreshPromise = refreshAccessToken().finally(() => {
+          refreshPromise = null;
+        });
       }
+
+      const newAccessToken = await refreshPromise;
+
+      if (!newAccessToken) {
+        if (isServer && cookieStore) {
+          cookieStore.delete("accessToken");
+          cookieStore.delete("refreshToken");
+        }
+        redirect("/login");
+      }
+
+      headers["Authorization"] = `Bearer ${newAccessToken}`;
+
+      response = await fetch(url, {
+        ...fetchOptions,
+        headers,
+        cache: "no-store",
+      });
+    } catch {
+      if (isServer && cookieStore) {
+        cookieStore.delete("accessToken");
+        cookieStore.delete("refreshToken");
+      }
+      redirect("/login");
     }
   }
 
   if (!response.ok) {
-    if (
-      response.status === 401 &&
-      !endpoint.includes("/login") &&
-      !endpoint.includes("/register")
-    ) {
-      redirect("/login");
-    }
     const errorData = await response.json().catch(() => ({}));
+
+    console.log(`\n================ API ERROR RESPONSE ================`);
+    console.log(`[STATUS]: ${response.status} ${response.statusText}`);
+    console.log(`[DATA]:`, JSON.stringify(errorData, null, 2));
+    console.log(`====================================================\n`);
+
     const errorMessage = Array.isArray(errorData.message)
       ? errorData.message.join(", ")
       : errorData.message;
-    throw new Error(errorMessage || response.statusText || "An unexpected error occurred");
+
+    throw new Error(errorMessage || response.statusText);
   }
 
-  return response.json();
+  const parsedResponse = await response.json();
+
+  console.log(`\n================ API SUCCESS RESPONSE ================`);
+  console.log(`[STATUS]: ${response.status} ${response.statusText}`);
+  console.log(
+    `[DATA]:`,
+    JSON.stringify(parsedResponse, null, 2).substring(0, 1000) +
+      (JSON.stringify(parsedResponse).length > 1000 ? "... (truncated)" : "")
+  );
+  console.log(`======================================================\n`);
+
+  if (isServer && cookieStore) {
+    const accessToken =
+      parsedResponse.accessToken ||
+      parsedResponse.access_token ||
+      parsedResponse.data?.accessToken ||
+      parsedResponse.data?.access_token;
+
+    const refreshToken =
+      parsedResponse.refreshToken ||
+      parsedResponse.refresh_token ||
+      parsedResponse.data?.refreshToken ||
+      parsedResponse.data?.refresh_token;
+
+    if (accessToken || refreshToken) {
+      const cookieDefaults = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax" as const,
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60,
+      };
+
+      if (accessToken) {
+        cookieStore.set("accessToken", accessToken, cookieDefaults);
+      }
+
+      if (refreshToken) {
+        cookieStore.set("refreshToken", refreshToken, cookieDefaults);
+      }
+    }
+  }
+
+  return parsedResponse;
 }

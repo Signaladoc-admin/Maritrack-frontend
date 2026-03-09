@@ -14,13 +14,15 @@ import { PricingCard, PricingFeatureItem } from "@/shared/ui/PricingCard/Pricing
 import { DeviceUsageCard } from "@/shared/ui/DeviceStatusCard/DeviceStatusCard";
 import { UserSelect } from "@/shared/ui/UserDropdown/UserDropdown";
 import { DashboardCard } from "@/shared/ui/DashboardWidget/DashboardWidget";
-import { InfoListCard, InfoListItem } from "@/shared/ui/AppListCard/AppListCard";
+import { InfoListCard } from "@/shared/ui/AppListCard/AppListCard";
+import { InfoListItem } from "@/shared/ui/AppListCard/types";
 import { AlertTriangle, Ban, BarChart, Clock, Globe, Smartphone } from "lucide-react";
 import { BarChartCard, ChartDataPoint } from "@/shared/ui/BarChart/BarChartCard";
 import { TimelineCard, TimelineItemData } from "@/shared/ui/TimelineCard/TimelineCard";
 import { MostUsedAppsCard } from "@/shared/ui/MostUsedAppsCard/MostUsedAppsCard";
 import { RecentLocationCard } from "@/shared/ui/LocationHistoryCard/LocationHistoryCard";
 import GeofencingCard, { GeofencingLocation } from "@/shared/ui/GeofencingCard/GeofencingCard";
+import { websiteData } from "@/features/general/data";
 
 const mockUsers = [
   {

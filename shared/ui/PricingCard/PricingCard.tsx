@@ -4,6 +4,7 @@ import * as React from "react";
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/shared/ui/Button/button"; // Ensure this path is correct
+import { formatCurrency } from "@/shared/lib/utils";
 
 // --- Types ---
 export interface PricingFeatureItem {
@@ -28,7 +29,7 @@ export interface PricingCardProps {
 export function PricingCard({
   title,
   price,
-  currency = "$",
+  currency = "₦",
   frequency = "Per month",
   description,
   features,
@@ -37,10 +38,12 @@ export function PricingCard({
   onButtonClick,
   className,
 }: PricingCardProps) {
+  const formattedPrice = React.useMemo(() => formatCurrency(Number(price)), [price]);
+
   return (
     <div
       className={cn(
-        "relative flex w-full max-w-sm flex-col rounded-[32px] p-8 shadow-xl transition-all duration-300",
+        "relative flex h-full w-full flex-col rounded-[32px] p-8 shadow-xl transition-all duration-300",
         isPremium
           ? "bg-[#1B3C73] text-white ring-1 ring-[#1B3C73]" // Premium Styles
           : "bg-white text-slate-900 ring-1 ring-slate-100", // Basic Styles
@@ -55,7 +58,7 @@ export function PricingCard({
       )}
 
       {/* Header Section */}
-      <div className="mb-6 space-y-4">
+      <div className="mb-6 flex min-h-[180px] flex-col space-y-4">
         <h3
           className={cn(
             "text-sm font-bold tracking-widest uppercase",
@@ -65,13 +68,24 @@ export function PricingCard({
           {title}
         </h3>
 
-        <div className="flex items-baseline gap-1">
-          <span className="text-6xl font-extrabold tracking-tight">
-            {currency}
-            {price}
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          <span
+            className={cn(
+              "font-extrabold tracking-tight",
+              formattedPrice.length >= 10
+                ? "sm:text-4xl lg:text-5xl"
+                : formattedPrice.length >= 7
+                  ? "sm:text-5xl lg:text-6xl"
+                  : "sm:text-5xl lg:text-6xl"
+            )}
+          >
+            {formattedPrice}
           </span>
           <span
-            className={cn("text-lg font-medium", isPremium ? "text-slate-300" : "text-slate-400")}
+            className={cn(
+              "text-lg font-medium whitespace-nowrap",
+              isPremium ? "text-slate-300" : "text-slate-400"
+            )}
           >
             {frequency}
           </span>

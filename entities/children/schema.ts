@@ -15,6 +15,8 @@ export const CreateChildSchema = z.object({
   age: z.coerce.number(),
   gender: z.enum(["MALE", "FEMALE"]),
   parentId: z.string(),
+  imageUrl: z.string().optional(),
+  profilePicture: z.any().optional(),
 });
 export type CreateChildDto = z.infer<typeof CreateChildSchema>;
 

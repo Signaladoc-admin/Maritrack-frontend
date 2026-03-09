@@ -1,21 +1,13 @@
 import { InputGroup } from "@/shared/ui/input-group";
-import { Controller, useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useFormContext } from "react-hook-form";
 import { CardWrapper } from "@/shared/ui/card-wrapper";
 import CardHeader from "@/shared/ui/card-header";
 
-const schema = z.object({
-  is_legal_guardian: z.boolean(),
-});
-
 export default function ParentalConfirmation() {
-  const { control, formState } = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema),
-    defaultValues: {
-      is_legal_guardian: false,
-    },
-  });
+  const {
+    control,
+    formState: { errors },
+  } = useFormContext();
 
   return (
     <CardWrapper variant="outline" className="space-y-10!">
@@ -30,13 +22,13 @@ export default function ParentalConfirmation() {
             <div>
               <Controller
                 control={control}
-                name="is_legal_guardian"
+                name="parentalConsent"
                 render={({ field }) => (
                   <InputGroup
                     label="I confirm that I am the legal parent or guardian of the child(ren) added and I consent to monitoring their device activity."
                     type="checkbox"
-                    id="is_legal_guardian"
-                    error={formState.errors.is_legal_guardian?.message}
+                    id="parentalConsent"
+                    error={errors.parentalConsent?.message as string}
                     {...field}
                   />
                 )}

@@ -4,11 +4,11 @@ import AuthLayout from "@/features/auth/ui/AuthLayout";
 
 export default function LoginPage() {
   return (
-    <AuthLayout>
-      <div className="space-y-6">
-        <Header title="Welcome back" subtitle="Log in to manage your session" />
-        <LoginForm />
-      </div>
-    </AuthLayout>
+    // <AuthLayout>
+    <div className="space-y-6">
+      <Header title="Welcome back" subtitle="Log in to manage your session" />
+      <LoginForm />
+    </div>
+    // </AuthLayout>
   );
 }

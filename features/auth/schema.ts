@@ -35,3 +35,26 @@ export const businessRegistrationFormSchema = z
   });
 
 export type BusinessRegistrationFormValues = z.infer<typeof businessRegistrationFormSchema>;
+
+const parentGenderValues = ["FATHER", "MOTHER", "GUARDIAN"] as const;
+
+export const parentRegistrationFormSchema = z
+  .object({
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(1, "Password is required"),
+    confirmPassword: z.string().min(1, "Confirm password is required"),
+    gender: z.enum(parentGenderValues, {
+      error: () => ({ message: "Select a gender" }),
+    }),
+    address: z.string().min(1, "Enter your address"),
+    country: z.string().min(1, "Select a country"),
+    state: z.string().min(1, "Select a state"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+export type ParentRegistrationFormValues = z.infer<typeof parentRegistrationFormSchema>;

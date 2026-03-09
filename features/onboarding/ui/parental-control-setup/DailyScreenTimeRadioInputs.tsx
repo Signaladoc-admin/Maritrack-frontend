@@ -10,6 +10,7 @@ interface DailyScreenTimeRadioInputsProps {
   value?: string;
   onChange?: (value: string) => void;
   className?: string;
+  error?: string;
 }
 
 const PREDEFINED_OPTIONS = [
@@ -22,6 +23,7 @@ export default function DailyScreenTimeRadioInputs({
   value,
   onChange,
   className,
+  error,
 }: DailyScreenTimeRadioInputsProps) {
   const [customHours, setCustomHours] = React.useState<string>("9");
 
@@ -30,6 +32,14 @@ export default function DailyScreenTimeRadioInputs({
   const isCustom = value !== undefined && !isPredefined && value.endsWith("H");
 
   const currentRadioValue = isCustom ? "CUSTOM" : value;
+
+  // Synchronize customHours with the value prop when it changes
+  React.useEffect(() => {
+    if (isCustom && value) {
+      const hours = value.replace("H", "");
+      setCustomHours(hours);
+    }
+  }, [value, isCustom]);
 
   const handleRadioChange = (val: string) => {
     if (val === "CUSTOM") {
@@ -88,6 +98,7 @@ export default function DailyScreenTimeRadioInputs({
           </div>
         </div>
       </RadioGroup>
+      {error && <p className="text-sm font-medium text-red-500">{error}</p>}
     </div>
   );
 }

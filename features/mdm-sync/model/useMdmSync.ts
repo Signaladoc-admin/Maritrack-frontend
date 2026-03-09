@@ -1,3 +1,5 @@
+"use client";
+
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerActionMutation, useServerActionQuery } from "@/shared/api/server-action-hooks";
 import { createZoneAction, getQrCodeAction, getParentZonesAction } from "../api/mdm-sync.actions";
@@ -30,6 +32,9 @@ export function useGetQrCode(zoneId: string | undefined, onboardingCode: string 
   );
 }
 
-export function useParentZones() {
-  return useServerActionQuery(mdmSyncKeys.parentZones, getParentZonesAction, []);
+export function useParentZones(options?: { enabled?: boolean }) {
+  return useServerActionQuery(mdmSyncKeys.parentZones, getParentZonesAction, [], {
+    ...options,
+    retry: 0,
+  });
 }

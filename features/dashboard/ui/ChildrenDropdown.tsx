@@ -1,56 +1,90 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { ChevronDown, User } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
-
-interface Child {
-  id: string;
-  name: string;
-  image?: string;
-}
+import { useParentStore } from "@/shared/stores/user-store";
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/Avatar/Avatar";
 
 export function ChildrenDropdown() {
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const { children, selectedChildId, setSelectedChildId } = useParentStore();
 
-  const children: Child[] = [
-    {
-      id: "1",
-      name: "Solomon Grundy",
-      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Solomon",
-    },
-    {
-      id: "2",
-      name: "Kuroebi Grundy",
-      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Kuroebi",
-    },
-    {
-      id: "3",
-      name: "Sammie Grundy",
-      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sammie",
-    },
-  ];
+  const selectedChild = children.find((c) => c.id === selectedChildId);
+  const isAllSelected = selectedChildId === "all";
+
+  // Mock icons/avatars
+  const childAvatars: Record<string, string> = {
+    solomon: "https://api.dicebear.com/7.x/avataaars/svg?seed=Solomon",
+    kuroebi: "https://api.dicebear.com/7.x/avataaars/svg?seed=Kuroebi",
+    sammie: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sammie",
+  };
+
+  // Close when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const handleSelect = (id: string) => {
+    setSelectedChildId(id);
+    setIsOpen(false);
+  };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-4 rounded-[60px] border border-transparent bg-[#F8F9FA] py-2 pr-6 pl-2 transition-all hover:bg-neutral-100/50"
+        className="flex h-auto cursor-pointer items-center gap-4 rounded-[60px] border-none bg-[#F8F9FA] py-2 pr-6 pl-2 shadow-none transition-all hover:bg-neutral-100/50 focus:ring-0"
       >
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1B3C73] p-2">
-          <User className="h-5 w-5 text-white" />
+        <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#1B3C73]">
+          {isAllSelected ? (
+            <User className="h-5 w-5 text-white" />
+          ) : (
+            <Avatar className="h-full w-full">
+              <AvatarImage src={childAvatars[selectedChildId]} alt={selectedChild?.name} />
+              <AvatarFallback className="bg-[#1B3C73] text-white">
+                {selectedChild?.name?.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+          )}
         </div>
-        <span className="text-lg font-bold text-[#1B3C73]">All Children</span>
-        <ChevronDown
-          className={cn("h-6 w-6 text-[#1B3C73] transition-transform", isOpen && "rotate-180")}
-        />
+        <div className="flex items-center gap-2">
+          <span className="text-lg font-bold text-[#1B3C73]">
+            {isAllSelected ? "All Children" : selectedChild?.name}
+          </span>
+          <ChevronDown
+            className={cn(
+              "h-5 w-5 text-[#1B3C73] transition-transform duration-200",
+              isOpen && "rotate-180"
+            )}
+          />
+        </div>
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 z-50 mt-3 w-72 origin-top-right rounded-3xl bg-white p-2 shadow-2xl ring-1 ring-black/5">
+        <div className="animate-in fade-in zoom-in-95 absolute right-0 z-50 mt-3 w-72 origin-top-right rounded-3xl bg-white p-2 shadow-2xl ring-1 ring-black/5 duration-200">
           <div className="space-y-1">
-            <button className="flex w-full items-center gap-4 rounded-2xl bg-[#F8F9FA] px-4 py-3 text-left transition-colors hover:bg-neutral-100">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1B3C73] p-1.5">
+            <button
+              type="button"
+              onClick={() => handleSelect("all")}
+              className={cn(
+                "flex w-full cursor-pointer items-center gap-4 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-[#F8F9FA]",
+                isAllSelected && "bg-[#ECF1F9]"
+              )}
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1B3C73]">
                 <User className="h-5 w-5 text-white" />
               </div>
               <span className="text-base font-bold text-[#1B3C73]">All Children</span>
@@ -59,12 +93,29 @@ export function ChildrenDropdown() {
             {children.map((child) => (
               <button
                 key={child.id}
-                className="flex w-full items-center gap-4 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-neutral-50"
+                type="button"
+                onClick={() => handleSelect(child.id)}
+                className={cn(
+                  "flex w-full cursor-pointer items-center gap-4 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-neutral-50",
+                  selectedChildId === child.id && "bg-[#ECF1F9]"
+                )}
               >
-                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full transition-transform group-hover:scale-105">
-                  <img src={child.image} alt={child.name} className="h-full w-full object-cover" />
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={childAvatars[child.id]} alt={child.name} />
+                    <AvatarFallback className="bg-[#1B3C73] text-white">
+                      {child.name?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span
+                    className={cn(
+                      "text-base font-bold",
+                      selectedChildId === child.id ? "text-[#1B3C73]" : "text-slate-700"
+                    )}
+                  >
+                    {child.name}
+                  </span>
                 </div>
-                <span className="text-base font-bold text-slate-700">{child.name}</span>
               </button>
             ))}
           </div>
