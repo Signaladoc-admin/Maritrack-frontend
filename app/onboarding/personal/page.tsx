@@ -31,6 +31,27 @@ function OnboardingContent() {
     return 0;
   });
 
+  const nextStep = () => {
+    setCurrentStep((p) => {
+      const next = Math.min(p + 1, 2);
+      return next;
+    });
+    // Get the new step directly from state queue or compute it manually to avoid stale closures
+    const currentParam = parseInt(stepParam || "0", 10);
+    const next = Math.min(currentParam + 1, 2);
+    router.push(`/onboarding/personal?step=${next}`);
+  };
+
+  const prevStep = () => {
+    setCurrentStep((p) => {
+      const prev = Math.max(p - 1, 0);
+      return prev;
+    });
+    const currentParam = parseInt(stepParam || "0", 10);
+    const prev = Math.max(currentParam - 1, 0);
+    router.push(`/onboarding/personal?step=${prev}`);
+  };
+
   const { parentId: storeParentId } = useParentStore();
   const { mutateAsync: verifyPayment } = useVerifyPayment();
   const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();

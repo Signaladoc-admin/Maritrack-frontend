@@ -84,6 +84,8 @@ export default function ChildrenProfiles({
 
   console.log(user);
 
+  console.log(user);
+
   const handleAddChild = useCallback(
     async (data: IChildProfile) => {
       if (!activeParentId) {
@@ -267,6 +269,16 @@ export default function ChildrenProfiles({
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm">
         <Loader size="lg" className="scale-150" />
+      </div>
+    );
+  }
+
+  console.log(isFetchingChildren);
+
+  if (isInitialLoading) {
+    return (
+      <div className="flex min-h-[400px] w-full items-center justify-center">
+        <Loader size="lg" />
       </div>
     );
   }
