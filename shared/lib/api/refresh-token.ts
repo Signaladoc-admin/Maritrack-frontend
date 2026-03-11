@@ -1,8 +1,10 @@
-import { cookies } from "next/headers";
-
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
 
 export async function refreshAccessToken() {
+  const isServer = typeof window === "undefined";
+  if (!isServer) return null;
+
+  const { cookies } = await import("next/headers");
   const cookieStore = await cookies();
 
   const refreshToken = cookieStore.get("refreshToken")?.value;

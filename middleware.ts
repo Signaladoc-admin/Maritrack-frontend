@@ -5,7 +5,16 @@ import type { NextRequest } from "next/server";
 // Role → Routes Configuration
 const roleAccessMap: Record<string, string[]> = {
   ADMIN: ["*"], // Admin has access to everything for now
-  USER: ["/dashboard", "/settings", "/onboarding", "onboarding/personal"],
+  USER: [
+    "/dashboard",
+    "/settings",
+    "/onboarding",
+    "onboarding/personal",
+    "/profile",
+    "/plans",
+    "/child",
+    "/device",
+  ],
 };
 
 // Routes that don't require authentication at all

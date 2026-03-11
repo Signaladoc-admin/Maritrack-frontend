@@ -31,26 +31,6 @@ function OnboardingContent() {
     return 0;
   });
 
-  const nextStep = () => {
-    setCurrentStep((p) => {
-      const next = Math.min(p + 1, 1);
-      return next;
-    });
-    const currentParam = parseInt(stepParam || "0", 10);
-    const next = Math.min(currentParam + 1, 1);
-    router.push(`/onboarding/personal?step=${next}`);
-  };
-
-  const prevStep = () => {
-    setCurrentStep((p) => {
-      const prev = Math.max(p - 1, 0);
-      return prev;
-    });
-    const currentParam = parseInt(stepParam || "0", 10);
-    const prev = Math.max(currentParam - 1, 0);
-    router.push(`/onboarding/personal?step=${prev}`);
-  };
-
   const { parentId: storeParentId } = useParentStore();
   const { mutateAsync: verifyPayment } = useVerifyPayment();
   const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
@@ -177,21 +157,6 @@ function OnboardingContent() {
       component: <ParentalControlSetup goToPrevStep={prevStep} />,
     },
   ];
-
-  async function handleLogout() {
-    try {
-      await logout();
-      queryClient.clear();
-      router.push("/login");
-    } catch (e) {
-      console.error("Logout failed", e);
-    }
-  }
-
-  const handleStepClick = (index: number) => {
-    setCurrentStep(index);
-    router.push(`/onboarding/personal?step=${index}`);
-  };
 
   return (
     <div className={cn("relative p-14", isFullWidth ? "p-0" : "p-14")}>

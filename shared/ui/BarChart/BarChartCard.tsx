@@ -59,41 +59,43 @@ export function BarChartCard({
       </CardHeader>
 
       <CardContent className="min-h-0 flex-1 pl-0">
-        <ResponsiveContainer width="100%" height={height}>
-          <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-            <XAxis
-              dataKey="name"
-              stroke="#888888"
-              fontSize={12}
-              tickLine={false}
-              axisLine={false}
-              tickMargin={10}
-            />
-            <YAxis
-              stroke="#888888"
-              fontSize={12}
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={(value: string) => `${value}h`}
-            />
-            <Tooltip cursor={{ fill: "transparent" }} content={<CustomTooltip />} />
-            <Bar
-              dataKey="value"
-              fill={barColor}
-              radius={[4, 4, 4, 4]} // Rounded corners on all sides
-              barSize={32} // Width of the bars
-            >
-              {/* Optional: Make the max value a slightly different color if desired */}
-              {data.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={barColor}
-                  className="cursor-pointer transition-opacity hover:opacity-80"
-                />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        <div style={{ height: `${height}px`, width: "100%" }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <XAxis
+                dataKey="name"
+                stroke="#888888"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+                tickMargin={10}
+              />
+              <YAxis
+                stroke="#888888"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(value: string) => `${value}h`}
+              />
+              <Tooltip cursor={{ fill: "transparent" }} content={<CustomTooltip />} />
+              <Bar
+                dataKey="value"
+                fill={barColor}
+                radius={[4, 4, 4, 4]} // Rounded corners on all sides
+                barSize={32} // Width of the bars
+              >
+                {/* Optional: Make the max value a slightly different color if desired */}
+                {data.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={barColor}
+                    className="cursor-pointer transition-opacity hover:opacity-80"
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </CardContent>
     </Card>
   );

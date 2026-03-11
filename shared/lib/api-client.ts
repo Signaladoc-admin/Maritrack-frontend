@@ -1,6 +1,5 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { refreshAccessToken } from "./api/refresh-token";
 
@@ -16,8 +15,23 @@ export async function apiClient<T = any>(
   const { noRedirect, ...fetchOptions } = options;
   const url = `${API_BASE_URL}${endpoint}`;
 
-  const cookieStore = isServer ? await cookies() : null;
-  let accessToken = cookieStore?.get("accessToken")?.value;
+  // Use dynamic import for cookies to avoid build errors in Pages Router
+  let accessToken: string | undefined;
+  let cookieStore: any = null;
+
+  if (isServer) {
+    const { cookies } = await import("next/headers");
+    cookieStore = await cookies();
+    accessToken = cookieStore.get("accessToken")?.value;
+  } else {
+    // Browser fallback
+    const cookies = document.cookie.split("; ").reduce((acc: any, curr) => {
+      const [key, value] = curr.split("=");
+      acc[key] = value;
+      return acc;
+    }, {});
+    accessToken = cookies["accessToken"];
+  }
 
   const headers: Record<string, string> = {
     ...(fetchOptions.headers as Record<string, string>),
