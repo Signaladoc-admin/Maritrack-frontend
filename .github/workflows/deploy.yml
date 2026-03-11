@@ -1,44 +1,84 @@
-name: Deploy Next.js to GCP
+# name: Deploy Next.js to GCP
+
+# on:
+#   push:
+#     branches:
+#       - main
+#       - dev/dev
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     environment: ${{ (github.ref == 'refs/heads/main' && 'production') || 'development' }}
+#     env:
+#       NODE_ENV: production
+#       NEXT_PUBLIC_API_URL: ${{ secrets.API_URL }}
+
+#     steps:
+#       - name: Checkout Code
+#         uses: actions/checkout@v4
+
+#       - name: Deploy via SSH
+#         uses: appleboy/ssh-action@v1.0.3
+#         with:
+#           host: ${{ secrets.SERVER_IP }}
+#           username: ${{ secrets.SSH_USER }}
+#           password: ${{ secrets.SSH_PASSWORD }}
+#           command_timeout: 10m 
+#           script: |
+#             # 1. Navigate to project folder
+#             cd ${{ secrets.DEPLOY_PATH }}
+
+#             # 2. Fetch and checkout the correct branch
+#             git fetch origin
+#             git checkout ${{ github.ref_name }}
+#             git pull origin ${{ github.ref_name }}
+
+#             # 3. Install dependencies
+#             npm install
+
+#             # 4. Build the Next.js app
+#             npm run build
+
+#             # 5. Restart the application with PM2
+#             pm2 restart maritrack-frontend || pm2 start npm --name "maritrack-frontend" -- start
+
+name: Deploy Maritrack to Dev
 
 on:
   push:
     branches:
-      - main
-      - dev/dev
+      - dev/dev  # Triggers only on pushes/merges to dev/dev
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: ${{ (github.ref == 'refs/heads/main' && 'production') || 'development' }}
-    env:
-      NODE_ENV: production
-      NEXT_PUBLIC_API_URL: ${{ secrets.API_URL }}
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Deploy via SSH
+      - name: Execute SSH Deployment Commands
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          command_timeout: 10m 
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          command_timeout: 15m # Gives the server plenty of time to run the Next.js build
+          script_stop: true    # Fails the Action instantly if npm run build fails
           script: |
-            # 1. Navigate to project folder
-            cd ${{ secrets.DEPLOY_PATH }}
-
-            # 2. Fetch and checkout the correct branch
+            # 1. Move to the project folder
+            cd /var/www/Maritrack-frontend
+            
+            # 2. Ensure we are on the right branch and pull fresh code
             git fetch origin
-            git checkout ${{ github.ref_name }}
-            git pull origin ${{ github.ref_name }}
-
-            # 3. Install dependencies
+            git checkout dev/dev
+            git pull origin dev/dev
+            
+            # 3. Install packages
             npm install
-
-            # 4. Build the Next.js app
+            
+            # 4. Build the application (Will halt here if there are code errors)
             npm run build
-
-            # 5. Restart the application with PM2
-            pm2 restart maritrack-frontend || pm2 start npm --name "maritrack-frontend" -- start
+            
+            # 5. Restart the PM2 process
+            pm2 restart maritrack
