@@ -107,7 +107,7 @@ export default function PlaygroundPage() {
         </div>
 
         <div className="max-w-sm">
-          <QRCodeCard qrCodeValue="example" />
+          <QRCodeCard />
         </div>
       </section>
 

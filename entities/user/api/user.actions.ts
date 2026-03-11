@@ -41,8 +41,12 @@ export async function updateProfileAction(data: UpdateProfileDto): Promise<UserP
   if (data.firstName) formData.append("firstName", data.firstName);
   if (data.lastName) formData.append("lastName", data.lastName);
   if (data.phone) formData.append("phone", data.phone);
-  if (data.imageUrl) formData.append("imageUrl", data.imageUrl);
-  if (data.profileImage instanceof File) formData.append("profileImage", data.profileImage);
+  if (data.status) formData.append("status", data.status);
+  if (data.profilePicture instanceof File) {
+    formData.append("profilePicture", data.profilePicture);
+  } else if (typeof data.profilePicture === "string") {
+    formData.append("profilePicture", data.profilePicture);
+  }
 
   const response = await apiClient("/users/user/update", {
     method: "PATCH",

@@ -131,6 +131,24 @@ export default function ChildrenProfiles({
           } else {
             setCurrentView("list");
           }
+
+          toast({ title: "Success", message: "Child profile created", type: "success" });
+
+          // If not paid, go to pricing. Otherwise, return to list.
+          if (!hasPaid) {
+            setCurrentView("pricing");
+          } else {
+            setCurrentView("list");
+          }
+
+          toast({ title: "Success", message: "Child profile created", type: "success" });
+
+          // If not paid, go to pricing. Otherwise, return to list.
+          if (!hasPaid) {
+            setCurrentView("pricing");
+          } else {
+            setCurrentView("list");
+          }
         }
       } catch (e: any) {
         toast({
@@ -260,6 +278,26 @@ export default function ChildrenProfiles({
   const isInitialLoading = isLoadingUser || (!!activeParentId && isFetchingChildren);
 
   console.log(isInitialLoading);
+
+  console.log(isFetchingChildren);
+
+  if (isInitialLoading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm">
+        <Loader size="lg" className="scale-150" />
+      </div>
+    );
+  }
+
+  console.log(isFetchingChildren);
+
+  if (isInitialLoading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm">
+        <Loader size="lg" className="scale-150" />
+      </div>
+    );
+  }
 
   console.log(isFetchingChildren);
 

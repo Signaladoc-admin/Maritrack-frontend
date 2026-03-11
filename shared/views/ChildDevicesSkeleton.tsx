@@ -1,3 +1,5 @@
+"use client";
+
 import { Skeleton } from "@/shared/ui/skeleton";
 
 export function ChildDevicesSkeleton() {
@@ -41,3 +43,5 @@ export function ChildDevicesSkeleton() {
     </div>
   );
 }
+
+export default ChildDevicesSkeleton;

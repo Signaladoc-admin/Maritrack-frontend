@@ -21,6 +21,8 @@ export type UserProfile = z.infer<typeof UserProfileSchema>;
 
 export interface IUserProfile {
   id: string;
+  email: string;
+  status: string;
   firstName: string;
   lastName: string;
   role: "ADMIN" | "USER";
@@ -57,7 +59,8 @@ export const updateProfileSchema = z.object({
   lastName: z.string().optional(),
   imageUrl: z.string().optional(),
   phone: z.string().optional(),
-  profileImage: z.any().optional(),
+  status: z.string().optional(),
+  profilePicture: z.any().optional(),
 });
 
 export type UpdateProfileDto = z.infer<typeof updateProfileSchema>;

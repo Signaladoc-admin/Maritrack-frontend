@@ -1,5 +1,5 @@
 import React from "react";
-import ChildDevices from "@/pages/ChildDevices";
+import ChildDevices from "@/shared/views/ChildDevices";
 
 const ChildPage = () => {
   return <ChildDevices />;
