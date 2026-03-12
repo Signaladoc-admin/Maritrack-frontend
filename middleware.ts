@@ -74,15 +74,20 @@ export async function middleware(req: NextRequest) {
 
   // 3. Handle public routes (/, /confirm-email, /test, etc)
   if (publicRoutes.includes(pathname)) {
-    // SPECIAL CASE: If logged in on the home route, redirect to dashboard
-    if (token && pathname === "/") {
-      try {
-        const payload = decodeJwt(token);
-        const userRole = (payload as any).role as string | undefined;
-        const redirectPath = userRole === "ADMIN" ? "/admin" : "/dashboard";
-        return NextResponse.redirect(new URL(redirectPath, req.url));
-      } catch {
-        // ignore
+    // SPECIAL CASE: Redirct root "/" based on auth status
+    if (pathname === "/") {
+      if (token) {
+        try {
+          const payload = decodeJwt(token);
+          const userRole = (payload as any).role as string | undefined;
+          const redirectPath = userRole === "ADMIN" ? "/admin" : "/dashboard";
+          return NextResponse.redirect(new URL(redirectPath, req.url));
+        } catch {
+          return NextResponse.redirect(new URL("/dashboard", req.url));
+        }
+      } else {
+        // Redirct guest to login
+        return NextResponse.redirect(new URL("/login", req.url));
       }
     }
     return NextResponse.next();
