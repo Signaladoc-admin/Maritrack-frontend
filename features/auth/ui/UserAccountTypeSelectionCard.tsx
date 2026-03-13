@@ -13,7 +13,10 @@ export default function UserAccountTypeSelectionCard({
   href: string;
 }) {
   return (
-    <Link href={href} className="block space-y-3 rounded-lg bg-neutral-100 p-5">
+    <Link
+      href={href}
+      className="hover:border-primary transition-border block space-y-3 rounded-lg border border-transparent bg-neutral-100 p-5 duration-100 hover:border"
+    >
       <div className="bg-primary inline-flex rounded-full p-3 text-white">
         <Icon className="size-6" />
       </div>

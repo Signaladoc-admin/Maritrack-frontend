@@ -87,7 +87,7 @@ export default function LoginForm() {
           type="button"
           onClick={() => setIsCreateAccountModalOpen(true)}
           variant="link"
-          className="text-primary font-semibold"
+          className="text-primary px-0 font-semibold"
         >
           Create an account
         </Button>
