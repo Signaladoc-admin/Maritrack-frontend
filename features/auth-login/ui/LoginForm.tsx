@@ -33,8 +33,7 @@ export default function LoginForm() {
   const onSubmit = async (data: LoginValues) => {
     try {
       const profile = await login(data);
-
-      console.log("Login profile:", profile);
+      console.log(profile.parentId);
 
       // Save credentials for subsequent OTP verification and auto-login if needed
       setEmail(data.email);
@@ -44,6 +43,7 @@ export default function LoginForm() {
 
       // Fetch parental controls to determine onboarding status accurately
       const pcSettings = await getParentalControlMeAction();
+      console.log("pcSettings", pcSettings);
       checkAndRedirect(profile as any, pcSettings);
     } catch (err) {
       console.log(err);
