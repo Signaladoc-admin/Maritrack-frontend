@@ -106,6 +106,8 @@ export async function apiClient<T = any>(
     }
   }
 
+  console.log("responnse:", response);
+
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
 

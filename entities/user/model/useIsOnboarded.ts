@@ -24,6 +24,7 @@ export function useIsOnboarded() {
 
   const checkAndRedirect = useCallback(
     (userProfile: any = profile, settings: any = pcSettings) => {
+      console.log("User profile:", userProfile);
       if (!userProfile) return;
 
       if (userProfile.role === "ADMIN") {

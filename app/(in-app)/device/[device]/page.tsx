@@ -1,4 +1,4 @@
-import Device from "@/shared/views/Device";
+import Device from "@/views/Device";
 import React from "react";
 
 const DevicePage = () => {

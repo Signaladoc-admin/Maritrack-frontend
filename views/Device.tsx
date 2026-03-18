@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import General from "./General";
 import WebHistory from "./WebHistory";
 import AppControl from "./AppControl";
+import LocationPage from "./Location";
 
 const Device = () => {
   const router = useRouter();
@@ -31,7 +32,8 @@ const Device = () => {
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     const deviceId = params?.device || "device-id";
-    router.push(`/device/${deviceId}?tab=${tab}`);
+
+    activeTab === tabParam && router.push(`/device/${deviceId}?tab=${tab}`);
   };
 
   return (
@@ -62,6 +64,7 @@ const Device = () => {
       {activeTab === "general" && <General />}
       {activeTab === "web-history" && <WebHistory />}
       {activeTab === "app-control" && <AppControl />}
+      {activeTab === "location" && <LocationPage />}
     </div>
   );
 };
