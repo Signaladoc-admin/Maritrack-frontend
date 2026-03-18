@@ -13,6 +13,7 @@ import General from "./General";
 import WebHistory from "./WebHistory";
 import AppControl from "./AppControl";
 import LocationPage from "./Location";
+import ParentalControlSetup from "@/features/onboarding/ui/ParentalControlSetup";
 
 const Device = () => {
   const router = useRouter();
@@ -65,6 +66,7 @@ const Device = () => {
       {activeTab === "web-history" && <WebHistory />}
       {activeTab === "app-control" && <AppControl />}
       {activeTab === "location" && <LocationPage />}
+      {activeTab === "configuration" && <ParentalControlSetup goToPrevStep={() => {}} />}
     </div>
   );
 };

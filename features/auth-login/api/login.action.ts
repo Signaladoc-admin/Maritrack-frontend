@@ -13,7 +13,6 @@ export async function loginAction(credentials: LoginValues): Promise<UserProfile
 
     return response.data;
   } catch (error: any) {
-    console.error("LOGIN ERROR:", error.message);
     throw error;
   }
 }

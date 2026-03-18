@@ -106,15 +106,8 @@ export async function apiClient<T = any>(
     }
   }
 
-  console.log("responnse:", response);
-
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-
-    console.log(`\n================ API ERROR RESPONSE ================`);
-    console.log(`[STATUS]: ${response.status} ${response.statusText}`);
-    console.log(`[DATA]:`, JSON.stringify(errorData, null, 2));
-    console.log(`====================================================\n`);
 
     const errorMessage = Array.isArray(errorData.message)
       ? errorData.message.join(", ")
@@ -124,15 +117,6 @@ export async function apiClient<T = any>(
   }
 
   const parsedResponse = await response.json();
-
-  console.log(`\n================ API SUCCESS RESPONSE ================`);
-  console.log(`[STATUS]: ${response.status} ${response.statusText}`);
-  console.log(
-    `[DATA]:`,
-    JSON.stringify(parsedResponse, null, 2).substring(0, 1000) +
-      (JSON.stringify(parsedResponse).length > 1000 ? "... (truncated)" : "")
-  );
-  console.log(`======================================================\n`);
 
   if (isServer && cookieStore) {
     const accessToken =
