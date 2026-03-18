@@ -36,7 +36,7 @@ export const businessRegistrationFormSchema = z
 
 export type BusinessRegistrationFormValues = z.infer<typeof businessRegistrationFormSchema>;
 
-const parentGenderValues = ["FATHER", "MOTHER", "GUARDIAN"] as const;
+const parentGenderValues = ["MALE", "FEMALE", "OTHER"] as const;
 
 export const parentRegistrationFormSchema = z
   .object({

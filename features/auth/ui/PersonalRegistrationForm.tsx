@@ -9,7 +9,7 @@ import { parentRegistrationFormSchema, ParentRegistrationFormValues } from "../s
 import { useRouter } from "next/navigation";
 import HaveAnAccount from "./HaveAnAccount";
 import { useRegisterParent } from "@/features/auth-register/model/useRegisterParent";
-import { parentGenderOptions } from "@/lib/constants/shared";
+import { genderOptions, parentGenderOptions } from "@/lib/constants/shared";
 import { SearchableSelect } from "@/shared/ui/searchable-select";
 import { ChevronLeft } from "lucide-react";
 import { useNewUserStore } from "@/shared/stores/user-store";
@@ -165,7 +165,7 @@ export default function PersonalRegistrationForm() {
             render={({ field }) => (
               <InputGroup label="Gender" error={errors.gender?.message}>
                 <SearchableSelect
-                  options={parentGenderOptions}
+                  options={genderOptions}
                   placeholder="Select Gender"
                   value={field.value}
                   onValueChange={field.onChange}

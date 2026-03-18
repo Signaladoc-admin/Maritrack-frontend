@@ -28,7 +28,7 @@ export function ChildrenDropdown() {
       const mappedChildren = parentZonesRes[0]?.parentChildren?.map((child: any) => ({
         id: child.childId,
         name: child.child.name,
-        avatar: child.child.image,
+        avatar: child.child.imageUrl,
       }));
       setChildren(mappedChildren);
     }
