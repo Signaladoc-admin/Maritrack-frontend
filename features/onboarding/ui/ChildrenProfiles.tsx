@@ -21,8 +21,6 @@ import { Loader } from "@/shared/ui/loader";
 import { useParentStore } from "@/shared/stores/user-store";
 import { useQueryClient } from "@tanstack/react-query";
 import NewChildProfileButton from "@/features/child-profile/ui/NewChildProfileButton";
-import { useActiveSubscription } from "@/features/payments/model/usePayments";
-import PricingStep from "@/features/payments/ui/PricingStep";
 
 export default function ChildrenProfiles({
   goToNextStep,
@@ -41,11 +39,6 @@ export default function ChildrenProfiles({
   const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentZones({
     enabled: !!activeParentId,
   });
-
-  const zoneId = user?.zoneId?.[0]?.id;
-  const { data: subscriptionData } = useActiveSubscription(zoneId);
-  const hasPaid = subscriptionData?.active ?? false;
-
   const { mutateAsync: createChild, isPending: isCreatingChild } = useCreateChild();
   const { mutateAsync: updateChild, isPending: isUpdatingChild } = useUpdateChild();
   const { mutateAsync: deleteChild } = useDeleteChild();
@@ -69,19 +62,12 @@ export default function ChildrenProfiles({
   const [selectedChildProfile, setSelectedChildProfile] = useState<IChildProfile | null>(null);
   const [pendingChild, setPendingChild] = useState<IChildProfile | null>(null);
 
-  const handleAddChild = async (data: IChildProfile) => {
-    if (!activeParentId) {
-      toast({ title: "Error", message: "Parent profile not found", type: "error" });
-      return;
-    }
-
-    try {
-      const res: any = await createChild({
-        name: data.name,
-        age: Number(data.age),
-        gender: data.gender as any,
-        parentId: activeParentId,
-      });
+  const handleAddChild = useCallback(
+    async (data: IChildProfile) => {
+      if (!activeParentId) {
+        toast({ title: "Error", message: "Parent profile not found", type: "error" });
+        return;
+      }
 
       if (res) {
         const onboardingCode = res.onboardingCode || res.data?.onboardingCode;
@@ -92,25 +78,54 @@ export default function ChildrenProfiles({
           onboardingCode,
         };
 
-        setChildProfiles((prev) => [...prev, newChildInfo as any]);
-        setPendingChild(newChildInfo as any);
+        if (res) {
+          const onboardingCode = res.onboardingCode || res.data?.onboardingCode;
 
-        // Ensure zone exists
-        let activeZoneId = user?.zoneId?.[0]?.id;
-        if (!activeZoneId) {
-          await createZoneAction();
-          const updatedProfile = await getProfileAction();
-          activeZoneId = (updatedProfile as any).zoneId?.[0]?.id;
-          queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-        }
+          const newChildInfo = {
+            ...data,
+            ...res,
+            id: res.id || res.data?.id,
+            onboardingCode: onboardingCode,
+          };
 
-        toast({ title: "Success", message: "Child profile created", type: "success" });
+          setChildProfiles((prev) => [...prev, newChildInfo as any]);
+          setPendingChild(newChildInfo as any);
 
-        // Always show pricing after creation — QR is only accessible once payment is done
-        if (hasPaid) {
-          setCurrentView("qr");
-        } else {
-          setCurrentView("pricing");
+          // Ensure we have a zone
+          let activeZoneId = user?.zoneId?.[0]?.id;
+          if (!activeZoneId) {
+            await createZoneAction();
+            const updatedProfile = await getProfileAction();
+            activeZoneId = (updatedProfile as any).zoneId?.[0]?.id;
+            queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+          }
+
+          toast({ title: "Success", message: "Child profile created", type: "success" });
+
+          // If not paid, go to pricing. Otherwise, return to list.
+          if (!hasPaid) {
+            setCurrentView("pricing");
+          } else {
+            setCurrentView("list");
+          }
+
+          toast({ title: "Success", message: "Child profile created", type: "success" });
+
+          // If not paid, go to pricing. Otherwise, return to list.
+          if (!hasPaid) {
+            setCurrentView("pricing");
+          } else {
+            setCurrentView("list");
+          }
+
+          toast({ title: "Success", message: "Child profile created", type: "success" });
+
+          // If not paid, go to pricing. Otherwise, return to list.
+          if (!hasPaid) {
+            setCurrentView("pricing");
+          } else {
+            setCurrentView("list");
+          }
         }
       }
     } catch (e: any) {

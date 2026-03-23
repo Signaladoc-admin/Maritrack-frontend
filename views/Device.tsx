@@ -14,7 +14,6 @@ import WebHistory from "./WebHistory";
 import AppControl from "./AppControl";
 import ParentalControlSetup from "@/features/parents/ui/ParentalControlSetup";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
-import LocationPage from "./Location";
 
 const Device = () => {
   const router = useRouter();
