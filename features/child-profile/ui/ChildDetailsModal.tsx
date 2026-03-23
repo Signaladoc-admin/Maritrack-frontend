@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,60 +8,123 @@ import {
   DialogFooter,
 } from "@/shared/ui/Modal/dialog";
 import { Button } from "@/shared/ui/Button/button";
-import { User } from "lucide-react";
-import { EditChildModalProps } from "../model/types";
+import { AddEditChildModalProps } from "../model/types";
+import { FilledUserIcon } from "@/shared/ui/icons";
+import { Controller, useForm } from "react-hook-form";
+import { FileUpload } from "@/shared/ui/image-upload";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { childProfileSchema } from "@/features/onboarding/schema";
+import { z } from "zod";
+import { IChildProfile } from "@/features/onboarding/types";
+import { InputGroup } from "@/shared/ui/input-group";
 
-export function EditChildModal({ open, onOpenChange, initialData }: EditChildModalProps) {
+export function AddEditChildModal({ open, onOpenChange, initialData }: AddEditChildModalProps) {
+  const { handleSubmit, register, control, formState } = useForm<
+    z.infer<typeof childProfileSchema>
+  >({
+    resolver: zodResolver(childProfileSchema) as any,
+    defaultValues: {
+      name: initialData?.name || "",
+      age: (initialData?.age as any) || "",
+      gender: initialData?.gender as any,
+      profileImage: initialData?.profileImage || undefined,
+    },
+  });
+
+  const onSubmit = (data: z.infer<typeof childProfileSchema>) => {
+    const formattedData: IChildProfile = {
+      ...data,
+      id: initialData?.id,
+      image: data.profileImage ? URL.createObjectURL(data.profileImage) : initialData?.image,
+    };
+
+    console.log(formattedData);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
           <DialogTitle className="text-lg font-bold text-[#1B3C73]">
-            Edit {initialData?.name || "Child"}'s Details
+            {initialData
+              ? `Edit ${initialData?.name || "Child"}'s Details`
+              : `Create Child Profile`}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-6 py-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6 py-4">
           {/* Avatar Placeholder */}
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 sm:mx-0">
-            <User className="h-8 w-8 text-slate-400" />
-          </div>
+          <Controller
+            control={control}
+            name="profileImage"
+            render={({ field }) => (
+              <div className="space-y-2">
+                <FileUpload
+                  value={field.value}
+                  onChange={field.onChange}
+                  accept="image/*"
+                  className="h-18 w-18 rounded-full"
+                  previewClassName="h-full w-full rounded-full object-cover"
+                >
+                  <div className="bg-muted flex h-full w-full items-center justify-center rounded-full border-gray-300 transition-colors hover:bg-gray-200">
+                    <FilledUserIcon className="h-8 w-8 text-[#1b3c73]" />
+                  </div>
+                </FileUpload>
+                {formState.errors.profileImage && (
+                  <p className="text-destructive text-sm">
+                    {String(formState.errors.profileImage.message)}
+                  </p>
+                )}
+              </div>
+            )}
+          />
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-xs font-medium text-slate-500">Child name</label>
-              <input
-                className="border-input placeholder:text-muted-foreground flex h-10 w-full rounded-md border bg-transparent px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-[#1B3C73] focus-visible:outline-none"
+              <InputGroup
+                {...register("name")}
                 placeholder="Name here"
-                defaultValue={initialData?.name}
+                label="Child name"
+                error={formState.errors.name?.message}
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-xs font-medium text-slate-500">Age</label>
-                <input
-                  className="border-input flex h-10 w-full rounded-md border bg-transparent px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-[#1B3C73] focus-visible:outline-none"
+                <InputGroup
+                  {...register("age")}
                   placeholder="14"
-                  defaultValue={initialData?.age}
+                  label="Age"
+                  error={formState.errors.age?.message}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-medium text-slate-500">Gender</label>
-                <select className="border-input flex h-10 w-full rounded-md border bg-transparent px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-[#1B3C73] focus-visible:outline-none">
-                  <option>Male</option>
-                  <option>Female</option>
-                </select>
+                <Controller
+                  control={control}
+                  name="gender"
+                  render={({ field }) => (
+                    <InputGroup
+                      label="Gender"
+                      type="select"
+                      className="mb-0!"
+                      options={[
+                        { label: "Male", value: "MALE" },
+                        { label: "Female", value: "FEMALE" },
+                      ]}
+                      error={formState.errors.gender?.message}
+                      {...field}
+                    />
+                  )}
+                />
               </div>
             </div>
           </div>
-        </div>
-
-        <DialogFooter>
-          <Button className="w-full bg-[#1B3C73]" onClick={() => onOpenChange(false)}>
-            Save Changes
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button className="w-full bg-[#1B3C73]">
+              {initialData ? "Save Changes" : "Create Profile"}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

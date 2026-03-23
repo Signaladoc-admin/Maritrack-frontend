@@ -1,10 +1,10 @@
 import { Gender } from "@/shared/lib/constants";
 import { IChildProfile } from "../../onboarding/types";
 
-export interface EditChildModalProps {
+export interface AddEditChildModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  initialData: IChildProfile;
+  initialData: IChildProfile | null;
 }
 
 export interface IconProps {

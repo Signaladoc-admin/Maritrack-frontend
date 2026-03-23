@@ -21,7 +21,6 @@ const General = () => {
           onClick: () => console.log("Toggle SafeSearch"),
           className: "bg-[#00B087]",
         }}
-        className="max-w-md"
       />
       <MetricCard
         title="Total Screen Time"

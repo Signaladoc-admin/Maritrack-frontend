@@ -6,6 +6,7 @@ interface QRCodeCardProps {
   description?: string;
   src?: string;
   isLoading?: boolean;
+  isError?: boolean;
   className?: string;
 }
 
@@ -13,6 +14,7 @@ export function QRCodeCard({
   description = "Scan this QR Code on the child’s device to pair",
   src,
   isLoading,
+  isError,
   className,
 }: QRCodeCardProps) {
   return (
@@ -25,28 +27,20 @@ export function QRCodeCard({
         className
       )}
     >
-      <div className="flex w-full flex-1 items-center justify-center">
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center space-y-4 text-white">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-white/30 border-t-white" />
-            <p className="text-sm font-medium opacity-80">Generating QR Code...</p>
-          </div>
-        ) : src ? (
-          <div className="flex aspect-square w-full items-center justify-center rounded-[32px] bg-orange-100/30 p-4 shadow-inner">
-            <img
-              src={src}
-              alt="QR Code"
-              className="h-full w-full object-contain mix-blend-screen invert"
-            />
-          </div>
-        ) : (
-          <div className="flex aspect-square w-full items-center justify-center rounded-[32px] bg-orange-100/30 shadow-inner">
-            <QrCode className="h-2/3 w-2/3 text-white opacity-40" strokeWidth={1} />
-          </div>
-        )}
+      <div className="flex flex-col items-center justify-center rounded-3xl text-center text-white">
+        <div className="mb-4 flex items-center justify-center rounded-3xl bg-white p-6 shadow-lg">
+          {isLoading ? (
+            <div className="h-32 w-32 animate-pulse rounded bg-slate-100" />
+          ) : isError ? (
+            <div className="text-destructive text-sm font-medium">Failed to load QR</div>
+          ) : src ? (
+            <img src={src} alt="Pairing QR Code" className="h-full w-full object-contain" />
+          ) : (
+            <QrCode className="h-32 w-32 text-slate-300" />
+          )}
+        </div>
+        <p className="max-w-[200px] font-medium">{description}</p>
       </div>
-
-      <p className="mt-6 px-4 text-center leading-relaxed text-white/95">{description}</p>
     </CardWrapper>
   );
 }

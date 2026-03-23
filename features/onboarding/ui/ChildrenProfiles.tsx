@@ -8,22 +8,20 @@ import { ChildProfileCard } from "@/shared/ui/cards/child-profile-card";
 import PricingStep from "./PricingStep";
 import PairingQRStep from "./PairingQRStep";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
-import { useParent } from "@/entities/parents/model/useParents";
 import {
   useCreateChild,
   useUpdateChild,
   useDeleteChild,
 } from "@/entities/children/model/useChildren";
-import { createChildAction, getChildByIdAction } from "@/entities/children/api/child.actions";
 import { getProfileAction } from "@/entities/user/api/user.actions";
-import { createZoneAction, getQrCodeAction } from "@/features/mdm-sync/api/mdm-sync.actions";
+import { createZoneAction } from "@/features/mdm-sync/api/mdm-sync.actions";
 import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
 import { useEffect, useCallback } from "react";
 import { useToast } from "@/shared/ui/toast";
 import { Loader } from "@/shared/ui/loader";
-import { useSearchParams, useRouter } from "next/navigation";
 import { useParentStore } from "@/shared/stores/user-store";
 import { useQueryClient } from "@tanstack/react-query";
+import NewChildProfileButton from "@/features/child-profile/ui/NewChildProfileButton";
 
 export default function ChildrenProfiles({
   goToNextStep,
@@ -37,30 +35,19 @@ export default function ChildrenProfiles({
   setHasPaid: (value: boolean) => void;
 }) {
   const [childProfiles, setChildProfiles] = useState<IChildProfile[]>([]);
-  const searchParams = useSearchParams();
-  const router = useRouter();
   const queryClient = useQueryClient();
 
   const { data: user, isLoading: isLoadingUser } = useUserProfile();
   const storedParentId = useParentStore((state) => state.parentId);
   const activeParentId = user?.parentId || storedParentId;
 
-  console.log(user);
-  console.log(storedParentId);
-  console.log(activeParentId);
-
-  const { data: parent } = useParent(activeParentId!);
-
   const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentZones({
     enabled: !!activeParentId,
   });
-  console.log(parentZonesRes);
   const { mutateAsync: createChild, isPending: isCreatingChild } = useCreateChild();
   const { mutateAsync: updateChild, isPending: isUpdatingChild } = useUpdateChild();
   const { mutateAsync: deleteChild } = useDeleteChild();
   const { toast } = useToast();
-
-  console.log("zone:", parentZonesRes);
 
   useEffect(() => {
     if (Array.isArray(parentZonesRes)) {
@@ -82,8 +69,6 @@ export default function ChildrenProfiles({
   const [selectedChildProfile, setSelectedChildProfile] = useState<IChildProfile | null>(null);
   const [pendingChild, setPendingChild] = useState<IChildProfile | null>(null);
 
-  console.log(user);
-
   const handleAddChild = useCallback(
     async (data: IChildProfile) => {
       if (!activeParentId) {
@@ -98,8 +83,6 @@ export default function ChildrenProfiles({
           gender: data.gender as any,
           parentId: activeParentId,
         });
-
-        console.log("Create child result:", res);
 
         if (res) {
           const onboardingCode = res.onboardingCode || res.data?.onboardingCode;
@@ -195,7 +178,6 @@ export default function ChildrenProfiles({
 
   const handlePairingRollback = async () => {
     if (pendingChild?.id) {
-      console.log("Rolling back: deleting child", pendingChild.id);
       try {
         await deleteChild(pendingChild.id);
         setChildProfiles((prev) => prev.filter((cp) => cp.id !== pendingChild.id));
@@ -216,7 +198,6 @@ export default function ChildrenProfiles({
         }}
         onAddChild={selectedChildProfile ? handleEditChild : handleAddChild}
         initialData={selectedChildProfile || undefined}
-        goToNextStep={goToNextStep}
         isLoading={selectedChildProfile ? isUpdatingChild : isCreatingChild}
       />
     );
@@ -345,15 +326,7 @@ export default function ChildrenProfiles({
             />
           ))}
         </div>
-        {childProfiles.length === 0 && (
-          <button
-            onClick={() => handleOpenForm()}
-            className="border-muted-foreground/20 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed bg-neutral-50/50 py-12 transition-colors hover:bg-neutral-100/50"
-          >
-            <Plus className="text-primary/70 h-5 w-5" />
-            <span className="font-medium text-slate-500">Add a profile</span>
-          </button>
-        )}
+        {childProfiles.length === 0 && <NewChildProfileButton onClick={() => handleOpenForm()} />}
         <div className="flex gap-4 pt-4">
           <Button
             disabled={!childProfiles.length}
