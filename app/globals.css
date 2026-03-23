@@ -122,3 +122,13 @@
     @apply bg-background text-foreground font-sans;
   }
 }
+
+.hide-scrollbar {
+  -ms-overflow-style: none; /* Internet Explorer and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* For Chrome, Safari, Opera, and other WebKit browsers */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/shared/ui/button";
 import { Header } from "@/shared/ui/layout/header";
 import { Loader } from "@/shared/ui/loader";
@@ -18,11 +18,12 @@ import {
 import { ParentalControlDto } from "@/entities/parental-controls/model/parental-controls.schema";
 
 import { LoaderModal } from "@/shared/ui/Modal/Modals/LoaderModal";
-import MonitoringPermissionsSetup from "./parental-control-setup/MonitoringPermissionsSetup";
-import ScreenTimeRules from "./parental-control-setup/ScreenTimeRules";
-import AppManagement from "./parental-control-setup/AppManagement";
-import AlertsAndNotifications from "./parental-control-setup/AlertsNotification";
-import ParentalConfirmation from "./parental-control-setup/ParentalConfirmation";
+import MonitoringPermissionsSetup from "../../onboarding/ui/parental-control-setup/MonitoringPermissionsSetup";
+import ScreenTimeRules from "../../onboarding/ui/parental-control-setup/ScreenTimeRules";
+import AppManagement from "../../onboarding/ui/parental-control-setup/AppManagement";
+import AlertsAndNotifications from "../../onboarding/ui/parental-control-setup/AlertsNotification";
+import ParentalConfirmation from "../../onboarding/ui/parental-control-setup/ParentalConfirmation";
+import { CardWrapper } from "@/shared/ui/card-wrapper";
 
 const formSchema = z
   .object({
@@ -145,8 +146,13 @@ const formSchema = z
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function ParentalControlSetup({ goToPrevStep }: { goToPrevStep: () => void }) {
-  const router = useRouter();
+export default function ParentalControlSetup({
+  goToPrevStep,
+  handleSubmit,
+}: {
+  goToPrevStep?: () => void;
+  handleSubmit?: () => void;
+}) {
   const { data: userProfile, isLoading: isLoadingUser } = useUserProfile();
   const parentId = userProfile?.parentId || "";
 
@@ -154,11 +160,9 @@ export default function ParentalControlSetup({ goToPrevStep }: { goToPrevStep: (
     useParentalControlByParentId(parentId);
   const { data: meSettings, isLoading: isLoadingMe } = useParentalControlMe();
 
-  useEffect(() => {
-    if (meSettings) {
-      console.log("Parental Controls (/me) response:", meSettings);
-    }
-  }, [meSettings]);
+  const pathname = usePathname();
+
+  const isOnboardingPath = pathname.includes("onboarding");
 
   const { mutateAsync: createSettings, isPending: isCreating } = useCreateParentalControl();
   const { mutateAsync: updateSettings, isPending: isUpdating } = useUpdateParentalControl();
@@ -245,10 +249,6 @@ export default function ParentalControlSetup({ goToPrevStep }: { goToPrevStep: (
   }, [meSettings, existingSettings, methods]);
 
   const onSubmit = async (data: FormValues) => {
-    console.log("Form submitted successfully with valid data:", data);
-    // Transform flat inputs into array fields
-    // ... rest of the transform logic
-    // ...
     const restrictedCategories: string[] = [];
     if (data.games) restrictedCategories.push("GAMES");
     if (data.social_media) restrictedCategories.push("SOCIAL_MEDIA");
@@ -307,8 +307,6 @@ export default function ParentalControlSetup({ goToPrevStep }: { goToPrevStep: (
       parentalConsent: data.parentalConsent,
     };
 
-    console.log("Final payload to be sent:", payload);
-
     try {
       const currentSettingsId = existingSettings?.id || meSettings?.id;
       if (currentSettingsId) {
@@ -317,20 +315,58 @@ export default function ParentalControlSetup({ goToPrevStep }: { goToPrevStep: (
         await createSettings(payload);
       }
 
-      router.push("/dashboard");
+      if (handleSubmit) {
+        handleSubmit();
+      }
     } catch (err) {
       console.error("Failed to save parental controls", err);
     }
   };
 
-  const onError = (errors: any) => {
-    console.log("Form validation errors:", errors);
-  };
+  const isLoading = isLoadingUser || (parentId && isLoadingSettings) || isLoadingMe;
 
-  if (isLoadingUser || (parentId && isLoadingSettings) || isLoadingMe) {
+  if (isLoading) {
     return (
-      <div className="flex min-h-[400px] w-full items-center justify-center">
-        <Loader size="lg" />
+      <div className="animate-pulse">
+        <div className="mb-6 h-10 w-full rounded bg-gray-300"></div>
+        <div className="space-y-3">
+          <div className="h-3 w-full rounded bg-gray-300"></div>
+          <div className="h-3 w-full rounded bg-gray-300"></div>
+          <div className="h-3 w-full rounded bg-gray-300"></div>
+        </div>
+
+        <div className="mt-10 space-y-6">
+          <CardWrapper variant="outline">
+            <div className="space-y-14">
+              {/* Card heading */}
+              <div>
+                <div className="mb-4 h-10 w-full rounded bg-gray-300"></div>
+                <div className="h-5 w-full rounded bg-gray-300"></div>
+              </div>
+              {/* Card content */}
+              <div className="space-y-6">
+                {/* Card subheading */}
+                <div className="h-8 w-full rounded bg-gray-300"></div>
+
+                <div className="space-y-3">
+                  <div className="h-5 w-full rounded bg-gray-300"></div>
+                  <div className="h-5 w-full rounded bg-gray-300"></div>
+                  <div className="h-5 w-full rounded bg-gray-300"></div>
+                </div>
+              </div>
+              <div className="space-y-6">
+                {/* Card subheading */}
+                <div className="h-8 w-full rounded bg-gray-300"></div>
+
+                <div className="space-y-3">
+                  <div className="h-5 w-full rounded bg-gray-300"></div>
+                  <div className="h-5 w-full rounded bg-gray-300"></div>
+                  <div className="h-5 w-full rounded bg-gray-300"></div>
+                </div>
+              </div>
+            </div>
+          </CardWrapper>
+        </div>
       </div>
     );
   }
@@ -344,10 +380,10 @@ export default function ParentalControlSetup({ goToPrevStep }: { goToPrevStep: (
         subtitle="Set boundaries, permissions, and alerts for your child's device. These rules apply by default to all children and can be adjusted individually later."
       />
 
-      <LoaderModal open={isPending} text="Setting up your account" />
+      {isOnboardingPath && <LoaderModal open={isPending} text="Setting up your account" />}
 
       <FormProvider {...methods}>
-        <form onSubmit={methods.handleSubmit(onSubmit, onError)} className="space-y-6">
+        <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-6">
           <MonitoringPermissionsSetup />
           <ScreenTimeRules />
           <AppManagement />
@@ -355,17 +391,19 @@ export default function ParentalControlSetup({ goToPrevStep }: { goToPrevStep: (
           <ParentalConfirmation />
 
           <div className="flex gap-4">
-            <Button
-              variant="secondary"
-              type="button"
-              className="flex-1"
-              onClick={goToPrevStep}
-              disabled={isPending}
-            >
-              Previous
-            </Button>
+            {goToPrevStep && (
+              <Button
+                variant="secondary"
+                type="button"
+                className="flex-1"
+                onClick={goToPrevStep}
+                disabled={isPending}
+              >
+                Previous
+              </Button>
+            )}
             <Button type="submit" className="flex-1" disabled={isPending}>
-              Submit
+              {isOnboardingPath ? "Submit" : "Save changes"}
             </Button>
           </div>
         </form>

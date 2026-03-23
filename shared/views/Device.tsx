@@ -12,6 +12,8 @@ import { useEffect, useState } from "react";
 import General from "./General";
 import WebHistory from "./WebHistory";
 import AppControl from "./AppControl";
+import ParentalControlSetup from "@/features/parents/ui/ParentalControlSetup";
+import { useIsMobile } from "@/shared/hooks/use-mobile";
 
 const Device = () => {
   const router = useRouter();
@@ -34,18 +36,42 @@ const Device = () => {
     router.push(`/device/${deviceId}?tab=${tab}`);
   };
 
+  const isMobile = useIsMobile();
+
   return (
     <div>
-      <div className="mb-10 flex items-center justify-between">
-        <Back label="Back to profile" />
+      <div className="mb-10 flex w-full flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        {!isMobile && (
+          <div className="flex justify-between">
+            <div className="flex justify-start">
+              <Back label="Back to profile" href="/dashboard" />
+            </div>
+          </div>
+        )}
 
-        <div className="flex items-center gap-4">
-          <TabNavigation tabs={TABS} activeTab={activeTab} onTabChange={handleTabChange} />
-          <DateDropdown />
-          <IconWrapper
-            action={() => setShowDelete(true)}
-            icon={<Trash2Icon className="h-4 w-4 text-[#B34740]" />}
-          />
+        <div className="flex w-full flex-col items-stretch gap-4 lg:w-auto lg:flex-row lg:items-center">
+          <div className="w-full lg:w-auto">
+            <TabNavigation
+              tabs={TABS}
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+              className="w-full"
+            />
+          </div>
+
+          <div className="ml-auto flex w-full items-center gap-4 lg:w-auto">
+            {activeTab !== "configuration" && (
+              <div className="flex-1 lg:flex-none">
+                <DateDropdown />
+              </div>
+            )}
+            <div className="ml-auto flex lg:ml-0">
+              <IconWrapper
+                action={() => setShowDelete(true)}
+                icon={<Trash2Icon className="h-5 w-5 text-[#D95D55]" />}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -62,6 +88,11 @@ const Device = () => {
       {activeTab === "general" && <General />}
       {activeTab === "web-history" && <WebHistory />}
       {activeTab === "app-control" && <AppControl />}
+      {activeTab === "configuration" && (
+        <div className="mx-auto max-w-lg">
+          <ParentalControlSetup />
+        </div>
+      )}
     </div>
   );
 };

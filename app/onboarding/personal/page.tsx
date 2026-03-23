@@ -1,9 +1,8 @@
 "use client";
 
 import { useIsOnboarded } from "@/entities/user/model/useIsOnboarded";
-import ChildrenProfiles from "@/features/onboarding/ui/ChildProfiles";
-import ParentalControlSetup from "@/features/onboarding/ui/ParentalControlSetup";
-import { useParentStore } from "@/shared/stores/user-store";
+import ChildrenProfiles from "@/features/onboarding/ui/ChildrenProfiles";
+import ParentalControlSetup from "@/features/parents/ui/ParentalControlSetup";
 import { MultiStepForm } from "@/shared/ui/multi-step-form";
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -31,7 +30,6 @@ function OnboardingContent() {
     return 0;
   });
 
-  const { parentId: storeParentId } = useParentStore();
   const { mutateAsync: verifyPayment } = useVerifyPayment();
   const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
   const queryClient = useQueryClient();
@@ -154,7 +152,12 @@ function OnboardingContent() {
         }
         handleStepClick(1);
       },
-      component: <ParentalControlSetup goToPrevStep={prevStep} />,
+      component: (
+        <ParentalControlSetup
+          handleSubmit={() => router.push("/dashboard")}
+          goToPrevStep={prevStep}
+        />
+      ),
     },
   ];
 

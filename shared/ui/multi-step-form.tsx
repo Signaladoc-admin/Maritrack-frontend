@@ -1,5 +1,9 @@
+"use client";
+
 import { VerticalStepper } from "@/shared/ui/vertical-stepper";
+import { HorizontalStepper } from "@/shared/ui/horizontal-stepper";
 import { cn } from "@/shared/lib/utils";
+import { useIsMobile } from "@/shared/hooks/use-mobile";
 
 interface Step {
   title: string;
@@ -24,12 +28,17 @@ export function MultiStepForm({
   isFullWidth,
 }: MultiStepFormProps) {
   const currentStepData = steps[currentStep];
+  const isMobile = useIsMobile();
 
   return (
     <div className={cn("flex flex-col gap-8 lg:flex-row lg:gap-12", className)}>
       {!isFullWidth && (
         <aside className="w-full shrink-0 lg:w-64">
-          <VerticalStepper steps={steps} currentStep={currentStep} onStepClick={onStepClick} />
+          {isMobile ? (
+            <HorizontalStepper steps={steps} currentStep={currentStep} onStepClick={onStepClick} />
+          ) : (
+            <VerticalStepper steps={steps} currentStep={currentStep} onStepClick={onStepClick} />
+          )}
         </aside>
       )}
 
