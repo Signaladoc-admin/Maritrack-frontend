@@ -34,8 +34,13 @@ export default function CreateChildProfileForm({
     resolver: zodResolver(childProfileSchema) as any,
     defaultValues: {
       name: initialData?.name || "",
+<<<<<<< HEAD
       age: (initialData?.age as any) || "",
       gender: initialData?.gender as any,
+=======
+      age: (initialData?.age as any) || 0,
+      gender: (initialData?.gender as any) || "",
+>>>>>>> 78c677825317c6f0a8ce7647cb6a7a5321e530c1
     },
   });
 

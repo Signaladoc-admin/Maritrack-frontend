@@ -1,4 +1,4 @@
-import Dashboard from "@/shared/views/Dashboard";
+import Dashboard from "@/views/Dashboard";
 
 export default function DashboardPage() {
   return <Dashboard />;

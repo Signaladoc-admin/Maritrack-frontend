@@ -9,7 +9,7 @@ import { parentRegistrationFormSchema, ParentRegistrationFormValues } from "../s
 import { useRouter } from "next/navigation";
 import HaveAnAccount from "./HaveAnAccount";
 import { useRegisterParent } from "@/features/auth-register/model/useRegisterParent";
-import { parentGenderOptions } from "@/lib/constants/shared";
+import { genderOptions, parentGenderOptions } from "@/lib/constants/shared";
 import { SearchableSelect } from "@/shared/ui/searchable-select";
 import { ChevronLeft } from "lucide-react";
 import { useNewUserStore } from "@/shared/stores/user-store";
@@ -59,8 +59,6 @@ export default function PersonalRegistrationForm() {
   };
 
   const onSubmit = async (data: ParentRegistrationFormValues) => {
-    console.log("Form values:", data);
-
     const formData = new FormData();
     formData.append("email", data.email);
     formData.append("password", data.password);
@@ -73,9 +71,6 @@ export default function PersonalRegistrationForm() {
     formData.append("country", data.country);
     formData.append("state", data.state);
 
-    console.log("Form values:", data);
-    console.log("Form data contents:", Object.fromEntries(formData.entries()));
-
     const res: any = await registerParent(formData);
 
     setEmail(data.email);
@@ -84,10 +79,8 @@ export default function PersonalRegistrationForm() {
       setToken(res.token);
     }
 
-    router.push("/confirm-email");
+    router.push("/login");
   };
-
-  console.log("Form errors:", errors);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
     const target = e.target as HTMLElement;
@@ -170,9 +163,9 @@ export default function PersonalRegistrationForm() {
             control={control}
             name="gender"
             render={({ field }) => (
-              <InputGroup label="What gender of parent are you?" error={errors.gender?.message}>
+              <InputGroup label="Gender" error={errors.gender?.message}>
                 <SearchableSelect
-                  options={parentGenderOptions}
+                  options={genderOptions}
                   placeholder="Select Gender"
                   value={field.value}
                   onValueChange={field.onChange}

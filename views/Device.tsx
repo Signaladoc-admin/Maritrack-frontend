@@ -14,6 +14,8 @@ import WebHistory from "./WebHistory";
 import AppControl from "./AppControl";
 import ParentalControlSetup from "@/features/parents/ui/ParentalControlSetup";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
+import LocationPage from "./Location";
+// import ParentalControlSetup from "@/features/onboarding/ui/ParentalControlSetup";
 
 const Device = () => {
   const router = useRouter();
@@ -33,7 +35,8 @@ const Device = () => {
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     const deviceId = params?.device || "device-id";
-    router.push(`/device/${deviceId}?tab=${tab}`);
+
+    activeTab === tabParam && router.push(`/device/${deviceId}?tab=${tab}`);
   };
 
   const isMobile = useIsMobile();
@@ -88,11 +91,8 @@ const Device = () => {
       {activeTab === "general" && <General />}
       {activeTab === "web-history" && <WebHistory />}
       {activeTab === "app-control" && <AppControl />}
-      {activeTab === "configuration" && (
-        <div className="mx-auto max-w-lg">
-          <ParentalControlSetup />
-        </div>
-      )}
+      {activeTab === "location" && <LocationPage />}
+      {activeTab === "configuration" && <ParentalControlSetup goToPrevStep={() => {}} />}
     </div>
   );
 };

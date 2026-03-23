@@ -37,13 +37,24 @@ import {
   Tablet,
   Laptop,
   Apple,
+  Loader2,
 } from "lucide-react";
 import { useState } from "react";
+import { useUserProfile } from "@/entities/user/model/useUserProfile";
+import { useChildren } from "@/entities/children/model/useChildren";
 
 export default function ComponentsShowcasePage() {
   const [activeTab, setActiveTab] = useState("gen");
   const [otpValue, setOtpValue] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
+
+  const { data: userProfile } = useUserProfile();
+  const parentId = userProfile?.parentId;
+  const { data: children, isLoading: isLoadingChildren } = useChildren(
+    parentId ? { parentId } : undefined
+  );
+
+  const [selectedChild, setSelectedChild] = useState("all");
 
   return (
     <div className="min-h-screen space-y-16 p-4 md:p-8 dark:bg-slate-950">
@@ -389,14 +400,23 @@ export default function ComponentsShowcasePage() {
                 <H2>Hello, Janet</H2>
                 <P className="text-muted-foreground text-sm">Here is what{"'"}s happening today.</P>
               </div>
-              <Select defaultValue="all">
+              <Select value={selectedChild} onValueChange={setSelectedChild}>
                 <SelectTrigger className="w-[180px] bg-white dark:bg-slate-950">
                   <SelectValue placeholder="Select child" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Children</SelectItem>
-                  <SelectItem value="sol">Solomon</SelectItem>
-                  <SelectItem value="kur">Kuroebi</SelectItem>
+                  {isLoadingChildren ? (
+                    <div className="flex items-center justify-center p-2">
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : (
+                    children?.map((child) => (
+                      <SelectItem key={child.id} value={child.id}>
+                        {child.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>

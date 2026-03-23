@@ -1,4 +1,5 @@
-import ChildDevices from "@/shared/views/ChildDevices";
+import React from "react";
+import ChildDevices from "@/views/ChildDevices";
 
 const ChildPage = () => {
   return <ChildDevices />;

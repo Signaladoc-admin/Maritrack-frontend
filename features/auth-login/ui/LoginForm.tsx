@@ -33,9 +33,6 @@ export default function LoginForm() {
   const onSubmit = async (data: LoginValues) => {
     try {
       const profile = await login(data);
-
-      console.log("Login profile:", profile);
-
       // Save credentials for subsequent OTP verification and auto-login if needed
       setEmail(data.email);
       setPassword(data.password);
@@ -87,7 +84,7 @@ export default function LoginForm() {
           type="button"
           onClick={() => setIsCreateAccountModalOpen(true)}
           variant="link"
-          className="text-primary font-semibold"
+          className="text-primary px-0 font-semibold"
         >
           Create an account
         </Button>
