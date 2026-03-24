@@ -8,7 +8,7 @@ export function useLogin() {
 
   const mutation = useMutation({
     mutationFn: loginAction,
-    onSuccess: (profile) => {
+    onSuccess: ({ profile }) => {
       queryClient.setQueryData(["session"], profile);
     },
     onError: (err: any) => {

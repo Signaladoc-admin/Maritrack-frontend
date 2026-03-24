@@ -11,12 +11,12 @@ import { IChildProfile } from "../types";
 import { FileUpload } from "@/shared/ui/image-upload";
 import { FilledUserIcon } from "@/shared/ui/icons";
 import { ChevronLeft } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 interface ICreateChildProfileFormProps {
   onCancel: () => void;
   onAddChild: (data: IChildProfile) => void;
   initialData?: IChildProfile;
-  goToNextStep: () => void;
   isLoading?: boolean;
 }
 
@@ -24,9 +24,12 @@ export default function CreateChildProfileForm({
   onCancel,
   onAddChild,
   initialData,
-  goToNextStep,
   isLoading,
 }: ICreateChildProfileFormProps) {
+  const pathname = usePathname();
+
+  const isOnboardingPath = pathname.includes("onboarding");
+
   const form = useForm<z.infer<typeof childProfileSchema>>({
     resolver: zodResolver(childProfileSchema) as any,
     defaultValues: {
@@ -101,11 +104,13 @@ export default function CreateChildProfileForm({
           </Button>
         </div>
       </form>
-      <div className="flex justify-center">
-        <Button onClick={onCancel} variant="link">
-          Skip for now
-        </Button>
-      </div>
+      {isOnboardingPath && (
+        <div className="flex justify-center">
+          <Button onClick={onCancel} variant="link">
+            Skip for now
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

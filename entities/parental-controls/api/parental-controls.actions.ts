@@ -48,8 +48,10 @@ export async function getParentalControlMeAction(): Promise<ParentalControlRespo
       method: "GET",
       noRedirect: true,
     });
+    console.log("response", response);
     return response.data;
   } catch (error) {
+    console.log("error", error);
     return null;
   }
 }

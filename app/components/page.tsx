@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import { Accordion } from "@/shared/ui/accordion";
 import { Button } from "@/shared/ui/button";
 import { H1, P } from "@/shared/ui/typography";
@@ -30,22 +30,19 @@ export default function Components() {
 
   const allExpanded = openSections.length === ALL_SECTIONS.length;
 
-  const toggleAll = useCallback(() => {
+  const toggleAll = () => {
     setOpenSections(allExpanded ? [] : [...ALL_SECTIONS]);
-  }, [allExpanded]);
+  };
 
-  const handleSearch = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      if (searchQuery.trim()) {
-        setOpenSections([...ALL_SECTIONS]);
-        setTimeout(() => {
-          (window as any).find(searchQuery);
-        }, 300);
-      }
-    },
-    [searchQuery]
-  );
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      setOpenSections([...ALL_SECTIONS]);
+      setTimeout(() => {
+        (window as any).find(searchQuery);
+      }, 300);
+    }
+  };
 
   return (
     <div className="mx-auto max-w-3xl px-5 py-10">

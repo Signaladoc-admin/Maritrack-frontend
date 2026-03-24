@@ -12,7 +12,6 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
-import { useChildren } from "@/entities/children/model/useChildren";
 import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
 
 export function ChildrenDropdown() {

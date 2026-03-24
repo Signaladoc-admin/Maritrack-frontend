@@ -4,7 +4,6 @@ import { Button } from "@/shared/ui/Button/button";
 import { useState } from "react";
 import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
 import { AccountTypeModal } from "@/shared/ui/Modal/Modals/AccountTypeSelectionModal";
-import { EditChildModal } from "@/features/child-profile/ui/ChildDetailsModal";
 import { BlockedWebsitesModal } from "@/shared/ui/Modal/Modals/BlockedWebsitesModal";
 import { GeofencingModal } from "@/shared/ui/Modal/Modals/GeofencingModal";
 import { SetTimeLimitModal } from "@/shared/ui/Modal/Modals/TimeLimitModal";

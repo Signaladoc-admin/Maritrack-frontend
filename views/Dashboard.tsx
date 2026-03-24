@@ -10,9 +10,15 @@ import { appData } from "@/app/(in-app)/dashboard/data";
 import { useDragScroll } from "@/shared/hooks/useDragScroll";
 import { useRouter } from "next/navigation";
 import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
+import { formatDate } from "date-fns";
 
 export default function Dashboard() {
   const { scrollContainerRef, events } = useDragScroll();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const router = useRouter();
 
@@ -24,7 +30,9 @@ export default function Dashboard() {
       <header className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight text-[#1B3C73]">Hello Janet</h1>
-          <p className="text-sm font-medium text-slate-400">January 10, 2026</p>
+          <p className="text-sm font-medium text-slate-400">
+            {mounted ? formatDate(new Date(), "MMMM dd, yyyy") : ""}
+          </p>
         </div>
         <ChildrenDropdown />
       </header>

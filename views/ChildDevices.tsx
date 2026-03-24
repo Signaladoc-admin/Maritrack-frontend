@@ -6,7 +6,7 @@ import { DeviceUsageCard } from "@/shared/ui/DeviceStatusCard/DeviceStatusCard";
 import { EmptyDeviceCard } from "@/shared/ui/DeviceStatusCard/EmptyDevice";
 import Back from "@/shared/ui/go-back";
 import IconWrapper from "@/features/child-profile/ui/IconWrapper";
-import { EditChildModal } from "@/features/child-profile/ui/ChildDetailsModal";
+import { AddEditChildModal } from "@/features/child-profile/ui/ChildDetailsModal";
 import { H3, P } from "@/shared/ui/typography";
 import { Edit2Icon, Trash2Icon } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -18,10 +18,12 @@ import { useGetChild } from "@/features/child-profile/model/useGetChildrenProfil
 import { ChildDevicesSkeleton } from "./ChildDevicesSkeleton";
 
 import { getInitials } from "@/shared/lib/utils";
+import { PairDeviceModal } from "@/shared/ui/Modal/Modals/PairDeviceModal";
 
 const ChildDevices = () => {
   const [showEdit, setShowEdit] = useState<boolean>(false);
   const [showDelete, setShowDelete] = useState<boolean>(false);
+  const [isPairNewDeviceModalOpen, setIsPairNewDeviceModalOpen] = useState(false);
 
   const params = useParams<{ child: string }>();
   const child = params?.child;
@@ -89,11 +91,11 @@ const ChildDevices = () => {
             isRow={false}
             onClick={() => router.push(`/device/device-id`)}
           />
-          <EmptyDeviceCard onClick={() => console.log("Pair new device")} />
+          <EmptyDeviceCard onClick={() => setIsPairNewDeviceModalOpen(true)} />
         </div>
       </div>
 
-      <EditChildModal
+      <AddEditChildModal
         open={showEdit}
         onOpenChange={setShowEdit}
         initialData={childData as IChildProfile}
@@ -110,6 +112,8 @@ const ChildDevices = () => {
         onConfirm={() => console.log("Delete")}
         variant="destructive"
       />
+
+      <PairDeviceModal open={isPairNewDeviceModalOpen} onOpenChange={setIsPairNewDeviceModalOpen} />
     </div>
   );
 };
