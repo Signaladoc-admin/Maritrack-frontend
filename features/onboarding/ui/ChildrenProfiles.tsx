@@ -62,70 +62,48 @@ export default function ChildrenProfiles({
   const [selectedChildProfile, setSelectedChildProfile] = useState<IChildProfile | null>(null);
   const [pendingChild, setPendingChild] = useState<IChildProfile | null>(null);
 
-  const handleAddChild = useCallback(
-    async (data: IChildProfile) => {
-      if (!activeParentId) {
-        toast({ title: "Error", message: "Parent profile not found", type: "error" });
-        return;
-      }
+  const handleAddChild = async (data: IChildProfile) => {
+    if (!activeParentId) {
+      toast({ title: "Error", message: "Parent profile not found", type: "error" });
+      return;
+    }
+
+    try {
+      const res: any = await createChild({
+        name: data.name,
+        age: Number(data.age),
+        gender: data.gender as any,
+        parentId: activeParentId,
+      });
 
       if (res) {
         const onboardingCode = res.onboardingCode || res.data?.onboardingCode;
+
         const newChildInfo = {
           ...data,
           ...res,
           id: res.id || res.data?.id,
-          onboardingCode,
+          onboardingCode: onboardingCode,
         };
 
-        if (res) {
-          const onboardingCode = res.onboardingCode || res.data?.onboardingCode;
+        setChildProfiles((prev) => [...prev, newChildInfo as any]);
+        setPendingChild(newChildInfo as any);
 
-          const newChildInfo = {
-            ...data,
-            ...res,
-            id: res.id || res.data?.id,
-            onboardingCode: onboardingCode,
-          };
+        // Ensure we have a zone
+        let activeZoneId = user?.zoneId?.[0]?.id;
+        if (!activeZoneId) {
+          await createZoneAction();
+          const updatedProfile = await getProfileAction();
+          activeZoneId = (updatedProfile as any).zoneId?.[0]?.id;
+          queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+        }
 
-          setChildProfiles((prev) => [...prev, newChildInfo as any]);
-          setPendingChild(newChildInfo as any);
+        toast({ title: "Success", message: "Child profile created", type: "success" });
 
-          // Ensure we have a zone
-          let activeZoneId = user?.zoneId?.[0]?.id;
-          if (!activeZoneId) {
-            await createZoneAction();
-            const updatedProfile = await getProfileAction();
-            activeZoneId = (updatedProfile as any).zoneId?.[0]?.id;
-            queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-          }
-
-          toast({ title: "Success", message: "Child profile created", type: "success" });
-
-          // If not paid, go to pricing. Otherwise, return to list.
-          if (!hasPaid) {
-            setCurrentView("pricing");
-          } else {
-            setCurrentView("list");
-          }
-
-          toast({ title: "Success", message: "Child profile created", type: "success" });
-
-          // If not paid, go to pricing. Otherwise, return to list.
-          if (!hasPaid) {
-            setCurrentView("pricing");
-          } else {
-            setCurrentView("list");
-          }
-
-          toast({ title: "Success", message: "Child profile created", type: "success" });
-
-          // If not paid, go to pricing. Otherwise, return to list.
-          if (!hasPaid) {
-            setCurrentView("pricing");
-          } else {
-            setCurrentView("list");
-          }
+        if (!hasPaid) {
+          setCurrentView("pricing");
+        } else {
+          setCurrentView("list");
         }
       }
     } catch (e: any) {
