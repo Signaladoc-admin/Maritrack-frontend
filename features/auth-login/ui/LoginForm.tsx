@@ -7,18 +7,17 @@ import { InputGroup } from "@/shared/ui/input-group";
 import Modal from "@/shared/ui/modal";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import UserAccountTypeSelectionCard from "../../auth/ui/UserAccountTypeSelectionCard";
 import { accountTypes } from "../../auth/constants";
 import { useLogin } from "../model/useLogin";
 import { loginSchema, type LoginValues } from "@/entities/user/model/user.schema";
 import { useParentStore, useNewUserStore } from "@/shared/stores/user-store";
-import { useIsOnboarded } from "@/entities/user/model/useIsOnboarded";
-import { getParentalControlMeAction } from "@/entities/parental-controls/api/parental-controls.actions";
 
 export default function LoginForm() {
+  const router = useRouter();
   const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] = useState(false);
   const { login, isSubmitting, error } = useLogin();
-  const { checkAndRedirect } = useIsOnboarded();
   const { setParentId } = useParentStore();
   const { setEmail, setPassword } = useNewUserStore();
 
@@ -32,16 +31,11 @@ export default function LoginForm() {
 
   const onSubmit = async (data: LoginValues) => {
     try {
-      const profile = await login(data);
-      // Save credentials for subsequent OTP verification and auto-login if needed
+      const { profile, redirectTo } = await login(data);
       setEmail(data.email);
       setPassword(data.password);
-
       if (profile?.parentId) setParentId(profile.parentId);
-
-      // Fetch parental controls to determine onboarding status accurately
-      const pcSettings = await getParentalControlMeAction();
-      checkAndRedirect(profile as any, pcSettings);
+      router.push(redirectTo);
     } catch (err) {
       console.log(err);
       // Error handled by hook

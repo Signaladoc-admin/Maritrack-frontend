@@ -16,7 +16,7 @@ import {
 import { getProfileAction } from "@/entities/user/api/user.actions";
 import { createZoneAction } from "@/features/mdm-sync/api/mdm-sync.actions";
 import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
-import { useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { useToast } from "@/shared/ui/toast";
 import { Loader } from "@/shared/ui/loader";
 import { useParentStore } from "@/shared/stores/user-store";
@@ -69,80 +69,58 @@ export default function ChildrenProfiles({
   const [selectedChildProfile, setSelectedChildProfile] = useState<IChildProfile | null>(null);
   const [pendingChild, setPendingChild] = useState<IChildProfile | null>(null);
 
-  const handleAddChild = useCallback(
-    async (data: IChildProfile) => {
-      if (!activeParentId) {
-        toast({ title: "Error", message: "Parent profile not found", type: "error" });
-        return;
-      }
+  const handleAddChild = async (data: IChildProfile) => {
+    if (!activeParentId) {
+      toast({ title: "Error", message: "Parent profile not found", type: "error" });
+      return;
+    }
 
-      try {
-        const res: any = await createChild({
-          name: data.name,
-          age: Number(data.age),
-          gender: data.gender as any,
-          parentId: activeParentId,
-        });
+    try {
+      const res: any = await createChild({
+        name: data.name,
+        age: Number(data.age),
+        gender: data.gender as any,
+        parentId: activeParentId,
+      });
 
-        if (res) {
-          const onboardingCode = res.onboardingCode || res.data?.onboardingCode;
+      if (res) {
+        const onboardingCode = res.onboardingCode || res.data?.onboardingCode;
 
-          const newChildInfo = {
-            ...data,
-            ...res,
-            id: res.id || res.data?.id,
-            onboardingCode: onboardingCode,
-          };
+        const newChildInfo = {
+          ...data,
+          ...res,
+          id: res.id || res.data?.id,
+          onboardingCode: onboardingCode,
+        };
 
-          setChildProfiles((prev) => [...prev, newChildInfo as any]);
-          setPendingChild(newChildInfo as any);
+        setChildProfiles((prev) => [...prev, newChildInfo as any]);
+        setPendingChild(newChildInfo as any);
 
-          // Ensure we have a zone
-          let activeZoneId = user?.zoneId?.[0]?.id;
-          if (!activeZoneId) {
-            await createZoneAction();
-            const updatedProfile = await getProfileAction();
-            activeZoneId = (updatedProfile as any).zoneId?.[0]?.id;
-            queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-          }
-
-          toast({ title: "Success", message: "Child profile created", type: "success" });
-
-          // If not paid, go to pricing. Otherwise, return to list.
-          if (!hasPaid) {
-            setCurrentView("pricing");
-          } else {
-            setCurrentView("list");
-          }
-
-          toast({ title: "Success", message: "Child profile created", type: "success" });
-
-          // If not paid, go to pricing. Otherwise, return to list.
-          if (!hasPaid) {
-            setCurrentView("pricing");
-          } else {
-            setCurrentView("list");
-          }
-
-          toast({ title: "Success", message: "Child profile created", type: "success" });
-
-          // If not paid, go to pricing. Otherwise, return to list.
-          if (!hasPaid) {
-            setCurrentView("pricing");
-          } else {
-            setCurrentView("list");
-          }
+        // Ensure we have a zone
+        let activeZoneId = user?.zoneId?.[0]?.id;
+        if (!activeZoneId) {
+          await createZoneAction();
+          const updatedProfile = await getProfileAction();
+          activeZoneId = (updatedProfile as any).zoneId?.[0]?.id;
+          queryClient.invalidateQueries({ queryKey: ["user-profile"] });
         }
-      } catch (e: any) {
-        toast({
-          title: "Error",
-          message: e.message || "Failed to create child profile",
-          type: "error",
-        });
+
+        toast({ title: "Success", message: "Child profile created", type: "success" });
+
+        if (!hasPaid) {
+          setCurrentView("pricing");
+        } else {
+          setCurrentView("list");
+        }
       }
-    },
-    [activeParentId, createChild, toast, user?.zoneId, queryClient, hasPaid]
-  );
+    } catch (e: any) {
+      toast({
+        title: "Error",
+        message: e.message || "Failed to create child profile",
+        type: "error",
+      });
+    }
+  };
 
   const handleEditChild = async (data: IChildProfile) => {
     try {

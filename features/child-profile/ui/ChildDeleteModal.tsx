@@ -10,7 +10,7 @@ import {
 } from "@/shared/ui/Modal/dialog";
 import { Button } from "@/shared/ui/Button/button";
 import { AlertTriangle, User } from "lucide-react";
-import { DeleteChildModalProps, EditChildModalProps } from "../model/types";
+import { DeleteChildModalProps } from "../model/types";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { ChildProfileCard } from "@/shared/ui/cards/child-profile-card";
 
