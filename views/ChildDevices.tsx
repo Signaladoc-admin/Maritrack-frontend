@@ -18,8 +18,7 @@ import { useGetChild } from "@/features/child-profile/model/useGetChildrenProfil
 import { ChildDevicesSkeleton } from "./ChildDevicesSkeleton";
 
 import { getInitials } from "@/shared/lib/utils";
-import { PairDeviceModal } from "../ui/Modal/Modals/PairDeviceModal";
-import { useChildStore } from "../stores/user-store";
+import { PairDeviceModal } from "@/shared/ui/Modal/Modals/PairDeviceModal";
 
 const ChildDevices = () => {
   const [showEdit, setShowEdit] = useState<boolean>(false);

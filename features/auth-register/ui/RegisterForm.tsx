@@ -58,6 +58,7 @@ export default function RegisterForm() {
         <InputGroup
           label="Enter password"
           type="password"
+          isEnabled
           error={errors.password?.message}
           {...register("password")}
         />

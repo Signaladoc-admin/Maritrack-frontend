@@ -1,5 +1,13 @@
 import * as z from "zod";
 
+const passwordSchema = z
+  .string()
+  .min(8, "At least 8 characters")
+  .regex(/[A-Z]/, "At least 1 uppercase letter")
+  .regex(/[a-z]/, "At least 1 lowercase letter")
+  .regex(/[0-9]/, "At least 1 number")
+  .regex(/[^A-Za-z0-9]/, "At least 1 symbol");
+
 export const UserProfileSchema = z.object({
   id: z.string(),
   firstName: z.string().optional().nullable(),
@@ -46,7 +54,7 @@ export type LoginValues = z.infer<typeof loginSchema>;
 
 export const registerSchema = z.object({
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: passwordSchema,
   firstName: z.string(),
   lastName: z.string(),
 });

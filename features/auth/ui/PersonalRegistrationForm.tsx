@@ -2,7 +2,7 @@
 
 import { Button } from "@/shared/ui/button";
 import { InputGroup } from "@/shared/ui/input-group";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { parentRegistrationFormSchema, ParentRegistrationFormValues } from "../schema";
@@ -25,6 +25,9 @@ export default function PersonalRegistrationForm() {
     handleSubmit,
     trigger,
     setValue,
+    watch,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<ParentRegistrationFormValues>({
     resolver: zodResolver(parentRegistrationFormSchema),
@@ -44,6 +47,18 @@ export default function PersonalRegistrationForm() {
 
   const { registerParent, isSubmitting, error } = useRegisterParent();
   const { setEmail, setPassword, setToken } = useNewUserStore();
+
+  const passwordValue = watch("password");
+  const confirmValue = watch("confirmPassword");
+
+  useEffect(() => {
+    if (confirmValue.length === 0) return;
+    if (confirmValue === passwordValue) {
+      clearErrors("confirmPassword");
+    } else {
+      setError("confirmPassword", { message: "Passwords do not match" });
+    }
+  }, [passwordValue, confirmValue, setError, clearErrors]);
 
   const handleNextStep = async () => {
     const isValid = await trigger([
@@ -128,6 +143,7 @@ export default function PersonalRegistrationForm() {
             type="password"
             label="Password"
             placeholder="Password here"
+            isEnabled
             {...register("password")}
             error={errors.password?.message}
           />

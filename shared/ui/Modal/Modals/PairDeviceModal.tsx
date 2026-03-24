@@ -26,7 +26,7 @@ export function PairDeviceModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="gap-0 overflow-hidden p-16 sm:max-w-3xl">
-        <div className="grid gap-12 md:grid-cols-2">
+        <div className="grid gap-12 md:grid-cols-2 overflow-y-auto">
           {/* Left Column: Instructions */}
           <div className="flex flex-col justify-between rounded-3xl bg-neutral-100 p-8 md:p-10">
             <div className="">

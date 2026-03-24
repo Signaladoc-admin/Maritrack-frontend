@@ -1,12 +1,20 @@
 import { z } from "zod";
 
+const passwordSchema = z
+  .string()
+  .min(8, "At least 8 characters")
+  .regex(/[A-Z]/, "At least 1 uppercase letter")
+  .regex(/[a-z]/, "At least 1 lowercase letter")
+  .regex(/[0-9]/, "At least 1 number")
+  .regex(/[^A-Za-z0-9]/, "At least 1 symbol");
+
 export const personalRegistrationFormSchema = z
   .object({
     firstName: z.string().min(1, "First name is required"),
     lastName: z.string().min(1, "Last name is required"),
     email: z.string().email("Invalid email address"),
-    password: z.string().min(1, "Password is required"),
-    confirmPassword: z.string().min(1, "Confirm password is required"),
+    password: passwordSchema,
+    confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
@@ -26,7 +34,7 @@ export const businessRegistrationFormSchema = z
     businessName: z.string().min(1, "Business name is required"),
     businessEmail: z.string().email("Invalid email address"),
     businessPhoneNumber: z.string().min(1, "Business phone number is required"),
-    businessPassword: z.string().min(1, "Business password is required"),
+    businessPassword: passwordSchema,
     businessConfirmPassword: z.string().min(1, "Business confirm password is required"),
   })
   .refine((data) => data.businessPassword === data.businessConfirmPassword, {
@@ -43,8 +51,8 @@ export const parentRegistrationFormSchema = z
     firstName: z.string().min(1, "First name is required"),
     lastName: z.string().min(1, "Last name is required"),
     email: z.string().email("Invalid email address"),
-    password: z.string().min(1, "Password is required"),
-    confirmPassword: z.string().min(1, "Confirm password is required"),
+    password: passwordSchema,
+    confirmPassword: z.string(),
     gender: z.enum(parentGenderValues, {
       error: () => ({ message: "Select a gender" }),
     }),
