@@ -1,9 +1,11 @@
 import { useMutation } from "@tanstack/react-query";
 import { logoutAction } from "../api/auth.actions";
 import { useToast } from "@/shared/ui/toast";
+import { useRouter } from "next/navigation";
 
 export function useLogout() {
   const { toast } = useToast();
+  const router = useRouter();
 
   const logoutMutation = useMutation({
     mutationFn: logoutAction,
@@ -13,6 +15,7 @@ export function useLogout() {
         message: "Logout successful",
         type: "success",
       });
+      router.push("/login");
     },
     onError: (err) => {
       toast({

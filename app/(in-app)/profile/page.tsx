@@ -6,7 +6,9 @@ import { Input } from "@/shared/ui/input";
 import { Button } from "@/shared/ui/button";
 import { ImageUpload } from "@/shared/ui/image-upload";
 import { Loader } from "@/shared/ui/loader";
-import { LockKeyhole } from "lucide-react";
+import { LockKeyhole, LogOut } from "lucide-react";
+import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
+import { useLogout } from "@/features/auth/model/useLogout";
 
 export default function ProfilePage() {
   const { data: userProfile, isLoading: isFetchingProfile } = useUserProfile();
@@ -24,6 +26,10 @@ export default function ProfilePage() {
     state: "",
     country: "",
   });
+
+  const [showSignOut, setShowSignOut] = useState(false);
+
+  const { mutate: logout, isPending: isLoggingOut } = useLogout();
 
   useEffect(() => {
     if (userProfile) {
@@ -62,87 +68,87 @@ export default function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      <form onSubmit={handleSubmit} className="flex flex-col items-center gap-10">
-        {/* Profile Image Section */}
-        <div className="flex flex-col items-center gap-4">
-          <ImageUpload
-            value={formData.profilePicture}
-            onChange={(file) => handleInputChange("profilePicture", file)}
-            className="h-28 w-28 rounded-full border-none shadow-sm"
-            previewClassName="h-28 w-28 rounded-full"
-          >
-            <div className="flex h-full w-full items-center justify-center rounded-full bg-[#F3F4F6] text-[#1B3C73]">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
-                <span className="text-xl">👤</span>
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col items-center divide-y divide-neutral-200 *:py-10"
+      >
+        <div className="space-y-8">
+          {/* Profile Image Section */}
+          <div className="flex w-full flex-col items-start justify-start gap-4 lg:items-center">
+            <ImageUpload
+              value={formData.profilePicture}
+              onChange={(file) => handleInputChange("profilePicture", file)}
+              className="h-28 w-28 rounded-full border-none shadow-sm"
+              previewClassName="h-28 w-28 rounded-full"
+            >
+              <div className="flex h-full w-full items-center justify-center rounded-full bg-[#F3F4F6] text-[#1B3C73]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
+                  <span className="text-xl">👤</span>
+                </div>
               </div>
-            </div>
-          </ImageUpload>
-        </div>
-
-        {/* Form Fields */}
-        <div className="grid w-full gap-8">
-          <div className="grid grid-cols-2 gap-6">
-            <Input
-              label="First Name"
-              placeholder="Enter first name"
-              value={formData.firstName}
-              onValueChange={(val) => handleInputChange("firstName", val)}
-            />
-            <Input
-              label="Last Name"
-              placeholder="Enter last name"
-              value={formData.lastName}
-              onValueChange={(val) => handleInputChange("lastName", val)}
-            />
+            </ImageUpload>
           </div>
-
-          <Input
-            label="Email Address"
-            type="email"
-            value={formData.email}
-            disabled
-            className="cursor-not-allowed opacity-70"
-          />
-
-          <Input
-            label="What gender of parent are you?"
-            type="select"
-            value={formData.status}
-            onValueChange={(val) => handleInputChange("status", val)}
-            options={[
-              { label: "Mother", value: "MOTHER" },
-              { label: "Father", value: "FATHER" },
-              { label: "Other", value: "OTHER" },
-            ]}
-          />
-
-          <Input
-            label="Address"
-            placeholder="Enter street address, apt. number, etc."
-            value={formData.address}
-            onValueChange={(val) => handleInputChange("address", val)}
-          />
-
-          <div className="grid grid-cols-2 gap-6">
+          {/* Form Fields */}
+          <div className="grid w-full gap-8">
+            <div className="grid grid-cols-2 gap-6">
+              <Input
+                label="First Name"
+                placeholder="Enter first name"
+                value={formData.firstName}
+                onValueChange={(val) => handleInputChange("firstName", val)}
+              />
+              <Input
+                label="Last Name"
+                placeholder="Enter last name"
+                value={formData.lastName}
+                onValueChange={(val) => handleInputChange("lastName", val)}
+              />
+            </div>
             <Input
-              label="State"
+              label="Email Address"
+              type="email"
+              value={formData.email}
+              disabled
+              className="cursor-not-allowed opacity-70"
+            />
+            <Input
+              label="What gender of parent are you?"
               type="select"
-              value={formData.state}
-              onValueChange={(val) => handleInputChange("state", val)}
-              placeholder="Lagos"
+              value={formData.status}
+              onValueChange={(val) => handleInputChange("status", val)}
               options={[
-                { label: "Lagos", value: "Lagos" },
-                { label: "Abuja", value: "Abuja" },
+                { label: "Mother", value: "MOTHER" },
+                { label: "Father", value: "FATHER" },
+                { label: "Other", value: "OTHER" },
               ]}
             />
             <Input
-              label="Country"
-              type="select"
-              value={formData.country}
-              onValueChange={(val) => handleInputChange("country", val)}
-              placeholder="Nigeria"
-              options={[{ label: "Nigeria", value: "Nigeria" }]}
+              label="Address"
+              placeholder="Enter street address, apt. number, etc."
+              value={formData.address}
+              onValueChange={(val) => handleInputChange("address", val)}
             />
+            <div className="grid grid-cols-2 gap-6">
+              <Input
+                label="State"
+                type="select"
+                value={formData.state}
+                onValueChange={(val) => handleInputChange("state", val)}
+                placeholder="Lagos"
+                options={[
+                  { label: "Lagos", value: "Lagos" },
+                  { label: "Abuja", value: "Abuja" },
+                ]}
+              />
+              <Input
+                label="Country"
+                type="select"
+                value={formData.country}
+                onValueChange={(val) => handleInputChange("country", val)}
+                placeholder="Nigeria"
+                options={[{ label: "Nigeria", value: "Nigeria" }]}
+              />
+            </div>
           </div>
         </div>
 
@@ -173,6 +179,29 @@ export default function ProfilePage() {
           </Button>
         </div>
       </form>
+
+      <Button
+        variant="ghost"
+        className="px-0 hover:bg-transparent"
+        onClick={() => setShowSignOut(true)}
+        disabled={isLoggingOut}
+      >
+        <div className="flex items-center justify-center rounded-full bg-neutral-100 p-2.5">
+          <LogOut className="h-4 w-4 text-red-500" />
+        </div>
+        <span className="font-normal">{isLoggingOut ? "Signing out..." : "Sign out"}</span>
+      </Button>
+
+      <ConfirmationModal
+        open={showSignOut}
+        onOpenChange={setShowSignOut}
+        title="Are you sure you want to sign out?"
+        confirmText="Sign out"
+        onConfirm={logout}
+        variant="destructive"
+        loading={isLoggingOut}
+        loadingText="Signing out..."
+      />
     </div>
   );
 }
