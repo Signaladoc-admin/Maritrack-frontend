@@ -72,9 +72,9 @@ export default function ProfilePage() {
         onSubmit={handleSubmit}
         className="flex flex-col items-center divide-y divide-neutral-200 *:py-10"
       >
-        <div className="w-full space-y-8">
+        <div className="space-y-8">
           {/* Profile Image Section */}
-          <div className="flex items-start justify-center gap-4 md:justify-start">
+          <div className="flex w-full flex-col items-start justify-start gap-4 lg:items-center">
             <ImageUpload
               value={formData.profilePicture}
               onChange={(file) => handleInputChange("profilePicture", file)}
@@ -184,16 +184,14 @@ export default function ProfilePage() {
 
       <Button
         variant="ghost"
-        className="group px-0 transition-colors duration-300 hover:bg-transparent"
+        className="px-0 hover:bg-transparent"
         onClick={() => setShowSignOut(true)}
         disabled={isLoggingOut}
       >
-        <div className="flex items-center justify-center rounded-full bg-neutral-100 p-2.5 transition-colors duration-300 group-hover:bg-red-500">
-          <LogOut className="h-4 w-4 text-red-500 transition-colors duration-300 group-hover:text-white" />
+        <div className="flex items-center justify-center rounded-full bg-neutral-100 p-2.5">
+          <LogOut className="h-4 w-4 text-red-500" />
         </div>
-        <span className="font-medium transition-colors duration-300 group-hover:text-red-500">
-          {isLoggingOut ? "Signing out..." : "Sign out"}
-        </span>
+        <span className="font-normal">{isLoggingOut ? "Signing out..." : "Sign out"}</span>
       </Button>
 
       <ConfirmationModal
