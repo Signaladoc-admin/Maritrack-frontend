@@ -1,7 +1,6 @@
 "use client";
 
-import * as React from "react";
-import { QrCode, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/Modal/dialog"; // Adjust path as needed
 import { useChildQrCode } from "@/features/mdm-sync/model/useQrCode";
 import { useParams } from "next/navigation";
@@ -25,8 +24,8 @@ export function PairDeviceModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="gap-0 overflow-hidden p-16 sm:max-w-3xl">
-        <div className="grid gap-12 md:grid-cols-2 overflow-y-auto">
+      <DialogContent className="top-0 left-0 h-dvh w-full max-w-none translate-x-0 translate-y-0 gap-0 overflow-auto rounded-none border-0 p-6 sm:top-[50%] sm:left-[50%] sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:max-w-3xl sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-lg sm:border sm:p-16">
+        <div className="grid gap-8 md:grid-cols-2 md:gap-12">
           {/* Left Column: Instructions */}
           <div className="flex flex-col justify-between rounded-3xl bg-neutral-100 p-8 md:p-10">
             <div className="">
@@ -54,7 +53,12 @@ export function PairDeviceModal({
           </div>
 
           {/* Right Column: QR Code Visual */}
-          <QRCodeCard src={qrCodeSrc!} isLoading={isGenerating} isError={isError} className="p-8" />
+          <QRCodeCard
+            src={qrCodeSrc!}
+            isLoading={isGenerating}
+            isError={isError}
+            className="max-w-full min-w-[260px] p-4 sm:max-w-[500px] sm:p-8"
+          />
         </div>
       </DialogContent>
     </Dialog>

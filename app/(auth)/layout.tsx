@@ -4,7 +4,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="bg-background grid min-h-screen w-full grid-cols-1 items-center gap-5 p-5 lg:grid-cols-[4fr_3fr]">
       {/* Form Section */}
-      <div className="mx-auto w-4xl lg:px-28">{children}</div>
+      <div className="mx-auto w-full max-w-4xl lg:px-28">{children}</div>
 
       {/* Image Section using background image - matching design screenshot */}
       <div className="hidden h-full overflow-hidden rounded-4xl bg-[url('/assets/auth.jpg')] bg-cover bg-center text-white lg:block">

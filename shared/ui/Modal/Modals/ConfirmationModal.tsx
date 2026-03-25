@@ -21,6 +21,8 @@ interface ConfirmationModalProps {
   cancelText?: string;
   onConfirm: () => void;
   variant?: "destructive" | "default";
+  loading?: boolean;
+  loadingText?: string;
 }
 
 export function ConfirmationModal({
@@ -32,6 +34,8 @@ export function ConfirmationModal({
   cancelText = "Cancel",
   onConfirm,
   variant = "destructive",
+  loading,
+  loadingText = "Loading...",
 }: ConfirmationModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -62,8 +66,9 @@ export function ConfirmationModal({
               variant === "destructive" ? "bg-[#D95D55] hover:bg-[#C84D45]" : "bg-[#1B3C73]"
             }`}
             onClick={onConfirm}
+            disabled={loading}
           >
-            {confirmText}
+            {loading ? loadingText : confirmText}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -66,7 +66,7 @@ const ChildDevices = () => {
         </div>
 
         <P className="mb-4 font-medium">Select a device to view</P>
-        <div className="grid w-full grid-cols-2 gap-4">
+        <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
           <DeviceUsageCard
             deviceName="Mide's iPhone"
             status="active"
