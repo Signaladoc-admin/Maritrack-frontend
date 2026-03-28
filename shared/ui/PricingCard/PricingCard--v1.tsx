@@ -5,7 +5,6 @@ import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/shared/ui/Button/button"; // Ensure this path is correct
 import { formatCurrency } from "@/shared/lib/utils";
-import { IPlan } from "@/features/payments/schema";
 
 // --- Types ---
 export interface PricingFeatureItem {
@@ -14,32 +13,32 @@ export interface PricingFeatureItem {
 }
 
 export interface PricingCardProps {
+  title: string;
+  price: string;
+  currency?: string;
+  frequency?: string;
+  description: string;
+  features: PricingFeatureItem[];
   buttonText?: string;
   isPremium?: boolean;
   onButtonClick?: () => void;
   className?: string;
-  plan?: IPlan;
 }
 
 // --- Component ---
 export function PricingCard({
-  plan,
+  title,
+  price,
+  currency = "₦",
+  frequency = "Per month",
+  description,
+  features,
   buttonText = "Get Started",
   isPremium = false,
   onButtonClick,
   className,
 }: PricingCardProps) {
-  const formattedPrice = React.useMemo(
-    () => formatCurrency(Number(plan?.priceNGN)),
-    [plan?.priceNGN]
-  );
-
-  const features = [
-    { text: plan?.name.split("—")[0], included: true },
-    { text: "Free User Account", included: true },
-    { text: "Monthly Reports", included: true },
-    { text: "Multiple Devices", included: true },
-  ];
+  const formattedPrice = React.useMemo(() => formatCurrency(Number(price)), [price]);
 
   return (
     <div
@@ -59,14 +58,14 @@ export function PricingCard({
       )}
 
       {/* Header Section */}
-      <div className="flex min-h-[180px] flex-col space-y-4">
+      <div className="mb-6 flex min-h-[180px] flex-col space-y-4">
         <h3
           className={cn(
             "text-sm font-bold tracking-widest uppercase",
             isPremium ? "text-slate-200" : "text-[#1B3C73]"
           )}
         >
-          {isPremium ? "Premium Plan" : "FREE PLAN"}
+          {title}
         </h3>
 
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
@@ -88,7 +87,7 @@ export function PricingCard({
               isPremium ? "text-slate-300" : "text-slate-400"
             )}
           >
-            {plan?.billingCycle}
+            {frequency}
           </span>
         </div>
 
@@ -98,7 +97,7 @@ export function PricingCard({
             isPremium ? "text-slate-300" : "text-slate-500"
           )}
         >
-          {plan?.description}
+          {description}
         </p>
       </div>
 
@@ -121,9 +120,9 @@ export function PricingCard({
               )}
             >
               {feature.included ? (
-                <Check className="h-3.5 w-3.5 stroke-3" />
+                <Check className="h-3.5 w-3.5 stroke-[3]" />
               ) : (
-                <X className="h-3.5 w-3.5 stroke-3" />
+                <X className="h-3.5 w-3.5 stroke-[3]" />
               )}
             </div>
 

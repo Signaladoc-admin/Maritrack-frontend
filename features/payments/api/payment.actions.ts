@@ -35,7 +35,7 @@ export async function initializePaymentAction(data: {
   planId: string;
   zoneId: string;
   callbackUrl: string;
-}): Promise<ActionResult<{ checkoutUrl: string }>> {
+}): Promise<ActionResult<{ authorizationUrl: string }>> {
   try {
     const response = await apiClient("/payments/paystack/initialize", {
       method: "POST",
@@ -56,5 +56,33 @@ export async function verifyPaymentAction(reference: string): Promise<ActionResu
     return { success: true, data: response.data };
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to verify payment" };
+  }
+}
+
+export interface ActiveSubscription {
+  active: boolean;
+  subscription: {
+    id: string;
+    zoneId: string;
+    planId: string;
+    status: string;
+    deviceLimit: number;
+    devicesUsed: number;
+    currentPeriodStart: string;
+    currentPeriodEnd: string;
+    plan: PaymentPlan;
+  } | null;
+}
+
+export async function getActiveSubscriptionAction(
+  zoneId: string
+): Promise<ActionResult<ActiveSubscription>> {
+  try {
+    const response = await apiClient(`/payments/subscriptions/zone/${zoneId}/active`, {
+      method: "GET",
+    });
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    return { success: false, error: error.message || "Failed to fetch subscription status" };
   }
 }

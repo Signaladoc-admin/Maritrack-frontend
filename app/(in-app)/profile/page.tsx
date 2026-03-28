@@ -72,9 +72,9 @@ export default function ProfilePage() {
         onSubmit={handleSubmit}
         className="flex flex-col items-center divide-y divide-neutral-200 *:py-10"
       >
-        <div className="space-y-8">
+        <div className="w-full space-y-8">
           {/* Profile Image Section */}
-          <div className="flex w-full flex-col items-start justify-start gap-4 lg:items-center">
+          <div className="flex items-start justify-center gap-4 md:justify-start">
             <ImageUpload
               value={formData.profilePicture}
               onChange={(file) => handleInputChange("profilePicture", file)}
@@ -153,23 +153,25 @@ export default function ProfilePage() {
         </div>
 
         {/* Password Section */}
-        <div className="mt-4 flex w-full items-center gap-6 rounded-2xl bg-[#F9FAFB] p-6">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm">
-            <LockKeyhole className="h-6 w-6 text-[#1B3C73]" />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-base font-semibold text-[#1B3C73]">Your password is secured</h3>
-            <Button
-              type="button"
-              className="mt-2 h-9 bg-[#1B3C73] px-4 text-xs font-medium text-white hover:bg-[#1B3C73]/90"
-            >
-              Change password
-            </Button>
+        <div className="w-full">
+          <div className="flex w-full items-center gap-6 rounded-2xl bg-[#F9FAFB] p-6">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm">
+              <LockKeyhole className="h-6 w-6 text-[#1B3C73]" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-base font-semibold text-[#1B3C73]">Your password is secured</h3>
+              <Button
+                type="button"
+                className="mt-2 h-9 bg-[#1B3C73] px-4 text-xs font-medium text-white hover:bg-[#1B3C73]/90"
+              >
+                Change password
+              </Button>
+            </div>
           </div>
         </div>
 
         {/* Submit Button */}
-        <div className="mt-4 w-full">
+        <div className="w-full">
           <Button
             type="submit"
             className="h-14 w-full rounded-2xl bg-[#1B3C73] text-lg font-semibold text-white transition-all hover:bg-[#1B3C73]/90 active:scale-[0.98]"
@@ -182,14 +184,16 @@ export default function ProfilePage() {
 
       <Button
         variant="ghost"
-        className="px-0 hover:bg-transparent"
+        className="group px-0 transition-colors duration-300 hover:bg-transparent"
         onClick={() => setShowSignOut(true)}
         disabled={isLoggingOut}
       >
-        <div className="flex items-center justify-center rounded-full bg-neutral-100 p-2.5">
-          <LogOut className="h-4 w-4 text-red-500" />
+        <div className="flex items-center justify-center rounded-full bg-neutral-100 p-2.5 transition-colors duration-300 group-hover:bg-red-500">
+          <LogOut className="h-4 w-4 text-red-500 transition-colors duration-300 group-hover:text-white" />
         </div>
-        <span className="font-normal">{isLoggingOut ? "Signing out..." : "Sign out"}</span>
+        <span className="font-medium transition-colors duration-300 group-hover:text-red-500">
+          {isLoggingOut ? "Signing out..." : "Sign out"}
+        </span>
       </Button>
 
       <ConfirmationModal

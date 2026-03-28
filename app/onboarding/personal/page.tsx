@@ -6,11 +6,10 @@ import ParentalControlSetup from "@/features/parents/ui/ParentalControlSetup";
 import { MultiStepForm } from "@/shared/ui/multi-step-form";
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useVerifyPayment } from "@/entities/payments/model/usePayments";
+import { useVerifyPayment } from "@/features/payments/model/usePayments";
 import { useToast } from "@/shared/ui/toast";
 import { Button } from "@/shared/ui/button";
 import { useLogout } from "@/features/auth/model/useLogout";
-import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/shared/lib/utils";
 import { Loader } from "@/shared/ui/loader";
 
@@ -20,10 +19,8 @@ function OnboardingContent() {
   const stepParam = searchParams?.get("step");
   const reference = searchParams?.get("reference");
 
-  // 1. All hooks at the very top
   const { profile, pcSettings, isLoading: isAuthLoading, checkAndRedirect } = useIsOnboarded();
 
-  const [hasPaid, setHasPaid] = useState(false);
   const [isFullWidth, setIsFullWidth] = useState(false);
   const [currentStep, setCurrentStep] = useState(() => {
     if (stepParam) return parseInt(stepParam, 10);
@@ -32,22 +29,13 @@ function OnboardingContent() {
 
   const { mutateAsync: verifyPayment } = useVerifyPayment();
   const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
-  const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // Redirect if already onboarded
   useEffect(() => {
     if (profile && pcSettings) {
       checkAndRedirect(profile, pcSettings);
-      // checkAndRedirect(profile, null);
     }
   }, [profile, pcSettings, checkAndRedirect]);
-
-  // Check for persisted payment state on mount
-  useEffect(() => {
-    const paid = localStorage.getItem("maritrack_onboarding_paid") === "true";
-    if (paid) setHasPaid(true);
-  }, []);
 
   useEffect(() => {
     if (stepParam && !reference) {
@@ -62,7 +50,6 @@ function OnboardingContent() {
       verifyPayment(reference)
         .then(() => {
           toast({ title: "Success", message: "Payment verified successfully", type: "success" });
-          setHasPaid(true);
           router.replace("/onboarding/personal?step=0");
         })
         .catch((err) => {
@@ -76,7 +63,6 @@ function OnboardingContent() {
     }
   }, [reference, verifyPayment, toast, router]);
 
-  // 2. Early returns AFTER all hooks
   if (isAuthLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -84,12 +70,6 @@ function OnboardingContent() {
       </div>
     );
   }
-
-  // 3. Helper functions and render logic
-  const handleHasPaid = (value: boolean) => {
-    setHasPaid(value);
-    localStorage.setItem("maritrack_onboarding_paid", String(value));
-  };
 
   const nextStep = () => {
     setCurrentStep((p) => {
@@ -119,8 +99,6 @@ function OnboardingContent() {
   async function handleLogout() {
     try {
       await logout();
-      queryClient.clear();
-      router.push("/login");
     } catch (e) {
       console.error("Logout failed", e);
     }
@@ -134,24 +112,12 @@ function OnboardingContent() {
         <ChildrenProfiles
           goToNextStep={nextStep}
           onViewChange={(view) => setIsFullWidth(view === "pricing")}
-          hasPaid={hasPaid}
-          setHasPaid={handleHasPaid}
         />
       ),
     },
     {
       title: "Parental Control & Consent Setup",
-      onClick: () => {
-        if (!hasPaid) {
-          toast({
-            title: "Access Restricted",
-            message: "Please select a plan before configuring parental controls",
-            type: "warning",
-          });
-          return;
-        }
-        handleStepClick(1);
-      },
+      onClick: () => handleStepClick(1),
       component: (
         <ParentalControlSetup
           handleSubmit={() => router.push("/dashboard")}

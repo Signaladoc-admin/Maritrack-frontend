@@ -23,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${jakarta.variable} antialiased`}>
+      <body className={`${jakarta.variable} antialiased`} suppressHydrationWarning>
         <Providers>
           <ToastProvider>
             <main>{children}</main>
