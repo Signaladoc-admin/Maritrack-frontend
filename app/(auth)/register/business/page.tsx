@@ -1,4 +1,4 @@
-import BusinessRegistrationForm from "@/features/auth/ui/BusinessRegistrationForm";
+import BusinessRegistrationForm from "@/features/auth-register/ui/BusinessRegistrationForm";
 import { Header } from "@/shared/ui/layout/header";
 
 export default function BusinessRegistrationPage() {

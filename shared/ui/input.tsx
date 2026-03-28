@@ -168,7 +168,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       );
     }
 
-    const { value: inputValue, ...inputProps } = props;
+    const { value: inputValue, onValueChange, onCheckedChange: _onCheckedChange, ...inputProps } = props;
+
+    const handleChange = onValueChange
+      ? (e: React.ChangeEvent<HTMLInputElement>) => onValueChange(e.target.value)
+      : inputProps.onChange;
 
     return (
       <div className={cn("grid w-full items-center gap-1.5", wrapperClassName)}>
@@ -187,6 +191,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             {...inputProps}
             value={inputValue as any}
+            onChange={handleChange}
             type={resolvedType}
             className={cn(
               "placeholder:text-muted-foreground w-full min-w-0 flex-1 bg-transparent file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none disabled:cursor-not-allowed",

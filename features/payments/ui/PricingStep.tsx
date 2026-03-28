@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import { PricingCard } from "@/shared/ui/PricingCard/PricingCard";
-import { Header } from "@/shared/ui/layout/header";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { Button } from "@/shared/ui/button";
-import { usePaymentPlans, useInitializePayment } from "@/entities/payments/model/usePayments";
+import { usePaymentPlans, useInitializePayment } from "@/features/payments/model/usePayments";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
 import { useToast } from "@/shared/ui/toast";
 import { useRouter } from "next/navigation";
@@ -26,8 +25,6 @@ export default function PricingStep({ onBack, onSuccess }: PricingStepProps) {
   const handleSelectBasicPlan = () => {
     onSuccess();
   };
-
-  console.log(plans);
 
   const handleSelectPremiumPlan = async (planId: string) => {
     if (!user?.zoneId?.[0]?.id) {
@@ -51,9 +48,9 @@ export default function PricingStep({ onBack, onSuccess }: PricingStepProps) {
         callbackUrl,
       });
 
-      if (response?.checkoutUrl) {
+      if (response?.authorizationUrl) {
         // Redirect to paystack checkout window
-        window.location.href = response.checkoutUrl;
+        window.location.href = response.authorizationUrl;
       } else {
         toast({ title: "Error", message: "Could not generate checkout session", type: "error" });
         setIsLoading(false);
@@ -89,7 +86,7 @@ export default function PricingStep({ onBack, onSuccess }: PricingStepProps) {
     : "On even feet time have an no at. Relation so in confined smallest children unpacked delicate. Why sir end believe.";
 
   const premiumFeatures = [
-    { text: premiumPlanData?.name!, included: true },
+    { text: premiumPlanData?.name.toUpperCase().split("—")[0]!, included: true },
     { text: "Customer Support", included: true },
     { text: "Monthly Reports", included: true },
     { text: "Multiple Devices Supported", included: true },
@@ -113,34 +110,23 @@ export default function PricingStep({ onBack, onSuccess }: PricingStepProps) {
         </div>
         <div className="grid justify-center gap-8 md:grid-cols-2">
           <PricingCard
-            title="BASIC PLAN"
-            price="0"
-            description="Get started with our free plan and enjoy basic features."
-            features={features}
+            plan={{
+              id: "basic",
+              name: "Basic Plan",
+              billingCycle: "Per month",
+              deviceLimit: 1,
+              priceNGN: 0,
+              description: "Get started with our free plan and enjoy basic features.",
+            }}
             buttonText="Get Basic"
             onButtonClick={handleSelectBasicPlan}
           />
           <PricingCard
-            title={premiumTitle}
-            price={premiumPrice}
+            plan={plans?.at(-1)!}
+            key={plans?.at(-1)!.id}
             isPremium
-            description={premiumDesc}
-            features={premiumFeatures}
-            frequency={premiumPlanData?.billingCycle}
             buttonText="Get the premium"
-            onButtonClick={() => {
-              if (premiumPlanData?.id) {
-                console.log(premiumPlanData.id);
-                // handleSelectPremiumPlan(premiumPlanData.id);
-                onSuccess();
-              } else {
-                toast({
-                  title: "Error",
-                  message: "Premium plan not available right now",
-                  type: "error",
-                });
-              }
-            }}
+            onButtonClick={() => handleSelectPremiumPlan(plans?.at(-1)!.id!)}
           />
         </div>
       </div>
