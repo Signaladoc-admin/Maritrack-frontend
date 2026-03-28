@@ -1,7 +1,15 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { ChevronDown, User } from "lucide-react";
+import { useIsOnboarded } from "@/entities/user/model/useIsOnboarded";
+import ChildrenProfiles from "@/features/onboarding/ui/ChildrenProfiles";
+import ParentalControlSetup from "@/features/parents/ui/ParentalControlSetup";
+import { MultiStepForm } from "@/shared/ui/multi-step-form";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useVerifyPayment } from "@/features/payments/model/usePayments";
+import { useToast } from "@/shared/ui/toast";
+import { Button } from "@/shared/ui/button";
+import { useLogout } from "@/features/auth/model/useLogout";
 import { cn } from "@/shared/lib/utils";
 import { useParentStore } from "@/shared/stores/user-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/Avatar/Avatar";
