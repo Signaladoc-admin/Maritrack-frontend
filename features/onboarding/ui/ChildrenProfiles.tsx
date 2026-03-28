@@ -1,11 +1,10 @@
 import { Button } from "@/shared/ui/button";
 import { Header } from "@/shared/ui/layout/header";
-import { Plus } from "lucide-react";
 import { useState } from "react";
 import { IChildProfile } from "../types";
 import CreateChildProfileForm from "./CreateChildProfileForm";
 import { ChildProfileCard } from "@/shared/ui/cards/child-profile-card";
-import PricingStep from "./PricingStep";
+
 import PairingQRStep from "./PairingQRStep";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
 import {
@@ -22,17 +21,15 @@ import { Loader } from "@/shared/ui/loader";
 import { useParentStore } from "@/shared/stores/user-store";
 import { useQueryClient } from "@tanstack/react-query";
 import NewChildProfileButton from "@/features/child-profile/ui/NewChildProfileButton";
+import { useActiveSubscription } from "@/features/payments/model/usePayments";
+import PricingStep from "@/features/payments/ui/PricingStep";
 
 export default function ChildrenProfiles({
   goToNextStep,
   onViewChange,
-  hasPaid,
-  setHasPaid,
 }: {
   goToNextStep: () => void;
   onViewChange?: (view: "form" | "list" | "pricing" | "qr") => void;
-  hasPaid: boolean;
-  setHasPaid: (value: boolean) => void;
 }) {
   const [childProfiles, setChildProfiles] = useState<IChildProfile[]>([]);
   const queryClient = useQueryClient();
@@ -44,6 +41,11 @@ export default function ChildrenProfiles({
   const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentZones({
     enabled: !!activeParentId,
   });
+
+  const zoneId = user?.zoneId?.[0]?.id;
+  const { data: subscriptionData } = useActiveSubscription(zoneId);
+  const hasPaid = subscriptionData?.active ?? false;
+
   const { mutateAsync: createChild, isPending: isCreatingChild } = useCreateChild();
   const { mutateAsync: updateChild, isPending: isUpdatingChild } = useUpdateChild();
   const { mutateAsync: deleteChild } = useDeleteChild();
@@ -51,11 +53,9 @@ export default function ChildrenProfiles({
 
   useEffect(() => {
     if (Array.isArray(parentZonesRes)) {
-      // Extract children from the zones list
       const extractedChildren = parentZonesRes.flatMap(
         (zone: any) => zone.parentChildren?.map((pc: any) => pc.child) || []
       );
-      // Remove any undefined/null values that might have snuck in and format
       setChildProfiles(extractedChildren.filter(Boolean) as any);
     }
   }, [parentZonesRes]);
@@ -85,18 +85,17 @@ export default function ChildrenProfiles({
 
       if (res) {
         const onboardingCode = res.onboardingCode || res.data?.onboardingCode;
-
         const newChildInfo = {
           ...data,
           ...res,
           id: res.id || res.data?.id,
-          onboardingCode: onboardingCode,
+          onboardingCode,
         };
 
         setChildProfiles((prev) => [...prev, newChildInfo as any]);
         setPendingChild(newChildInfo as any);
 
-        // Ensure we have a zone
+        // Ensure zone exists
         let activeZoneId = user?.zoneId?.[0]?.id;
         if (!activeZoneId) {
           await createZoneAction();
@@ -107,10 +106,11 @@ export default function ChildrenProfiles({
 
         toast({ title: "Success", message: "Child profile created", type: "success" });
 
-        if (!hasPaid) {
-          setCurrentView("pricing");
+        // Always show pricing after creation — QR is only accessible once payment is done
+        if (hasPaid) {
+          setCurrentView("qr");
         } else {
-          setCurrentView("list");
+          setCurrentView("pricing");
         }
       }
     } catch (e: any) {
@@ -131,13 +131,13 @@ export default function ChildrenProfiles({
         } as any);
       }
       setChildProfiles((prev) => prev.map((child) => (child.id === data.id ? data : child)));
-
       toast({ title: "Success", message: "Child profile updated", type: "success" });
 
-      if (!hasPaid) {
-        setCurrentView("pricing");
+      // After updating: if paid proceed to next step, otherwise show pricing
+      if (hasPaid) {
+        goToNextStep();
       } else {
-        setCurrentView("list");
+        setCurrentView("pricing");
       }
     } catch (e: any) {
       toast({ title: "Error", message: e.message || "Failed to update profile", type: "error" });
@@ -152,6 +152,16 @@ export default function ChildrenProfiles({
   const handleOpenForm = (profile?: IChildProfile) => {
     setSelectedChildProfile(profile || null);
     setCurrentView("form");
+  };
+
+  const handleViewQR = (childProfile: IChildProfile) => {
+    if (hasPaid) {
+      setPendingChild(childProfile);
+      setCurrentView("qr");
+    } else {
+      setPendingChild(childProfile);
+      setCurrentView("pricing");
+    }
   };
 
   const handlePairingRollback = async () => {
@@ -186,8 +196,6 @@ export default function ChildrenProfiles({
       <PricingStep
         onBack={() => setCurrentView("list")}
         onSuccess={() => {
-          setHasPaid(true);
-          // If we have a pending child that needs pairing, go to QR. Otherwise, go to list.
           if (pendingChild) {
             setCurrentView("qr");
           } else {
@@ -204,13 +212,9 @@ export default function ChildrenProfiles({
   }
 
   if (currentView === "qr") {
-    // Find the onboarding code. If it's a freshly created child, it's in pendingChild.
-    // If it's an existing child we just clicked "View QR" for, we might need to find it
-    // in parentZonesRes based on the childId.
     let onboardingCode = pendingChild?.onboardingCode;
 
     if (!onboardingCode && pendingChild?.id) {
-      // Fallback: search in the parentZonesRes structure provided by the user
       const zoneWithChild = parentZonesRes?.find((zone: any) =>
         zone.parentChildren?.some((pc: any) => pc.childId === pendingChild.id)
       );
@@ -236,30 +240,6 @@ export default function ChildrenProfiles({
 
   const isInitialLoading = isLoadingUser || (!!activeParentId && isFetchingChildren);
 
-  console.log(isInitialLoading);
-
-  console.log(isFetchingChildren);
-
-  if (isInitialLoading) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm">
-        <Loader size="lg" className="scale-150" />
-      </div>
-    );
-  }
-
-  console.log(isFetchingChildren);
-
-  if (isInitialLoading) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm">
-        <Loader size="lg" className="scale-150" />
-      </div>
-    );
-  }
-
-  console.log(isFetchingChildren);
-
   if (isInitialLoading) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm">
@@ -272,19 +252,6 @@ export default function ChildrenProfiles({
     <div className="space-y-5">
       <div className="flex items-start justify-between">
         <Header title="Create your children's profile" subtitle="Create your children's accounts" />
-        {hasPaid && (
-          <div className="flex flex-col items-end gap-2">
-            <span className="animate-in fade-in slide-in-from-right-4 rounded-full border border-green-200 bg-green-100 px-3 py-1 text-xs font-bold tracking-wider text-green-700 uppercase shadow-sm">
-              Plan Active
-            </span>
-            <button
-              onClick={() => setHasPaid(false)}
-              className="text-[10px] text-slate-400 underline transition-colors hover:text-red-400"
-            >
-              Reset for testing
-            </button>
-          </div>
-        )}
       </div>
       <div>
         <div className="space-y-4">
@@ -292,14 +259,7 @@ export default function ChildrenProfiles({
             <ChildProfileCard
               key={childProfile.id || index}
               onEdit={() => handleOpenForm(childProfile)}
-              onViewQR={
-                hasPaid
-                  ? () => {
-                      setPendingChild(childProfile);
-                      setCurrentView("qr");
-                    }
-                  : undefined // Hide or disable QR view if not paid
-              }
+              onViewQR={() => handleViewQR(childProfile)}
               {...childProfile}
             />
           ))}
@@ -319,25 +279,6 @@ export default function ChildrenProfiles({
           >
             {hasPaid ? "Continue to Setup" : "Next"}
           </Button>
-        </div>
-        <div className="flex justify-center">
-          {/* <Button
-            onClick={() => {
-              if (!childProfiles.length) {
-                toast({
-                  title: "Error",
-                  message: "Please add at least one child profile",
-                  type: "error",
-                });
-                return;
-              }
-              goToNextStep();
-            }}
-            variant="link"
-            className="font-normal text-slate-500"
-          >
-            Skip for now
-          </Button> */}
         </div>
       </div>
     </div>

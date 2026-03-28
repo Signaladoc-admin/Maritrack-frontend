@@ -1,4 +1,4 @@
-import PersonalRegistrationForm from "@/features/auth/ui/PersonalRegistrationForm";
+import PersonalRegistrationForm from "@/features/auth-register/ui/PersonalRegistrationForm";
 import { Header } from "@/shared/ui/layout/header";
 
 export default function PersonalRegistrationPage() {
