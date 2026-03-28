@@ -1,5 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# decisions.md
+/decisions.md
+
 # dependencies
 /node_modules
 /.pnp
@@ -39,3 +42,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+*storybook.log
+storybook-static
+temp_auto_push.bat
+temp_interactive_push.bat
+branch_structure.json

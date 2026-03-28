@@ -1,0 +1,17 @@
+{
+  "status": true,
+  "statusCode": 201,
+  "message": "Token refreshed successfully",
+  "data": {
+    "user": {
+      "role": "USER",
+      "email": "obafemilaredb@gmail.com",
+      "id": "f9bdd2a3-8e51-40db-b683-4fb0ac19f056",
+      "name": "Obafemi Olorede",
+      "imageUrl": null
+    },
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiVVNFUiIsImVtYWlsIjoib2JhZmVtaWxhcmVkYkBnbWFpbC5jb20iLCJpZCI6ImY5YmRkMmEzLThlNTEtNDBkYi1iNjgzLTRmYjBhYzE5ZjA1NiIsIm5hbWUiOiJPYmFmZW1pIE9sb3JlZGUiLCJpbWFnZVVybCI6bnVsbCwiaWF0IjoxNzcyNDQxNDUwLCJleHAiOjE3NzUwMzM0NTB9._r0ClyEZazmj5npz7jbCJhHw6EX_85O4_YYY9QbI8DM",
+    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoicmVmcmVzaCIsImlhdCI6MTc3MjQ0MTM0MCwiZXhwIjoxNzgwMjE3MzQwfQ.a5ZkMbLGa5IM-GJtdBhtSHsCcpqlp3vzBWGFZvQwH2A"
+  },
+  "accessToken": null
+}

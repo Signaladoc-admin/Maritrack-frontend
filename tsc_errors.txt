@@ -1,0 +1,1 @@
+app/playground/page.tsx(94,54): error TS2820: Type '"female"' is not assignable to type '"MALE" | "FEMALE"'. Did you mean '"FEMALE"'?
