@@ -26,7 +26,7 @@ export interface PricingCardProps {
 }
 
 // --- Component ---
-export function PricingCard({
+export function PricingCard2({
   title,
   price,
   currency = "₦",

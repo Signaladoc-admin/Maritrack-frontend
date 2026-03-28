@@ -9,7 +9,10 @@ import { GeofencingModal } from "@/shared/ui/Modal/Modals/GeofencingModal";
 import { SetTimeLimitModal } from "@/shared/ui/Modal/Modals/TimeLimitModal";
 import { PairDeviceModal } from "@/shared/ui/Modal/Modals/PairDeviceModal";
 import { LoaderModal } from "@/shared/ui/Modal/Modals/LoaderModal";
-import { PricingCard, PricingFeatureItem } from "@/shared/ui/PricingCard/PricingCard";
+import {
+  PricingCard2 as PricingCard,
+  PricingFeatureItem,
+} from "@/shared/ui/PricingCard/PricingCard--v1";
 import { DeviceUsageCard } from "@/shared/ui/DeviceStatusCard/DeviceStatusCard";
 import { UserSelect } from "@/shared/ui/UserDropdown/UserDropdown";
 import { DashboardCard } from "@/shared/ui/DashboardWidget/DashboardWidget";
