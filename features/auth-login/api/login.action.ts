@@ -1,0 +1,30 @@
+"use server";
+
+import { apiClient } from "@/shared/lib/api-client";
+import type { LoginValues, UserProfile } from "@/entities/user/model/user.schema";
+import { getParentalControlMeAction } from "@/entities/parental-controls/api/parental-controls.actions";
+
+export async function loginAction(
+  credentials: LoginValues
+): Promise<{ profile: UserProfile; redirectTo: string }> {
+  const response = await apiClient("/users/login", {
+    method: "POST",
+    body: JSON.stringify(credentials),
+  });
+
+  const profile = response.data as UserProfile;
+
+  // Cookie is now in scope — call PC check in the same server context
+  const pcSettings = await getParentalControlMeAction();
+
+  let redirectTo: string;
+  if (profile.role === "ADMIN") {
+    redirectTo = "/admin";
+  } else if (!pcSettings) {
+    redirectTo = "/onboarding/personal";
+  } else {
+    redirectTo = "/dashboard";
+  }
+
+  return { profile, redirectTo };
+}

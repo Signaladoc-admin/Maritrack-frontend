@@ -1,0 +1,18 @@
+app/(auth)/register/page.tsx(3,24): error TS2307: Cannot find module '../layout' or its corresponding type declarations.
+app/playground/page.tsx(15,10): error TS2724: '"@/shared/ui/cards/child-profile-card"' has no exported member named 'ChildrenProfileCard'. Did you mean 'ChildProfileCard'?
+features/onboarding/ui/ChildProfiles.tsx(27,71): error TS2322: Type '(data: IChildProfile) => void' is not assignable to type '(data: { name: string; age: number; gender: string; profileImage?: File | undefined; }) => void'.
+  Types of parameters 'data' and 'data' are incompatible.
+    Type '{ name: string; age: number; gender: string; profileImage?: File | undefined; }' is not assignable to type 'IChildProfile'.
+      Types of property 'gender' are incompatible.
+        Type 'string' is not assignable to type '"MALE" | "FEMALE" | undefined'.
+features/onboarding/ui/CreateChildProfileForm.tsx(21,5): error TS2322: Type 'Resolver<{ name: string; age: unknown; gender: string; profileImage?: File | undefined; }, any, { name: string; age: number; gender: string; profileImage?: File | undefined; }>' is not assignable to type 'Resolver<{ name: string; age: number; gender: string; profileImage?: File | undefined; }, any, { name: string; age: number; gender: string; profileImage?: File | undefined; }>'.
+  Types of parameters 'options' and 'options' are incompatible.
+    Type 'ResolverOptions<{ name: string; age: number; gender: string; profileImage?: File | undefined; }>' is not assignable to type 'ResolverOptions<{ name: string; age: unknown; gender: string; profileImage?: File | undefined; }>'.
+      Types of property 'names' are incompatible.
+        Type 'string[] | undefined' is not assignable to type '("profileImage" | "gender" | "name" | "age")[] | undefined'.
+          Type 'string[]' is not assignable to type '("profileImage" | "gender" | "name" | "age")[]'.
+            Type 'string' is not assignable to type '"profileImage" | "gender" | "name" | "age"'.
+features/onboarding/ui/CreateChildProfileForm.tsx(37,63): error TS2345: Argument of type '(data: z.infer<typeof childProfileSchema>) => void' is not assignable to parameter of type 'SubmitHandler<TFieldValues>'.
+  Types of parameters 'data' and 'data' are incompatible.
+    Type 'TFieldValues' is not assignable to type '{ name: string; age: number; gender: string; profileImage?: File | undefined; }'.
+      Type 'FieldValues' is missing the following properties from type '{ name: string; age: number; gender: string; profileImage?: File | undefined; }': name, age, gender

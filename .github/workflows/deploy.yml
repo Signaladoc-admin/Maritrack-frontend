@@ -1,0 +1,39 @@
+name: Deploy Maritrack to Dev
+
+on:
+  push:
+    branches:
+      - dev/dev  # Triggers only on pushes/merges to dev/dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Execute SSH Deployment Commands
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          command_timeout: 15m # Gives the server plenty of time to run the Next.js build
+          script_stop: true    # Fails the Action instantly if npm run build fails
+          script: |
+            # 1. Move to the project folder
+            cd /var/www/Maritrack-frontend
+            
+            # 2. Ensure we are on the right branch and pull fresh code
+            git fetch origin
+            git checkout dev/dev
+            git pull origin dev/dev
+            
+            # 3. Install packages
+            npm install
+            
+            # 4. Build the application (Will halt here if there are code errors)
+            npm run build
+            
+            # 5. Restart the PM2 process
+            pm2 restart maritrack
