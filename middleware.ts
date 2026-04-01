@@ -14,6 +14,7 @@ const roleAccessMap: Record<string, string[]> = {
     "/plans",
     "/child",
     "/device",
+    "/users",
   ],
 };
 
