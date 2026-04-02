@@ -24,13 +24,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${jakarta.variable} antialiased`} suppressHydrationWarning>
-        <Providers>
-          <ToastProvider>
+        <ToastProvider>
+          <Providers>
             <main>{children}</main>
             {/* <Sidebar />
             <main className="ml-[100px] flex-1">{children}</main> */}
-          </ToastProvider>
-        </Providers>
+          </Providers>
+        </ToastProvider>
       </body>
     </html>
   );

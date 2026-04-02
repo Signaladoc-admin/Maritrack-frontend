@@ -27,13 +27,16 @@ export const businessRegistrationFormSchema = z
   .object({
     businessName: z.string().min(1, "Business name is required"),
     businessEmail: z.string().email("Invalid email address"),
-    businessPhoneNumber: z.string().min(1, "Business phone number is required"),
-    businessPassword: passwordSchema,
-    businessConfirmPassword: z.string().min(1, "Business confirm password is required"),
+    organizationSize: z.enum(["SIZE_1_9", "SIZE_10_49", "SIZE_50_PLUS"]),
+    estimatedDevices: z.string().min(1, "Estimated number of devices is required"),
+    country: z.string().min(1, "Country is required"),
+    state: z.string().min(1, "State is required"),
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, "Business confirm password is required"),
   })
-  .refine((data) => data.businessPassword === data.businessConfirmPassword, {
+  .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
-    path: ["businessConfirmPassword"],
+    path: ["confirmPassword"],
   });
 
 export type BusinessRegistrationFormValues = z.infer<typeof businessRegistrationFormSchema>;

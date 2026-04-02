@@ -1,5 +1,5 @@
 import { Gender } from "@/shared/lib/constants";
-import { IChildProfile } from "../../onboarding/types";
+import { IChildProfile } from "../../onboarding/personal/types";
 
 export interface AddEditChildModalProps {
   open: boolean;

@@ -48,11 +48,13 @@ export function SearchableSelect({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "border-input ring-offset-background placeholder:text-muted-foreground flex h-10 w-full items-center justify-between rounded border-[1.5px] bg-transparent px-3 py-2 text-base focus:ring-[1.5px] focus:ring-[#1b3c73] focus:ring-offset-0 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+            "ring-offset-background flex h-[50px] w-full items-center rounded-xl border border-[#E5E7EB] bg-[#fafafa] px-4 text-base transition-colors focus-within:ring-[1.5px] focus-within:ring-[#1b3c73] focus-within:ring-offset-0 focus-within:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
             className
           )}
         >
-          <span className="truncate">{selectedOption ? selectedOption.label : placeholder}</span>
+          <span className="w-full truncate text-left">
+            {selectedOption ? selectedOption.label : placeholder}
+          </span>
           <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
         </button>
       </PopoverTrigger>

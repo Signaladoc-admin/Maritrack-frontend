@@ -1,4 +1,4 @@
-import { IChildProfile } from "@/features/onboarding/types";
+import { IChildProfile } from "@/features/onboarding/personal/types";
 
 export const childrenProfiles: IChildProfile[] = [
   {
