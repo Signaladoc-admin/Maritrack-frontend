@@ -1,6 +1,6 @@
 import { H3, H4, P } from "@/shared/ui/typography";
 
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
+export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="bg-background grid min-h-screen w-full grid-cols-1 items-center gap-5 p-5 lg:grid-cols-[4fr_3fr]">
       {/* Form Section */}

@@ -19,13 +19,15 @@ interface InputGroupProps extends InputProps {
   error?: string;
   helpText?: string;
   children?: React.ReactNode;
-  isEnabled?: boolean;
+  isPasswordValidationEnabled?: boolean;
   matchValue?: string;
 }
 
 function PasswordRule({ label, passed }: { label: string; passed: boolean }) {
   return (
-    <li className={cn("flex items-center gap-2 text-sm", passed ? "text-green-600" : "text-red-500")}>
+    <li
+      className={cn("flex items-center gap-2 text-sm", passed ? "text-green-600" : "text-red-500")}
+    >
       {passed ? (
         <CheckSquare className="h-4 w-4 shrink-0" />
       ) : (
@@ -37,14 +39,27 @@ function PasswordRule({ label, passed }: { label: string; passed: boolean }) {
 }
 
 export const InputGroup = React.forwardRef<HTMLInputElement, InputGroupProps>(
-  ({ label, error, helpText, className, id, children, isEnabled, matchValue, ...props }, ref) => {
+  (
+    {
+      label,
+      error,
+      helpText,
+      className,
+      id,
+      children,
+      isPasswordValidationEnabled,
+      matchValue,
+      ...props
+    },
+    ref
+  ) => {
     const generatedId = React.useId();
     const inputId = id || generatedId;
 
     const [passwordValue, setPasswordValue] = React.useState(
       (props.value as string) ?? (props.defaultValue as string) ?? ""
     );
-    const showStrength = isEnabled && props.type === "password";
+    const showStrength = isPasswordValidationEnabled && props.type === "password";
     const isMatchMode = showStrength && matchValue !== undefined;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,6 +71,41 @@ export const InputGroup = React.forwardRef<HTMLInputElement, InputGroupProps>(
     // This applies when it's a checkbox or radio AND no options array is provided.
     const isInlineType =
       (props.type === "checkbox" || props.type === "radio") && !props.options?.length;
+
+    if (props.type === "textarea") {
+      const { type: _type, onValueChange, onCheckedChange, options, wrapperClassName, iconLeft, iconRight, ref: registerRef, ...textareaProps } = props as any;
+      const mergedRef = (node: HTMLTextAreaElement | null) => {
+        if (typeof registerRef === "function") registerRef(node);
+        else if (registerRef) registerRef.current = node;
+        if (typeof ref === "function") ref(node as any);
+        else if (ref) (ref as any).current = node;
+      };
+      return (
+        <div className={cn("flex flex-col gap-y-2", className)}>
+          {label && (
+            <Label htmlFor={inputId} className={error ? "text-destructive" : ""}>
+              {label}
+            </Label>
+          )}
+          <textarea
+            id={inputId}
+            rows={4}
+            {...textareaProps}
+            ref={mergedRef}
+            onChange={onValueChange
+              ? (e: React.ChangeEvent<HTMLTextAreaElement>) => onValueChange(e.target.value)
+              : textareaProps.onChange
+            }
+            className={cn(
+              "ring-offset-background w-full resize-y rounded-xl border border-[#E5E7EB] bg-[#fafafa] px-4 py-3 text-base transition-colors focus-within:ring-[1.5px] focus-within:ring-[#1b3c73] focus-within:ring-offset-0 placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+              error && "border-destructive",
+            )}
+          />
+          {error && <p className="text-destructive text-sm">{error}</p>}
+          {helpText && !error && <p className="text-muted-foreground text-sm">{helpText}</p>}
+        </div>
+      );
+    }
 
     if (children) {
       return (
@@ -111,7 +161,11 @@ export const InputGroup = React.forwardRef<HTMLInputElement, InputGroupProps>(
               />
             ) : (
               PASSWORD_RULES.map((rule) => (
-                <PasswordRule key={rule.label} label={rule.label} passed={rule.test(passwordValue)} />
+                <PasswordRule
+                  key={rule.label}
+                  label={rule.label}
+                  passed={rule.test(passwordValue)}
+                />
               ))
             )}
           </ul>

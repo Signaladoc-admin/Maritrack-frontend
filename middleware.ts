@@ -20,17 +20,38 @@ const roleAccessMap: Record<string, string[]> = {
 // Routes that don't require authentication at all
 const publicRoutes = [
   "/",
+  "/unauthorized",
+  // Personal auth routes
   "/login",
   "/register",
-  "/unauthorized",
-  "/register/personal",
-  "/register/business",
   "/confirm-email",
+  "/forgot-password",
+  // Business auth routes
+  "/business/login",
+  "/business/register",
+  "/business/confirm-email",
+  "/business/forgot-password",
   "/components",
   "/components-showcase",
+
+  // Test routes: TODO: take out later
+  "/onboarding/business",
+  "/settings",
+  "/plans",
   "/test",
 ];
-const authRoutes = ["/login", "/register", "/register/personal", "/register/business"];
+const authRoutes = [
+  // Personal auth routes
+  "/login",
+  "/register",
+  "/confirm-email",
+  "/forgot-password",
+  // Business auth routes
+  "/business/login",
+  "/business/register",
+  "/business/confirm-email",
+  "/business/forgot-password",
+];
 
 function canAccess(role: string, pathname: string): boolean {
   const allowedRoutes = roleAccessMap[role];

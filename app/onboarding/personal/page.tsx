@@ -1,7 +1,7 @@
 "use client";
 
 import { useIsOnboarded } from "@/entities/user/model/useIsOnboarded";
-import ChildrenProfiles from "@/features/onboarding/ui/ChildrenProfiles";
+import ChildrenProfiles from "@/features/onboarding/personal/ui/ChildrenProfiles";
 import ParentalControlSetup from "@/features/parents/ui/ParentalControlSetup";
 import { MultiStepForm } from "@/shared/ui/multi-step-form";
 import { useState, useEffect, Suspense } from "react";

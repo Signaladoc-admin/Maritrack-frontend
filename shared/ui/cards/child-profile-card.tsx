@@ -2,7 +2,7 @@ import { Button } from "@/shared/ui/button";
 import { FilledUserIcon } from "@/shared/ui/icons";
 import { cn } from "@/lib/utils";
 import { Edit2, QrCode } from "lucide-react";
-import { IChildProfile } from "@/features/onboarding/types";
+import { IChildProfile } from "@/features/onboarding/personal/types";
 
 interface ChildProfileCardProps {
   id?: string;

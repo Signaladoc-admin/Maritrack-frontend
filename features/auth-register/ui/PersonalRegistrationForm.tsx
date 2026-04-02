@@ -143,7 +143,7 @@ export default function PersonalRegistrationForm() {
             type="password"
             label="Password"
             placeholder="Password here"
-            isEnabled
+            isPasswordValidationEnabled
             {...register("password")}
             error={errors.password?.message}
           />
