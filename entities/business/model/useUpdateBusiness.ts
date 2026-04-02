@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/shared/ui/toast";
 import { updateBusinessAction } from "../api/business-action";
 
-export function useBusiness() {
+export function useUpdateBusiness() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 

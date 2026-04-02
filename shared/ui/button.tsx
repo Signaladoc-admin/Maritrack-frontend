@@ -6,7 +6,7 @@ import { cn } from "@/shared/lib/utils";
 import Link from "next/link";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl cursor-pointer text-base font-bold transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-5 [&_svg]:shrink-0 ring-ring/10 dark:ring-ring/20 dark:outline-ring/40 outline-ring/50 focus-visible:ring-4 focus-visible:outline-1 aria-invalid:focus-visible:ring-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl cursor-pointer font-semibold transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-5 [&_svg]:shrink-0 ring-ring/10 dark:ring-ring/20 dark:outline-ring/40 outline-ring/50 focus-visible:ring-4 focus-visible:outline-1 aria-invalid:focus-visible:ring-0",
   {
     variants: {
       variant: {
@@ -22,10 +22,10 @@ const buttonVariants = cva(
         link: "font-medium text-primary underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-[50px] px-6 rounded-xl",
-        sm: "h-10 rounded-lg px-4 text-sm",
-        lg: "h-[56px] rounded-xl px-10 text-lg",
-        icon: "h-12 w-12 rounded-xl",
+        default: "py-2.5 px-6 rounded-xl text-base",
+        sm: "py-1.5 px-4 rounded-lg text-sm",
+        lg: "py-3 px-10 rounded-xl text-lg",
+        icon: "h-12 w-12 rounded-xl text-base",
       },
     },
     defaultVariants: {
@@ -49,14 +49,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       return (
         <Link
           href={href}
-          className={cn(buttonVariants({ variant, size, className }))}
+          className={cn(buttonVariants({ variant, size }), className)}
           ref={ref as React.Ref<HTMLAnchorElement>}
           {...(props as any)}
         />
       );
 
     return (
-      <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
+      <Comp className={cn(buttonVariants({ variant, size }), className)} ref={ref} {...props} />
     );
   }
 );

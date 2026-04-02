@@ -7,7 +7,7 @@ import { Header } from "@/shared/ui/layout/header";
 import BusinessDetailsForm from "./BusinessDetailsForm";
 import { Button } from "@/shared/ui/button";
 import { useLogout } from "@/features/auth/model/useLogout";
-import { useBusiness } from "@/entities/business/model/useUpdateBusiness";
+import { useUpdateBusiness } from "@/entities/business/model/useUpdateBusiness";
 import { TeamMemberSchemaValues } from "../schema";
 import useBusinessDetails from "../useBusinessDetails";
 
@@ -16,7 +16,7 @@ export default function OnboardingPage() {
   const [hasPaid, setHasPaid] = useState(false);
   const [step, setStep] = useState(1);
 
-  const { updateBusiness, isSubmitting } = useBusiness();
+  const { updateBusiness, isSubmitting } = useUpdateBusiness();
   const { businessData, handleAddBusinessDetails, handleAddTeamMember, handleRemoveTeamMember } =
     useBusinessDetails();
 

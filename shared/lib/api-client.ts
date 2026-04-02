@@ -60,8 +60,15 @@ export async function apiClient<T = any>(
       headers,
       cache: "no-store",
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error(`[apiClient] Fetch error for ${url}:`, error);
+    const isNetworkError =
+      error?.message === "Failed to fetch" ||
+      error?.message === "fetch failed" ||
+      error?.name === "TypeError";
+    if (isNetworkError) {
+      throw new Error("No internet connection. Please check your network and try again.");
+    }
     throw error;
   }
   console.log(`[apiClient] Response status for ${url}: ${response.status}`);

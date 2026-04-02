@@ -21,8 +21,8 @@ export function Header({
   };
   return (
     <header className={cn("bg-background mb-12 flex items-center justify-between", className)}>
-      <div className="space-y-3">
-        <H1 className={cn("leading-tight", titleVariants[titleVariant])}>{title}</H1>
+      <div className="space-y-2">
+        <H2 className={cn("leading-tight", titleVariants[titleVariant])}>{title}</H2>
         {subtitle && <P className="text-muted-foreground mt-0! font-medium">{subtitle}</P>}
       </div>
       <div>{action}</div>
