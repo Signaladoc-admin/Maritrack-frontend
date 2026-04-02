@@ -10,16 +10,18 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import UserAccountTypeSelectionCard from "@/features/auth-register/ui/UserAccountTypeSelectionCard";
 import { accountTypes } from "@/features/auth-register/constants";
-import { useLogin } from "../model/useLogin";
 import { loginSchema, type LoginValues } from "@/entities/user/model/user.schema";
 import { useParentStore, useNewUserStore } from "@/shared/stores/user-store";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 export default function LoginForm() {
   const router = useRouter();
   const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] = useState(false);
-  const { login, isSubmitting, error } = useLogin();
   const { setParentId } = useParentStore();
   const { setEmail, setPassword } = useNewUserStore();
+  const { login, loginError: error, isSubmitting } = useAuth();
+
+  console.log(error);
 
   const {
     register,
@@ -42,6 +44,7 @@ export default function LoginForm() {
     }
   };
 
+  console.log(error);
   return (
     <form className="space-y-7" onSubmit={handleSubmit(onSubmit)}>
       {error && (

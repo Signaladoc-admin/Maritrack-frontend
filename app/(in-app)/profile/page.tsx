@@ -1,9 +1,12 @@
+"use client";
+
 import BusinessProfileForm from "@/entities/business/ui/BusinessProfileForm";
 import ParentProfileForm from "@/entities/parents/ui/ParentProfileForm";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 export default function ProfilePage() {
-  const userRole = "ADMIN";
+  const { appRole } = useAuth();
 
-  if (userRole === "ADMIN") return <BusinessProfileForm />;
+  if (appRole === "BUSINESS") return <BusinessProfileForm />;
   else return <ParentProfileForm />;
 }

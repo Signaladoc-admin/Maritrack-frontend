@@ -2,20 +2,22 @@ import { NextResponse } from "next/server";
 import { decodeJwt } from "jose";
 import type { NextRequest } from "next/server";
 
-// Role → Routes Configuration
+// Route access by platform role
 const roleAccessMap: Record<string, string[]> = {
-  ADMIN: ["*"], // Admin has access to everything for now
+  ADMIN: ["*"],
   USER: [
     "/dashboard",
     "/settings",
     "/onboarding",
-    "onboarding/personal",
     "/profile",
     "/plans",
     "/child",
     "/device",
   ],
 };
+
+// Extra routes only accessible to business accounts (role=USER + businessRole set)
+const businessOnlyRoutes = ["/onboarding/business"];
 
 // Routes that don't require authentication at all
 const publicRoutes = [
@@ -124,8 +126,17 @@ export async function middleware(req: NextRequest) {
   try {
     const payload = decodeJwt(token);
     const userRole = (payload as any).role as string | undefined;
+    const businessRole = (payload as any).businessRole as string | null | undefined;
 
     if (!userRole) {
+      return NextResponse.next();
+    }
+
+    // Business-only routes: only accessible to users with a businessRole
+    if (businessOnlyRoutes.some((r) => pathname.startsWith(r))) {
+      if (!businessRole) {
+        return NextResponse.redirect(new URL("/unauthorized", req.url));
+      }
       return NextResponse.next();
     }
 

@@ -14,16 +14,17 @@ export async function loginAction(
 
   const profile = response.data as UserProfile;
 
-  // Cookie is now in scope — call PC check in the same server context
-  const pcSettings = await getParentalControlMeAction();
-
   let redirectTo: string;
+
   if (profile.role === "ADMIN") {
     redirectTo = "/admin";
-  } else if (!pcSettings) {
-    redirectTo = "/onboarding/personal";
+  } else if (profile.businessRole) {
+    // Business account — use isFirstLogin to decide onboarding vs dashboard
+    redirectTo = profile.isFirstLogin ? "/onboarding/business" : "/dashboard";
   } else {
-    redirectTo = "/dashboard";
+    // Personal account — check parental control setup
+    const pcSettings = await getParentalControlMeAction();
+    redirectTo = pcSettings ? "/dashboard" : "/onboarding/personal";
   }
 
   return { profile, redirectTo };

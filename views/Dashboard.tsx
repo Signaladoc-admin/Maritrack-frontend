@@ -11,10 +11,13 @@ import { useDragScroll } from "@/shared/hooks/useDragScroll";
 import { useRouter } from "next/navigation";
 import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
 import { formatDate } from "date-fns";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 export default function Dashboard() {
   const { scrollContainerRef, events } = useDragScroll();
   const [mounted, setMounted] = React.useState(false);
+  // Get appRole or userRole and render components based on role
+  const { userRole, appRole } = useAuth();
 
   React.useEffect(() => {
     setMounted(true);
