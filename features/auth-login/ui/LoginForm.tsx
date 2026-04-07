@@ -98,13 +98,13 @@ export default function LoginForm() {
             icon={accountTypes.PERSONAL.icon}
             label={accountTypes.PERSONAL.label}
             description={accountTypes.PERSONAL.description}
-            href="/register/personal"
+            href="/register"
           />
           <UserAccountTypeSelectionCard
             icon={accountTypes.BUSINESS.icon}
             label={accountTypes.BUSINESS.label}
             description={accountTypes.BUSINESS.description}
-            href="/register/business"
+            href="/business/register"
           />
         </div>
       </Modal>

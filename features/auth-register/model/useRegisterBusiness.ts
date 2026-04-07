@@ -6,10 +6,16 @@ export function useRegisterBusiness() {
   const { toast } = useToast();
 
   const mutation = useMutation({
-    mutationFn: registerBusinessAction,
-    onSuccess: (res) => {
-      console.log("Business Registration Response:", res);
-      console.log("Token received:", (res as any).token);
+    mutationFn: async (data: Parameters<typeof registerBusinessAction>[0]) => {
+      const result = await registerBusinessAction(data);
+      if (!result.success) throw new Error(result.error);
+      return result.data;
+    },
+    onSuccess: () => {
+      toast({
+        type: "success",
+        title: "Registration successful",
+      });
     },
     onError: (err: any) => {
       const errorMessage = err.message || "An unexpected error occurred. Please try again.";
