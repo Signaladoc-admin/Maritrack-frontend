@@ -8,8 +8,6 @@ const passwordSchema = z
   .regex(/[0-9]/, "At least 1 number")
   .regex(/[^A-Za-z0-9]/, "At least 1 symbol");
 
-<<<<<<< HEAD
-=======
 export const BUSINESS_ROLES = [
   "ORGANIZATION_ADMIN",
   "DEVICE_MANAGER",
@@ -17,7 +15,6 @@ export const BUSINESS_ROLES = [
 ] as const;
 export type BusinessRole = (typeof BUSINESS_ROLES)[number];
 
->>>>>>> dev/dev
 export const UserProfileSchema = z.object({
   id: z.string(),
   firstName: z.string().optional().nullable(),
