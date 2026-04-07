@@ -5,15 +5,7 @@ import type { NextRequest } from "next/server";
 // Route access by platform role
 const roleAccessMap: Record<string, string[]> = {
   ADMIN: ["*"],
-  USER: [
-    "/dashboard",
-    "/settings",
-    "/onboarding",
-    "/profile",
-    "/plans",
-    "/child",
-    "/device",
-  ],
+  USER: ["/dashboard", "/settings", "/onboarding", "/profile", "/plans", "/child", "/device"],
 };
 
 // Extra routes only accessible to business accounts (role=USER + businessRole set)
@@ -37,7 +29,6 @@ const publicRoutes = [
   "/components-showcase",
 
   // Test routes: TODO: take out later
-  "/onboarding/business",
   "/settings",
   "/plans",
   "/test",

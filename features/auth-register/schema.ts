@@ -29,6 +29,7 @@ export const businessRegistrationFormSchema = z
     businessEmail: z.string().email("Invalid email address"),
     organizationSize: z.enum(["SIZE_1_9", "SIZE_10_49", "SIZE_50_PLUS"]),
     estimatedDevices: z.string().min(1, "Estimated number of devices is required"),
+    address: z.string().min(1, "Address is required"),
     country: z.string().min(1, "Country is required"),
     state: z.string().min(1, "State is required"),
     password: passwordSchema,

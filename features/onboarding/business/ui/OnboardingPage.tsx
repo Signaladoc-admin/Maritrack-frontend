@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import InviteTeamMembersForm from "./InviteTeamMembersForm";
 import PricingStep from "@/features/payments/ui/PricingStep";
 import { Header } from "@/shared/ui/layout/header";
@@ -10,6 +10,9 @@ import { useLogout } from "@/features/auth/model/useLogout";
 import { useUpdateBusiness } from "@/entities/business/model/useUpdateBusiness";
 import { TeamMemberSchemaValues } from "../schema";
 import useBusinessDetails from "../useBusinessDetails";
+import { useUserProfile } from "@/entities/user/model/useUserProfile";
+import { useCreateZone } from "@/features/mdm-sync/model/useMdmSync";
+import { Loader } from "@/shared/ui/loader";
 
 export default function OnboardingPage() {
   const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
@@ -19,6 +22,21 @@ export default function OnboardingPage() {
   const { updateBusiness, isSubmitting } = useUpdateBusiness();
   const { businessData, handleAddBusinessDetails, handleAddTeamMember, handleRemoveTeamMember } =
     useBusinessDetails();
+
+  const { data: user, isLoading: isLoadingUser, isFetching: isFetchingUser } = useUserProfile();
+  const { mutateAsync: createZone, isPending: isCreatingZone } = useCreateZone();
+  const zoneCreationAttempted = useRef(false);
+
+  const zoneId = user?.zoneId?.[0]?.id;
+
+  useEffect(() => {
+    if (!isLoadingUser && user && !zoneId && !zoneCreationAttempted.current) {
+      zoneCreationAttempted.current = true;
+      createZone(undefined).catch(() => {
+        zoneCreationAttempted.current = false;
+      });
+    }
+  }, [isLoadingUser, user, zoneId]);
 
   const handleNextStep = () => {
     setStep((prev) => prev + 1);
@@ -33,6 +51,14 @@ export default function OnboardingPage() {
     //   id: "",
     //   ...(businessData as any),
     // });
+  }
+
+  if (isLoadingUser || isCreatingZone || (isFetchingUser && !zoneId)) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm">
+        <Loader size="lg" className="scale-150" />
+      </div>
+    );
   }
 
   if (!hasPaid) return <PricingStep onBack={() => {}} onSuccess={() => setHasPaid(true)} />;

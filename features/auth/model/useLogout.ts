@@ -2,11 +2,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { logoutAction } from "../api/auth.actions";
 import { useToast } from "@/shared/ui/toast";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 export function useLogout() {
   const { toast } = useToast();
   const router = useRouter();
   const queryClient = useQueryClient();
+
+  const { appRole } = useAuth();
 
   const logoutMutation = useMutation({
     mutationFn: logoutAction,
@@ -17,7 +20,7 @@ export function useLogout() {
         message: "Logout successful",
         type: "success",
       });
-      router.push("/login");
+      router.push(appRole === "BUSINESS" ? "/business/login" : "/login");
     },
     onError: (err) => {
       toast({

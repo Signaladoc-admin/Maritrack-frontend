@@ -2,7 +2,6 @@
 
 import { Button } from "@/shared/ui/button";
 import { InputGroup } from "@/shared/ui/input-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { useRegisterBusiness } from "../model/useRegisterBusiness";
@@ -24,6 +23,7 @@ export default function BusinessRegistrationForm() {
       businessEmail: "",
       estimatedDevices: "",
       organizationSize: undefined,
+      address: "",
       country: "",
       state: "",
       password: "",
@@ -44,13 +44,13 @@ export default function BusinessRegistrationForm() {
       organizationSize: data.organizationSize,
       adminBusinessRole: "ORGANIZATION_ADMIN",
       estimatedDevices: Number(data.estimatedDevices),
+      address: data.address,
       country: data.country,
       state: data.state,
       password: data.password,
     };
-    console.log("submitting...");
     await registerBusiness(payload);
-    // router.push("/login");
+    router.push("/login");
   };
 
   return (
@@ -97,6 +97,13 @@ export default function BusinessRegistrationForm() {
           error={errors.estimatedDevices?.message}
         />
       </div>
+      <InputGroup
+        label="Business address"
+        type="text"
+        placeholder="Enter street address, apt. number, etc."
+        {...register("address")}
+        error={errors.address?.message}
+      />
       <CountryStateInput
         control={control}
         countryName="country"
