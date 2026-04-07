@@ -5,6 +5,7 @@ import { ChevronDown, User } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { useParentStore } from "@/shared/stores/user-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/Avatar/Avatar";
+<<<<<<< HEAD
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +22,23 @@ export function ChildrenDropdown() {
 
   const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentZones();
 
+=======
+import { useParentChildren } from "@/entities/children/model/useChildren";
+import { IChildProfile } from "@/features/onboarding/types";
+
+export function ChildrenDropdown() {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const { selectedChildId, setSelectedChildId } = useParentStore();
+  const { children } = useParentChildren();
+
+  const selectedChild = children.find((c: IChildProfile) => c.id === selectedChildId);
+  const isAllSelected = selectedChildId === "all";
+
+  console.log(selectedChild);
+
+  // Close when clicking outside
+>>>>>>> 522e22e (Implemented responsiveness; code cleanup)
   useEffect(() => {
     if (parentZonesRes) {
       // Map server data to shop-store Child interface if necessary
@@ -41,24 +59,39 @@ export function ChildrenDropdown() {
   };
 
   return (
+<<<<<<< HEAD
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
           className="flex h-auto cursor-pointer items-center gap-4 rounded-[60px] border-none bg-[#F8F9FA] py-2 pr-6 pl-2 shadow-none transition-all hover:bg-neutral-100/50 focus:ring-0 focus:outline-hidden"
         >
+=======
+    <div className="relative w-full md:w-auto" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex h-auto w-full cursor-pointer items-center justify-between gap-4 rounded-[60px] border-none bg-[#F8F9FA] py-2 pr-6 pl-2 shadow-none transition-all hover:bg-neutral-100/50 focus:ring-0 md:w-auto md:justify-start"
+      >
+        <div className="flex items-center gap-4">
+>>>>>>> 522e22e (Implemented responsiveness; code cleanup)
           <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#1B3C73]">
             {isAllSelected ? (
               <User className="h-5 w-5 text-white" />
             ) : (
               <Avatar className="h-full w-full">
+<<<<<<< HEAD
                 <AvatarImage src={selectedChild?.avatar} alt={selectedChild?.name} />
+=======
+                <AvatarImage src={selectedChild?.imageUrl} alt={selectedChild?.name} />
+>>>>>>> 522e22e (Implemented responsiveness; code cleanup)
                 <AvatarFallback className="bg-[#1B3C73] text-white">
                   {selectedChild?.name?.charAt(0)}
                 </AvatarFallback>
               </Avatar>
             )}
           </div>
+<<<<<<< HEAD
           <div className="flex items-center gap-2">
             <span className="text-lg font-bold text-[#1B3C73]">
               {isAllSelected ? "All Children" : selectedChild?.name}
@@ -67,6 +100,19 @@ export function ChildrenDropdown() {
           </div>
         </button>
       </DropdownMenuTrigger>
+=======
+          <span className="text-lg font-bold text-[#1B3C73]">
+            {isAllSelected ? "All Children" : selectedChild?.name}
+          </span>
+        </div>
+        <ChevronDown
+          className={cn(
+            "h-5 w-5 text-[#1B3C73] transition-transform duration-200",
+            isOpen && "rotate-180"
+          )}
+        />
+      </button>
+>>>>>>> 522e22e (Implemented responsiveness; code cleanup)
 
       <DropdownMenuContent align="end" className="w-72 rounded-3xl p-2 shadow-2xl">
         <DropdownMenuItem
@@ -109,10 +155,48 @@ export function ChildrenDropdown() {
                   {child.name}
                 </span>
               </div>
+<<<<<<< HEAD
             </DropdownMenuItem>
           );
         })}
       </DropdownMenuContent>
     </DropdownMenu>
+=======
+              <span className="text-base font-bold text-[#1B3C73]">All Children</span>
+            </button>
+
+            {children.map((child: IChildProfile) => (
+              <button
+                key={child.id}
+                type="button"
+                onClick={() => handleSelect(child.id!)}
+                className={cn(
+                  "flex w-full cursor-pointer items-center gap-4 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-neutral-50",
+                  selectedChildId === child.id && "bg-[#ECF1F9]"
+                )}
+              >
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={child.imageUrl} alt={child.name} />
+                    <AvatarFallback className="bg-[#1B3C73] text-white">
+                      {child.name?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span
+                    className={cn(
+                      "text-base font-bold",
+                      selectedChildId === child.id ? "text-[#1B3C73]" : "text-slate-700"
+                    )}
+                  >
+                    {child.name}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+>>>>>>> 522e22e (Implemented responsiveness; code cleanup)
   );
 }

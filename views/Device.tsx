@@ -14,8 +14,11 @@ import WebHistory from "./WebHistory";
 import AppControl from "./AppControl";
 import ParentalControlSetup from "@/features/parents/ui/ParentalControlSetup";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
+<<<<<<< HEAD
+=======
 import LocationPage from "./Location";
 // import ParentalControlSetup from "@/features/onboarding/ui/ParentalControlSetup";
+>>>>>>> dev/dev
 
 const Device = () => {
   const router = useRouter();
@@ -91,8 +94,11 @@ const Device = () => {
       {activeTab === "general" && <General />}
       {activeTab === "web-history" && <WebHistory />}
       {activeTab === "app-control" && <AppControl />}
-      {activeTab === "location" && <LocationPage />}
-      {activeTab === "configuration" && <ParentalControlSetup goToPrevStep={() => {}} />}
+      {activeTab === "configuration" && (
+        <div className="mx-auto max-w-lg">
+          <ParentalControlSetup />
+        </div>
+      )}
     </div>
   );
 };

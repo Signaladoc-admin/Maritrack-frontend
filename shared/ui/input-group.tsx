@@ -19,15 +19,23 @@ interface InputGroupProps extends InputProps {
   error?: string;
   helpText?: string;
   children?: React.ReactNode;
+<<<<<<< HEAD
+  isEnabled?: boolean;
+=======
   isPasswordValidationEnabled?: boolean;
+>>>>>>> dev/dev
   matchValue?: string;
 }
 
 function PasswordRule({ label, passed }: { label: string; passed: boolean }) {
   return (
+<<<<<<< HEAD
+    <li className={cn("flex items-center gap-2 text-sm", passed ? "text-green-600" : "text-red-500")}>
+=======
     <li
       className={cn("flex items-center gap-2 text-sm", passed ? "text-green-600" : "text-red-500")}
     >
+>>>>>>> dev/dev
       {passed ? (
         <CheckSquare className="h-4 w-4 shrink-0" />
       ) : (
@@ -39,6 +47,9 @@ function PasswordRule({ label, passed }: { label: string; passed: boolean }) {
 }
 
 export const InputGroup = React.forwardRef<HTMLInputElement, InputGroupProps>(
+<<<<<<< HEAD
+  ({ label, error, helpText, className, id, children, isEnabled, matchValue, ...props }, ref) => {
+=======
   (
     {
       label,
@@ -53,13 +64,18 @@ export const InputGroup = React.forwardRef<HTMLInputElement, InputGroupProps>(
     },
     ref
   ) => {
+>>>>>>> dev/dev
     const generatedId = React.useId();
     const inputId = id || generatedId;
 
     const [passwordValue, setPasswordValue] = React.useState(
       (props.value as string) ?? (props.defaultValue as string) ?? ""
     );
+<<<<<<< HEAD
+    const showStrength = isEnabled && props.type === "password";
+=======
     const showStrength = isPasswordValidationEnabled && props.type === "password";
+>>>>>>> dev/dev
     const isMatchMode = showStrength && matchValue !== undefined;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -161,11 +177,15 @@ export const InputGroup = React.forwardRef<HTMLInputElement, InputGroupProps>(
               />
             ) : (
               PASSWORD_RULES.map((rule) => (
+<<<<<<< HEAD
+                <PasswordRule key={rule.label} label={rule.label} passed={rule.test(passwordValue)} />
+=======
                 <PasswordRule
                   key={rule.label}
                   label={rule.label}
                   passed={rule.test(passwordValue)}
                 />
+>>>>>>> dev/dev
               ))
             )}
           </ul>

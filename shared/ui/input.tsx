@@ -176,12 +176,16 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       );
     }
 
+<<<<<<< HEAD
+    const { value: inputValue, onValueChange, onCheckedChange: _onCheckedChange, ...inputProps } = props;
+=======
     const {
       value: inputValue,
       onValueChange,
       onCheckedChange: _onCheckedChange,
       ...inputProps
     } = props;
+>>>>>>> dev/dev
 
     const handleChange = onValueChange
       ? (e: React.ChangeEvent<HTMLInputElement>) => onValueChange(e.target.value)
