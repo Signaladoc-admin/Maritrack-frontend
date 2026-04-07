@@ -1,6 +1,10 @@
 "use server";
 
 import { apiClient } from "@/shared/lib/api-client";
+<<<<<<< HEAD
+=======
+import { withSafeAction } from "@/shared/lib/safe-action";
+>>>>>>> dev/dev
 import type { ActionResult } from "@/shared/api/types";
 
 export interface PaymentPlan {
@@ -21,6 +25,7 @@ export interface PaymentPlan {
 }
 
 export async function getPaymentPlansAction(): Promise<ActionResult<PaymentPlan[]>> {
+<<<<<<< HEAD
   try {
     const response = await apiClient("/payments/plans", {
       method: "GET",
@@ -29,6 +34,15 @@ export async function getPaymentPlansAction(): Promise<ActionResult<PaymentPlan[
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to fetch payment plans" };
   }
+=======
+  return withSafeAction(
+    async () => {
+      const response = await apiClient("/payments/plans", { method: "GET" });
+      return response.data;
+    },
+    "Failed to fetch payment plans"
+  );
+>>>>>>> dev/dev
 }
 
 export async function initializePaymentAction(data: {
@@ -36,6 +50,7 @@ export async function initializePaymentAction(data: {
   zoneId: string;
   callbackUrl: string;
 }): Promise<ActionResult<{ authorizationUrl: string }>> {
+<<<<<<< HEAD
   try {
     const response = await apiClient("/payments/paystack/initialize", {
       method: "POST",
@@ -57,6 +72,31 @@ export async function verifyPaymentAction(reference: string): Promise<ActionResu
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to verify payment" };
   }
+=======
+  return withSafeAction(
+    async () => {
+      const response = await apiClient("/payments/paystack/initialize", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+      return response.data;
+    },
+    "Failed to initialize payment"
+  );
+}
+
+export async function verifyPaymentAction(reference: string): Promise<ActionResult<any>> {
+  return withSafeAction(
+    async () => {
+      const response = await apiClient("/payments/paystack/verify", {
+        method: "POST",
+        body: JSON.stringify({ reference }),
+      });
+      return response.data;
+    },
+    "Failed to verify payment"
+  );
+>>>>>>> dev/dev
 }
 
 export interface ActiveSubscription {
@@ -77,6 +117,7 @@ export interface ActiveSubscription {
 export async function getActiveSubscriptionAction(
   zoneId: string
 ): Promise<ActionResult<ActiveSubscription>> {
+<<<<<<< HEAD
   try {
     const response = await apiClient(`/payments/subscriptions/zone/${zoneId}/active`, {
       method: "GET",
@@ -85,4 +126,15 @@ export async function getActiveSubscriptionAction(
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to fetch subscription status" };
   }
+=======
+  return withSafeAction(
+    async () => {
+      const response = await apiClient(`/payments/subscriptions/zone/${zoneId}/active`, {
+        method: "GET",
+      });
+      return response.data;
+    },
+    "Failed to fetch subscription status"
+  );
+>>>>>>> dev/dev
 }

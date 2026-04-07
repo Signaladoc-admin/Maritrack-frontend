@@ -1,7 +1,11 @@
 "use client";
 
 import { useIsOnboarded } from "@/entities/user/model/useIsOnboarded";
+<<<<<<< HEAD
 import ChildrenProfiles from "@/features/onboarding/ui/ChildrenProfiles";
+=======
+import ChildrenProfiles from "@/features/onboarding/personal/ui/ChildrenProfiles";
+>>>>>>> dev/dev
 import ParentalControlSetup from "@/features/parents/ui/ParentalControlSetup";
 import { MultiStepForm } from "@/shared/ui/multi-step-form";
 import { useState, useEffect, Suspense } from "react";
@@ -27,7 +31,27 @@ export function ChildrenDropdown() {
   const { data: userProfile } = useUserProfile();
   const parentId = userProfile?.parentId;
 
+<<<<<<< HEAD
   const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentZones();
+=======
+  const { profile, pcSettings, isLoading: isAuthLoading, checkAndRedirect } = useIsOnboarded();
+
+  const [isFullWidth, setIsFullWidth] = useState(false);
+  const [currentStep, setCurrentStep] = useState(() => {
+    if (stepParam) return parseInt(stepParam, 10);
+    return 0;
+  });
+
+  const { mutateAsync: verifyPayment } = useVerifyPayment();
+  const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (profile && pcSettings) {
+      checkAndRedirect(profile, pcSettings);
+    }
+  }, [profile, pcSettings, checkAndRedirect]);
+>>>>>>> dev/dev
 
   useEffect(() => {
     if (parentZonesRes) {
@@ -41,6 +65,7 @@ export function ChildrenDropdown() {
     }
   }, [parentZonesRes, setChildren]);
 
+<<<<<<< HEAD
   const selectedChild = children?.find((c) => c.id === selectedChildId);
   const isAllSelected = selectedChildId === "all";
 
@@ -48,6 +73,90 @@ export function ChildrenDropdown() {
     setSelectedChildId(id);
   };
 
+=======
+  useEffect(() => {
+    if (reference) {
+      verifyPayment(reference)
+        .then(() => {
+          toast({ title: "Success", message: "Payment verified successfully", type: "success" });
+          router.replace("/onboarding/personal?step=0");
+        })
+        .catch((err) => {
+          toast({
+            title: "Verification Failed",
+            message: err.message || "Could not verify payment",
+            type: "error",
+          });
+          router.replace("/onboarding/personal?step=0");
+        });
+    }
+  }, [reference, verifyPayment, toast, router]);
+
+  if (isAuthLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader size="lg" />
+      </div>
+    );
+  }
+
+  const nextStep = () => {
+    setCurrentStep((p) => {
+      const next = Math.min(p + 1, 1);
+      return next;
+    });
+    const currentParam = parseInt(stepParam || "0", 10);
+    const next = Math.min(currentParam + 1, 1);
+    router.push(`/onboarding/personal?step=${next}`);
+  };
+
+  const prevStep = () => {
+    setCurrentStep((p) => {
+      const prev = Math.max(p - 1, 0);
+      return prev;
+    });
+    const currentParam = parseInt(stepParam || "0", 10);
+    const prev = Math.max(currentParam - 1, 0);
+    router.push(`/onboarding/personal?step=${prev}`);
+  };
+
+  const handleStepClick = (index: number) => {
+    setCurrentStep(index);
+    router.push(`/onboarding/personal?step=${index}`);
+  };
+
+  async function handleLogout() {
+    try {
+      await logout();
+    } catch (e) {
+      console.error("Logout failed", e);
+    }
+  }
+
+  const steps = [
+    {
+      title: "Children Profiles",
+      onClick: () => handleStepClick(0),
+      component: (
+        <ChildrenProfiles
+          goToNextStep={nextStep}
+          onViewChange={(view) => setIsFullWidth(view === "pricing")}
+        />
+      ),
+    },
+    {
+      title: "Parental Control & Consent Setup",
+      onClick: () => handleStepClick(1),
+      component: (
+        <ParentalControlSetup
+          handleSubmit={() => router.push("/dashboard")}
+          goToPrevStep={prevStep}
+        />
+      ),
+    },
+  ];
+
+>>>>>>> dev/dev
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

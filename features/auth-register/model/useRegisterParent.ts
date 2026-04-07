@@ -8,10 +8,10 @@ export function useRegisterParent() {
   const { toast } = useToast();
 
   const mutation = useMutation({
-    mutationFn: registerParentAction,
-    onSuccess: (res) => {
-      console.log("Parent Registration Response:", res);
-      console.log("Token received:", (res as any).token);
+    mutationFn: async (data: Parameters<typeof registerParentAction>[0]) => {
+      const result = await registerParentAction(data);
+      if (!result.success) throw new Error(result.error);
+      return result.data;
     },
     onError: (err: any) => {
       const errorMessage = err.message || "An unexpected error occurred. Please try again.";

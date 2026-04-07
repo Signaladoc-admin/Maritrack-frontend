@@ -1,5 +1,6 @@
 "use client";
 
+<<<<<<< HEAD
 import React, { useState, useEffect } from "react";
 import { useUserProfile, useUpdateProfile } from "@/entities/user/model/useUserProfile";
 import { Input } from "@/shared/ui/input";
@@ -9,11 +10,16 @@ import { Loader } from "@/shared/ui/loader";
 import { LockKeyhole, LogOut } from "lucide-react";
 import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
 import { useLogout } from "@/features/auth/model/useLogout";
+=======
+import BusinessProfileForm from "@/entities/business/ui/BusinessProfileForm";
+import ParentProfileForm from "@/entities/parents/ui/ParentProfileForm";
+import { useAuth } from "@/shared/auth/AuthProvider";
+>>>>>>> dev/dev
 
 export default function ProfilePage() {
-  const { data: userProfile, isLoading: isFetchingProfile } = useUserProfile();
-  const { mutate: updateProfile, isPending: isUpdating } = useUpdateProfile();
+  const { appRole } = useAuth();
 
+<<<<<<< HEAD
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -208,4 +214,8 @@ export default function ProfilePage() {
       />
     </div>
   );
+=======
+  if (appRole === "BUSINESS") return <BusinessProfileForm />;
+  else return <ParentProfileForm />;
+>>>>>>> dev/dev
 }

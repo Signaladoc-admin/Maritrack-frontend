@@ -12,6 +12,8 @@ import { getParentChildrenAction } from "@/features/child-profile/api/child.acti
 import { useQuery } from "@tanstack/react-query";
 import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
 
+import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
+
 const childActions: ResourceActions<ChildProfile, CreateChildDto, UpdateChildDto> = {
   getAll: async (options?: ChildFilterParams) => {
     try {

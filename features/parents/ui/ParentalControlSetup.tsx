@@ -18,11 +18,19 @@ import {
 import { ParentalControlDto } from "@/entities/parental-controls/model/parental-controls.schema";
 
 import { LoaderModal } from "@/shared/ui/Modal/Modals/LoaderModal";
+<<<<<<< HEAD
 import MonitoringPermissionsSetup from "../../onboarding/ui/parental-control-setup/MonitoringPermissionsSetup";
 import ScreenTimeRules from "../../onboarding/ui/parental-control-setup/ScreenTimeRules";
 import AppManagement from "../../onboarding/ui/parental-control-setup/AppManagement";
 import AlertsAndNotifications from "../../onboarding/ui/parental-control-setup/AlertsNotification";
 import ParentalConfirmation from "../../onboarding/ui/parental-control-setup/ParentalConfirmation";
+=======
+import MonitoringPermissionsSetup from "../../onboarding/personal/ui/parental-control-setup/MonitoringPermissionsSetup";
+import ScreenTimeRules from "../../onboarding/personal/ui/parental-control-setup/ScreenTimeRules";
+import AppManagement from "../../onboarding/personal/ui/parental-control-setup/AppManagement";
+import AlertsAndNotifications from "../../onboarding/personal/ui/parental-control-setup/AlertsNotification";
+import ParentalConfirmation from "../../onboarding/personal/ui/parental-control-setup/ParentalConfirmation";
+>>>>>>> dev/dev
 import { CardWrapper } from "@/shared/ui/card-wrapper";
 
 const formSchema = z

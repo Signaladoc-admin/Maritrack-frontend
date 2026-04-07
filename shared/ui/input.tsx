@@ -56,6 +56,14 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         </button>
       ) : null);
 
+    if (type === "textarea") {
+      return (
+        <div className={cn("grid w-full items-center gap-1.5", wrapperClassName)}>
+          {label && <Label htmlFor={inputId}>{label}</Label>}
+          <textarea className="placeholder:text-muted-foreground w-full min-w-0 flex-1 bg-transparent file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none disabled:cursor-not-allowed"></textarea>
+        </div>
+      );
+    }
     if (type === "select") {
       const selectValue = (props.value ?? "") as string;
       console.log(`Input [${props.name}] select value:`, selectValue);
@@ -76,7 +84,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             }}
             value={selectValue}
           >
-            <SelectTrigger id={inputId} className={className} icon={iconLeft}>
+            <SelectTrigger id={inputId} className={cn(className, "text-base!")} icon={iconLeft}>
               <SelectValue placeholder={props.placeholder} />
             </SelectTrigger>
             <SelectContent>
@@ -168,7 +176,16 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       );
     }
 
+<<<<<<< HEAD
     const { value: inputValue, onValueChange, onCheckedChange: _onCheckedChange, ...inputProps } = props;
+=======
+    const {
+      value: inputValue,
+      onValueChange,
+      onCheckedChange: _onCheckedChange,
+      ...inputProps
+    } = props;
+>>>>>>> dev/dev
 
     const handleChange = onValueChange
       ? (e: React.ChangeEvent<HTMLInputElement>) => onValueChange(e.target.value)

@@ -13,9 +13,15 @@ import { FilledUserIcon } from "@/shared/ui/icons";
 import { Controller, useForm } from "react-hook-form";
 import { FileUpload } from "@/shared/ui/image-upload";
 import { zodResolver } from "@hookform/resolvers/zod";
+<<<<<<< HEAD
 import { childProfileSchema } from "@/features/onboarding/schema";
 import { z } from "zod";
 import { IChildProfile } from "@/features/onboarding/types";
+=======
+import { childProfileSchema } from "@/features/onboarding/personal/schema";
+import { z } from "zod";
+import { IChildProfile } from "@/features/onboarding/personal/types";
+>>>>>>> dev/dev
 import { InputGroup } from "@/shared/ui/input-group";
 
 export function AddEditChildModal({ open, onOpenChange, initialData }: AddEditChildModalProps) {

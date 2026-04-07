@@ -10,16 +10,28 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import UserAccountTypeSelectionCard from "@/features/auth-register/ui/UserAccountTypeSelectionCard";
 import { accountTypes } from "@/features/auth-register/constants";
+<<<<<<< HEAD
 import { useLogin } from "../model/useLogin";
 import { loginSchema, type LoginValues } from "@/entities/user/model/user.schema";
 import { useParentStore, useNewUserStore } from "@/shared/stores/user-store";
+=======
+import { loginSchema, type LoginValues } from "@/entities/user/model/user.schema";
+import { useParentStore, useNewUserStore } from "@/shared/stores/user-store";
+import { useAuth } from "@/shared/auth/AuthProvider";
+>>>>>>> dev/dev
 
 export default function LoginForm() {
   const router = useRouter();
   const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] = useState(false);
+<<<<<<< HEAD
   const { login, isSubmitting, error } = useLogin();
+=======
+>>>>>>> dev/dev
   const { setParentId } = useParentStore();
   const { setEmail, setPassword } = useNewUserStore();
+  const { login, loginError: error, isSubmitting } = useAuth();
+
+  console.log(error);
 
   const {
     register,
@@ -42,6 +54,7 @@ export default function LoginForm() {
     }
   };
 
+  console.log(error);
   return (
     <form className="space-y-7" onSubmit={handleSubmit(onSubmit)}>
       {error && (
@@ -95,13 +108,13 @@ export default function LoginForm() {
             icon={accountTypes.PERSONAL.icon}
             label={accountTypes.PERSONAL.label}
             description={accountTypes.PERSONAL.description}
-            href="/register/personal"
+            href="/register"
           />
           <UserAccountTypeSelectionCard
             icon={accountTypes.BUSINESS.icon}
             label={accountTypes.BUSINESS.label}
             description={accountTypes.BUSINESS.description}
-            href="/register/business"
+            href="/business/register"
           />
         </div>
       </Modal>

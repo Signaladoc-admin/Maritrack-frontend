@@ -7,7 +7,15 @@ export function useLogin() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
+<<<<<<< HEAD
     mutationFn: loginAction,
+=======
+    mutationFn: async (credentials: Parameters<typeof loginAction>[0]) => {
+      const result = await loginAction(credentials);
+      if (!result.success) throw new Error(result.error);
+      return result.data;
+    },
+>>>>>>> dev/dev
     onSuccess: ({ profile }) => {
       queryClient.setQueryData(["session"], profile);
     },

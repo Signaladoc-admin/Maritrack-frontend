@@ -8,12 +8,24 @@ const passwordSchema = z
   .regex(/[0-9]/, "At least 1 number")
   .regex(/[^A-Za-z0-9]/, "At least 1 symbol");
 
+<<<<<<< HEAD
+=======
+export const BUSINESS_ROLES = [
+  "ORGANIZATION_ADMIN",
+  "DEVICE_MANAGER",
+  "DEPARTMENT_MANAGER",
+] as const;
+export type BusinessRole = (typeof BUSINESS_ROLES)[number];
+
+>>>>>>> dev/dev
 export const UserProfileSchema = z.object({
   id: z.string(),
   firstName: z.string().optional().nullable(),
   lastName: z.string().optional().nullable(),
   email: z.string().email().optional(),
   role: z.enum(["ADMIN", "USER"]),
+  businessRole: z.enum(BUSINESS_ROLES).optional().nullable(),
+  businessId: z.string().optional().nullable(),
   imageUrl: z.string().optional().nullable(),
   isFirstLogin: z.boolean().optional(),
   isEmailVerified: z.boolean().optional(),
@@ -21,11 +33,19 @@ export const UserProfileSchema = z.object({
   phone: z.string().optional().nullable(),
   firstLogin: z.boolean().optional(),
   isOnline: z.boolean().optional(),
-  parentId: z.string().optional(),
+  parentId: z.string().optional().nullable(),
   zoneId: z.array(z.string()).optional(),
 });
 
 export type UserProfile = z.infer<typeof UserProfileSchema>;
+
+/** True when the user belongs to a business account */
+export const isBusinessUser = (user: UserProfile | null | undefined): boolean =>
+  !!user?.businessRole;
+
+/** True when the user is a personal parent account */
+export const isPersonalUser = (user: UserProfile | null | undefined): boolean =>
+  !!user && !user.businessRole && user.role !== "ADMIN";
 
 export interface IUserProfile {
   id: string;

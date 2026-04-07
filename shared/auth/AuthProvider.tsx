@@ -1,21 +1,51 @@
-import * as React from "react";
 import { useRouter } from "next/navigation";
 import { getSessionAction, logoutAction } from "@/features/auth/api/auth.actions";
 import type { UserProfile } from "@/entities/user/model/user.schema";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  createContext,
+  Dispatch,
+  ReactNode,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { useLogin } from "@/features/auth-login/model/useLogin";
 
 interface AuthContextType {
   user: UserProfile | null;
-  setUser: React.Dispatch<React.SetStateAction<UserProfile | null>>;
+  isAuthenticated: boolean;
   isLoading: boolean;
+  login: (_credentials: {
+    email: string;
+    password: string;
+  }) => Promise<{ profile: UserProfile | null; redirectTo: string }>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
+  isSubmitting: boolean;
+  logoutError: string | null;
+  loginError: string | null;
+  sessionError: string | null;
+  userRole:
+    | "ADMIN"
+    | "USER"
+    | "ORGANIZATION_ADMIN"
+    | "DEVICE_MANAGER"
+    | "DEPARTMENT_MANAGER"
+    | null;
+  appRole: "PARENT" | "BUSINESS" | null;
 }
 
-const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = React.useState<UserProfile | null>(null);
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const userRole = user?.businessRole ? user?.businessRole : user?.role;
+  const appRole = userRole === "USER" ? "PARENT" : "BUSINESS";
+
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { login, isSubmitting, error: loginError } = useLogin();
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -23,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     data: profile,
     isLoading,
     refetch,
+    error: sessionError,
   } = useQuery({
     queryKey: ["session"],
     queryFn: getSessionAction,
@@ -30,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     staleTime: Infinity, // Keep session until manually invalidated or refreshed
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (profile) {
       setUser(profile);
     } else {
@@ -57,16 +88,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refresh = async () => {
     await refetch();
   };
+  async function handleLogin({ email, password }: { email: string; password: string }) {
+    const { profile, redirectTo } = await login({ email, password });
+    setUser(profile);
+    setIsAuthenticated(true);
+    return { profile, redirectTo };
+  }
 
   return (
-    <AuthContext.Provider value={{ user, setUser, isLoading, logout, refresh }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        userRole: userRole!,
+        appRole: appRole!,
+        isLoading,
+        logout,
+        refresh,
+        login: handleLogin,
+        isSubmitting,
+        logoutError: logoutMutation.error?.message || null,
+        loginError: loginError || null,
+        sessionError: sessionError?.message || null,
+        isAuthenticated,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
 export const useAuth = () => {
-  const context = React.useContext(AuthContext);
+  const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
