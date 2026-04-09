@@ -4,6 +4,8 @@ import { ChevronDownIcon, CheckIcon, MinusIcon } from "@heroicons/react/24/outli
 import { TableColumn, TableProps } from "@/shared/ui/Table/types";
 import { useEffect, useRef, useState } from "react";
 import Pagination from "./Pagination";
+import { cn } from "@/shared/lib/utils";
+import Link from "next/link";
 
 const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
   // Destructure props
@@ -20,6 +22,7 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
     rowClassName,
     loaderComponent,
     onItemClick,
+    getRowHref,
     isPaginated = true,
     currentPage = 1,
     totalPages = 1,
@@ -122,7 +125,11 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
   return (
     <div>
       <div
-        className={`grid w-full max-w-full min-w-0 grid-cols-1 overflow-hidden rounded-lg bg-gray-50 shadow-sm ${className}`}
+        className={cn(
+          `grid w-full max-w-full min-w-0 grid-cols-1 overflow-hidden bg-gray-50 shadow-sm`,
+          isPaginated ? "rounded-t-2xl" : "rounded-2xl",
+          className
+        )}
       >
         <div className="w-full overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -152,7 +159,7 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
                     <th
                       key={column.label}
                       scope="col"
-                      className={`px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 ${
+                      className={`px-6 py-3 text-left text-xs font-medium tracking-wider ${
                         column.className || ""
                       }`}
                       style={{ width: column.width }}
@@ -182,7 +189,10 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
                 data?.map((item, index) => (
                   <tr
                     key={item.id}
-                    className={rowClassName ? rowClassName(item, index) : "cursor-pointer"}
+                    className={cn(
+                      rowClassName ? rowClassName(item, index) : "",
+                      (onItemClick || getRowHref) ? "cursor-pointer" : ""
+                    )}
                     onClick={(e) => {
                       e.stopPropagation();
                       onItemClick && onItemClick(item);
@@ -202,13 +212,22 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
                         </div>
                       </td>
                     )}
-                    {columns.map((column) => (
+                    {columns.map((column, colIndex) => (
                       <td
                         key={column.label}
-                        className={`px-6 py-4 text-sm whitespace-nowrap ${
-                          column.className || "text-gray-500"
-                        }`}
+                        className={cn(
+                          "px-6 py-4 text-sm whitespace-nowrap",
+                          column.className || "text-gray-500",
+                          colIndex === 0 && getRowHref ? "relative" : ""
+                        )}
                       >
+                        {colIndex === 0 && getRowHref && (
+                          <Link
+                            href={getRowHref(item)}
+                            className="absolute inset-0"
+                            aria-label="View row"
+                          />
+                        )}
                         {renderCellContent(column, item, index)}
                       </td>
                     ))}
@@ -261,11 +280,13 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
       </div>
 
       {isPaginated && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={onPageChange!}
-        />
+        <div className="overflow-hidden rounded-b-2xl shadow-sm">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={onPageChange!}
+          />
+        </div>
       )}
     </div>
   );

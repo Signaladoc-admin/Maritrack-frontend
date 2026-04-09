@@ -32,7 +32,7 @@ function BusinessLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen">
       <TopNavbar />
-      <main className="min-w-0 flex-1">
+      <main className="min-w-0 flex-1 pt-20">
         <div className="mx-auto max-w-(--breakpoint-2xl) p-6 lg:p-12">{children}</div>
       </main>
     </div>

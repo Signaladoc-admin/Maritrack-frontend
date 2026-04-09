@@ -13,6 +13,12 @@ export function formatCurrency(amount: number): string {
     maximumFractionDigits: 2,
   }).format(amount);
 }
+export function formatNumber(amount: number): string {
+  return new Intl.NumberFormat("en-NG", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
 export function getInitials(name?: string): string {
   if (!name) return "";
   const parts = name.trim().split(/\s+/);

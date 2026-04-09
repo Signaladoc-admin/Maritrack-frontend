@@ -11,16 +11,26 @@ import { Input } from "@/shared/ui/input";
 import { Header } from "@/shared/ui/layout/header";
 import { TabNavigation } from "@/shared/ui/tab-navigation";
 import Table from "@/shared/ui/Table/Table";
-import { DownloadCloud, FilterIcon } from "lucide-react";
+import { DownloadCloud, FilterIcon, ListFilter, SearchIcon } from "lucide-react";
 import { useState } from "react";
 import { devicesData } from "./data";
 import { devicesColumns } from "./columns";
+import { InputGroup } from "@/shared/ui/input-group";
+import { Device } from "./types";
+import { useRouter } from "next/navigation";
 
 export default function DevicesPage() {
   const [activeTab, setActiveTab] = useState("all");
+  const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
 
+  const router = useRouter();
+
+  function handleSelectDevice(device: Device) {
+    setSelectedDevice(device);
+    router.push(`/devices/${device.id}`);
+  }
   return (
-    <div className="space-y-7">
+    <div className="mx-auto max-w-6xl space-y-7">
       <Header title="Devices" subtitle="Manage your devices" />
       <div className="flex flex-col justify-between gap-10 md:flex-row">
         <TabNavigation
@@ -34,11 +44,15 @@ export default function DevicesPage() {
           onTabChange={(tab) => setActiveTab(tab)}
         />
         <div className="flex items-center gap-2">
-          <Input placeholder="Search devices" className="w-full" />
+          <InputGroup
+            iconLeft={<SearchIcon />}
+            placeholder="Search devices"
+            className="w-full rounded-full"
+          />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" size="icon" className="rounded-full">
-                <FilterIcon />
+                <ListFilter />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -54,7 +68,9 @@ export default function DevicesPage() {
       </div>
 
       <>
-        {activeTab === "all" && <Table data={devicesData} columns={devicesColumns} />}
+        {activeTab === "all" && (
+          <Table data={devicesData} columns={devicesColumns} onItemClick={handleSelectDevice} />
+        )}
         {activeTab === "active" && <div>Active Devices</div>}
         {activeTab === "inactive" && <div>Inactive Devices</div>}
       </>
