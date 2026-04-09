@@ -2,13 +2,20 @@ import { cn } from "@/shared/lib/utils";
 import { CardWrapper } from "@/shared/ui/card-wrapper";
 
 interface TabNavigationProps {
-  tabs: { label: string; value: string }[];
+  tabs: { label: string | React.ReactNode; value: string }[];
   activeTab: string;
   onTabChange: (value: string) => void;
   className?: string;
+  itemClassName?: string;
 }
 
-export function TabNavigation({ tabs, activeTab, onTabChange, className }: TabNavigationProps) {
+export function TabNavigation({
+  tabs,
+  activeTab,
+  onTabChange,
+  className,
+  itemClassName,
+}: TabNavigationProps) {
   return (
     <CardWrapper
       variant="default"
@@ -23,6 +30,7 @@ export function TabNavigation({ tabs, activeTab, onTabChange, className }: TabNa
             onClick={() => onTabChange(tab.value)}
             className={cn(
               "cursor-pointer rounded-full px-6 py-2.5 text-sm font-medium transition-all",
+              itemClassName,
               activeTab === tab.value
                 ? "font-bold text-[#1b3c73]"
                 : "text-muted-foreground hover:text-foreground"

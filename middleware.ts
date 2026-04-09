@@ -4,8 +4,8 @@ import type { NextRequest } from "next/server";
 
 // Route access by platform role
 const roleAccessMap: Record<string, string[]> = {
-  ADMIN: ["*"],
-  USER: ["/dashboard", "/settings", "/onboarding", "/profile", "/plans", "/child", "/device"],
+  BUSINESS: ["*"],
+  PARENT: ["/dashboard", "/settings", "/onboarding", "/profile", "/plans", "/child", "/devices"],
 };
 
 // Extra routes only accessible to business accounts (role=USER + businessRole set)
@@ -116,7 +116,11 @@ export async function middleware(req: NextRequest) {
 
   try {
     const payload = decodeJwt(token);
-    const userRole = (payload as any).role as string | undefined;
+    const userRole = (payload as any).role;
+    const appRole = (payload?.businessRole ? "BUSINESS" : "PARENT") as string;
+
+    console.log(appRole);
+
     const businessRole = (payload as any).businessRole as string | null | undefined;
 
     if (!userRole) {
@@ -131,7 +135,7 @@ export async function middleware(req: NextRequest) {
       return NextResponse.next();
     }
 
-    if (!canAccess(userRole, pathname)) {
+    if (!canAccess(appRole, pathname)) {
       return NextResponse.redirect(new URL("/unauthorized", req.url));
     }
 

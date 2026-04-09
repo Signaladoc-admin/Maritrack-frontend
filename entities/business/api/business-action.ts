@@ -1,6 +1,50 @@
 "use server";
 
 import { apiClient } from "@/shared/lib/api-client";
+import { withSafeAction } from "@/shared/lib/safe-action";
+
+export async function getBusinessProfileAction(id: string): Promise<any> {
+  return withSafeAction(async () => {
+    return apiClient(`/business-profiles/${id}`, {
+      method: "GET",
+      noRedirect: true,
+    });
+  }, "Failed to get business profile");
+}
+
+export async function createBusinessProfileAction({
+  ...data
+}: {
+  profile: string;
+  departments?: string[];
+  locations?: string[];
+}): Promise<any> {
+  return withSafeAction(async () => {
+    return apiClient(`/business-profiles`, {
+      method: "POST",
+      body: JSON.stringify(data),
+      noRedirect: true,
+    });
+  }, "Failed to create business profile");
+}
+
+export async function updateBusinessProfileAction({
+  id,
+  ...data
+}: {
+  id: string;
+  profile: string;
+  departments?: string[];
+  locations?: string[];
+}): Promise<any> {
+  return withSafeAction(async () => {
+    return apiClient(`/business-profiles/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+      noRedirect: true,
+    });
+  }, "Failed to update business profile");
+}
 
 export async function updateBusinessAction({
   id,
@@ -13,9 +57,11 @@ export async function updateBusinessAction({
   country: string;
   state: string;
 }): Promise<any> {
-  return apiClient(`/businesses/${id}`, {
-    method: "PATCH",
-    body: JSON.stringify(data),
-    noRedirect: true,
-  });
+  return withSafeAction(async () => {
+    return apiClient(`/businesses/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+      noRedirect: true,
+    });
+  }, "Failed to update business");
 }

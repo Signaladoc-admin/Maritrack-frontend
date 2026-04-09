@@ -14,8 +14,6 @@ export default function ParentProfileForm() {
   const { data: userProfile, isLoading: isFetchingProfile } = useUserProfile();
   const { mutate: updateProfile, isPending: isUpdating } = useUpdateProfile();
 
-  const userRole = "ADMIN";
-
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",

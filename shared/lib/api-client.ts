@@ -115,12 +115,16 @@ export async function apiClient<T = any>(
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
+    const message = errorData?.message;
 
-    const errorMessage = Array.isArray(errorData.message)
-      ? errorData.message.join(", ")
-      : errorData.message;
+    const errorMessage = Array.isArray(message)
+      ? message.filter((m: any) => typeof m === "string").join(", ") ||
+        message.map((m: any) => (typeof m === "object" ? JSON.stringify(m) : String(m))).join(", ")
+      : typeof message === "string"
+        ? message
+        : response.statusText;
 
-    throw new Error(errorMessage || response.statusText);
+    throw new Error(errorMessage || response.statusText || "Request failed");
   }
 
   const parsedResponse = await response.json();

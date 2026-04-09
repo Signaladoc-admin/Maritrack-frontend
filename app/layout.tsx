@@ -1,3 +1,5 @@
+import { NuqsAdapter } from "nuqs/adapters/next/app";
+
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
@@ -26,9 +28,11 @@ export default function RootLayout({
       <body className={`${jakarta.variable} antialiased`} suppressHydrationWarning>
         <ToastProvider>
           <Providers>
-            <main>{children}</main>
-            {/* <Sidebar />
+            <NuqsAdapter>
+              <main>{children}</main>
+              {/* <Sidebar />
             <main className="ml-[100px] flex-1">{children}</main> */}
+            </NuqsAdapter>
           </Providers>
         </ToastProvider>
       </body>
