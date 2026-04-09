@@ -1,11 +1,13 @@
 import { cn } from "@/shared/lib/utils";
-import { H1, H2, P } from "@/shared/ui/typography";
+import { H2, H4, P } from "@/shared/ui/typography";
+import { ReactNode } from "react";
 
 interface HeaderProps extends React.HTMLAttributes<HTMLHeadElement> {
   title: string;
-  subtitle?: string;
-  action?: React.ReactNode;
+  subtitle?: string | ReactNode;
+  action?: ReactNode;
   titleVariant?: "primary" | "neutral";
+  variant?: "sm" | "base";
 }
 
 export function Header({
@@ -14,6 +16,7 @@ export function Header({
   action,
   className,
   titleVariant = "primary",
+  variant = "sm",
 }: HeaderProps) {
   const titleVariants = {
     primary: "text-primary",
@@ -22,7 +25,12 @@ export function Header({
   return (
     <header className={cn("bg-background mb-12 flex items-center justify-between", className)}>
       <div className="space-y-2">
-        <H2 className={cn("leading-tight", titleVariants[titleVariant])}>{title}</H2>
+        {variant === "base" && (
+          <H2 className={cn("leading-tight", titleVariants[titleVariant])}>{title}</H2>
+        )}
+        {variant === "sm" && (
+          <H4 className={cn("leading-tight", titleVariants[titleVariant])}>{title}</H4>
+        )}
         {subtitle && <P className="text-muted-foreground mt-0! font-medium">{subtitle}</P>}
       </div>
       <div>{action}</div>

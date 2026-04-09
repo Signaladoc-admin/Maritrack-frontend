@@ -138,3 +138,26 @@ export interface UserFilterParams {
   status?: string;
   role?: string;
 }
+
+export const businessUserDetailsSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  department: z.string().min(1, "Department is required"),
+  businessRole: z.enum(BUSINESS_ROLES),
+  email: z.string(),
+  phone: z.string(),
+  address: z.string(),
+  country: z.string().min(1, "Country is required"),
+  state: z.string().min(1, "State is required"),
+});
+export type BusinessUserDetailsValues = z.infer<typeof businessUserDetailsSchema>;
+
+export const departmentSchema = z.object({
+  name: z.string().min(1, "Department name is required"),
+});
+export type DepartmentValues = z.infer<typeof departmentSchema>;
+
+export const roleSchema = z.object({
+  role: z.string().min(1, "Role is required"),
+});
+export type RoleValues = z.infer<typeof roleSchema>;

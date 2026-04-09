@@ -57,7 +57,7 @@ export function CountryStateInput<T extends FieldValues>({
   );
 
   return (
-    <div className={`grid gap-4 sm:grid-cols-2 ${className}`}>
+    <div className={`grid gap-4 gap-y-7 sm:grid-cols-2 ${className}`}>
       <Controller
         control={control}
         name={countryName}

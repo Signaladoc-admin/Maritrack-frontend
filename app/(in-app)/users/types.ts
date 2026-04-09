@@ -4,6 +4,8 @@ export interface User {
   id: string;
   firstName: string;
   lastName: string;
+  role: "ADMIN" | "USER";
+  businessRole: "ORGANIZATION_ADMIN" | "DEVICE_MANAGER" | "DEPARTMENT_MANAGER";
   department: string;
   location: string;
   email: string;

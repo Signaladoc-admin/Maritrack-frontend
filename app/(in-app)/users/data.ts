@@ -15,6 +15,8 @@ export const users: User[] = [
     city: "New York",
     postalCode: "10001",
     zone: "Zone 1",
+    role: "USER",
+    businessRole: "DEVICE_MANAGER",
     associatedDevices: [
       {
         id: "1",
@@ -45,6 +47,8 @@ export const users: User[] = [
     postalCode: "10001",
     zone: "Zone 1",
     associatedDevices: [],
+    role: "USER",
+    businessRole: "DEVICE_MANAGER",
   },
   {
     id: "3",
@@ -61,6 +65,8 @@ export const users: User[] = [
     postalCode: "10001",
     zone: "Zone 1",
     associatedDevices: [],
+    role: "USER",
+    businessRole: "DEVICE_MANAGER",
   },
   {
     id: "4",
@@ -77,6 +83,8 @@ export const users: User[] = [
     postalCode: "10001",
     zone: "Zone 1",
     associatedDevices: [],
+    role: "USER",
+    businessRole: "DEVICE_MANAGER",
   },
   {
     id: "5",
@@ -93,6 +101,8 @@ export const users: User[] = [
     postalCode: "10001",
     zone: "Zone 1",
     associatedDevices: [],
+    role: "USER",
+    businessRole: "DEVICE_MANAGER",
   },
 ];
 
