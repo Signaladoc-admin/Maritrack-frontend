@@ -20,7 +20,7 @@ export const UserProfileSchema = z.object({
   firstName: z.string().optional().nullable(),
   lastName: z.string().optional().nullable(),
   email: z.string().email().optional(),
-  role: z.enum(["ADMIN", "USER"]),
+  role: z.enum(["ADMIN", "USER"]).optional(),
   businessRole: z.enum(BUSINESS_ROLES).optional().nullable(),
   businessId: z.string().optional().nullable(),
   imageUrl: z.string().optional().nullable(),
