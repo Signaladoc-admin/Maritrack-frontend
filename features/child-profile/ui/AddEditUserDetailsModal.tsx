@@ -2,6 +2,7 @@ import { User } from "@/app/(in-app)/users/types";
 import {
   businessUserDetailsSchema,
   BusinessUserDetailsValues,
+  UserProfile,
 } from "@/entities/user/model/user.schema";
 import { InputGroup } from "@/shared/ui/input-group";
 import { CountryStateInput } from "@/shared/ui/inputs/country-state-input";
@@ -17,7 +18,13 @@ export default function AddEditUserDetailsModal({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  initialData: User;
+  initialData: UserProfile & {
+    role: string;
+    department: string;
+    address: string;
+    country: string;
+    state: string;
+  };
 }) {
   const { register, formState, handleSubmit, control, setValue } =
     useForm<BusinessUserDetailsValues>({
@@ -25,7 +32,7 @@ export default function AddEditUserDetailsModal({
         firstName: "",
         lastName: "",
         department: "",
-        role: "",
+        businessRole: undefined,
         email: "",
         phone: "",
         address: "",
@@ -36,15 +43,15 @@ export default function AddEditUserDetailsModal({
     });
 
   useEffect(() => {
-    setValue("firstName", initialData?.firstName);
-    setValue("lastName", initialData?.lastName);
-    setValue("department", initialData?.department);
-    setValue("role", initialData?.role);
-    setValue("email", initialData?.email);
-    setValue("phone", initialData?.phone);
-    setValue("address", initialData?.address);
-    setValue("country", initialData?.country);
-    setValue("state", initialData?.state);
+    setValue("firstName", initialData?.firstName!);
+    setValue("lastName", initialData?.lastName!);
+    setValue("department", initialData?.department!);
+    setValue("businessRole", initialData?.businessRole!);
+    setValue("email", initialData?.email!);
+    setValue("phone", initialData?.phone!);
+    setValue("address", initialData?.address!);
+    setValue("country", initialData?.country!);
+    setValue("state", initialData?.state!);
   }, [initialData]);
   async function onSubmit(data: BusinessUserDetailsValues) {
     console.log(data);
@@ -84,7 +91,7 @@ export default function AddEditUserDetailsModal({
           />
           <Controller
             control={control}
-            name="role"
+            name="businessRole"
             render={({ field }) => (
               <InputGroup
                 label="Role"
@@ -95,7 +102,7 @@ export default function AddEditUserDetailsModal({
                   { value: "DEVICE_MANAGER", label: "Device manager" },
                   { value: "DEPARTMENT_MANAGER", label: "Department manager" },
                 ]}
-                error={formState.errors.role?.message}
+                error={formState.errors.businessRole?.message}
                 {...field}
               />
             )}

@@ -143,7 +143,7 @@ export const businessUserDetailsSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   department: z.string().min(1, "Department is required"),
-  role: z.enum(BUSINESS_ROLES),
+  businessRole: z.enum(BUSINESS_ROLES),
   email: z.string(),
   phone: z.string(),
   address: z.string(),

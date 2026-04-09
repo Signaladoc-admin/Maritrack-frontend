@@ -33,10 +33,6 @@ function UsersPage() {
   const [isAddEditRoleModalOpen, setIsAddEditRoleModalOpen] = useState(false);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
 
-  console.log(isAddEditUserDetailsModalOpen);
-  console.log(isAddEditDepartmentModalOpen);
-  console.log(isAddEditRoleModalOpen);
-
   function handleSelectTab(tab: string) {
     setSelectedTab(tab);
 
