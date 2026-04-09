@@ -3,31 +3,52 @@
 import { useState, useEffect, useRef } from "react";
 import InviteTeamMembersForm from "./InviteTeamMembersForm";
 import PricingStep from "@/features/payments/ui/PricingStep";
-import { Header } from "@/shared/ui/layout/header";
 import BusinessDetailsForm from "./BusinessDetailsForm";
 import { Button } from "@/shared/ui/button";
 import { useLogout } from "@/features/auth/model/useLogout";
-import { useUpdateBusiness } from "@/entities/business/model/useUpdateBusiness";
-import { TeamMemberSchemaValues } from "../schema";
-import useBusinessDetails from "../useBusinessDetails";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
 import { useCreateZone } from "@/features/mdm-sync/model/useMdmSync";
 import { Loader } from "@/shared/ui/loader";
+import {
+  useCreateBusinessProfile,
+  useGetBusinessProfile,
+  useUpdateBusiness,
+  useUpdateBusinessProfile,
+} from "@/entities/business/model/useBusiness";
+import useBusinessDetails from "../useBusinessDetails";
+import { getBusinessProfileAction } from "@/entities/business/api/business-action";
+import { useRouter } from "next/navigation";
 
 export default function OnboardingPage() {
   const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
   const [hasPaid, setHasPaid] = useState(false);
   const [step, setStep] = useState(1);
 
-  const { updateBusiness, isSubmitting } = useUpdateBusiness();
   const { businessData, handleAddBusinessDetails, handleAddTeamMember, handleRemoveTeamMember } =
     useBusinessDetails();
+
+  console.log(businessData);
 
   const { data: user, isLoading: isLoadingUser, isFetching: isFetchingUser } = useUserProfile();
   const { mutateAsync: createZone, isPending: isCreatingZone } = useCreateZone();
   const zoneCreationAttempted = useRef(false);
 
   const zoneId = user?.zoneId?.[0]?.id;
+
+  const { createBusinessProfile } = useCreateBusinessProfile();
+  const { updateBusinessProfile } = useUpdateBusinessProfile();
+  const { data: businessProfile } = useGetBusinessProfile(user?.businessId!);
+
+  console.log("businessProfile", businessProfile);
+
+  const router = useRouter();
+  // useEffect(() => {
+  //   async function getBusinessProfile() {
+  //     const res = await getBusinessProfileAction(user?.businessId!);
+  //     console.log("res", res);
+  //   }
+  //   getBusinessProfile();
+  // }, [user]);
 
   useEffect(() => {
     if (!isLoadingUser && user && !zoneId && !zoneCreationAttempted.current) {
@@ -46,11 +67,18 @@ export default function OnboardingPage() {
   };
 
   async function handleSubmit() {
-    console.log("businessData", businessData);
-    // await updateBusiness({
-    //   id: "",
-    //   ...(businessData as any),
-    // });
+    const payload = {
+      profile: businessData.businessProfile,
+      departments: businessData.departments ?? [],
+      locations: businessData.locations ?? [],
+    };
+
+    const res = businessProfile
+      ? await updateBusinessProfile({ id: user?.businessId!, ...payload })
+      : await createBusinessProfile(payload);
+    if (res.status === true) {
+      router.push("/dashboard");
+    }
   }
 
   if (isLoadingUser || isCreatingZone || (isFetchingUser && !zoneId)) {

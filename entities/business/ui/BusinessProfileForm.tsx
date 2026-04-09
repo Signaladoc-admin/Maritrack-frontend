@@ -9,11 +9,15 @@ import { Loader } from "@/shared/ui/loader";
 import { LockKeyhole, LogOut } from "lucide-react";
 import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
 import { useLogout } from "@/features/auth/model/useLogout";
-import { useUpdateBusiness } from "../model/useUpdateBusiness";
+import { useAuth } from "@/shared/auth/AuthProvider";
+import { useUpdateBusiness } from "../model/useBusiness";
 
 export default function BusinessProfileForm() {
   const { data: userProfile, isLoading: isFetchingProfile } = useUserProfile();
   const { updateBusiness, isSubmitting: isUpdating } = useUpdateBusiness();
+  const { user } = useAuth();
+
+  console.log(user);
 
   const [formData, setFormData] = useState({
     businessName: "",
@@ -55,7 +59,7 @@ export default function BusinessProfileForm() {
     updateBusiness({
       name: formData.businessName,
       email: formData.businessEmail,
-      // businessAddress: formData.businessEmail,
+      businessAddress: formData.businessAddress,
       profilePicture: formData.profilePicture,
     } as any);
   };

@@ -34,6 +34,8 @@ export default function LoginForm() {
   const onSubmit = async (data: LoginValues) => {
     try {
       const { profile, redirectTo } = await login(data);
+
+      console.log(redirectTo);
       setEmail(data.email);
       setPassword(data.password);
       if (profile?.parentId) setParentId(profile.parentId);

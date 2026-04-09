@@ -54,7 +54,8 @@ export interface IUserProfile {
   imageUrl: string;
   isFirstLogin?: boolean;
   isEmailVerified?: boolean;
-  parentId: string;
+  parentId: string | null;
+  businessId: string | null;
   zoneId: {
     name: string;
     id: string;
