@@ -5,11 +5,16 @@ import { useAuth } from "../auth/AuthProvider";
 import { Sidebar } from "../ui/Sidebar/Sidebar";
 import { MobileNavbar } from "../ui/layout/mobile-navbar";
 import TopNavbar from "../ui/TopNavbar/TopNavbar";
+import { Loader } from "../ui/loader";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
-  const { appRole } = useAuth();
+  const { appRole, isLoading } = useAuth();
 
   const Layout = appRole === "PARENT" ? ParentLayout : BusinessLayout;
+
+  if (isLoading) {
+    return <Loader size="lg" className="flex h-screen w-screen items-center justify-center" />;
+  }
 
   return <Layout>{children}</Layout>;
 }
