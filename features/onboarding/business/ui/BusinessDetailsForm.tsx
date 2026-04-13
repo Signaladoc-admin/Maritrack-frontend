@@ -2,11 +2,10 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { businessDetailsSchema, BusinessDetailsSchemaValues } from "../schema";
 import { InputGroup } from "@/shared/ui/input-group";
-import { H3, H4 } from "@/shared/ui/typography";
+import { H4 } from "@/shared/ui/typography";
 import { MultiTagInput } from "@/shared/ui/inputs/multi-tag-input";
 import { Button } from "@/shared/ui/button";
 import { Header } from "@/shared/ui/layout/header";
-import { useEffect } from "react";
 
 export default function BusinessDetailsForm({
   onNext,
@@ -22,22 +21,15 @@ export default function BusinessDetailsForm({
     handleSubmit,
     control,
     formState: { errors },
-    reset,
   } = useForm<BusinessDetailsSchemaValues>({
     resolver: zodResolver(businessDetailsSchema),
     defaultValues: {
-      businessProfile: "",
-      departments: [],
-      locations: [],
+      businessProfile: businessDetails?.businessProfile ?? "",
+      departments: businessDetails?.departments ?? [],
+      locations: businessDetails?.locations ?? [],
     },
     mode: "onTouched",
   });
-
-  useEffect(() => {
-    if (businessDetails) {
-      reset(businessDetails);
-    }
-  }, [businessDetails, reset]);
 
   async function onSubmit(data: BusinessDetailsSchemaValues) {
     onAddBusinessDetails(data);

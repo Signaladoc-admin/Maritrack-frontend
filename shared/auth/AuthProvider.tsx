@@ -44,6 +44,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const userRole = user?.businessRole ? user?.businessRole : user?.role;
   const appRole = userRole === "USER" ? "PARENT" : "BUSINESS";
 
+  // Take out later
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      setUser(JSON.parse(user));
+    }
+  }, []);
+
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { login, isSubmitting, error: loginError } = useLogin();
   const router = useRouter();
@@ -62,7 +70,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    if (profile) {
+    // Take out later
+    const user = localStorage.getItem("user");
+
+    if (user) {
+      // Take out later
+      setUser(JSON.parse(user));
+    } else if (profile) {
       setUser(profile);
     } else {
       setUser(null);
@@ -91,6 +105,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function handleLogin({ email, password }: { email: string; password: string }) {
     const { profile, redirectTo } = await login({ email, password });
     setUser(profile);
+
+    console.log(profile);
+
+    // Take out later
+    localStorage.setItem("user", JSON.stringify(profile));
+
     setIsAuthenticated(true);
     return { profile, redirectTo };
   }
