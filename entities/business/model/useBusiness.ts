@@ -1,5 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/shared/ui/toast";
+
+export interface ActionResponse<T = any> {
+  status: boolean;
+  error: string | null;
+  data: T | null;
+}
 import {
   createBusinessProfileAction,
   getBusinessProfileAction,
@@ -14,31 +20,27 @@ export function useGetBusinessProfile(id: string) {
     retry: 0,
   });
 }
+
 export function useCreateBusinessProfile() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (data: Parameters<typeof createBusinessProfileAction>[0]) => {
+    mutationFn: async (data: Parameters<typeof createBusinessProfileAction>[0]): Promise<ActionResponse> => {
       const result = await createBusinessProfileAction(data);
-      if (!result.success) throw new Error(result.error);
-      return result.data;
+      return {
+        status: result.success,
+        error: result.success ? null : (result.error ?? null),
+        data: result.success ? result.data : null,
+      };
     },
-    onSuccess: (data) => {
-      queryClient.setQueryData(["business-profile"], data);
-      toast({
-        type: "success",
-        title: "Business profile created successfully",
-        message: "Business profile created successfully",
-      });
-    },
-    onError: (err: any) => {
-      const errorMessage = err.message || "An unexpected error occurred. Please try again.";
-      toast({
-        type: "error",
-        title: "Failed to create business profile",
-        message: errorMessage,
-      });
+    onSuccess: (res) => {
+      if (res.status) {
+        queryClient.setQueryData(["business-profile"], res.data);
+        toast({ type: "success", title: "Business profile created successfully" });
+      } else {
+        toast({ type: "error", title: "Failed to create business profile", message: res.error ?? undefined });
+      }
     },
   });
 
@@ -55,26 +57,21 @@ export function useUpdateBusinessProfile() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (data: Parameters<typeof updateBusinessProfileAction>[0]) => {
+    mutationFn: async (data: Parameters<typeof updateBusinessProfileAction>[0]): Promise<ActionResponse> => {
       const result = await updateBusinessProfileAction(data);
-      if (!result.success) throw new Error(result.error);
-      return result.data;
+      return {
+        status: result.success,
+        error: result.success ? null : (result.error ?? null),
+        data: result.success ? result.data : null,
+      };
     },
-    onSuccess: (data) => {
-      queryClient.setQueryData(["business-profile"], data);
-      toast({
-        type: "success",
-        title: "Business profile updated successfully",
-        message: "Business profile updated successfully",
-      });
-    },
-    onError: (err: any) => {
-      const errorMessage = err.message || "An unexpected error occurred. Please try again.";
-      toast({
-        type: "error",
-        title: "Failed to update business profile",
-        message: errorMessage,
-      });
+    onSuccess: (res) => {
+      if (res.status) {
+        queryClient.setQueryData(["business-profile"], res.data);
+        toast({ type: "success", title: "Business profile updated successfully" });
+      } else {
+        toast({ type: "error", title: "Failed to update business profile", message: res.error ?? undefined });
+      }
     },
   });
 

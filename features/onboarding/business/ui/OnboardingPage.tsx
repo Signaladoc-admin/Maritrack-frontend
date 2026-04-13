@@ -27,8 +27,6 @@ export default function OnboardingPage() {
   const { businessData, handleAddBusinessDetails, handleAddTeamMember, handleRemoveTeamMember } =
     useBusinessDetails();
 
-  console.log(businessData);
-
   const { data: user, isLoading: isLoadingUser, isFetching: isFetchingUser } = useUserProfile();
   const { mutateAsync: createZone, isPending: isCreatingZone } = useCreateZone();
   const zoneCreationAttempted = useRef(false);
@@ -101,22 +99,8 @@ export default function OnboardingPage() {
       >
         {isLoggingOut ? "Signing out..." : "Sign out"}
       </Button>
-      {step === 1 && (
-        <BusinessDetailsForm
-          businessDetails={businessData}
-          onNext={handleNextStep}
-          onAddBusinessDetails={handleAddBusinessDetails}
-        />
-      )}
-      {step === 2 && (
-        <InviteTeamMembersForm
-          onSubmit={handleSubmit}
-          onBack={handlePreviousStep}
-          onAddTeamMember={handleAddTeamMember}
-          onRemoveTeamMember={handleRemoveTeamMember}
-          teamMembers={businessData.teamMembers!}
-        />
-      )}
+      {step === 1 && <BusinessDetailsForm onNext={handleNextStep} />}
+      {step === 2 && <InviteTeamMembersForm onBack={handlePreviousStep} />}
     </div>
   );
 }

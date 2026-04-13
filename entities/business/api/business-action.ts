@@ -2,13 +2,14 @@
 
 import { apiClient } from "@/shared/lib/api-client";
 import { withSafeAction } from "@/shared/lib/safe-action";
+import { BusinessProfile } from "../types";
 
 export async function getBusinessProfileAction(id: string): Promise<any> {
   return withSafeAction(async () => {
     return apiClient(`/business-profiles/${id}`, {
       method: "GET",
       noRedirect: true,
-    });
+    }) as Promise<BusinessProfile>;
   }, "Failed to get business profile");
 }
 

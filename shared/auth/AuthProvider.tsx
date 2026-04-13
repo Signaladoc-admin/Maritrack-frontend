@@ -56,6 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { login, isSubmitting, error: loginError } = useLogin();
   const router = useRouter();
   const queryClient = useQueryClient();
+  // const [profile, setProfile] = useState()
 
   const {
     data: profile,
@@ -68,6 +69,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     retry: false,
     staleTime: Infinity, // Keep session until manually invalidated or refreshed
   });
+
+  // useEffect(() => {
+  //     async function getSession() {
+  //       'use server'
+
+  //       const cookieStore = await cookies()
+  //       const session = cookieStore.get("refreshToken")
+  //       if (session) {
+  //         setProfile(JSON.parse(session.value))
+  //       }
+  //     }
+  //     getSession()
+
+  // }, [])
+
+  console.log(profile);
 
   useEffect(() => {
     // Take out later

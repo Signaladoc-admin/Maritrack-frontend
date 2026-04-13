@@ -5,9 +5,9 @@ import { InputGroup } from "@/shared/ui/input-group";
 import { Button } from "@/shared/ui/button";
 
 export default function AddTeamMemberForm({
-  handleAddTeamMember,
+  onAddTeamMember,
 }: {
-  handleAddTeamMember: (data: TeamMemberSchemaValues & { id: string }) => void;
+  onAddTeamMember: (data: TeamMemberSchemaValues & { id: string }) => void;
 }) {
   const {
     register,
@@ -17,7 +17,7 @@ export default function AddTeamMemberForm({
   } = useForm<TeamMemberSchemaValues>({
     resolver: zodResolver(teamMemberSchema),
     defaultValues: {
-      memberEmail: "",
+      email: "",
       location: "",
     },
     mode: "onTouched",
@@ -25,9 +25,12 @@ export default function AddTeamMemberForm({
 
   async function onSubmit(data: TeamMemberSchemaValues) {
     const payload = { id: crypto.randomUUID(), ...data };
-    handleAddTeamMember(payload);
+    onAddTeamMember(payload);
+    setValue("email", "");
     setValue("location", "");
-    setValue("memberEmail", "");
+
+    // set cursor back on first input after submission
+    document.querySelector("input")?.focus();
   }
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-7">
@@ -36,8 +39,8 @@ export default function AddTeamMemberForm({
           label="Member email"
           type="text"
           placeholder="Email address here"
-          {...register("memberEmail")}
-          error={errors.memberEmail?.message}
+          {...register("email")}
+          error={errors.email?.message}
         />
         <InputGroup
           label="Location"

@@ -6,17 +6,17 @@ import { H4 } from "@/shared/ui/typography";
 import { MultiTagInput } from "@/shared/ui/inputs/multi-tag-input";
 import { Button } from "@/shared/ui/button";
 import { Header } from "@/shared/ui/layout/header";
+import {
+  useCreateBusinessProfile,
+  useGetBusinessProfile,
+  useUpdateBusinessProfile,
+} from "@/entities/business/model/useBusiness";
+import { useEffect } from "react";
+import { BusinessProfile } from "@/entities/business/types";
 
-export default function BusinessDetailsForm({
-  onNext,
-  onAddBusinessDetails,
-  businessDetails,
-}: {
-  businessDetails?: BusinessDetailsSchemaValues;
-  onNext: () => void;
-  onAddBusinessDetails: (businessData: any) => void;
-}) {
+export default function BusinessDetailsForm({ onNext }: { onNext: () => void }) {
   const {
+    reset,
     register,
     handleSubmit,
     control,
@@ -24,16 +24,35 @@ export default function BusinessDetailsForm({
   } = useForm<BusinessDetailsSchemaValues>({
     resolver: zodResolver(businessDetailsSchema),
     defaultValues: {
-      businessProfile: businessDetails?.businessProfile ?? "",
-      departments: businessDetails?.departments ?? [],
-      locations: businessDetails?.locations ?? [],
+      profile: "",
+      departments: [],
+      locations: [],
     },
     mode: "onTouched",
   });
 
+  const { data } = useGetBusinessProfile("");
+  const businessProfile = data as BusinessProfile;
+
+  const { createBusinessProfile, isSubmitting } = useCreateBusinessProfile();
+
+  const { updateBusinessProfile } = useUpdateBusinessProfile();
+
+  useEffect(() => {
+    if (businessProfile) {
+      reset({
+        profile: businessProfile.profile,
+        departments: businessProfile.departments,
+        locations: businessProfile.locations,
+      });
+    }
+  }, [businessProfile, reset]);
+
   async function onSubmit(data: BusinessDetailsSchemaValues) {
-    onAddBusinessDetails(data);
-    onNext();
+    const res = businessProfile
+      ? await updateBusinessProfile({ id: "", ...data }) // TODO: replace "" with actual businessProfile.id
+      : await createBusinessProfile(data);
+    if (res.status) onNext();
   }
   return (
     <div>
@@ -49,8 +68,8 @@ export default function BusinessDetailsForm({
           label="Business profile"
           type="textarea"
           placeholder="Enter your business profile"
-          {...register("businessProfile")}
-          error={errors.businessProfile?.message}
+          {...register("profile")}
+          error={errors.profile?.message}
         />
 
         <div>
@@ -85,7 +104,9 @@ export default function BusinessDetailsForm({
             )}
           />
         </div>
-        <Button className="w-full">Next</Button>
+        <Button disabled={isSubmitting} className="w-full">
+          Next
+        </Button>
       </form>
     </div>
   );
