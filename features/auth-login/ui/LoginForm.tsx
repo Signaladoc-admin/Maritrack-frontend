@@ -10,23 +10,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import UserAccountTypeSelectionCard from "@/features/auth-register/ui/UserAccountTypeSelectionCard";
 import { accountTypes } from "@/features/auth-register/constants";
-<<<<<<< HEAD
-import { useLogin } from "../model/useLogin";
-import { loginSchema, type LoginValues } from "@/entities/user/model/user.schema";
-import { useParentStore, useNewUserStore } from "@/shared/stores/user-store";
-=======
 import { loginSchema, type LoginValues } from "@/entities/user/model/user.schema";
 import { useParentStore, useNewUserStore } from "@/shared/stores/user-store";
 import { useAuth } from "@/shared/auth/AuthProvider";
->>>>>>> dev/dev
 
 export default function LoginForm() {
   const router = useRouter();
   const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] = useState(false);
-<<<<<<< HEAD
-  const { login, isSubmitting, error } = useLogin();
-=======
->>>>>>> dev/dev
+
   const { setParentId } = useParentStore();
   const { setEmail, setPassword } = useNewUserStore();
   const { login, loginError: error, isSubmitting } = useAuth();

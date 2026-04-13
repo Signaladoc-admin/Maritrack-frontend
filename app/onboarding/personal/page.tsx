@@ -1,16 +1,13 @@
 "use client";
 
 import { useIsOnboarded } from "@/entities/user/model/useIsOnboarded";
-<<<<<<< HEAD
-import ChildrenProfiles from "@/features/onboarding/ui/ChildrenProfiles";
-=======
 import ChildrenProfiles from "@/features/onboarding/personal/ui/ChildrenProfiles";
->>>>>>> dev/dev
 import ParentalControlSetup from "@/features/parents/ui/ParentalControlSetup";
 import { MultiStepForm } from "@/shared/ui/multi-step-form";
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useVerifyPayment } from "@/features/payments/model/usePayments";
+import { useAuth } from "@/shared/auth/AuthProvider";
 import { useToast } from "@/shared/ui/toast";
 import { Button } from "@/shared/ui/button";
 import { useLogout } from "@/features/auth/model/useLogout";
@@ -25,19 +22,20 @@ import {
 } from "@/shared/ui/dropdown-menu";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
 import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
+import { Loader } from "@/shared/ui/loader";
+import { User, ChevronDown } from "lucide-react";
 
 export function ChildrenDropdown() {
   const { children, selectedChildId, setSelectedChildId, setChildren } = useParentStore();
   const { data: userProfile } = useUserProfile();
-  const parentId = userProfile?.parentId;
+  const router = useRouter();
 
-<<<<<<< HEAD
-  const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentZones();
-=======
   const { profile, pcSettings, isLoading: isAuthLoading, checkAndRedirect } = useIsOnboarded();
+  const { userRole, appRole } = useAuth();
 
   const [isFullWidth, setIsFullWidth] = useState(false);
   const [currentStep, setCurrentStep] = useState(() => {
+    const stepParam = useSearchParams()?.get("step");
     if (stepParam) return parseInt(stepParam, 10);
     return 0;
   });
@@ -51,7 +49,8 @@ export function ChildrenDropdown() {
       checkAndRedirect(profile, pcSettings);
     }
   }, [profile, pcSettings, checkAndRedirect]);
->>>>>>> dev/dev
+
+  const { data: parentZonesRes } = useParentZones();
 
   useEffect(() => {
     if (parentZonesRes) {
@@ -65,15 +64,10 @@ export function ChildrenDropdown() {
     }
   }, [parentZonesRes, setChildren]);
 
-<<<<<<< HEAD
-  const selectedChild = children?.find((c) => c.id === selectedChildId);
-  const isAllSelected = selectedChildId === "all";
+  const searchParams = useSearchParams();
+  const reference = searchParams?.get("reference");
+  const stepParam = searchParams?.get("step");
 
-  const handleSelect = (id: string) => {
-    setSelectedChildId(id);
-  };
-
-=======
   useEffect(() => {
     if (reference) {
       verifyPayment(reference)
@@ -156,7 +150,10 @@ export function ChildrenDropdown() {
     },
   ];
 
->>>>>>> dev/dev
+  // Note: Local variables like selectedChild and isAllSelected might still be needed by the return block if this file is still exporting ChildrenDropdown
+  const selectedChild = children?.find((c) => c.id === selectedChildId);
+  const isAllSelected = selectedChildId === "all";
+  const handleSelect = (id: string) => setSelectedChildId(id);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
