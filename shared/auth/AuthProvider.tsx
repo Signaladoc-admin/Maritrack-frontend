@@ -7,11 +7,10 @@ import { useLogin } from "@/features/auth-login/model/useLogin";
 import { jwtDecode } from "jwt-decode";
 import { useAuthStore } from "../stores/auth.store";
 
+// Shape of the decoded JWT access token payload
 type UserPayload = {
-  access_token_expires_on: string;
-  refresh_token: string;
-  date: string;
-  isFirstLogin: boolean;
+  iat: number;
+  exp: number;
   role: "USER" | "ADMIN" | undefined;
   businessRole: BusinessRole | null;
   email: string;
@@ -148,6 +147,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [profile]);
 
+  // Proactive refresh: schedule a silent token refresh 1 minute before the access token expires.
+  // This keeps the Zustand store and the httpOnly cookie in sync without relying on 401 retries.
+  // When setAccessToken fires with the new token, this effect re-runs and schedules the next cycle.
+  useEffect(() => {
+    if (!accessToken) return;
+
+    const payload = getTokenPayload(accessToken);
+    if (!payload?.exp) return;
+
+    const msUntilRefresh = payload.exp * 1000 - Date.now() - 60_000; // 1 min before expiry
+
+    if (msUntilRefresh <= 0) return; // already expired or within the buffer — 401 retry handles it
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch("/api/refresh", {
+          method: "POST",
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("Refresh failed");
+        const { accessToken: newToken } = await res.json();
+        setAccessToken(newToken); // updates Zustand + re-triggers this effect for next cycle
+      } catch {
+        logout();
+      }
+    }, msUntilRefresh);
+
+    return () => clearTimeout(timer);
+  }, [accessToken, setAccessToken, logout]);
+
   // All hooks declared above — safe to return early now
   if (!isHydrated) {
     return <div>Loading...</div>;
@@ -164,6 +193,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { profile, accessToken, redirectTo } = await login({ email, password });
 
     setUserPayload(profile as any);
+    if (accessToken) setAccessToken(accessToken); // sync to Zustand immediately after login
 
     // Take out later
     localStorage.setItem("user", JSON.stringify(profile));

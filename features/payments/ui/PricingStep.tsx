@@ -13,8 +13,8 @@ import { useLogout } from "@/features/auth/model/useLogout";
 interface PricingStepProps {
   onBack: () => void;
   onSuccess: () => void; // Used for basic plan skip,
-  isShowingBackButton: boolean;
-  isShowingSignOutButton: boolean;
+  isShowingBackButton?: boolean;
+  isShowingSignOutButton?: boolean;
 }
 
 export default function PricingStep({

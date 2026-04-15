@@ -27,8 +27,9 @@ export async function refreshAccessToken() {
 
   const data = await response.json();
 
-  const newAccessToken =
-    data.accessToken || data.access_token || data.data?.accessToken || data.data?.access_token;
+  // Refresh response: { data: { access_token: "...", refresh_token: "..." }, accessToken: null }
+  const newAccessToken = data.data?.access_token;
+  const newRefreshToken = data.data?.refresh_token;
 
   const cookieDefaults = {
     httpOnly: true,
@@ -38,9 +39,9 @@ export async function refreshAccessToken() {
     maxAge: 7 * 24 * 60 * 60,
   };
 
-  if (newAccessToken) {
-    cookieStore.set("accessToken", newAccessToken, cookieDefaults);
-  }
+  // Store both tokens: access token for server actions, refresh token rotated
+  if (newAccessToken) cookieStore.set("accessToken", newAccessToken, cookieDefaults);
+  if (newRefreshToken) cookieStore.set("refreshToken", newRefreshToken, cookieDefaults);
 
   return newAccessToken;
 }
