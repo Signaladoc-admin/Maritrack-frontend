@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import UserAccountTypeSelectionCard from "@/features/auth-register/ui/UserAccountTypeSelectionCard";
 import { accountTypes } from "@/features/auth-register/constants";
 import { loginSchema, type LoginValues } from "@/entities/user/model/user.schema";
-import { useParentStore, useNewUserStore } from "@/shared/stores/user-store";
+import { useParentStore, useNewUserStore } from "@/shared/stores/user.store";
 import { useAuth } from "@/shared/auth/AuthProvider";
 
 export default function LoginForm() {

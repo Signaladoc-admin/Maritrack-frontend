@@ -11,7 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { parentOnboardingProfileSchema } from "../schema";
 import z from "zod";
 import { parentHooks, userHooks } from "@/shared/api/resources";
-import { useParentStore } from "@/shared/stores/user-store";
+import { useParentStore } from "@/shared/stores/user.store";
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Country, State } from "country-state-city";

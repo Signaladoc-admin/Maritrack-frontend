@@ -30,9 +30,6 @@ export async function refreshAccessToken() {
   const newAccessToken =
     data.accessToken || data.access_token || data.data?.accessToken || data.data?.access_token;
 
-  const newRefreshToken =
-    data.refreshToken || data.refresh_token || data.data?.refreshToken || data.data?.refresh_token;
-
   const cookieDefaults = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -43,10 +40,6 @@ export async function refreshAccessToken() {
 
   if (newAccessToken) {
     cookieStore.set("accessToken", newAccessToken, cookieDefaults);
-  }
-
-  if (newRefreshToken) {
-    cookieStore.set("refreshToken", newRefreshToken, cookieDefaults);
   }
 
   return newAccessToken;

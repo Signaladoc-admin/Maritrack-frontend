@@ -47,6 +47,14 @@ export async function updateBusinessProfileAction({
   }, "Failed to update business profile");
 }
 
+export async function getBusinessAction(id: string): Promise<any> {
+  return withSafeAction(async () => {
+    return apiClient(`/businesses/${id}`, {
+      method: "GET",
+      noRedirect: true,
+    });
+  }, "Failed to get business");
+}
 export async function updateBusinessAction({
   id,
   ...data

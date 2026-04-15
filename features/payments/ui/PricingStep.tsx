@@ -8,13 +8,21 @@ import { usePaymentPlans, useInitializePayment } from "@/features/payments/model
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
 import { useToast } from "@/shared/ui/toast";
 import { useRouter } from "next/navigation";
+import { useLogout } from "@/features/auth/model/useLogout";
 
 interface PricingStepProps {
   onBack: () => void;
-  onSuccess: () => void; // Used for basic plan skip
+  onSuccess: () => void; // Used for basic plan skip,
+  isShowingBackButton: boolean;
+  isShowingSignOutButton: boolean;
 }
 
-export default function PricingStep({ onBack, onSuccess }: PricingStepProps) {
+export default function PricingStep({
+  onBack,
+  onSuccess,
+  isShowingBackButton,
+  isShowingSignOutButton,
+}: PricingStepProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { data: plans } = usePaymentPlans();
   const { mutateAsync: initializePayment } = useInitializePayment();
@@ -25,6 +33,8 @@ export default function PricingStep({ onBack, onSuccess }: PricingStepProps) {
   const handleSelectBasicPlan = () => {
     onSuccess();
   };
+
+  const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
 
   const handleSelectPremiumPlan = async (planId: string) => {
     if (!user?.zoneId?.[0]?.id) {
@@ -94,9 +104,22 @@ export default function PricingStep({ onBack, onSuccess }: PricingStepProps) {
 
   return (
     <div className="space-y-10">
-      <Button variant="link" onClick={onBack} className="flex items-center gap-1! px-0">
-        <ChevronLeft className="h-6! w-6! text-orange-500" /> Go back
-      </Button>
+      {isShowingBackButton && (
+        <Button variant="link" onClick={onBack} className="flex items-center gap-1! px-0">
+          <ChevronLeft className="h-6! w-6! text-orange-500" /> Go back
+        </Button>
+      )}
+
+      {isShowingSignOutButton && (
+        <Button
+          variant="ghost"
+          className="text-muted-foreground hover:text-foreground absolute top-4 right-6 h-auto p-0 font-medium hover:bg-transparent"
+          onClick={() => logout()}
+          disabled={isLoggingOut}
+        >
+          {isLoggingOut ? "Signing out..." : "Sign out"}
+        </Button>
+      )}
 
       <div className="mx-auto max-w-5xl space-y-6 px-10">
         <div className="space-y-4 text-center">

@@ -9,6 +9,7 @@ import type {
   UserProfile,
 } from "@/entities/user/model/user.schema";
 import { cookies } from "next/headers";
+import { withSafeAction } from "@/shared/lib/safe-action";
 
 // --- Existing ---
 
@@ -93,6 +94,19 @@ export async function logoutAction() {
   cookieStore.delete("refreshToken");
 
   return { success: true };
+}
+
+export async function refreshAccessTokenAction() {
+  const cookieStore = await cookies();
+  const refreshToken = cookieStore.get("refreshToken")?.value;
+
+  return withSafeAction(async () => {
+    return apiClient("/users/refreshToken", {
+      method: "POST",
+      body: JSON.stringify({ token: refreshToken }),
+      noRedirect: true,
+    });
+  }, "Failed to refresh access token");
 }
 
 export async function getSessionAction(): Promise<UserProfile | null> {

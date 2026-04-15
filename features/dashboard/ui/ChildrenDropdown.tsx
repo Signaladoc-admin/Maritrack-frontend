@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import { ChevronDown, User } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
-import { useParentStore } from "@/shared/stores/user-store";
+import { useParentStore } from "@/shared/stores/user.store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/Avatar/Avatar";
 import {
   DropdownMenu,

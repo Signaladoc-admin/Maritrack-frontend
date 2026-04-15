@@ -5,7 +5,7 @@ import { Button } from "../ui/button";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { useUIStore } from "../stores/ui-store";
+import { useUIStore } from "../stores/ui.store";
 import { useIsMobile } from "../hooks/use-mobile";
 
 interface BackProps {

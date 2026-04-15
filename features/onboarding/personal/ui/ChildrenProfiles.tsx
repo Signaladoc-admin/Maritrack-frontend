@@ -18,7 +18,7 @@ import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
 import { useEffect } from "react";
 import { useToast } from "@/shared/ui/toast";
 import { Loader } from "@/shared/ui/loader";
-import { useParentStore } from "@/shared/stores/user-store";
+import { useParentStore } from "@/shared/stores/user.store";
 import { useQueryClient } from "@tanstack/react-query";
 import NewChildProfileButton from "@/features/child-profile/ui/NewChildProfileButton";
 import { useActiveSubscription } from "@/features/payments/model/usePayments";

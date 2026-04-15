@@ -12,7 +12,7 @@ import { useRegisterParent } from "../model/useRegisterParent";
 import { genderOptions } from "@/lib/constants/shared";
 import { SearchableSelect } from "@/shared/ui/searchable-select";
 import { ChevronLeft } from "lucide-react";
-import { useNewUserStore } from "@/shared/stores/user-store";
+import { useNewUserStore } from "@/shared/stores/user.store";
 import { CountryStateInput } from "@/shared/ui/inputs/country-state-input";
 
 export default function PersonalRegistrationForm() {
