@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useUserProfile, useUpdateProfile } from "@/entities/user/model/useUserProfile";
+import { useUserProfile } from "@/entities/user/model/useUserProfile";
 import { Input } from "@/shared/ui/input";
 import { Button } from "@/shared/ui/button";
 import { ImageUpload } from "@/shared/ui/image-upload";
@@ -14,7 +14,7 @@ import { useUpdateBusiness } from "../model/useBusiness";
 
 export default function BusinessProfileForm() {
   const { data: userProfile, isLoading: isFetchingProfile } = useUserProfile();
-  const { updateBusiness, isSubmitting: isUpdating } = useUpdateBusiness();
+  const { mutate: updateBusiness, isPending: isUpdating } = useUpdateBusiness();
   const { user } = useAuth();
 
   console.log(user);

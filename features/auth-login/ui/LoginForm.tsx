@@ -21,8 +21,6 @@ export default function LoginForm() {
   const { setEmail, setPassword } = useNewUserStore();
   const { login, loginError: error, isSubmitting } = useAuth();
 
-  console.log(error);
-
   const {
     register,
     handleSubmit,
@@ -35,7 +33,6 @@ export default function LoginForm() {
     try {
       const { profile, redirectTo } = await login(data);
 
-      console.log(redirectTo);
       setEmail(data.email);
       setPassword(data.password);
       if (profile?.parentId) setParentId(profile.parentId);

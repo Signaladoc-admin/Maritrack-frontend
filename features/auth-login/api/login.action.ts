@@ -4,7 +4,7 @@ import { apiClient } from "@/shared/lib/api-client";
 import { withSafeAction } from "@/shared/lib/safe-action";
 import type { LoginValues, UserProfile } from "@/entities/user/model/user.schema";
 import { getParentalControlMeAction } from "@/entities/parental-controls/api/parental-controls.actions";
-import { getBusinessAction } from "@/entities/business/api/business-action";
+import { getBusinessAction } from "@/entities/business/api/business.actions";
 
 interface LoginResponse {
   status: boolean;
@@ -43,11 +43,13 @@ export async function loginAction(credentials: LoginValues) {
     } else if (profile.businessRole) {
       const businessProfile = await getBusinessAction(profile.businessId!);
 
-      if (businessProfile.error) {
-        redirectTo = "/onboarding/business";
-      } else {
-        redirectTo = "/dashboard";
-      }
+      console.log(businessProfile);
+      redirectTo = "/onboarding/business";
+      // if (businessProfile.error) {
+      //   redirectTo = "/onboarding/business";
+      // } else {
+      //   redirectTo = "/dashboard";
+      // }
     } else {
       const pcSettings = await getParentalControlMeAction();
       redirectTo = pcSettings ? "/dashboard" : "/onboarding/personal";

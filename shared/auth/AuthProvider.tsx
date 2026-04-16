@@ -29,7 +29,7 @@ export function getTokenPayload(token: string): UserPayload | null {
 }
 
 interface AuthContextType {
-  user: UserProfile | null;
+  user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (_credentials: {
@@ -42,21 +42,21 @@ interface AuthContextType {
   logoutError: string | null;
   loginError: string | null;
   sessionError: string | null;
-  userRole:
-    | "ADMIN"
-    | "USER"
-    | "ORGANIZATION_ADMIN"
-    | "DEVICE_MANAGER"
-    | "DEPARTMENT_MANAGER"
-    | null;
-  appRole: "PARENT" | "BUSINESS" | null;
 }
+
+type User = UserProfile & {
+  appRole: "PARENT" | "BUSINESS";
+  userRole: BusinessRole | "USER" | "ADMIN";
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [userPayload, setUserPayload] = useState<UserPayload | null>(null);
-  const user: UserProfile = {
+  const userRole = userPayload?.businessRole ? userPayload?.businessRole : userPayload?.role;
+  const appRole = userRole === "USER" ? "PARENT" : "BUSINESS";
+
+  const user: User = {
     id: userPayload?.id!,
     role: userPayload?.role!,
     businessRole: userPayload?.businessRole!,
@@ -64,20 +64,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     parentId: userPayload?.parentId!,
     businessId: userPayload?.businessId!,
     imageUrl: userPayload?.imageUrl!,
+    userRole: userRole!,
+    appRole: appRole!,
   };
-  const userRole = user?.businessRole ? user?.businessRole : user?.role;
-  const appRole = userRole === "USER" ? "PARENT" : "BUSINESS";
-  console.log(userPayload);
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { login, isSubmitting, error: loginError } = useLogin();
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const { setAccessToken, logout, accessToken } = useAuthStore((s) => s);
+  const { setAccessToken, setBusinessId, logout, accessToken } = useAuthStore((s) => s);
 
-  const payload = getTokenPayload(accessToken!);
-  console.log(payload);
+  // const payload = getTokenPayload(accessToken!);
+  // console.log(payload);
 
   const [isHydrated, setIsHydrated] = useState(false);
 
@@ -193,7 +192,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { profile, accessToken, redirectTo } = await login({ email, password });
 
     setUserPayload(profile as any);
-    if (accessToken) setAccessToken(accessToken); // sync to Zustand immediately after login
+    if (accessToken) setAccessToken(accessToken);
+    if (profile?.businessId) setBusinessId(profile.businessId);
 
     // Take out later
     localStorage.setItem("user", JSON.stringify(profile));
@@ -206,8 +206,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        userRole: userRole!,
-        appRole: appRole!,
         isLoading,
         logout,
         refresh,

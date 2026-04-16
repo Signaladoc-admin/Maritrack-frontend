@@ -8,11 +8,11 @@ import { Button } from "@/shared/ui/button";
 import { Header } from "@/shared/ui/layout/header";
 import {
   useCreateBusinessProfile,
-  useGetBusinessProfile,
+  useGetBusiness,
   useUpdateBusinessProfile,
 } from "@/entities/business/model/useBusiness";
 import { useEffect } from "react";
-import { BusinessProfile } from "@/entities/business/types";
+import { useAuthStore } from "@/shared/stores/auth.store";
 
 export default function BusinessDetailsForm({ onNext }: { onNext: () => void }) {
   const {
@@ -31,8 +31,11 @@ export default function BusinessDetailsForm({ onNext }: { onNext: () => void }) 
     mode: "onTouched",
   });
 
-  const { data } = useGetBusinessProfile("");
-  const businessProfile = data as BusinessProfile;
+  const businessId = useAuthStore((s) => s.businessId);
+  console.log(businessId);
+  const { data: business } = useGetBusiness(businessId!);
+  const businessProfile = business?.profile;
+  console.log(business);
 
   const { createBusinessProfile, isSubmitting } = useCreateBusinessProfile();
 
@@ -50,9 +53,9 @@ export default function BusinessDetailsForm({ onNext }: { onNext: () => void }) 
 
   async function onSubmit(data: BusinessDetailsSchemaValues) {
     const res = businessProfile
-      ? await updateBusinessProfile({ id: "", ...data }) // TODO: replace "" with actual businessProfile.id
+      ? await updateBusinessProfile({ id: businessProfile.id, ...data })
       : await createBusinessProfile(data);
-    if (res.status) onNext();
+    if (res.status === true) onNext();
   }
   return (
     <div>

@@ -9,7 +9,7 @@ import { useLogout } from "@/features/auth/model/useLogout";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
 import { useCreateZone } from "@/features/mdm-sync/model/useMdmSync";
 import { Loader } from "@/shared/ui/loader";
-import { useGetBusinessProfile } from "@/entities/business/model/useBusiness";
+import { useGetBusiness } from "@/entities/business/model/useBusiness";
 
 export default function OnboardingPage() {
   const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
@@ -21,10 +21,6 @@ export default function OnboardingPage() {
   const zoneCreationAttempted = useRef(false);
 
   const zoneId = user?.zoneId?.[0]?.id;
-
-  const { data: businessProfile } = useGetBusinessProfile(user?.businessId!);
-
-  console.log("businessProfile", businessProfile);
 
   // useEffect(() => {
   //   async function getBusinessProfile() {

@@ -1,5 +1,6 @@
 "use server";
 
+import { createBusinessAction } from "@/entities/business/api/business.actions";
 import { apiClient } from "@/shared/lib/api-client";
 import { withSafeAction } from "@/shared/lib/safe-action";
 
@@ -17,7 +18,7 @@ export async function registerBusinessAction(data: {
   password: string;
 }) {
   return withSafeAction(
-    () => apiClient("/businesses", { method: "POST", body: JSON.stringify(data), noRedirect: true }),
+    () => createBusinessAction(data),
     "Business registration failed. Please try again."
   );
 }

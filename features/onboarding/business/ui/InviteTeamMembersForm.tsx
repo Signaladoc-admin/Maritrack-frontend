@@ -6,6 +6,8 @@ import { Header } from "@/shared/ui/layout/header";
 import { useCreateTeamMembers } from "@/entities/business/model/useTeamMembers";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/shared/stores/auth.store";
+import { useGetBusiness } from "@/entities/business/model/useBusiness";
 
 export interface TeamMember {
   id: string;
@@ -17,6 +19,12 @@ export default function InviteTeamMembersForm({ onBack }: { onBack: () => void }
   const { createTeamMembers, isSubmitting } = useCreateTeamMembers();
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const router = useRouter();
+
+  // const businessId = useAuthStore((s) => s.businessId);
+  // console.log(businessId);
+  // const { data: business } = useGetBusiness(businessId!);
+  // const businessProfile = business?.staff;
+  // console.log(businessProfile);
 
   function handleAddTeamMember(data: TeamMemberSchemaValues) {
     const newMember = {
@@ -34,9 +42,9 @@ export default function InviteTeamMembersForm({ onBack }: { onBack: () => void }
   async function handleSubmit() {
     const res = await createTeamMembers([]);
     console.log("res", res);
-    if (res.status === true) {
-      router.push("/dashboard");
-    }
+    // if (res.status === true) {
+    //   router.push("/dashboard");
+    // }
   }
 
   return (
@@ -66,7 +74,11 @@ export default function InviteTeamMembersForm({ onBack }: { onBack: () => void }
         <Button variant="secondary" onClick={onBack}>
           Previous
         </Button>
-        <Button disabled={isSubmitting} type="submit" onClick={handleSubmit}>
+        <Button
+          disabled={isSubmitting || teamMembers.length === 0}
+          type="submit"
+          onClick={handleSubmit}
+        >
           Submit
         </Button>
       </div>

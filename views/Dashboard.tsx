@@ -6,10 +6,10 @@ import { useAuth } from "@/shared/auth/AuthProvider";
 import { Loader } from "@/shared/ui/loader";
 
 export default function Dashboard() {
-  const { appRole, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
 
   if (isLoading) return <Loader size="lg" />;
 
-  if (appRole === "BUSINESS") return <BusinessDashboard />;
+  if (user?.appRole === "BUSINESS") return <BusinessDashboard />;
   else return <ParentDashboard />;
 }
