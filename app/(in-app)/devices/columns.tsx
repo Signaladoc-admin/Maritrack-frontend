@@ -9,7 +9,7 @@ export const devicesColumns: TableColumn<Device>[] = [
     render: (item: Device) => (
       <div className="space-y-1">
         <p className="font-semibold text-neutral-800">{item.model}</p>
-        <p className="text-sm text-neutral-500">{formatID(crypto.randomUUID())}</p>
+        <p className="text-sm text-neutral-500">{formatID(item.serialNumber)}</p>
       </div>
     ),
   },

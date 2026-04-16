@@ -14,15 +14,16 @@ import {
 } from "@/entities/children/model/useChildren";
 import { getProfileAction } from "@/entities/user/api/user.actions";
 import { createZoneAction } from "@/features/mdm-sync/api/mdm-sync.actions";
-import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
+import { useParentZones, mdmSyncKeys } from "@/features/mdm-sync/model/useMdmSync";
 import { useEffect } from "react";
 import { useToast } from "@/shared/ui/toast";
 import { Loader } from "@/shared/ui/loader";
-import { useParentStore } from "@/shared/stores/user-store";
+import { useParentStore } from "@/shared/stores/user.store";
 import { useQueryClient } from "@tanstack/react-query";
 import NewChildProfileButton from "@/features/child-profile/ui/NewChildProfileButton";
 import { useActiveSubscription } from "@/features/payments/model/usePayments";
 import PricingStep from "@/features/payments/ui/PricingStep";
+import { useQrCode } from "@/features/mdm-sync/model/useQrCode";
 
 export default function ChildrenProfiles({
   goToNextStep,
@@ -104,6 +105,7 @@ export default function ChildrenProfiles({
           queryClient.invalidateQueries({ queryKey: ["user-profile"] });
         }
 
+        queryClient.invalidateQueries({ queryKey: mdmSyncKeys.parentZones });
         toast({ title: "Success", message: "Child profile created", type: "success" });
 
         // Always show pricing after creation — QR is only accessible once payment is done
@@ -177,6 +179,8 @@ export default function ChildrenProfiles({
     setCurrentView("list");
   };
 
+  if (isFetchingChildren) return <Loader size="lg" />;
+
   if (currentView === "form") {
     return (
       <CreateChildProfileForm
@@ -212,25 +216,23 @@ export default function ChildrenProfiles({
   }
 
   if (currentView === "qr") {
-    let onboardingCode = pendingChild?.onboardingCode;
-
-    if (!onboardingCode && pendingChild?.id) {
-      const zoneWithChild = parentZonesRes?.find((zone: any) =>
-        zone.parentChildren?.some((pc: any) => pc.childId === pendingChild.id)
-      );
-      const childRecord = zoneWithChild?.parentChildren?.find(
-        (pc: any) => pc.childId === pendingChild.id
-      )?.child;
-      onboardingCode = childRecord?.onboardingCode;
-    }
-
-    const activeZoneId = user?.zoneId?.[0]?.id || parentZonesRes?.[0]?.id;
-
+    // let onboardingCode = pendingChild?.onboardingCode;
+    // if (!onboardingCode && pendingChild?.id) {
+    //   const zoneWithChild = parentZonesRes?.find((zone: any) =>
+    //     zone.parentChildren?.some((pc: any) => pc.childId === pendingChild.id)
+    //   );
+    //   const childRecord = zoneWithChild?.parentChildren?.find(
+    //     (pc: any) => pc.childId === pendingChild.id
+    //   )?.child;
+    //   onboardingCode = childRecord?.onboardingCode;
+    // }
+    // const activeZoneId = user?.zoneId?.[0]?.id || parentZonesRes?.[0]?.id;
     return (
       <PairingQRStep
+        childId={pendingChild?.id!}
         childName={pendingChild?.name || "Child"}
-        zoneId={activeZoneId || ""}
-        onboardingCode={onboardingCode || ""}
+        onboardingCode={pendingChild?.onboardingCode}
+        zoneId={user?.zoneId?.[0]?.id}
         onBack={() => setCurrentView("list")}
         onComplete={handleFinishPairing}
         onRollback={handlePairingRollback}

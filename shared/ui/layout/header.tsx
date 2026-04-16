@@ -31,7 +31,7 @@ export function Header({
         {variant === "sm" && (
           <H4 className={cn("leading-tight", titleVariants[titleVariant])}>{title}</H4>
         )}
-        {subtitle && <P className="text-muted-foreground mt-0! font-medium">{subtitle}</P>}
+        {subtitle && <div className="text-muted-foreground mt-0! font-medium">{subtitle}</div>}
       </div>
       <div>{action}</div>
     </header>

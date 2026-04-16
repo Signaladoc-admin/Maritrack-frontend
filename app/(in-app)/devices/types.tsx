@@ -10,5 +10,6 @@ export interface Device {
   macAddress: string;
   lastSynced: string;
   batteryLevel?: number;
-  status?: string;
+  status?: "ACTIVE" | "INACTIVE";
+  condition?: "DAMAGED" | "RETURNED" | "GOOD";
 }

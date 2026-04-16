@@ -1,4 +1,10 @@
-const CustomTooltip = ({ active, payload }: { active: boolean; payload: { value: string }[] }) => {
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: { value: string | number }[];
+  labelSuffix?: string;
+}
+
+const CustomTooltip = ({ active, payload, labelSuffix = "Active devices" }: CustomTooltipProps) => {
   if (!active || !payload?.length) return null;
 
   const value = payload[0].value;
@@ -15,7 +21,7 @@ const CustomTooltip = ({ active, payload }: { active: boolean; payload: { value:
         boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
       }}
     >
-      {value} Active devices
+      {value} {labelSuffix}
     </div>
   );
 };

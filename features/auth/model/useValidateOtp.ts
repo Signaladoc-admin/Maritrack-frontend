@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { validateOtpAction } from "../api/auth.actions";
-import { useNewUserStore } from "@/shared/stores/user-store";
+import { useNewUserStore } from "@/shared/stores/user.store";
 import { useLogin } from "@/features/auth-login/model/useLogin";
 import { useToast } from "@/shared/ui/toast";
 import type { OtpConfirmFormValues } from "../schema";

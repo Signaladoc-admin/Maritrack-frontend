@@ -1,7 +1,7 @@
 "use client";
 
 import OtpConfirmForm from "@/features/auth/ui/OtpConfirmForm";
-import { useNewUserStore } from "@/shared/stores/user-store";
+import { useNewUserStore } from "@/shared/stores/user.store";
 import { Header } from "@/shared/ui/layout/header";
 import { useIsOnboarded } from "@/entities/user/model/useIsOnboarded";
 import { useEffect } from "react";
