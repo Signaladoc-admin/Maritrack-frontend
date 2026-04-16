@@ -129,7 +129,7 @@ export default function ChildrenProfiles({
       if (data.id && !data.id.startsWith("pending-")) {
         await updateChild({
           id: data.id,
-          data: { name: data.name, age: Number(data.age), gender: data.gender as any },
+          name: data.name, age: Number(data.age), gender: data.gender as any,
         } as any);
       }
       setChildProfiles((prev) => prev.map((child) => (child.id === data.id ? data : child)));

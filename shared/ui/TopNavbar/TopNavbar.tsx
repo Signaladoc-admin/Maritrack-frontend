@@ -16,7 +16,7 @@ export default function TopNavbar() {
   const { user } = useAuth();
 
   return (
-    <div className="fixed z-9 w-screen">
+    <div className="fixed z-9999 w-screen">
       <div className="flex items-center justify-center gap-16 border-b-[1.5px] border-[#eee] bg-[#f7f7f7] py-6 text-sm">
         {businessNavLinks.map((link) => {
           const isActive = pathname === link.href;
