@@ -1,6 +1,6 @@
 import {
-  useParents,
-  useParent,
+  useGetParents,
+  useGetParent,
   useCreateParent,
   useUpdateParent,
   useDeleteParent,
@@ -18,8 +18,8 @@ import {
 } from "@/features/user-management/model/useUserManagement";
 
 export const parentHooks = {
-  useGetAll: useParents,
-  useGetById: useParent,
+  useGetAll: useGetParents,
+  useGetById: useGetParent,
   useCreate: useCreateParent,
   useUpdate: useUpdateParent,
   useDelete: useDeleteParent,

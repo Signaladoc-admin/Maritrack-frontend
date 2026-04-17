@@ -9,7 +9,7 @@ export function useLogout() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const { appRole } = useAuth();
+  const { user } = useAuth();
 
   const logoutMutation = useMutation({
     mutationFn: logoutAction,
@@ -20,7 +20,7 @@ export function useLogout() {
         message: "Logout successful",
         type: "success",
       });
-      router.push(appRole === "BUSINESS" ? "/business/login" : "/login");
+      router.push(user?.appRole === "BUSINESS" ? "/business/login" : "/login");
     },
     onError: (err) => {
       toast({
