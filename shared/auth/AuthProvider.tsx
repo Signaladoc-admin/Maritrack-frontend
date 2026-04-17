@@ -6,6 +6,8 @@ import { createContext, ReactNode, useContext, useEffect, useState } from "react
 import { useLogin } from "@/features/auth-login/model/useLogin";
 import { jwtDecode } from "jwt-decode";
 import { useAuthStore } from "../stores/auth.store";
+import { useUserProfile } from "@/entities/user/model/useUserProfile";
+import { PageLoader } from "../ui/loader";
 
 // Shape of the decoded JWT access token payload
 type UserPayload = {
@@ -56,6 +58,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const userRole = userPayload?.businessRole ? userPayload?.businessRole : userPayload?.role;
   const appRole = userRole === "USER" ? "PARENT" : "BUSINESS";
 
+  const { data: userProfile } = useUserProfile();
+
+  // Aggregated user from both payload and profile
   const user: User = {
     id: userPayload?.id!,
     role: userPayload?.role!,
@@ -66,6 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     imageUrl: userPayload?.imageUrl!,
     userRole: userRole!,
     appRole: appRole!,
+    firstName: userProfile?.firstName!,
+    lastName: userProfile?.lastName!,
   };
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -113,24 +120,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function init() {
       try {
-        const res = await fetch("/api/refresh", {
-          method: "POST",
-          credentials: "include",
-        });
+        // ── Step 1: Zustand already has a token (e.g. just logged in this session).
+        // Avoid any network call — the token is already good.
+        const memToken = useAuthStore.getState().accessToken;
+        if (memToken) {
+          const memPayload = getTokenPayload(memToken);
+          if (memPayload?.exp && memPayload.exp * 1000 > Date.now() + 60_000) {
+            return; // already set, nothing to do
+          }
+        }
+
+        // ── Step 2: Page was reloaded — Zustand is empty but cookie may still hold
+        // the original login token (which carries business context). Use it if valid.
+        if (cancelled) return;
+        const sessionRes = await fetch("/api/session", { credentials: "include" });
+        if (cancelled) return;
+        if (sessionRes.ok) {
+          const { accessToken: cookieToken } = await sessionRes.json();
+          const cookiePayload = getTokenPayload(cookieToken);
+          if (cookiePayload?.exp && cookiePayload.exp * 1000 > Date.now() + 60_000) {
+            setAccessToken(cookieToken);
+            return;
+          }
+        }
+
+        // ── Step 3: Token is expired or missing — refresh is the only option.
+        if (cancelled) return;
+        const res = await fetch("/api/refresh", { method: "POST", credentials: "include" });
+        if (cancelled) return;
         if (!res.ok) throw new Error("Refresh failed");
-        const { accessToken } = await res.json();
-        setAccessToken(accessToken);
+        const { accessToken: refreshedToken } = await res.json();
+        setAccessToken(refreshedToken);
       } catch {
-        logout(); // refresh failed → user is logged out
+        if (!cancelled) logout();
       } finally {
-        setIsHydrated(true);
+        if (!cancelled) setIsHydrated(true);
       }
     }
 
     init();
-  }, [setAccessToken, logout]);
+    return () => {
+      cancelled = true;
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     // Take out later
@@ -178,12 +214,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // All hooks declared above — safe to return early now
   if (!isHydrated) {
-    return <div>Loading...</div>;
+    return <PageLoader />;
   }
-
-  // const logout = async () => {
-  //   await logoutMutation.mutateAsync();
-  // };
 
   const refresh = async () => {
     await refetch();

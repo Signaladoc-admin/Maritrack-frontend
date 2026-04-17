@@ -59,7 +59,7 @@ export function ChildrenDropdown() {
               </Avatar>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-1 items-center justify-between gap-2">
             <span className="text-lg font-bold text-[#1B3C73]">
               {isAllSelected ? "All Children" : selectedChild?.name}
             </span>

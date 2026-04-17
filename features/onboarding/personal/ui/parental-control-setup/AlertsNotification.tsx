@@ -3,6 +3,7 @@ import { Controller, useFormContext } from "react-hook-form";
 import { CardWrapper } from "@/shared/ui/card-wrapper";
 import CardHeader from "@/shared/ui/card-header";
 import SubHeading from "./SubHeading";
+import { parentalControlHeadings } from "@/features/parents/ui/ParentalControlSetup";
 
 export default function AlertsAndNotifications() {
   const {
@@ -15,8 +16,8 @@ export default function AlertsAndNotifications() {
     <CardWrapper variant="outline">
       <div className="space-y-10!">
         <CardHeader
-          title="Alerts & Notifications"
-          description="Choose what events you want to be notified about."
+          title={parentalControlHeadings.alertsAndNotifications.title}
+          description={parentalControlHeadings.alertsAndNotifications.description}
         />
 
         <div className="space-y-3">

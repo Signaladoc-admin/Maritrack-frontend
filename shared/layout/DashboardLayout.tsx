@@ -8,9 +8,9 @@ import TopNavbar from "../ui/TopNavbar/TopNavbar";
 import { Loader } from "../ui/loader";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
-  const { appRole, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
 
-  const Layout = appRole === "PARENT" ? ParentLayout : BusinessLayout;
+  const Layout = user?.appRole === "PARENT" ? ParentLayout : BusinessLayout;
 
   if (isLoading) {
     return <Loader size="lg" className="flex h-screen w-screen items-center justify-center" />;

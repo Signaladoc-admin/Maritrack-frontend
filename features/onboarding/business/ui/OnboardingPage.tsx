@@ -8,8 +8,7 @@ import { Button } from "@/shared/ui/button";
 import { useLogout } from "@/features/auth/model/useLogout";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
 import { useCreateZone } from "@/features/mdm-sync/model/useMdmSync";
-import { Loader } from "@/shared/ui/loader";
-import { useGetBusiness } from "@/entities/business/model/useBusiness";
+import { PageLoader } from "@/shared/ui/loader";
 
 export default function OnboardingPage() {
   const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
@@ -47,11 +46,7 @@ export default function OnboardingPage() {
   };
 
   if (isLoadingUser || isCreatingZone || (isFetchingUser && !zoneId)) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm">
-        <Loader size="lg" className="scale-150" />
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (!hasPaid)

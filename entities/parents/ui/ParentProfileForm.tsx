@@ -1,50 +1,41 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useUserProfile, useUpdateProfile } from "@/entities/user/model/useUserProfile";
-import { Input } from "@/shared/ui/input";
+import React, { useState } from "react";
+import * as z from "zod";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/shared/ui/button";
 import { ImageUpload } from "@/shared/ui/image-upload";
 import { Loader } from "@/shared/ui/loader";
 import { LockKeyhole, LogOut } from "lucide-react";
 import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
 import { useLogout } from "@/features/auth/model/useLogout";
+import { useAuth } from "@/shared/auth/AuthProvider";
+import { useGetParent, useUpdateParent } from "../model/useParents";
+import { CountryStateInput } from "@/shared/ui/inputs/country-state-input";
+import { InputGroup } from "@/shared/ui/input-group";
+import { useToast } from "@/shared/ui/toast";
+import type { ParentProfile } from "../schema";
 
+const parentProfileSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email(),
+  gender: z.enum(["MALE", "FEMALE"]),
+  address: z.string().optional().nullable(),
+  state: z.string().optional().nullable(),
+  country: z.string().optional().nullable(),
+  profilePicture: z.any().optional().nullable(),
+});
+
+type ParentProfileFormValues = z.infer<typeof parentProfileSchema>;
+
+// Outer shell — handles loading states only
 export default function ParentProfileForm() {
-  const { data: userProfile, isLoading: isFetchingProfile } = useUserProfile();
-  const { mutate: updateProfile, isPending: isUpdating } = useUpdateProfile();
+  const { user, isLoading: isFetchingProfile } = useAuth();
+  const { data: parent, isLoading: isFetchingParent } = useGetParent(user?.parentId!);
 
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    status: "",
-    profilePicture: null as File | string | null,
-    // Placeholders for design matching
-    gender: "",
-    address: "",
-    state: "",
-    country: "",
-  });
-
-  const [showSignOut, setShowSignOut] = useState(false);
-
-  const { mutate: logout, isPending: isLoggingOut } = useLogout();
-
-  useEffect(() => {
-    if (userProfile) {
-      setFormData((prev) => ({
-        ...prev,
-        firstName: userProfile.firstName || "",
-        lastName: userProfile.lastName || "",
-        email: userProfile.email || "",
-        status: userProfile.status || "",
-        profilePicture: userProfile.imageUrl || null,
-      }));
-    }
-  }, [userProfile]);
-
-  if (isFetchingProfile) {
+  if (isFetchingProfile || (!!user?.parentId && isFetchingParent)) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
         <Loader size="lg" />
@@ -52,103 +43,152 @@ export default function ParentProfileForm() {
     );
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateProfile({
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      status: formData.status,
-      profilePicture: formData.profilePicture,
-    });
-  };
+  // Once data is ready, mount the form with values baked into defaultValues —
+  // same pattern as CreateChildProfileForm (no reset() needed, Select gets the
+  // correct value on first mount so Radix never initialises to "").
+  return <ParentProfileFormInner parent={parent} user={user} />;
+}
 
-  const handleInputChange = (name: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
+// Inner form — only mounts after parent + user data are available
+function ParentProfileFormInner({
+  parent,
+  user,
+}: {
+  parent: ParentProfile | null | undefined;
+  user: any;
+}) {
+  const { mutateAsync: updateParent, isPending: isUpdating } = useUpdateParent();
+  const { mutate: logout, isPending: isLoggingOut } = useLogout();
+  const { toast } = useToast();
+
+  const [showSignOut, setShowSignOut] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    register,
+    setValue,
+    formState: { errors },
+  } = useForm<ParentProfileFormValues>({
+    resolver: zodResolver(parentProfileSchema),
+    defaultValues: {
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+      email: user?.email || "",
+      profilePicture: user?.imageUrl || null,
+      gender: (parent?.gender as "MALE" | "FEMALE") || undefined,
+      address: parent?.address || "",
+      state: parent?.state || "",
+      country: parent?.country || "",
+    },
+  });
+
+  const onSubmit = async (data: ParentProfileFormValues) => {
+    try {
+      await updateParent({
+        id: user?.parentId!,
+        gender: data.gender,
+        address: data.address ?? undefined,
+        state: data.state ?? undefined,
+        country: data.country ?? undefined,
+      });
+
+      toast({ title: "Profile updated successfully", type: "success" });
+    } catch (error: any) {
+      toast({
+        title: "Error updating profile",
+        type: "error",
+        message: error.message,
+      });
+    }
   };
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col items-center divide-y divide-neutral-200 *:py-10"
       >
         <div className="w-full space-y-8">
           {/* Profile Image Section */}
           <div className="flex items-start justify-center gap-4 md:justify-start">
-            <ImageUpload
-              value={formData.profilePicture}
-              onChange={(file) => handleInputChange("profilePicture", file)}
-              className="h-28 w-28 rounded-full border-none shadow-sm"
-              previewClassName="h-28 w-28 rounded-full"
-            >
-              <div className="flex h-full w-full items-center justify-center rounded-full bg-[#F3F4F6] text-[#1B3C73]">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
-                  <span className="text-xl">👤</span>
-                </div>
-              </div>
-            </ImageUpload>
+            <Controller
+              control={control}
+              name="profilePicture"
+              render={({ field }) => (
+                <ImageUpload
+                  value={field.value}
+                  onChange={field.onChange}
+                  className="h-28 w-28 rounded-full border-none shadow-sm"
+                  previewClassName="h-28 w-28 rounded-full"
+                >
+                  <div className="flex h-full w-full items-center justify-center rounded-full bg-[#F3F4F6] text-[#1B3C73]">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
+                      <span className="text-xl">👤</span>
+                    </div>
+                  </div>
+                </ImageUpload>
+              )}
+            />
           </div>
           {/* Form Fields */}
           <div className="grid w-full gap-8">
             <div className="grid grid-cols-2 gap-6">
-              <Input
+              <InputGroup
                 label="First Name"
                 placeholder="Enter first name"
-                value={formData.firstName}
-                onValueChange={(val) => handleInputChange("firstName", val)}
+                {...register("firstName")}
+                error={errors.firstName?.message}
               />
-              <Input
+              <InputGroup
                 label="Last Name"
                 placeholder="Enter last name"
-                value={formData.lastName}
-                onValueChange={(val) => handleInputChange("lastName", val)}
+                {...register("lastName")}
+                error={errors.lastName?.message}
               />
             </div>
-            <Input
+
+            <InputGroup
               label="Email Address"
               type="email"
-              value={formData.email}
+              {...register("email")}
               disabled
               className="cursor-not-allowed opacity-70"
+              error={errors.email?.message}
             />
-            <Input
-              label="What gender of parent are you?"
-              type="select"
-              value={formData.status}
-              onValueChange={(val) => handleInputChange("status", val)}
-              options={[
-                { label: "Mother", value: "MOTHER" },
-                { label: "Father", value: "FATHER" },
-                { label: "Other", value: "OTHER" },
-              ]}
+
+            <Controller
+              control={control}
+              name="gender"
+              render={({ field }) => (
+                <InputGroup
+                  label="Gender"
+                  type="select"
+                  className="mb-0!"
+                  options={[
+                    { label: "Father", value: "MALE" },
+                    { label: "Mother", value: "FEMALE" },
+                  ]}
+                  error={errors.gender?.message}
+                  {...field}
+                />
+              )}
             />
-            <Input
+
+            <InputGroup
               label="Address"
               placeholder="Enter street address, apt. number, etc."
-              value={formData.address}
-              onValueChange={(val) => handleInputChange("address", val)}
+              {...register("address")}
+              error={errors.address?.message}
             />
-            <div className="grid grid-cols-2 gap-6">
-              <Input
-                label="State"
-                type="select"
-                value={formData.state}
-                onValueChange={(val) => handleInputChange("state", val)}
-                placeholder="Lagos"
-                options={[
-                  { label: "Lagos", value: "Lagos" },
-                  { label: "Abuja", value: "Abuja" },
-                ]}
-              />
-              <Input
-                label="Country"
-                type="select"
-                value={formData.country}
-                onValueChange={(val) => handleInputChange("country", val)}
-                placeholder="Nigeria"
-                options={[{ label: "Nigeria", value: "Nigeria" }]}
-              />
-            </div>
+
+            <CountryStateInput
+              control={control}
+              countryName="country"
+              stateName="state"
+              errors={errors}
+              setValue={setValue}
+            />
           </div>
         </div>
 
@@ -201,7 +241,7 @@ export default function ParentProfileForm() {
         onOpenChange={setShowSignOut}
         title="Are you sure you want to sign out?"
         confirmText="Sign out"
-        onConfirm={logout}
+        onConfirm={() => logout()}
         variant="destructive"
         loading={isLoggingOut}
         loadingText="Signing out..."

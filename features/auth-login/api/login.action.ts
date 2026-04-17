@@ -41,11 +41,12 @@ export async function loginAction(credentials: LoginValues) {
     if (profile.role === "ADMIN") {
       redirectTo = "/admin";
     } else if (profile.businessRole) {
-      const businessProfile = await getBusinessAction(profile.businessId!);
+      const business = await getBusinessAction(profile.businessId!);
 
-      console.log(businessProfile);
+      const businessProfile = business?.data?.data?.profile;
+      console.log(business);
       redirectTo = "/onboarding/business";
-      // if (businessProfile.error) {
+      // if (!businessProfile) {
       //   redirectTo = "/onboarding/business";
       // } else {
       //   redirectTo = "/dashboard";

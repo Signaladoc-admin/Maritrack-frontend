@@ -28,11 +28,22 @@ export default function PairingQRStep({
   onComplete,
   onRollback,
 }: PairingQRStepProps) {
+  console.log("onboardingCode", onboardingCode);
+  console.log("zoneId", zoneId);
+  console.log("childId", childId);
   const { toast } = useToast();
-  const { qrCodeSrc, isLoading: isGenerating, isError, error } = useQrCode(childId!, {
+  const {
+    qrCodeSrc,
+    isLoading: isGenerating,
+    isPending,
+    isError,
+    error,
+  } = useQrCode(childId!, {
     zoneId,
     onboardingCode,
   });
+
+  const isLoading = isGenerating || isPending;
 
   useEffect(() => {
     if (isError && error) {
@@ -62,12 +73,8 @@ export default function PairingQRStep({
       />
 
       <div className="space-y-8">
-        <button
-          className="cursor-pointer"
-          disabled={isGenerating || !qrCodeSrc}
-          onClick={onComplete}
-        >
-          <QRCodeCard src={qrCodeSrc || ""} isLoading={isGenerating} />
+        <button className="cursor-pointer" disabled={isLoading || !qrCodeSrc} onClick={onComplete}>
+          <QRCodeCard src={qrCodeSrc || ""} isLoading={isLoading} />
         </button>
 
         {/* <Button

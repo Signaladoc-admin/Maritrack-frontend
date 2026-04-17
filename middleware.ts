@@ -5,7 +5,7 @@ import type { NextRequest } from "next/server";
 // Route access by platform role
 const roleAccessMap: Record<string, string[]> = {
   BUSINESS: ["*"],
-  PARENT: ["/dashboard", "/settings", "/onboarding", "/profile", "/plans", "/child", "/devices"],
+  PARENT: ["/dashboard", "/settings", "/onboarding", "/profile", "/plans", "/child"],
 };
 
 // Extra routes only accessible to business accounts (role=USER + businessRole set)
@@ -118,8 +118,6 @@ export async function middleware(req: NextRequest) {
     const payload = decodeJwt(token);
     const userRole = (payload as any).role;
     const appRole = (payload?.businessRole ? "BUSINESS" : "PARENT") as string;
-
-    console.log(appRole);
 
     const businessRole = (payload as any).businessRole as string | null | undefined;
 

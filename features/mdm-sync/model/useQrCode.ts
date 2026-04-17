@@ -82,7 +82,11 @@ export function useQrCode(
     }
   );
 
-  return { ...query, qrCodeSrc: toQrCodeSrc(query.data) };
+  return {
+    ...query,
+    qrCodeSrc: toQrCodeSrc(query.data),
+    isPending: !zoneId || !onboardingCode,
+  };
 }
 
 export function useChildQrCode({ childId }: { childId: string }) {
