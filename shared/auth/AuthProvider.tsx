@@ -33,7 +33,6 @@ export function getTokenPayload(token: string): UserPayload | null {
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  isLoading: boolean;
   login: (_credentials: {
     email: string;
     password: string;
@@ -238,7 +237,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        isLoading,
         logout,
         refresh,
         login: handleLogin,

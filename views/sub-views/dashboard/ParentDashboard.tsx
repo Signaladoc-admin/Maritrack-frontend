@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import { useEffect, useState } from "react";
 import { MetricCard } from "@/features/dashboard/ui/MetricCard";
 import { AlertsSummaryCard } from "@/features/dashboard/ui/AlertsSummaryCard";
 import { ChildrenDropdown } from "@/features/dashboard/ui/ChildrenDropdown";
@@ -9,21 +9,17 @@ import { InfoListCard } from "@/shared/ui/AppListCard/AppListCard";
 import { appData } from "@/app/(in-app)/dashboard/data";
 import { useDragScroll } from "@/shared/hooks/useDragScroll";
 import { useRouter } from "next/navigation";
-import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
 import { formatDate } from "date-fns";
 
 export default function ParentDashboard() {
   const { scrollContainerRef, events } = useDragScroll();
-  const [mounted, setMounted] = React.useState(false);
-  // Get appRole or userRole and render components based on role
+  const [currentDate, setCurrentDate] = useState(new Date());
 
-  React.useEffect(() => {
-    setMounted(true);
+  useEffect(() => {
+    setCurrentDate(new Date());
   }, []);
 
   const router = useRouter();
-
-  const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentZones();
 
   return (
     <div className="space-y-10">
@@ -32,7 +28,7 @@ export default function ParentDashboard() {
         <div className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight text-[#1B3C73]">Hello Janet</h1>
           <p className="text-sm font-medium text-slate-400">
-            {mounted ? formatDate(new Date(), "MMMM dd, yyyy") : ""}
+            {formatDate(currentDate, "MMMM dd, yyyy")}
           </p>
         </div>
         <ChildrenDropdown />

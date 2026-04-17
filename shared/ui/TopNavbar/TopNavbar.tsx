@@ -3,6 +3,7 @@ import { Gauge, Smartphone, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ProfilePopover } from "../Sidebar/ProfilePopover";
 
 const businessNavLinks = [
   { label: "Dashboard", href: "/dashboard", icon: Gauge },
@@ -36,11 +37,12 @@ export default function TopNavbar() {
         href="/profile"
         className="absolute right-10 bottom-1/2 translate-y-1/2 rounded-full bg-[#e5e5e5] p-3"
       >
-        {user?.imageUrl ? (
+        <ProfilePopover />
+        {/* {user?.imageUrl ? (
           <Image src={user.imageUrl} alt="" width={50} height={50} />
         ) : (
           <User className="text-neutral-500" />
-        )}
+        )} */}
       </Link>
     </div>
   );
