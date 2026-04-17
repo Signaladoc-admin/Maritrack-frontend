@@ -10,26 +10,21 @@ export function useChangePassword() {
 
   const mutation = useMutation({
     mutationFn: (data: ChangePasswordDto) => changePasswordAction(data),
-    onSuccess: () => {
-      toast({
-        type: "success",
-        title: "Password Changed",
-        message: "Your password has been changed successfully.",
-      });
-    },
-    onError: (err: any) => {
-      toast({
-        type: "error",
-        title: "Change Failed",
-        message: err.message || "Failed to change password.",
-      });
+    onSuccess: (result) => {
+      if (result.success) {
+        toast({
+          type: "success",
+          title: "Password Changed",
+          message: "Your password has been changed successfully.",
+        });
+      }
     },
   });
 
   return {
     changePassword: mutation.mutateAsync,
     isSubmitting: mutation.isPending,
-    error: mutation.error?.message || null,
+    error: mutation.data && !mutation.data.success ? mutation.data.error : null,
     mutation,
   };
 }

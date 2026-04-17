@@ -137,16 +137,14 @@ export default function BasicInformationForm({ goToNextStep }: { goToNextStep: (
         // Update the existing parent record
         const res = await updateParent({
           id: activeParentId,
-          data: {
-            gender: data.gender as any,
-            address: data.address,
-            state: data.state,
-            country: data.country,
-          },
+          gender: data.gender as any,
+          address: data.address,
+          state: data.state,
+          country: data.country,
         });
-        if (res?.id) {
-          activeParentId = res.id;
-          setParentId(res.id);
+        if (res?.data?.id) {
+          activeParentId = res.data.id;
+          setParentId(res.data.id);
         }
         console.log("Parent profile updated successfully.", res);
       } else {

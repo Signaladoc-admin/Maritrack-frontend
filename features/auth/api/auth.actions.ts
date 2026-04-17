@@ -59,10 +59,12 @@ export async function resetPasswordAction(data: ResetPasswordDto) {
 }
 
 export async function changePasswordAction(data: ChangePasswordDto) {
-  return apiClient("/users/change-password", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
+  return withSafeAction(async () => {
+    return apiClient("/users/change-password", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }, "Failed to change password");
 }
 
 // --- Verification Token ---

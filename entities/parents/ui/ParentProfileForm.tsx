@@ -7,11 +7,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/shared/ui/button";
 import { ImageUpload } from "@/shared/ui/image-upload";
 import { Loader } from "@/shared/ui/loader";
+import { Skeleton } from "@/shared/ui/skeleton";
 import { LockKeyhole, LogOut } from "lucide-react";
 import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/Modal/dialog";
 import { useLogout } from "@/features/auth/model/useLogout";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { useGetParent, useUpdateParent } from "../model/useParents";
+import { useChangePassword } from "@/features/auth/model/useChangePassword";
 import { CountryStateInput } from "@/shared/ui/inputs/country-state-input";
 import { InputGroup } from "@/shared/ui/input-group";
 import { useToast } from "@/shared/ui/toast";
@@ -30,23 +33,81 @@ const parentProfileSchema = z.object({
 
 type ParentProfileFormValues = z.infer<typeof parentProfileSchema>;
 
+const changePasswordSchema = z
+  .object({
+    oldPassword: z.string().min(1, "Current password is required"),
+    newPassword: z
+      .string()
+      .min(8, "At least 8 characters")
+      .regex(/[A-Z]/, "At least 1 uppercase letter")
+      .regex(/[a-z]/, "At least 1 lowercase letter")
+      .regex(/[0-9]/, "At least 1 number")
+      .regex(/[^A-Za-z0-9]/, "At least 1 symbol"),
+    confirmPassword: z.string(),
+  })
+  .refine((d) => d.newPassword === d.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
+
 // Outer shell — handles loading states only
 export default function ParentProfileForm() {
-  const { user, isLoading: isFetchingProfile } = useAuth();
+  const { user } = useAuth();
   const { data: parent, isLoading: isFetchingParent } = useGetParent(user?.parentId!);
 
-  if (isFetchingProfile || (!!user?.parentId && isFetchingParent)) {
-    return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <Loader size="lg" />
-      </div>
-    );
+  if (isFetchingParent) {
+    return <ParentProfileFormSkeleton />;
   }
 
-  // Once data is ready, mount the form with values baked into defaultValues —
-  // same pattern as CreateChildProfileForm (no reset() needed, Select gets the
-  // correct value on first mount so Radix never initialises to "").
   return <ParentProfileFormInner parent={parent} user={user} />;
+}
+
+function ParentProfileFormSkeleton() {
+  return (
+    <div className="mx-auto max-w-2xl">
+      <div className="flex flex-col items-center divide-y divide-neutral-200 *:py-10">
+        {/* Profile image + fields */}
+        <div className="w-full space-y-8">
+          <div className="flex items-start justify-center md:justify-start">
+            <Skeleton className="h-28 w-28 rounded-full" />
+          </div>
+          <div className="grid w-full gap-8">
+            {/* Gender select */}
+            <div className="flex flex-col gap-y-2">
+              <Skeleton className="h-4 w-48" />
+              <Skeleton className="h-[50px] w-full rounded-xl" />
+            </div>
+            {/* Address */}
+            <div className="flex flex-col gap-y-2">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-[50px] w-full rounded-xl" />
+            </div>
+            {/* Country + State */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-y-2">
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-[50px] w-full rounded-xl" />
+              </div>
+              <div className="flex flex-col gap-y-2">
+                <Skeleton className="h-4 w-12" />
+                <Skeleton className="h-[50px] w-full rounded-xl" />
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Password section */}
+        <div className="w-full">
+          <Skeleton className="h-24 w-full rounded-2xl" />
+        </div>
+        {/* Save button */}
+        <div className="w-full">
+          <Skeleton className="h-14 w-full rounded-2xl" />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // Inner form — only mounts after parent + user data are available
@@ -58,10 +119,11 @@ function ParentProfileFormInner({
   user: any;
 }) {
   const { mutateAsync: updateParent, isPending: isUpdating } = useUpdateParent();
-  const { mutate: logout, isPending: isLoggingOut } = useLogout();
   const { toast } = useToast();
-
+  const { mutate: logout, isPending: isLoggingOut } = useLogout();
   const [showSignOut, setShowSignOut] = useState(false);
+
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   const {
     control,
@@ -104,7 +166,8 @@ function ParentProfileFormInner({
   };
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10">
+    <div className="mx-auto max-w-2xl">
+      {/* <Header title="Profile" subtitle="Manage your profile settings" /> */}
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col items-center divide-y divide-neutral-200 *:py-10"
@@ -133,36 +196,12 @@ function ParentProfileFormInner({
           </div>
           {/* Form Fields */}
           <div className="grid w-full gap-8">
-            <div className="grid grid-cols-2 gap-6">
-              <InputGroup
-                label="First Name"
-                placeholder="Enter first name"
-                {...register("firstName")}
-                error={errors.firstName?.message}
-              />
-              <InputGroup
-                label="Last Name"
-                placeholder="Enter last name"
-                {...register("lastName")}
-                error={errors.lastName?.message}
-              />
-            </div>
-
-            <InputGroup
-              label="Email Address"
-              type="email"
-              {...register("email")}
-              disabled
-              className="cursor-not-allowed opacity-70"
-              error={errors.email?.message}
-            />
-
             <Controller
               control={control}
               name="gender"
               render={({ field }) => (
                 <InputGroup
-                  label="Gender"
+                  label="What gender of parent are you?"
                   type="select"
                   className="mb-0!"
                   options={[
@@ -203,13 +242,13 @@ function ParentProfileFormInner({
               <Button
                 type="button"
                 className="mt-2 h-9 bg-[#1B3C73] px-4 text-xs font-medium text-white hover:bg-[#1B3C73]/90"
+                onClick={() => setShowChangePassword(true)}
               >
                 Change password
               </Button>
             </div>
           </div>
         </div>
-
         {/* Submit Button */}
         <div className="w-full">
           <Button
@@ -217,7 +256,7 @@ function ParentProfileFormInner({
             className="h-14 w-full rounded-2xl bg-[#1B3C73] text-lg font-semibold text-white transition-all hover:bg-[#1B3C73]/90 active:scale-[0.98]"
             disabled={isUpdating}
           >
-            {isUpdating ? <Loader size="sm" className="border-white" /> : "Save Changes"}
+            {isUpdating ? <Loader size="sm" className="[&_svg]:text-white" /> : "Save Changes"}
           </Button>
         </div>
       </form>
@@ -228,10 +267,10 @@ function ParentProfileFormInner({
         onClick={() => setShowSignOut(true)}
         disabled={isLoggingOut}
       >
-        <div className="flex items-center justify-center rounded-full bg-neutral-100 p-2.5 transition-colors duration-300 group-hover:bg-red-500">
-          <LogOut className="h-4 w-4 text-red-500 transition-colors duration-300 group-hover:text-white" />
+        <div className="flex items-center justify-center rounded-full bg-neutral-100 p-2.5 transition-colors duration-300 group-hover:bg-[#D95D55]">
+          <LogOut className="h-4 w-4 text-[#D95D55] transition-colors duration-300 group-hover:text-white" />
         </div>
-        <span className="font-medium transition-colors duration-300 group-hover:text-red-500">
+        <span className="font-medium transition-colors duration-300 group-hover:text-[#D95D55]">
           {isLoggingOut ? "Signing out..." : "Sign out"}
         </span>
       </Button>
@@ -246,6 +285,92 @@ function ParentProfileFormInner({
         loading={isLoggingOut}
         loadingText="Signing out..."
       />
+
+      <ChangePasswordModal open={showChangePassword} onOpenChange={setShowChangePassword} />
     </div>
+  );
+}
+
+function ChangePasswordModal({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const { changePassword, isSubmitting, error } = useChangePassword();
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<ChangePasswordFormValues>({
+    resolver: zodResolver(changePasswordSchema),
+  });
+
+  const newPasswordValue = watch("newPassword", "");
+
+  const onSubmit = async (data: ChangePasswordFormValues) => {
+    const res = await changePassword({
+      oldPassword: data.oldPassword,
+      newPassword: data.newPassword,
+    });
+    if (res.success) {
+      reset();
+      onOpenChange(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md gap-6">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-semibold text-[#1B3C73]">
+            Change password
+          </DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+          <InputGroup
+            label="Current password"
+            type="password"
+            placeholder="Enter current password"
+            error={errors.oldPassword?.message}
+            {...register("oldPassword")}
+          />
+
+          <InputGroup
+            label="New password"
+            type="password"
+            placeholder="Enter new password"
+            isPasswordValidationEnabled
+            error={errors.newPassword?.message}
+            {...register("newPassword")}
+          />
+
+          <InputGroup
+            label="Confirm new password"
+            type="password"
+            placeholder="Confirm new password"
+            isPasswordValidationEnabled
+            matchValue={newPasswordValue}
+            error={errors.confirmPassword?.message}
+            {...register("confirmPassword")}
+          />
+
+          {error && <p className="text-destructive text-sm">{error}</p>}
+
+          <Button
+            type="submit"
+            className="h-12 w-full rounded-xl bg-[#1B3C73] text-base font-semibold text-white hover:bg-[#1B3C73]/90"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? <Loader size="sm" className="[&_svg]:text-white" /> : "Save"}
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

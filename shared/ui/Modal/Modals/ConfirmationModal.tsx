@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { AlertTriangle } from "lucide-react";
 import {
   Dialog,
@@ -10,7 +9,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/shared/ui/Modal/dialog";
-import { Button } from "@/shared/ui/Button/button";
+import { Button } from "../../button";
 
 interface ConfirmationModalProps {
   open: boolean;
@@ -45,29 +44,20 @@ export function ConfirmationModal({
           <AlertTriangle className="h-6 w-6 text-[#D95D55]" />
         </div>
 
-        <DialogHeader className="space-y-2 text-center">
-          <DialogTitle className="text-xl text-[#1B3C73]">{title}</DialogTitle>
+        <DialogHeader className="space-y-2">
+          <DialogTitle className="text-center text-xl text-[#1B3C73]">{title}</DialogTitle>
           {description && (
-            <DialogDescription className="text-gray-500">{description}</DialogDescription>
+            <DialogDescription className="text-center text-gray-500">
+              {description}
+            </DialogDescription>
           )}
         </DialogHeader>
 
-        <DialogFooter className="mt-6 w-full flex-row gap-3 sm:justify-center">
-          <Button
-            variant="secondary"
-            className="flex-1 bg-[#EEEEEE] text-[#1B3C73] hover:bg-[#E5E5E5]"
-            onClick={() => onOpenChange(false)}
-          >
+        <DialogFooter className="mt-6 flex w-full flex-col gap-3 sm:grid sm:grid-cols-2 sm:justify-center">
+          <Button variant="secondary" onClick={() => onOpenChange(false)}>
             {cancelText}
           </Button>
-          <Button
-            variant={variant}
-            className={`flex-1 ${
-              variant === "destructive" ? "bg-[#D95D55] hover:bg-[#C84D45]" : "bg-[#1B3C73]"
-            }`}
-            onClick={onConfirm}
-            disabled={loading}
-          >
+          <Button variant={variant} onClick={onConfirm} disabled={loading}>
             {loading ? loadingText : confirmText}
           </Button>
         </DialogFooter>
