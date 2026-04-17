@@ -2,13 +2,40 @@
 
 import { useState } from "react";
 import { PricingCard } from "@/shared/ui/PricingCard/PricingCard";
-import { ChevronLeft, Loader2 } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { Button } from "@/shared/ui/button";
+import { Skeleton } from "@/shared/ui/skeleton";
 import { usePaymentPlans, useInitializePayment } from "@/features/payments/model/usePayments";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
 import { useToast } from "@/shared/ui/toast";
 import { useRouter } from "next/navigation";
 import { useLogout } from "@/features/auth/model/useLogout";
+
+function PricingCardSkeleton({ isPremium }: { isPremium?: boolean }) {
+  const shimmer = isPremium ? "bg-white/20" : "bg-slate-200";
+  return (
+    <div
+      className={`relative flex h-full w-full flex-col rounded-[32px] p-8 shadow-xl ${isPremium ? "bg-[#1B3C73]" : "bg-white ring-1 ring-slate-100"}`}
+    >
+      <div className="flex min-h-[180px] flex-col space-y-4">
+        <Skeleton className={`h-4 w-24 ${shimmer}`} />
+        <Skeleton className={`h-14 w-44 ${shimmer}`} />
+        <Skeleton className={`h-4 w-20 ${shimmer}`} />
+        <Skeleton className={`h-10 w-full ${shimmer}`} />
+      </div>
+      <div className={`mb-8 h-px w-full ${isPremium ? "bg-white/20" : "bg-slate-100"}`} />
+      <ul className="mb-10 space-y-5">
+        {[0, 1, 2, 3].map((i) => (
+          <li key={i} className="flex items-center gap-3">
+            <Skeleton className={`h-6 w-6 shrink-0 rounded-full ${shimmer}`} />
+            <Skeleton className={`h-4 w-32 ${shimmer}`} />
+          </li>
+        ))}
+      </ul>
+      <Skeleton className={`h-14 w-full rounded-full ${shimmer}`} />
+    </div>
+  );
+}
 
 interface PricingStepProps {
   onBack: () => void;
@@ -24,7 +51,7 @@ export default function PricingStep({
   isShowingSignOutButton,
 }: PricingStepProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const { data: plans } = usePaymentPlans();
+  const { data: plans, isLoading: isLoadingPlans } = usePaymentPlans();
   const { mutateAsync: initializePayment } = useInitializePayment();
   const { data: user } = useUserProfile();
   const { toast } = useToast();
@@ -80,9 +107,9 @@ export default function PricingStep({
 
   if (isLoading) {
     return (
-      <div className="flex h-[400px] flex-col items-center justify-center space-y-4">
-        <Loader2 className="h-12 w-12 animate-spin text-[#1B3C73]" />
-        <p className="text-lg font-medium text-slate-600">Processing payment...</p>
+      <div className="flex h-[400px] flex-col items-center justify-center gap-4">
+        <div className="h-10 w-10 rounded-full border-4 border-[#E5E7EB] border-t-[#1B3C73] animate-spin" />
+        <p className="text-sm font-medium text-slate-500">Processing payment...</p>
       </div>
     );
   }
@@ -132,25 +159,34 @@ export default function PricingStep({
           </p>
         </div>
         <div className="grid justify-center gap-8 md:grid-cols-2">
-          <PricingCard
-            plan={{
-              id: "basic",
-              name: "Basic Plan",
-              billingCycle: "Per month",
-              deviceLimit: 1,
-              priceNGN: 0,
-              description: "Get started with our free plan and enjoy basic features.",
-            }}
-            buttonText="Get Basic"
-            onButtonClick={handleSelectBasicPlan}
-          />
-          <PricingCard
-            plan={plans?.at(-1)!}
-            key={plans?.at(-1)!.id}
-            isPremium
-            buttonText="Get the premium"
-            onButtonClick={() => handleSelectPremiumPlan(plans?.at(-1)!.id!)}
-          />
+          {isLoadingPlans ? (
+            <>
+              <PricingCardSkeleton />
+              <PricingCardSkeleton isPremium />
+            </>
+          ) : (
+            <>
+              <PricingCard
+                plan={{
+                  id: "basic",
+                  name: "Basic Plan",
+                  billingCycle: "Per month",
+                  deviceLimit: 1,
+                  priceNGN: 0,
+                  description: "Get started with our free plan and enjoy basic features.",
+                }}
+                buttonText="Get Basic"
+                onButtonClick={handleSelectBasicPlan}
+              />
+              <PricingCard
+                plan={plans?.at(-1)!}
+                key={plans?.at(-1)!.id}
+                isPremium
+                buttonText="Get the premium"
+                onButtonClick={() => handleSelectPremiumPlan(plans?.at(-1)!.id!)}
+              />
+            </>
+          )}
         </div>
       </div>
     </div>

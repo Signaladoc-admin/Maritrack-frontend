@@ -3,7 +3,7 @@ import { Header } from "@/shared/ui/layout/header";
 import { useState } from "react";
 import { IChildProfile } from "../types";
 import CreateChildProfileForm from "./CreateChildProfileForm";
-import { ChildProfileCard } from "@/shared/ui/cards/child-profile-card";
+import { ChildProfileCard, ChildProfileCardSkeleton } from "@/shared/ui/cards/child-profile-card";
 
 import PairingQRStep from "./PairingQRStep";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
@@ -17,13 +17,12 @@ import { createZoneAction } from "@/features/mdm-sync/api/mdm-sync.actions";
 import { useParentZones, mdmSyncKeys } from "@/features/mdm-sync/model/useMdmSync";
 import { useEffect } from "react";
 import { useToast } from "@/shared/ui/toast";
-import { Loader } from "@/shared/ui/loader";
 import { useParentStore } from "@/shared/stores/user.store";
 import { useQueryClient } from "@tanstack/react-query";
 import NewChildProfileButton from "@/features/child-profile/ui/NewChildProfileButton";
 import { useActiveSubscription } from "@/features/payments/model/usePayments";
 import PricingStep from "@/features/payments/ui/PricingStep";
-import { useQrCode } from "@/features/mdm-sync/model/useQrCode";
+
 
 export default function ChildrenProfiles({
   goToNextStep,
@@ -66,6 +65,8 @@ export default function ChildrenProfiles({
   useEffect(() => {
     onViewChange?.(currentView);
   }, [currentView, onViewChange]);
+
+  const isInitialLoading = isLoadingUser || (!!activeParentId && isFetchingChildren);
 
   const [selectedChildProfile, setSelectedChildProfile] = useState<IChildProfile | null>(null);
   const [pendingChild, setPendingChild] = useState<IChildProfile | null>(null);
@@ -179,8 +180,6 @@ export default function ChildrenProfiles({
     setCurrentView("list");
   };
 
-  if (isFetchingChildren) return <Loader size="lg" />;
-
   if (currentView === "form") {
     return (
       <CreateChildProfileForm
@@ -240,16 +239,6 @@ export default function ChildrenProfiles({
     );
   }
 
-  const isInitialLoading = isLoadingUser || (!!activeParentId && isFetchingChildren);
-
-  if (isInitialLoading) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm">
-        <Loader size="lg" className="scale-150" />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-5">
       <div className="flex items-start justify-between">
@@ -257,16 +246,20 @@ export default function ChildrenProfiles({
       </div>
       <div>
         <div className="space-y-4">
-          {childProfiles.map((childProfile, index) => (
-            <ChildProfileCard
-              key={childProfile.id || index}
-              onEdit={() => handleOpenForm(childProfile)}
-              onViewQR={() => handleViewQR(childProfile)}
-              {...childProfile}
-            />
-          ))}
+          {isInitialLoading ? (
+            <ChildProfileCardSkeleton />
+          ) : (
+            childProfiles.map((childProfile, index) => (
+              <ChildProfileCard
+                key={childProfile.id || index}
+                onEdit={() => handleOpenForm(childProfile)}
+                onViewQR={() => handleViewQR(childProfile)}
+                {...childProfile}
+              />
+            ))
+          )}
         </div>
-        {childProfiles.length === 0 && <NewChildProfileButton onClick={() => handleOpenForm()} />}
+        {!isInitialLoading && childProfiles.length === 0 && <NewChildProfileButton onClick={() => handleOpenForm()} />}
         <div className="flex gap-4 pt-4">
           <Button
             disabled={!childProfiles.length}

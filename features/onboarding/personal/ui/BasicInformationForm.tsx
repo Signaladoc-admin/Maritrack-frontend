@@ -17,7 +17,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Country, State } from "country-state-city";
 import { useToast } from "@/shared/ui/toast";
 import type { UserProfile } from "@/entities/user/model/user.schema";
-import { Loader } from "@/shared/ui/loader";
+import { PageLoader } from "@/shared/ui/loader";
 import { cn } from "@/shared/lib/utils";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
 // import { refreshSessionAction } from "@/features/auth/api/auth.actions";
@@ -200,11 +200,7 @@ export default function BasicInformationForm({ goToNextStep }: { goToNextStep: (
   const isInitialLoading = isLoadingUser || (!!user?.parentId && isFetchingParent);
 
   if (isInitialLoading) {
-    return (
-      <div className="flex min-h-[400px] w-full items-center justify-center">
-        <Loader size="lg" />
-      </div>
-    );
+    return <PageLoader />;
   }
 
   return (

@@ -7,6 +7,7 @@ import { useLogin } from "@/features/auth-login/model/useLogin";
 import { jwtDecode } from "jwt-decode";
 import { useAuthStore } from "../stores/auth.store";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
+import { PageLoader } from "../ui/loader";
 
 // Shape of the decoded JWT access token payload
 type UserPayload = {
@@ -213,12 +214,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // All hooks declared above — safe to return early now
   if (!isHydrated) {
-    return <div>Loading...</div>;
+    return <PageLoader />;
   }
-
-  // const logout = async () => {
-  //   await logoutMutation.mutateAsync();
-  // };
 
   const refresh = async () => {
     await refetch();

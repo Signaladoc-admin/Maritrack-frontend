@@ -19,3 +19,14 @@ export function Loader({ className, size = "default", ...props }: LoaderProps) {
     </div>
   )
 }
+
+// Full-screen loader using a CSS border spinner.
+// Runs on the compositor thread (GPU) so it never freezes during JS work or
+// React reconciliation — unlike SVG-based spinners which can stall.
+export function PageLoader() {
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white">
+      <div className="h-12 w-12 rounded-full border-4 border-[#E5E7EB] border-t-[#1B3C73] will-change-transform animate-spin" />
+    </div>
+  )
+}

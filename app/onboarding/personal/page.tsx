@@ -5,13 +5,13 @@ import ChildrenProfiles from "@/features/onboarding/personal/ui/ChildrenProfiles
 import ParentalControlSetup from "@/features/parents/ui/ParentalControlSetup";
 import { MultiStepForm } from "@/shared/ui/multi-step-form";
 import { useState, useEffect, Suspense } from "react";
+import { PageLoader } from "@/shared/ui/loader";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useVerifyPayment } from "@/features/payments/model/usePayments";
 import { useToast } from "@/shared/ui/toast";
 import { Button } from "@/shared/ui/button";
 import { useLogout } from "@/features/auth/model/useLogout";
 import { cn } from "@/shared/lib/utils";
-import { Loader } from "@/shared/ui/loader";
 
 function OnboardingContent() {
   const searchParams = useSearchParams();
@@ -19,7 +19,7 @@ function OnboardingContent() {
   const stepParam = searchParams?.get("step");
   const reference = searchParams?.get("reference");
 
-  const { profile, pcSettings, isLoading: isAuthLoading, checkAndRedirect } = useIsOnboarded();
+  const { profile, pcSettings, checkAndRedirect } = useIsOnboarded();
 
   const [isFullWidth, setIsFullWidth] = useState(false);
   const [currentStep, setCurrentStep] = useState(() => {
@@ -62,14 +62,6 @@ function OnboardingContent() {
         });
     }
   }, [reference, verifyPayment, toast, router]);
-
-  if (isAuthLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Loader size="lg" />
-      </div>
-    );
-  }
 
   const nextStep = () => {
     setCurrentStep((p) => {
@@ -128,33 +120,33 @@ function OnboardingContent() {
   ];
 
   return (
-    <div className={cn("relative p-14", isFullWidth ? "p-0" : "p-14")}>
-      <Button
-        variant="ghost"
-        className={cn(
-          "text-muted-foreground hover:text-foreground absolute h-auto p-0! font-medium transition-colors hover:bg-transparent",
-          isFullWidth ? "top-6 right-6" : "top-14 right-14"
-        )}
-        onClick={handleLogout}
-        disabled={isLoggingOut}
-      >
-        {isLoggingOut ? "Signing out..." : "Sign out"}
-      </Button>
-      <div className={cn(isFullWidth ? "mx-auto w-full max-w-7xl px-14 py-20" : "")}>
-        <MultiStepForm
-          steps={steps}
-          currentStep={currentStep}
-          onStepClick={handleStepClick}
-          isFullWidth={isFullWidth}
-        />
-      </div>
+    <div className={cn("relative", isFullWidth ? "p-0" : "p-14")}>
+        <Button
+          variant="ghost"
+          className={cn(
+            "text-muted-foreground hover:text-foreground absolute h-auto p-0! font-medium transition-colors hover:bg-transparent",
+            isFullWidth ? "top-6 right-6" : "top-14 right-14"
+          )}
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+        >
+          {isLoggingOut ? "Signing out..." : "Sign out"}
+        </Button>
+        <div className={cn(isFullWidth ? "mx-auto w-full max-w-7xl px-14 py-20" : "")}>
+          <MultiStepForm
+            steps={steps}
+            currentStep={currentStep}
+            onStepClick={handleStepClick}
+            isFullWidth={isFullWidth}
+          />
+        </div>
     </div>
   );
 }
 
 export default function OnboardingPage() {
   return (
-    <Suspense fallback={<div className="p-14 text-center">Loading onboarding...</div>}>
+    <Suspense fallback={<PageLoader />}>
       <OnboardingContent />
     </Suspense>
   );
