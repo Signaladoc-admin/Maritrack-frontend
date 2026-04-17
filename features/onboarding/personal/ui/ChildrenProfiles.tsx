@@ -23,7 +23,6 @@ import NewChildProfileButton from "@/features/child-profile/ui/NewChildProfileBu
 import { useActiveSubscription } from "@/features/payments/model/usePayments";
 import PricingStep from "@/features/payments/ui/PricingStep";
 
-
 export default function ChildrenProfiles({
   goToNextStep,
   onViewChange,
@@ -45,6 +44,10 @@ export default function ChildrenProfiles({
   const zoneId = user?.zoneId?.[0]?.id;
   const { data: subscriptionData } = useActiveSubscription(zoneId);
   const hasPaid = subscriptionData?.active ?? false;
+
+  const [planChosen, setPlanChosen] = useState(false);
+  const canProceed = hasPaid || planChosen;
+  console.log(canProceed);
 
   const { mutateAsync: createChild, isPending: isCreatingChild } = useCreateChild();
   const { mutateAsync: updateChild, isPending: isUpdatingChild } = useUpdateChild();
@@ -70,6 +73,17 @@ export default function ChildrenProfiles({
 
   const [selectedChildProfile, setSelectedChildProfile] = useState<IChildProfile | null>(null);
   const [pendingChild, setPendingChild] = useState<IChildProfile | null>(null);
+
+  function onNextStep() {
+    if (canProceed) {
+      goToNextStep();
+    } else {
+      if (!pendingChild && childProfiles.length > 0) {
+        setPendingChild(childProfiles[0] as any);
+      }
+      setCurrentView("pricing");
+    }
+  }
 
   const handleAddChild = async (data: IChildProfile) => {
     if (!activeParentId) {
@@ -109,8 +123,7 @@ export default function ChildrenProfiles({
         queryClient.invalidateQueries({ queryKey: mdmSyncKeys.parentZones });
         toast({ title: "Success", message: "Child profile created", type: "success" });
 
-        // Always show pricing after creation — QR is only accessible once payment is done
-        if (hasPaid) {
+        if (canProceed) {
           setCurrentView("qr");
         } else {
           setCurrentView("pricing");
@@ -130,18 +143,14 @@ export default function ChildrenProfiles({
       if (data.id && !data.id.startsWith("pending-")) {
         await updateChild({
           id: data.id,
-          name: data.name, age: Number(data.age), gender: data.gender as any,
+          name: data.name,
+          age: Number(data.age),
+          gender: data.gender as any,
         } as any);
       }
       setChildProfiles((prev) => prev.map((child) => (child.id === data.id ? data : child)));
       toast({ title: "Success", message: "Child profile updated", type: "success" });
-
-      // After updating: if paid proceed to next step, otherwise show pricing
-      if (hasPaid) {
-        goToNextStep();
-      } else {
-        setCurrentView("pricing");
-      }
+      setCurrentView("list");
     } catch (e: any) {
       toast({ title: "Error", message: e.message || "Failed to update profile", type: "error" });
     }
@@ -158,13 +167,8 @@ export default function ChildrenProfiles({
   };
 
   const handleViewQR = (childProfile: IChildProfile) => {
-    if (hasPaid) {
-      setPendingChild(childProfile);
-      setCurrentView("qr");
-    } else {
-      setPendingChild(childProfile);
-      setCurrentView("pricing");
-    }
+    setPendingChild(childProfile);
+    setCurrentView(canProceed ? "qr" : "pricing");
   };
 
   const handlePairingRollback = async () => {
@@ -199,11 +203,8 @@ export default function ChildrenProfiles({
       <PricingStep
         onBack={() => setCurrentView("list")}
         onSuccess={() => {
-          if (pendingChild) {
-            setCurrentView("qr");
-          } else {
-            setCurrentView("list");
-          }
+          setPlanChosen(true);
+          setCurrentView(pendingChild ? "qr" : "list");
           toast({
             title: "Plan Selected",
             message: "You can now pair your children's devices",
@@ -259,20 +260,16 @@ export default function ChildrenProfiles({
             ))
           )}
         </div>
-        {!isInitialLoading && childProfiles.length === 0 && <NewChildProfileButton onClick={() => handleOpenForm()} />}
+        {!isInitialLoading && childProfiles.length === 0 && (
+          <NewChildProfileButton onClick={() => handleOpenForm()} />
+        )}
         <div className="flex gap-4 pt-4">
           <Button
             disabled={!childProfiles.length}
             className="bg-primary hover:bg-primary/90 w-full"
-            onClick={() => {
-              if (hasPaid) {
-                goToNextStep();
-              } else {
-                setCurrentView("pricing");
-              }
-            }}
+            onClick={onNextStep}
           >
-            {hasPaid ? "Continue to Setup" : "Next"}
+            Next
           </Button>
         </div>
       </div>
