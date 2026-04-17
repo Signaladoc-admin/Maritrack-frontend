@@ -65,20 +65,15 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       );
     }
     if (type === "select") {
-      const selectValue = (props.value ?? "") as string;
-      console.log(`Input [${props.name}] select value:`, selectValue);
+      const selectValue = (props.value as string) || undefined;
 
       return (
         <div className={cn("grid w-full items-center gap-1.5", wrapperClassName)}>
           {label && <Label htmlFor={inputId}>{label}</Label>}
           <Select
             onValueChange={(val) => {
-              console.log(`Input [${props.name}] changed to:`, val);
-              if (props.onValueChange) {
-                props.onValueChange(val);
-              } else if (props.onChange) {
-                // If no onValueChange, try to call onChange with a fake event or just the value
-                // Many select components in this project expect the value directly or an object
+              props.onValueChange?.(val);
+              if (!props.onValueChange && props.onChange) {
                 (props.onChange as any)(val);
               }
             }}
