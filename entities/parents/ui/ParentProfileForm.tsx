@@ -267,10 +267,10 @@ function ParentProfileFormInner({
         onClick={() => setShowSignOut(true)}
         disabled={isLoggingOut}
       >
-        <div className="flex items-center justify-center rounded-full bg-neutral-100 p-2.5 transition-colors duration-300 group-hover:bg-red-500">
-          <LogOut className="h-4 w-4 text-red-500 transition-colors duration-300 group-hover:text-white" />
+        <div className="flex items-center justify-center rounded-full bg-neutral-100 p-2.5 transition-colors duration-300 group-hover:bg-[#D95D55]">
+          <LogOut className="h-4 w-4 text-[#D95D55] transition-colors duration-300 group-hover:text-white" />
         </div>
-        <span className="font-medium transition-colors duration-300 group-hover:text-red-500">
+        <span className="font-medium transition-colors duration-300 group-hover:text-[#D95D55]">
           {isLoggingOut ? "Signing out..." : "Sign out"}
         </span>
       </Button>

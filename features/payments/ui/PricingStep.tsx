@@ -10,6 +10,7 @@ import { useUserProfile } from "@/entities/user/model/useUserProfile";
 import { useToast } from "@/shared/ui/toast";
 import { useRouter } from "next/navigation";
 import { useLogout } from "@/features/auth/model/useLogout";
+import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
 
 function PricingCardSkeleton({ isPremium }: { isPremium?: boolean }) {
   const shimmer = isPremium ? "bg-white/20" : "bg-slate-200";
@@ -55,7 +56,6 @@ export default function PricingStep({
   const { mutateAsync: initializePayment } = useInitializePayment();
   const { data: user } = useUserProfile();
   const { toast } = useToast();
-  const router = useRouter();
 
   const handleSelectBasicPlan = () => {
     onSuccess();
@@ -108,7 +108,7 @@ export default function PricingStep({
   if (isLoading) {
     return (
       <div className="flex h-[400px] flex-col items-center justify-center gap-4">
-        <div className="h-10 w-10 rounded-full border-4 border-[#E5E7EB] border-t-[#1B3C73] animate-spin" />
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#E5E7EB] border-t-[#1B3C73]" />
         <p className="text-sm font-medium text-slate-500">Processing payment...</p>
       </div>
     );
@@ -134,17 +134,6 @@ export default function PricingStep({
       {isShowingBackButton && (
         <Button variant="link" onClick={onBack} className="flex items-center gap-1! px-0">
           <ChevronLeft className="h-6! w-6! text-orange-500" /> Go back
-        </Button>
-      )}
-
-      {isShowingSignOutButton && (
-        <Button
-          variant="ghost"
-          className="text-muted-foreground hover:text-foreground absolute top-4 right-6 h-auto p-0 font-medium hover:bg-transparent"
-          onClick={() => logout()}
-          disabled={isLoggingOut}
-        >
-          {isLoggingOut ? "Signing out..." : "Sign out"}
         </Button>
       )}
 

@@ -32,13 +32,11 @@ export default function BusinessDetailsForm({ onNext }: { onNext: () => void }) 
   });
 
   const businessId = useAuthStore((s) => s.businessId);
-  console.log(businessId);
+
   const { data: business } = useGetBusiness(businessId!);
   const businessProfile = business?.profile;
-  console.log(business);
 
   const { createBusinessProfile, isSubmitting } = useCreateBusinessProfile();
-
   const { updateBusinessProfile } = useUpdateBusinessProfile();
 
   useEffect(() => {

@@ -1,24 +1,31 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
 import { User as UserIcon, LogOut, CreditCard as CardIcon } from "lucide-react";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
 import { logoutAction } from "@/features/auth/api/auth.actions";
 import { useRouter } from "next/navigation";
 import { Popover, PopoverContent, PopoverTrigger } from "../popover";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export function ProfilePopover() {
   const { data: userProfile } = useUserProfile();
   const router = useRouter();
+  const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleSignOut = async () => {
     await logoutAction();
     router.push("/login");
   };
 
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
+
   return (
-    <Popover>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <button className="h-12 w-12 cursor-pointer overflow-hidden rounded-full transition-all hover:ring-2 hover:ring-[#1B3C73] hover:ring-offset-2">
           {userProfile?.imageUrl ? (
@@ -30,7 +37,11 @@ export function ProfilePopover() {
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent side="right" align="end" className="ml-4 w-56 rounded-[24px] border-none p-4">
+      <PopoverContent
+        side="right"
+        align="end"
+        className="z-99999 ml-4 w-56 rounded-[24px] border-none p-4"
+      >
         <div className="flex flex-col gap-1">
           <Link
             href="/profile"
