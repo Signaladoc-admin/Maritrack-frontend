@@ -25,8 +25,8 @@ jobs:
             cd /var/www/Maritrack-frontend
             
             # 2. Ensure we are on the right branch and pull fresh code
-            git fetch origin
-            git checkout dev/dev
+            git fetch --all
+            git reset --hard origin/dev/dev
             git pull origin dev/dev
             
             # 3. Install packages
