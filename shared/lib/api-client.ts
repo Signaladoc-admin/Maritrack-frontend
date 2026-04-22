@@ -9,11 +9,27 @@ let refreshPromise: Promise<string | null> | null = null;
 
 export async function apiClient<T = any>(
   endpoint: string,
-  options: RequestInit & { noRedirect?: boolean } = {}
+  options: RequestInit & {
+    noRedirect?: boolean;
+    params?: Record<string, string | number | boolean | undefined>;
+  } = {}
 ): Promise<T> {
   const isServer = typeof window === "undefined";
-  const { noRedirect, ...fetchOptions } = options;
-  const url = `${API_BASE_URL}${endpoint}`;
+  const { noRedirect, params, ...fetchOptions } = options;
+  let url = `${API_BASE_URL}${endpoint}`;
+
+  if (params) {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    });
+    const queryString = searchParams.toString();
+    if (queryString) {
+      url += (url.includes("?") ? "&" : "?") + queryString;
+    }
+  }
 
   // Use dynamic import for cookies to avoid build errors in Pages Router
   let accessToken: string | undefined;
@@ -137,13 +153,12 @@ export async function apiClient<T = any>(
   // Refresh response: { data: { access_token: "...", refresh_token: "..." }, accessToken: null }
   if (isServer && cookieStore) {
     const accessToken =
-      parsedResponse.accessToken ||           // login: top-level camelCase
-      parsedResponse.data?.access_token ||    // refresh: nested snake_case
-      parsedResponse.data?.accessToken;       // future-proofing
+      parsedResponse.accessToken || // login: top-level camelCase
+      parsedResponse.data?.access_token || // refresh: nested snake_case
+      parsedResponse.data?.accessToken; // future-proofing
 
     const refreshToken =
-      parsedResponse.data?.refresh_token ||   // login + refresh: nested snake_case
-      parsedResponse.data?.refreshToken;      // future-proofing
+      parsedResponse.data?.refresh_token || parsedResponse.data?.refreshToken; // login + refresh: nested snake_case // future-proofing
 
     const cookieDefaults = {
       httpOnly: true,

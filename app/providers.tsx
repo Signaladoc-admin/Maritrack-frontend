@@ -11,7 +11,12 @@ export default function Providers({ children }: { children: ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 60 * 1000, // 1 minute
+            staleTime: 60 * 1000,
+            throwOnError: false,
+            retry: false,
+          },
+          mutations: {
+            throwOnError: false,
           },
         },
       })

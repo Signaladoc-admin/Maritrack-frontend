@@ -8,20 +8,18 @@ import { Skeleton } from "@/shared/ui/skeleton";
 import { usePaymentPlans, useInitializePayment } from "@/features/payments/model/usePayments";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
 import { useToast } from "@/shared/ui/toast";
-import { useRouter } from "next/navigation";
-import { useLogout } from "@/features/auth/model/useLogout";
-import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 function PricingCardSkeleton({ isPremium }: { isPremium?: boolean }) {
   const shimmer = isPremium ? "bg-white/20" : "bg-slate-200";
   return (
     <div
-      className={`relative flex h-full w-full flex-col rounded-[32px] p-8 shadow-xl ${isPremium ? "bg-[#1B3C73]" : "bg-white ring-1 ring-slate-100"}`}
+      className={`relative flex h-full w-full min-w-[320px] flex-col rounded-[32px] p-8 shadow-xl sm:min-w-[470px] md:min-w-0 ${isPremium ? "bg-[#1B3C73]" : "bg-white ring-1 ring-slate-100"}`}
     >
       <div className="flex min-h-[180px] flex-col space-y-4">
-        <Skeleton className={`h-4 w-24 ${shimmer}`} />
-        <Skeleton className={`h-14 w-44 ${shimmer}`} />
-        <Skeleton className={`h-4 w-20 ${shimmer}`} />
+        <Skeleton className={`h-4 w-1/2 ${shimmer}`} />
+        <Skeleton className={`h-14 w-full ${shimmer}`} />
+        <Skeleton className={`h-4 w-1/2 ${shimmer}`} />
         <Skeleton className={`h-10 w-full ${shimmer}`} />
       </div>
       <div className={`mb-8 h-px w-full ${isPremium ? "bg-white/20" : "bg-slate-100"}`} />
@@ -42,33 +40,27 @@ interface PricingStepProps {
   onBack: () => void;
   onSuccess: () => void; // Used for basic plan skip,
   isShowingBackButton?: boolean;
-  isShowingSignOutButton?: boolean;
 }
 
-export default function PricingStep({
-  onBack,
-  onSuccess,
-  isShowingBackButton,
-  isShowingSignOutButton,
-}: PricingStepProps) {
+export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: PricingStepProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { data: plans, isLoading: isLoadingPlans } = usePaymentPlans();
   const { mutateAsync: initializePayment } = useInitializePayment();
   const { data: user } = useUserProfile();
+  const { user: fullUserDetails } = useAuth();
+  const appRole = fullUserDetails?.appRole;
+
   const { toast } = useToast();
 
   const handleSelectBasicPlan = () => {
     onSuccess();
   };
 
-  const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
-
   const handleSelectPremiumPlan = async (planId: string) => {
     if (!user?.zoneId?.[0]?.id) {
       toast({
         title: "Error",
-        message:
-          "No active zone setup found for your account. Please set up a child profile first.",
+        message: `No active zone setup found for your account. ${appRole === "PARENT" ? "Please set up a child profile first." : ""}`,
         type: "error",
       });
       return;
@@ -77,7 +69,7 @@ export default function PricingStep({
     try {
       setIsLoading(true);
       const host = window.location.origin;
-      const callbackUrl = `${host}/onboarding/personal`;
+      const callbackUrl = `${host}/onboarding/${appRole === "PARENT" ? "personal" : "business"}`;
 
       const response = await initializePayment({
         planId,
@@ -137,7 +129,7 @@ export default function PricingStep({
         </Button>
       )}
 
-      <div className="mx-auto max-w-5xl space-y-6 px-10">
+      <div className="mx-auto max-w-5xl space-y-6">
         <div className="space-y-4 text-center">
           <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 md:text-5xl">
             Start today, with free or premium plan, you choose

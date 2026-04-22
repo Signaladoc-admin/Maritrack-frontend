@@ -2,21 +2,21 @@
 
 import { apiClient } from "@/shared/lib/api-client";
 import type { ActionResult } from "@/shared/api/types";
+import { withSafeAction } from "@/shared/lib/safe-action";
 
 export interface CreateZoneDto {
   name?: string;
 }
 
 export async function createZoneAction(data?: CreateZoneDto): Promise<ActionResult<any>> {
-  try {
-    const response = await apiClient("/mdm-sync/zones", {
-      method: "POST",
-      ...(data?.name && { body: JSON.stringify({ name: data.name }) }),
-    });
-    return { success: true, data: response.data };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to create zone" };
-  }
+  return withSafeAction(
+    async () =>
+      await apiClient("/mdm-sync/zones", {
+        method: "POST",
+        ...(data?.name && { body: JSON.stringify({ name: data.name }) }),
+      }),
+    "Failed to create zone"
+  );
 }
 
 export async function getQrCodeAction(
