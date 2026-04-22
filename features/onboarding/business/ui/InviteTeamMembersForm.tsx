@@ -1,35 +1,40 @@
-import AddTeamMemberForm from "./AddTeamMemberForm";
+import AddTeamMemberForm, { AddTeamMemberFormSkeleton } from "./AddTeamMemberForm";
 import { TeamMemberSchemaValues } from "../schema";
-import TeamMemberCard from "@/entities/business/ui/TeamMemberCard";
+import TeamMemberCard, { TeamMemberCardSkeleton } from "@/entities/business/ui/TeamMemberCard";
 import { Button } from "@/shared/ui/button";
 import { Header } from "@/shared/ui/layout/header";
 import { useCreateTeamMembers } from "@/entities/business/model/useTeamMembers";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/shared/stores/auth.store";
-import { useGetBusiness } from "@/entities/business/model/useBusiness";
+import { useToast } from "@/shared/ui/toast";
 
 export interface TeamMember {
   id: string;
-  memberEmail: string;
+  email: string;
   location: string;
 }
 
-export default function InviteTeamMembersForm({ onBack }: { onBack: () => void }) {
-  const { createTeamMembers, isSubmitting } = useCreateTeamMembers();
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const router = useRouter();
+export default function InviteTeamMembersForm({
+  onBack,
+  initialTeamMembers,
+  isLoadingTeamMembers,
+}: {
+  onBack: () => void;
+  initialTeamMembers: TeamMember[];
+  isLoadingTeamMembers: boolean;
+}) {
+  const { mutateAsync: createTeamMembers, isPending: isSubmitting } = useCreateTeamMembers();
 
-  // const businessId = useAuthStore((s) => s.businessId);
-  // console.log(businessId);
-  // const { data: business } = useGetBusiness(businessId!);
-  // const businessProfile = business?.staff;
-  // console.log(businessProfile);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>(initialTeamMembers);
+  console.log("initialTeamMembers", teamMembers);
+
+  const router = useRouter();
+  const { toast } = useToast();
 
   function handleAddTeamMember(data: TeamMemberSchemaValues) {
     const newMember = {
       id: crypto.randomUUID(),
-      memberEmail: data.email,
+      email: data.email,
       location: data.location,
     };
     setTeamMembers((prev) => [newMember, ...prev]);
@@ -40,11 +45,32 @@ export default function InviteTeamMembersForm({ onBack }: { onBack: () => void }
   }
 
   async function handleSubmit() {
-    const res = await createTeamMembers([]);
-    console.log("res", res);
-    // if (res.status === true) {
-    //   router.push("/dashboard");
-    // }
+    try {
+      const payload = teamMembers.map((m) => ({
+        email: m.email,
+        location: m.location,
+        firstName: "",
+        lastName: "",
+        departmentId: "",
+        businessRole: "DEVICE_MANAGER",
+      }));
+
+      await createTeamMembers(payload);
+
+      toast({
+        type: "success",
+        title: "Success",
+        message: "Team members invited successfully",
+      });
+
+      router.push("/dashboard");
+    } catch (error: any) {
+      toast({
+        type: "error",
+        title: "Error",
+        message: error.message || "Failed to invite team members",
+      });
+    }
   }
 
   return (
@@ -56,18 +82,29 @@ export default function InviteTeamMembersForm({ onBack }: { onBack: () => void }
           subtitle="Add your staffs & admins"
         />
       </div>
-      <AddTeamMemberForm onAddTeamMember={handleAddTeamMember} />
+      {isLoadingTeamMembers ? (
+        <AddTeamMemberFormSkeleton />
+      ) : (
+        <AddTeamMemberForm onAddTeamMember={handleAddTeamMember} teamMembers={teamMembers} />
+      )}
 
       <hr />
 
       <div className="space-y-3">
-        {teamMembers.map((member, index) => (
-          <TeamMemberCard
-            key={index}
-            teamMember={member}
-            onRemoveTeamMember={handleRemoveTeamMember}
-          />
-        ))}
+        {isLoadingTeamMembers ? (
+          <>
+            <TeamMemberCardSkeleton />
+            <TeamMemberCardSkeleton />
+          </>
+        ) : (
+          teamMembers.map((member, index) => (
+            <TeamMemberCard
+              key={index}
+              teamMember={member}
+              onRemoveTeamMember={handleRemoveTeamMember}
+            />
+          ))
+        )}
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">

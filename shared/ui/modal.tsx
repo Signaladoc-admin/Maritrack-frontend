@@ -2,7 +2,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./dialog";
 import { Button } from "./button";
 import { cn } from "../lib/utils";
 import { ReactNode } from "react";
-import { DialogTrigger } from "@radix-ui/react-dialog";
 import { H3 } from "./typography";
 
 export default function Modal({

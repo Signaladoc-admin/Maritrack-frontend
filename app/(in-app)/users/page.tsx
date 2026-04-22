@@ -33,6 +33,12 @@ function UsersPage() {
   const [isAddEditRoleModalOpen, setIsAddEditRoleModalOpen] = useState(false);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
 
+  function handleOpenCreateModal() {
+    if (selectedTab === "users") setIsAddEditUserDetailsModalOpen(true);
+    if (selectedTab === "departments") setIsAddEditDepartmentModalOpen(true);
+    if (selectedTab === "locations") setIsAddEditRoleModalOpen(true);
+  }
+
   function handleSelectTab(tab: string) {
     setSelectedTab(tab);
 
@@ -65,7 +71,7 @@ function UsersPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            <Button size="icon">
+            <Button size="icon" onClick={handleOpenCreateModal}>
               <PlusIcon color="white" />
             </Button>
           </div>

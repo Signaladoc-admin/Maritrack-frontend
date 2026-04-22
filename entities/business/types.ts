@@ -1,3 +1,5 @@
+import { User } from "@/app/(in-app)/users/types";
+
 export interface BusinessProfileData {
   id: string;
   profile: string;
@@ -21,6 +23,8 @@ export interface BusinessStaff {
   updatedAt: string;
   deleted: boolean;
   deletedAt: string | null;
+  user?: User;
+  business?: Business;
 }
 
 export interface Business {

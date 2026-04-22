@@ -7,40 +7,37 @@ import BusinessDetailsForm from "./BusinessDetailsForm";
 import { Button } from "@/shared/ui/button";
 import { useLogout } from "@/features/auth/model/useLogout";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
-import { useCreateZone } from "@/features/mdm-sync/model/useMdmSync";
+import { useCreateZone, useParentZones } from "@/features/mdm-sync/model/useMdmSync";
 import { useActiveSubscription } from "@/features/payments/model/usePayments";
 import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
+import { useGetBusiness } from "@/entities/business/model/useBusiness";
+import { useAuth } from "@/shared/auth/AuthProvider";
+import { useGetFullBusinessDetails } from "../model/useGetBusinessDetails";
+import { useGetTeamMembers } from "@/entities/business/model/useTeamMembers";
+import { useRouter } from "next/navigation";
 
 export default function OnboardingPage() {
   const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
   const [step, setStep] = useState(1);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
 
-  const { data: user, isLoading: isLoadingUser } = useUserProfile();
-  const zoneId = user?.zoneId?.[0]?.id;
+  const { businessProfile, isLoadingBusinessProfile } = useGetFullBusinessDetails();
+  const { data: initialTeamMembers, isPending: isLoadingTeamMembers } = useGetTeamMembers();
+
+  const { user } = useAuth();
+  const { data: userProfile } = useUserProfile();
+  const { zoneId } = user || {};
+
+  const { data: parentZones } = useParentZones();
 
   const [freePlanChosen, setFreePlanChosen] = useState(false);
 
-  const { data: subscriptionData } = useActiveSubscription(zoneId);
+  const { data: subscriptionData } = useActiveSubscription(userProfile?.zoneId?.[0]?.id!);
   const hasPaid = subscriptionData?.active ?? freePlanChosen ?? false;
 
   const canProceed = hasPaid || freePlanChosen;
 
-  const { mutateAsync: createZone, isPending: isCreatingZone } = useCreateZone();
-
-  // useEffect(() => {
-  //   async function getBusinessProfile() {
-  //     const res = await getBusinessProfileAction(user?.businessId!);
-  //     console.log("res", res);
-  //   }
-  //   getBusinessProfile();
-  // }, [user]);
-
-  useEffect(() => {
-    if (!isLoadingUser && user && !zoneId) {
-      createZone(undefined);
-    }
-  }, [isLoadingUser, user, zoneId]);
+  const router = useRouter();
 
   const handleNextStep = () => {
     setStep((prev) => prev + 1);
@@ -49,19 +46,28 @@ export default function OnboardingPage() {
     setStep((prev) => prev - 1);
   };
 
-  console.log(step);
   const handleSelectPlan = () => {
-    console.log("Plan selected");
     setFreePlanChosen(true);
-    setStep(2);
   };
+
+  // Redirect to dashboard if business profile and team members are already set up
+  useEffect(() => {
+    if (
+      businessProfile &&
+      initialTeamMembers &&
+      !isLoadingBusinessProfile &&
+      !isLoadingTeamMembers
+    ) {
+      router.push("/dashboard");
+    }
+  }, [initialTeamMembers, businessProfile, isLoadingBusinessProfile, isLoadingTeamMembers]);
 
   return (
     <div>
-      <div className="flex justify-end">
+      <div className="mb-6 flex justify-end">
         <Button
           variant="ghost"
-          className="text-muted-foreground hover:text-foreground top-4 right-6 h-auto p-0 font-medium hover:bg-transparent sm:fixed sm:top-4 sm:right-6"
+          className="text-muted-foreground hover:text-foreground top-4 right-6 h-auto p-0 font-medium hover:bg-transparent"
           onClick={() => setShowSignOutModal(true)}
           disabled={isLoggingOut}
         >
@@ -72,8 +78,29 @@ export default function OnboardingPage() {
         <PricingStep onBack={() => {}} onSuccess={handleSelectPlan} isShowingBackButton={false} />
       ) : (
         <div className="mx-auto max-w-2xl py-5">
-          {step === 1 && <BusinessDetailsForm onNext={handleNextStep} />}
-          {step === 2 && <InviteTeamMembersForm onBack={handlePreviousStep} />}
+          {step === 1 && (
+            <BusinessDetailsForm
+              onNext={handleNextStep}
+              businessProfile={businessProfile}
+              isLoadingBusinessProfile={isLoadingBusinessProfile}
+            />
+          )}
+          {step === 2 && (
+            <InviteTeamMembersForm
+              onBack={handlePreviousStep}
+              initialTeamMembers={
+                (initialTeamMembers as any)?.staff
+                  .filter((member: any) => member?.user?.email !== userProfile?.email)
+                  .map((member: any) => ({
+                    ...member,
+                    id: member.id,
+                    location: member.location || "N/A",
+                    email: member?.user?.email || "N/A",
+                  })) ?? []
+              }
+              isLoadingTeamMembers={isLoadingTeamMembers}
+            />
+          )}
         </div>
       )}
 
