@@ -4,8 +4,27 @@ import type { NextRequest } from "next/server";
 
 // Route access by platform role
 const roleAccessMap: Record<string, string[]> = {
-  BUSINESS: ["*"],
-  PARENT: ["/dashboard", "/settings", "/onboarding", "/profile", "/plans", "/child"],
+  BUSINESS: [
+    "/dashboard",
+    "/settings",
+    "/onboarding/business",
+    "/profile",
+    "/business",
+    "/business/*",
+    "/team",
+    "/team/*",
+    "/billing",
+    "/billing/*",
+  ],
+  PARENT: [
+    "/dashboard",
+    "/settings",
+    "/onboarding/personal",
+    "/profile",
+    "/plans",
+    "/child",
+    "/child/*",
+  ],
 };
 
 // Extra routes only accessible to business accounts (role=USER + businessRole set)

@@ -42,15 +42,9 @@ export async function loginAction(credentials: LoginValues) {
       redirectTo = "/admin";
     } else if (profile.businessRole) {
       const business = await getBusinessAction(profile.businessId!);
-
-      const businessProfile = business?.data?.data?.profile;
-      console.log(business);
-      redirectTo = "/onboarding/business";
-      // if (!businessProfile) {
-      //   redirectTo = "/onboarding/business";
-      // } else {
-      //   redirectTo = "/dashboard";
-      // }
+      const hasProfile = !!business.data?.profile;
+      const hasStaff = (business.data?.staff?.length ?? 0) > 0;
+      redirectTo = hasProfile && hasStaff ? "/dashboard" : "/onboarding/business";
     } else {
       const pcSettings = await getParentalControlMeAction();
       redirectTo = pcSettings ? "/dashboard" : "/onboarding/personal";

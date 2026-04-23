@@ -16,17 +16,16 @@ export interface TeamMember {
 
 export default function InviteTeamMembersForm({
   onBack,
-  initialTeamMembers,
+  // initialTeamMembers, // Cannot implement initial team members as they're already in the system and trying to submit them causes an error
   isLoadingTeamMembers,
 }: {
   onBack: () => void;
-  initialTeamMembers: TeamMember[];
+  // initialTeamMembers: TeamMember[];
   isLoadingTeamMembers: boolean;
 }) {
   const { mutateAsync: createTeamMembers, isPending: isSubmitting } = useCreateTeamMembers();
 
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>(initialTeamMembers);
-  console.log("initialTeamMembers", teamMembers);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]); //initialTeamMembers
 
   const router = useRouter();
   const { toast } = useToast();

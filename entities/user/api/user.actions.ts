@@ -42,9 +42,9 @@ export async function updateProfileAction(data: UpdateProfileDto): Promise<UserP
   if (data.lastName) formData.append("lastName", data.lastName);
   if (data.phone) formData.append("phone", data.phone);
   if (data.status) formData.append("status", data.status);
-  if (data.profilePicture instanceof File) {
-    formData.append("profilePicture", data.profilePicture);
-  } else if (typeof data.profilePicture === "string") {
+  if (data.imageUrl) {
+    formData.append("imageUrl", data.imageUrl);
+  } else if (data.profilePicture instanceof File) {
     formData.append("profilePicture", data.profilePicture);
   }
 

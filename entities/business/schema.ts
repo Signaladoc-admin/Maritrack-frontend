@@ -36,12 +36,12 @@ export type CreateBusinessDto = z.infer<typeof CreateBusinessSchema>;
 
 export const UpdateBusinessSchema = z.object({
   name: z.string(),
-  email: z.string().email(),
   address: z.string(),
   state: z.string(),
   country: z.string(),
-  organizationSize: z.enum(["SIZE_1_9"]),
-  estimatedDevices: z.number(),
+  organizationSize: z.enum(["SIZE_1_9"]).optional(),
+  estimatedDevices: z.number().optional(),
+  imageUrl: z.instanceof(File).optional(),
 });
 
 export type UpdateBusinessDto = z.infer<typeof UpdateBusinessSchema>;

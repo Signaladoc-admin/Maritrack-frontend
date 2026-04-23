@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import InviteTeamMembersForm from "./InviteTeamMembersForm";
 import PricingStep from "@/features/payments/ui/PricingStep";
 import BusinessDetailsForm from "./BusinessDetailsForm";
@@ -14,7 +14,6 @@ import { useGetBusiness } from "@/entities/business/model/useBusiness";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { useGetFullBusinessDetails } from "../model/useGetBusinessDetails";
 import { useGetTeamMembers } from "@/entities/business/model/useTeamMembers";
-import { useRouter } from "next/navigation";
 
 export default function OnboardingPage() {
   const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
@@ -37,8 +36,6 @@ export default function OnboardingPage() {
 
   const canProceed = hasPaid || freePlanChosen;
 
-  const router = useRouter();
-
   const handleNextStep = () => {
     setStep((prev) => prev + 1);
   };
@@ -49,18 +46,6 @@ export default function OnboardingPage() {
   const handleSelectPlan = () => {
     setFreePlanChosen(true);
   };
-
-  // Redirect to dashboard if business profile and team members are already set up
-  useEffect(() => {
-    if (
-      businessProfile &&
-      initialTeamMembers &&
-      !isLoadingBusinessProfile &&
-      !isLoadingTeamMembers
-    ) {
-      router.push("/dashboard");
-    }
-  }, [initialTeamMembers, businessProfile, isLoadingBusinessProfile, isLoadingTeamMembers]);
 
   return (
     <div>
@@ -88,17 +73,17 @@ export default function OnboardingPage() {
           {step === 2 && (
             <InviteTeamMembersForm
               onBack={handlePreviousStep}
-              initialTeamMembers={
-                (initialTeamMembers as any)?.staff
-                  .filter((member: any) => member?.user?.email !== userProfile?.email)
-                  .map((member: any) => ({
-                    ...member,
-                    id: member.id,
-                    location: member.location || "N/A",
-                    email: member?.user?.email || "N/A",
-                  })) ?? []
-              }
               isLoadingTeamMembers={isLoadingTeamMembers}
+              // initialTeamMembers={
+              //   (initialTeamMembers as any)?.staff
+              //     .filter((member: any) => member?.user?.email !== userProfile?.email)
+              //     .map((member: any) => ({
+              //       ...member,
+              //       id: member.id,
+              //       location: member.location || "N/A",
+              //       email: member?.user?.email || "N/A",
+              //     })) ?? []
+              // }
             />
           )}
         </div>

@@ -14,7 +14,7 @@ export default function TopNavbar() {
 
   return (
     <div className="fixed z-9999 w-screen">
-      <div className="flex items-center justify-center gap-16 border-b-[1.5px] border-[#eee] bg-[#f7f7f7] py-6 text-sm">
+      <div className="flex items-center justify-center gap-8 border-b-[1.5px] border-[#eee] bg-[#f7f7f7] py-6 text-sm md:gap-16">
         {businessNavLinks.map((link) => {
           const isActive = pathname === link.href;
           return (
@@ -29,7 +29,7 @@ export default function TopNavbar() {
           );
         })}
       </div>
-      <div className="absolute right-10 bottom-1/2 translate-y-1/2">
+      <div className="absolute right-10 bottom-1/2 hidden translate-y-1/2 sm:block">
         <ProfilePopover />
       </div>
     </div>
