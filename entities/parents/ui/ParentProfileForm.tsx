@@ -19,11 +19,9 @@ import { CountryStateInput } from "@/shared/ui/inputs/country-state-input";
 import { InputGroup } from "@/shared/ui/input-group";
 import { useToast } from "@/shared/ui/toast";
 import type { ParentProfile } from "../schema";
+import { useUpdateProfile } from "@/entities/user/model/useUserProfile";
 
 const parentProfileSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email(),
   gender: z.enum(["MALE", "FEMALE"]),
   address: z.string().optional().nullable(),
   state: z.string().optional().nullable(),
@@ -36,7 +34,7 @@ type ParentProfileFormValues = z.infer<typeof parentProfileSchema>;
 const changePasswordSchema = z
   .object({
     oldPassword: z.string().min(1, "Current password is required"),
-    newPassword: z
+    password: z
       .string()
       .min(8, "At least 8 characters")
       .regex(/[A-Z]/, "At least 1 uppercase letter")
@@ -45,7 +43,7 @@ const changePasswordSchema = z
       .regex(/[^A-Za-z0-9]/, "At least 1 symbol"),
     confirmPassword: z.string(),
   })
-  .refine((d) => d.newPassword === d.confirmPassword, {
+  .refine((d) => d.password === d.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
   });
@@ -119,11 +117,15 @@ function ParentProfileFormInner({
   user: any;
 }) {
   const { mutateAsync: updateParent, isPending: isUpdating } = useUpdateParent();
+  const { mutateAsync: updateProfile } = useUpdateProfile();
+
   const { toast } = useToast();
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
   const [showSignOut, setShowSignOut] = useState(false);
 
   const [showChangePassword, setShowChangePassword] = useState(false);
+
+  console.log(user?.imageUrl);
 
   const {
     control,
@@ -134,9 +136,6 @@ function ParentProfileFormInner({
   } = useForm<ParentProfileFormValues>({
     resolver: zodResolver(parentProfileSchema),
     defaultValues: {
-      firstName: user?.firstName || "",
-      lastName: user?.lastName || "",
-      email: user?.email || "",
       profilePicture: user?.imageUrl || null,
       gender: (parent?.gender as "MALE" | "FEMALE") || undefined,
       address: parent?.address || "",
@@ -149,11 +148,16 @@ function ParentProfileFormInner({
     try {
       await updateParent({
         id: user?.parentId!,
-        gender: data.gender,
-        address: data.address ?? undefined,
-        state: data.state ?? undefined,
-        country: data.country ?? undefined,
+        gender: data.gender!,
+        address: data.address ?? "",
+        state: data.state ?? "",
+        country: data.country ?? "",
       });
+
+      // Update profile picture for user
+      if (data.profilePicture) {
+        await updateProfile({ profilePicture: data.profilePicture });
+      }
 
       toast({ title: "Profile updated successfully", type: "success" });
     } catch (error: any) {
@@ -310,17 +314,17 @@ function ChangePasswordModal({
     resolver: zodResolver(changePasswordSchema),
   });
 
-  const newPasswordValue = watch("newPassword", "");
+  const passwordValue = watch("password", "");
 
   const onSubmit = async (data: ChangePasswordFormValues) => {
-    const res = await changePassword({
+    await changePassword({
       oldPassword: data.oldPassword,
-      newPassword: data.newPassword,
+      password: data.password,
+      confirmPassword: data.confirmPassword,
     });
-    if (res.success) {
-      reset();
-      onOpenChange(false);
-    }
+
+    reset();
+    onOpenChange(false);
   };
 
   return (
@@ -346,8 +350,8 @@ function ChangePasswordModal({
             type="password"
             placeholder="Enter new password"
             isPasswordValidationEnabled
-            error={errors.newPassword?.message}
-            {...register("newPassword")}
+            error={errors.password?.message}
+            {...register("password")}
           />
 
           <InputGroup
@@ -355,7 +359,7 @@ function ChangePasswordModal({
             type="password"
             placeholder="Confirm new password"
             isPasswordValidationEnabled
-            matchValue={newPasswordValue}
+            matchValue={passwordValue}
             error={errors.confirmPassword?.message}
             {...register("confirmPassword")}
           />

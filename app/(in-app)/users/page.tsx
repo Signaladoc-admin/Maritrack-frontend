@@ -20,6 +20,9 @@ import AddEditUserDetailsModal from "@/features/child-profile/ui/AddEditUserDeta
 import { cn } from "@/shared/lib/utils";
 import AddEditDepartmentModal from "@/features/child-profile/ui/AddEditDepartmentModal";
 import AddEditRoleModal from "@/features/child-profile/ui/AddEditRoleModal";
+import UsersList from "./ui/UsersList";
+import DepartmentsList from "./ui/DepartmentsList";
+import LocationsList from "./ui/LocationsList";
 
 function UsersPage() {
   const [search, setSearch] = useQueryState("search", { defaultValue: "" });
@@ -28,16 +31,9 @@ function UsersPage() {
     defaultValue: "user-details",
   });
   const [selectedId, setSelectedId] = useQueryState("selectedId", { defaultValue: "" });
-  const [isAddEditUserDetailsModalOpen, setIsAddEditUserDetailsModalOpen] = useState(false);
-  const [isAddEditDepartmentModalOpen, setIsAddEditDepartmentModalOpen] = useState(false);
-  const [isAddEditRoleModalOpen, setIsAddEditRoleModalOpen] = useState(false);
-  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+  const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
 
-  function handleOpenCreateModal() {
-    if (selectedTab === "users") setIsAddEditUserDetailsModalOpen(true);
-    if (selectedTab === "departments") setIsAddEditDepartmentModalOpen(true);
-    if (selectedTab === "locations") setIsAddEditRoleModalOpen(true);
-  }
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
 
   function handleSelectTab(tab: string) {
     setSelectedTab(tab);
@@ -45,9 +41,7 @@ function UsersPage() {
     // reset other states
     setSelectedId("");
     setSelectedUserSubTab("user-details");
-    setIsAddEditUserDetailsModalOpen(false);
-    setIsAddEditDepartmentModalOpen(false);
-    setIsAddEditRoleModalOpen(false);
+    setIsAddEditModalOpen(false);
   }
 
   return (
@@ -71,46 +65,13 @@ function UsersPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            <Button size="icon" onClick={handleOpenCreateModal}>
+            <Button size="icon" onClick={() => setIsAddEditModalOpen(true)}>
               <PlusIcon color="white" />
             </Button>
           </div>
-          {selectedTab === "users" && (
-            <div className="space-y-1">
-              {users.map((user) => (
-                <EntityListItem
-                  key={user.id}
-                  id={user.id}
-                  title={`${user.firstName} ${user.lastName}`}
-                  subtitle={user.email}
-                />
-              ))}
-            </div>
-          )}
-          {selectedTab === "departments" && (
-            <div className="space-y-1">
-              {departments.map((department) => (
-                <EntityListItem
-                  key={department.id}
-                  id={department.id}
-                  title={department.name}
-                  subtitle={department.description}
-                />
-              ))}
-            </div>
-          )}
-          {selectedTab === "locations" && (
-            <div className="space-y-1">
-              {locations.map((location) => (
-                <EntityListItem
-                  key={location.id}
-                  id={location.id}
-                  title={location.name}
-                  subtitle={location.description}
-                />
-              ))}
-            </div>
-          )}
+          {selectedTab === "users" && <UsersList />}
+          {selectedTab === "departments" && <DepartmentsList />}
+          {selectedTab === "locations" && <LocationsList />}
         </div>
       </CardWrapper>
       <CardWrapper className={cn(selectedId ? "" : "hidden md:block")}>
@@ -130,7 +91,7 @@ function UsersPage() {
                     itemClassName="px-4"
                   />
                   <ActionButtons
-                    onEdit={() => setIsAddEditUserDetailsModalOpen(true)}
+                    onEdit={() => setIsAddEditModalOpen(true)}
                     onDelete={() => setIsConfirmationModalOpen(true)}
                   />
                 </div>
@@ -154,7 +115,7 @@ function UsersPage() {
               <div className="space-y-4">
                 <div className="flex justify-end">
                   <ActionButtons
-                    onEdit={() => setIsAddEditDepartmentModalOpen(true)}
+                    onEdit={() => setIsAddEditModalOpen(true)}
                     onDelete={() => setIsConfirmationModalOpen(true)}
                   />
                 </div>
@@ -165,7 +126,7 @@ function UsersPage() {
               <div className="space-y-4">
                 <div className="flex justify-end">
                   <ActionButtons
-                    onEdit={() => setIsAddEditRoleModalOpen(true)}
+                    onEdit={() => setIsAddEditModalOpen(true)}
                     onDelete={() => setIsConfirmationModalOpen(true)}
                   />
                 </div>
@@ -177,18 +138,18 @@ function UsersPage() {
       </CardWrapper>
 
       <AddEditUserDetailsModal
-        open={isAddEditUserDetailsModalOpen}
-        onOpenChange={setIsAddEditUserDetailsModalOpen}
+        open={selectedTab === "users" && isAddEditModalOpen}
+        onOpenChange={setIsAddEditModalOpen}
         initialData={users.find((user) => user.id === selectedId)!}
       />
       <AddEditDepartmentModal
-        open={isAddEditDepartmentModalOpen}
-        onOpenChange={setIsAddEditDepartmentModalOpen}
+        open={selectedTab === "departments" && isAddEditModalOpen}
+        onOpenChange={setIsAddEditModalOpen}
         initialData={departments.find((d) => d.id === selectedId)!}
       />
       <AddEditRoleModal
-        open={isAddEditRoleModalOpen}
-        onOpenChange={setIsAddEditRoleModalOpen}
+        open={selectedTab === "locations" && isAddEditModalOpen}
+        onOpenChange={setIsAddEditModalOpen}
         initialData={locations.find((location) => location.id === selectedId)!}
       />
       <ConfirmationModal

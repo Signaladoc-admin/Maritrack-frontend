@@ -83,7 +83,7 @@ export type RegisterValues = z.infer<typeof registerSchema>;
 export const updateProfileSchema = z.object({
   firstName: z.string().optional(),
   lastName: z.string().optional(),
-  imageUrl: z.string().optional(),
+  imageUrl: z.any().optional(),
   phone: z.string().optional(),
   status: z.string().optional(),
   profilePicture: z.any().optional(),
@@ -99,7 +99,8 @@ export interface AdminUpdateProfileDto extends UpdateProfileDto {
 // --- Password Operations ---
 export const changePasswordSchema = z.object({
   oldPassword: z.string().min(6, "Current password is required"),
-  newPassword: passwordSchema,
+  password: passwordSchema,
+  confirmPassword: z.string(),
 });
 
 export type ChangePasswordDto = z.infer<typeof changePasswordSchema>;

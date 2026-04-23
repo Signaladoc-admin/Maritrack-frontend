@@ -2,6 +2,7 @@
 
 import { apiClient } from "@/shared/lib/api-client";
 import { withSafeAction } from "@/shared/lib/safe-action";
+import { UpdateBusinessDto } from "../schema";
 
 export async function getBusinessAction(id: string): Promise<any> {
   return withSafeAction(async () => {
@@ -36,23 +37,14 @@ export async function deleteBusinessAction(id: string): Promise<any> {
 export async function updateBusinessAction({
   id,
   ...data
-}: {
-  id: string;
-  name: string;
-  email: string;
-  address: string;
-  state: string;
-  country: string;
-  organizationSize: string;
-  estimatedDevices: number;
-}): Promise<any> {
+}: UpdateBusinessDto & { id: string }): Promise<any> {
   return withSafeAction(async () => {
     const res = await apiClient(`/businesses/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
       noRedirect: true,
     });
-    return res.data ?? res;
+    return res;
   }, "Failed to update business");
 }
 
