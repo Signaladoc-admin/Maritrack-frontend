@@ -1,27 +1,41 @@
+import { TeamMember } from "@/features/onboarding/business/ui/InviteTeamMembersForm";
 import { Button } from "@/shared/ui/button";
 import { CardWrapper } from "@/shared/ui/card-wrapper";
+import { Skeleton } from "@/shared/ui/skeleton";
 import { X } from "lucide-react";
 
+export function TeamMemberCardSkeleton() {
+  return (
+    <CardWrapper variant="default" padding="default" radius="default">
+      <div className="flex items-center justify-between gap-4">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-44" />
+          <Skeleton className="h-3 w-24" />
+        </div>
+        <Skeleton className="h-7 w-7 shrink-0 rounded" />
+      </div>
+    </CardWrapper>
+  );
+}
+
 export default function TeamMemberCard({
-  email,
-  location,
-  onRemove,
+  teamMember,
+  onRemoveTeamMember,
 }: {
-  email: string;
-  location: string;
-  onRemove?: () => void;
+  teamMember: TeamMember;
+  onRemoveTeamMember: (member: TeamMember) => void;
 }) {
   return (
     <CardWrapper variant="default" padding="default" radius="default">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0 space-y-2 text-slate-600">
-          <p className="truncate text-sm font-normal">{email}</p>
-          <p className="truncate text-xs">{location}</p>
+          <p className="truncate text-sm font-normal">{teamMember.email}</p>
+          <p className="truncate text-xs">{teamMember.location}</p>
         </div>
         <Button
           type="button"
           variant="ghost"
-          onClick={onRemove}
+          onClick={() => onRemoveTeamMember(teamMember)}
           className="shrink-0 rounded p-1.5 py-1.5 leading-0 transition-colors hover:bg-red-50"
           aria-label="Remove member"
         >

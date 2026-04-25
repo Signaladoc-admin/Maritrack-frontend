@@ -7,7 +7,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/shared/ui/button";
 import { Header } from "@/shared/ui/layout/header";
-import { Loader } from "@/shared/ui/loader";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
 import {
   useParentalControlByParentId,
@@ -24,6 +23,7 @@ import AppManagement from "../../onboarding/personal/ui/parental-control-setup/A
 import AlertsAndNotifications from "../../onboarding/personal/ui/parental-control-setup/AlertsNotification";
 import ParentalConfirmation from "../../onboarding/personal/ui/parental-control-setup/ParentalConfirmation";
 import { CardWrapper } from "@/shared/ui/card-wrapper";
+import CardHeader from "@/shared/ui/card-header";
 
 const formSchema = z
   .object({
@@ -145,6 +145,33 @@ const formSchema = z
   });
 
 type FormValues = z.infer<typeof formSchema>;
+
+export const parentalControlHeadings = {
+  title: "Parental Control & Consent Setup",
+  description:
+    "Set boundaries, permissions, and alerts for your child's device. These rules apply by default to all children and can be adjusted individually later.",
+
+  monitoringPermissions: {
+    title: "Monitoring Permissions",
+    description: "Choose what activities you want visibility into.",
+  },
+  screenTimeRules: {
+    title: "Screen Time Rules",
+    description: "Set healthy limits for daily phone use.",
+  },
+  appManagementPreferences: {
+    title: "App Management Preferences",
+    description: "Control which apps your child can install and use",
+  },
+  alertsAndNotifications: {
+    title: "Alerts & Notifications",
+    description: "Choose what events you want to be notified about.",
+  },
+  parentalConfirmationAndConsent: {
+    title: "Parental Confirmation & Consent",
+    description: "Confirm your authority and approve monitoring.",
+  },
+};
 
 export default function ParentalControlSetup({
   goToPrevStep,
@@ -325,62 +352,50 @@ export default function ParentalControlSetup({
 
   const isLoading = isLoadingUser || (parentId && isLoadingSettings) || isLoadingMe;
 
-  if (isLoading) {
+  const isSubmitting = isCreating || isUpdating;
+
+  if (isLoading && !isSubmitting) {
     return (
       <div className="animate-pulse">
-        <div className="mb-6 h-10 w-full rounded bg-gray-300"></div>
-        <div className="space-y-3">
-          <div className="h-3 w-full rounded bg-gray-300"></div>
-          <div className="h-3 w-full rounded bg-gray-300"></div>
-          <div className="h-3 w-full rounded bg-gray-300"></div>
-        </div>
+        <Header
+          title={parentalControlHeadings.title}
+          subtitle={parentalControlHeadings.description}
+        />
 
         <div className="mt-10 space-y-6">
-          <CardWrapper variant="outline">
-            <div className="space-y-14">
-              {/* Card heading */}
-              <div>
-                <div className="mb-4 h-10 w-full rounded bg-gray-300"></div>
-                <div className="h-5 w-full rounded bg-gray-300"></div>
-              </div>
-              {/* Card content */}
-              <div className="space-y-6">
-                {/* Card subheading */}
-                <div className="h-8 w-full rounded bg-gray-300"></div>
-
-                <div className="space-y-3">
-                  <div className="h-5 w-full rounded bg-gray-300"></div>
-                  <div className="h-5 w-full rounded bg-gray-300"></div>
-                  <div className="h-5 w-full rounded bg-gray-300"></div>
-                </div>
-              </div>
-              <div className="space-y-6">
-                {/* Card subheading */}
-                <div className="h-8 w-full rounded bg-gray-300"></div>
-
-                <div className="space-y-3">
-                  <div className="h-5 w-full rounded bg-gray-300"></div>
-                  <div className="h-5 w-full rounded bg-gray-300"></div>
-                  <div className="h-5 w-full rounded bg-gray-300"></div>
-                </div>
-              </div>
-            </div>
-          </CardWrapper>
+          <SectionSkeleton
+            title={parentalControlHeadings.monitoringPermissions.title}
+            subtitle={parentalControlHeadings.monitoringPermissions.description}
+          />
+          <SectionSkeleton
+            title={parentalControlHeadings.screenTimeRules.title}
+            subtitle={parentalControlHeadings.screenTimeRules.description}
+          />
+          <SectionSkeleton
+            title={parentalControlHeadings.appManagementPreferences.title}
+            subtitle={parentalControlHeadings.appManagementPreferences.description}
+          />
+          <SectionSkeleton
+            title={parentalControlHeadings.alertsAndNotifications.title}
+            subtitle={parentalControlHeadings.alertsAndNotifications.description}
+          />
+          <SectionSkeleton
+            title={parentalControlHeadings.parentalConfirmationAndConsent.title}
+            subtitle={parentalControlHeadings.parentalConfirmationAndConsent.description}
+          />
         </div>
       </div>
     );
   }
 
-  const isPending = isCreating || isUpdating;
-
   return (
     <div className="space-y-6">
       <Header
-        title="Parental Control & Consent Setup"
-        subtitle="Set boundaries, permissions, and alerts for your child's device. These rules apply by default to all children and can be adjusted individually later."
+        title={parentalControlHeadings.title}
+        subtitle={parentalControlHeadings.description}
       />
 
-      {isOnboardingPath && <LoaderModal open={isPending} text="Setting up your account" />}
+      {isOnboardingPath && <LoaderModal open={isSubmitting} text="Setting up your account" />}
 
       <FormProvider {...methods}>
         <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-6">
@@ -397,17 +412,39 @@ export default function ParentalControlSetup({
                 type="button"
                 className="flex-1"
                 onClick={goToPrevStep}
-                disabled={isPending}
+                disabled={isSubmitting}
               >
                 Previous
               </Button>
             )}
-            <Button type="submit" className="flex-1" disabled={isPending}>
+            <Button type="submit" className="flex-1" disabled={isSubmitting}>
               {isOnboardingPath ? "Submit" : "Save changes"}
             </Button>
           </div>
         </form>
       </FormProvider>
     </div>
+  );
+}
+
+function SectionSkeleton({ title, subtitle }: { title: string; subtitle: string }) {
+  return (
+    <CardWrapper variant="outline">
+      <div className="space-y-14">
+        {/* Card heading */}
+        <CardHeader title={title} description={subtitle} />
+        {/* Card content */}
+        <div className="space-y-6">
+          {/* Card subheading */}
+          <div className="h-8 w-full rounded bg-gray-300"></div>
+
+          <div className="space-y-3">
+            <div className="h-5 w-full rounded bg-gray-300"></div>
+            <div className="h-5 w-full rounded bg-gray-300"></div>
+            <div className="h-5 w-full rounded bg-gray-300"></div>
+          </div>
+        </div>
+      </div>
+    </CardWrapper>
   );
 }

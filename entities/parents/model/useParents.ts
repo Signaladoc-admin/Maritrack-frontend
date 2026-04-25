@@ -1,4 +1,6 @@
 import { createResourceHooks, type ResourceActions } from "@/shared/api/createResourceHooks";
+import { useServerActionMutation } from "@/shared/api/server-action-hooks";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   createParentAction,
   getParentsAction,
@@ -33,14 +35,8 @@ const parentActions: ResourceActions<ParentProfile, CreateParentDto, UpdateParen
       return { success: false, error: error.message };
     }
   },
-  update: async (id: string, data: UpdateParentDto) => {
-    try {
-      const result = await updateParentAction(id, data);
-      return { success: true, data: result };
-    } catch (error: any) {
-      return { success: false, error: error.message };
-    }
-  },
+  // update is handled by the standalone useUpdateParent hook below
+  update: async () => ({ success: false, error: "Use useUpdateParent hook" }),
   delete: async (id: string) => {
     try {
       await deleteParentAction(id);
@@ -52,9 +48,30 @@ const parentActions: ResourceActions<ParentProfile, CreateParentDto, UpdateParen
 };
 
 export const {
-  useGetAll: useParents,
-  useGetById: useParent,
+  useGetAll: useGetParents,
+  useGetById: useGetParent,
   useCreate: useCreateParent,
-  useUpdate: useUpdateParent,
   useDelete: useDeleteParent,
 } = createResourceHooks<ParentProfile, CreateParentDto, UpdateParentDto>("parents", parentActions);
+
+// Standalone update hook — returns the full API response (status, message, data)
+// instead of unwrapping to just data like createResourceHooks does.
+export function useUpdateParent() {
+  const queryClient = useQueryClient();
+  return useServerActionMutation(
+    async ({ id, ...data }: { id: string } & UpdateParentDto) => {
+      try {
+        const result = await updateParentAction(id, data);
+        return { success: true as const, data: result };
+      } catch (error: any) {
+        return { success: false as const, error: error.message as string };
+      }
+    },
+    {
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries({ queryKey: ["parents", "list"] });
+        queryClient.invalidateQueries({ queryKey: ["parents", "detail", variables.id] });
+      },
+    }
+  );
+}

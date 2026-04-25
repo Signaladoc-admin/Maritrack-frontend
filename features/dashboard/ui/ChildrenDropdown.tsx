@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import { ChevronDown, User } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
-import { useParentStore } from "@/shared/stores/user-store";
+import { useParentStore } from "@/shared/stores/user.store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/Avatar/Avatar";
 import { useState, useRef } from "react";
 import { useParentChildren } from "@/entities/children/model/useChildren";
@@ -44,6 +44,18 @@ export function ChildrenDropdown() {
               </Avatar>
             )}
           </div>
+          <div className="flex flex-1 items-center justify-between gap-2">
+            <span className="text-lg font-bold text-[#1B3C73]">
+              {isAllSelected ? "All Children" : selectedChild?.name}
+            </span>
+            <ChevronDown className="h-5 w-5 text-[#1B3C73] transition-transform duration-200" />
+          </div>
+        </button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align="end" className="w-72 rounded-3xl p-2 shadow-2xl">
+        <DropdownMenuItem
+          onSelect={() => handleSelect("all")}
           <span className="text-lg font-bold text-[#1B3C73]">
             {isAllSelected ? "All Children" : selectedChild?.name}
           </span>

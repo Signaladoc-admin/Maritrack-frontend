@@ -1,8 +1,7 @@
-import { useAuth } from "@/shared/auth/AuthProvider";
 import { Gauge, Smartphone, User } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ProfilePopover } from "../Sidebar/ProfilePopover";
 
 const businessNavLinks = [
   { label: "Dashboard", href: "/dashboard", icon: Gauge },
@@ -13,11 +12,9 @@ const businessNavLinks = [
 export default function TopNavbar() {
   const pathname = usePathname();
 
-  const { user } = useAuth();
-
   return (
-    <div className="fixed w-screen">
-      <div className="flex items-center justify-center gap-16 border-b-[1.5px] border-[#eee] bg-[#f7f7f7] py-6 text-sm">
+    <div className="fixed z-9999 w-screen">
+      <div className="flex items-center justify-center gap-8 border-b-[1.5px] border-[#eee] bg-[#f7f7f7] py-6 text-sm md:gap-16">
         {businessNavLinks.map((link) => {
           const isActive = pathname === link.href;
           return (
@@ -32,16 +29,9 @@ export default function TopNavbar() {
           );
         })}
       </div>
-      <Link
-        href="/profile"
-        className="absolute right-10 bottom-1/2 translate-y-1/2 rounded-full bg-[#e5e5e5] p-3"
-      >
-        {user?.imageUrl ? (
-          <Image src={user.imageUrl} alt="" width={50} height={50} />
-        ) : (
-          <User className="text-neutral-500" />
-        )}
-      </Link>
+      <div className="absolute right-10 bottom-1/2 hidden translate-y-1/2 sm:block">
+        <ProfilePopover />
+      </div>
     </div>
   );
 }

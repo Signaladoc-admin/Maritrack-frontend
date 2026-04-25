@@ -11,13 +11,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { parentOnboardingProfileSchema } from "../schema";
 import z from "zod";
 import { parentHooks, userHooks } from "@/shared/api/resources";
-import { useParentStore } from "@/shared/stores/user-store";
+import { useParentStore } from "@/shared/stores/user.store";
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Country, State } from "country-state-city";
 import { useToast } from "@/shared/ui/toast";
 import type { UserProfile } from "@/entities/user/model/user.schema";
-import { Loader } from "@/shared/ui/loader";
+import { PageLoader } from "@/shared/ui/loader";
 import { cn } from "@/shared/lib/utils";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
 // import { refreshSessionAction } from "@/features/auth/api/auth.actions";
@@ -137,16 +137,14 @@ export default function BasicInformationForm({ goToNextStep }: { goToNextStep: (
         // Update the existing parent record
         const res = await updateParent({
           id: activeParentId,
-          data: {
-            gender: data.gender as any,
-            address: data.address,
-            state: data.state,
-            country: data.country,
-          },
+          gender: data.gender as any,
+          address: data.address,
+          state: data.state,
+          country: data.country,
         });
-        if (res?.id) {
-          activeParentId = res.id;
-          setParentId(res.id);
+        if (res?.data?.id) {
+          activeParentId = res.data.id;
+          setParentId(res.data.id);
         }
         console.log("Parent profile updated successfully.", res);
       } else {
@@ -200,11 +198,7 @@ export default function BasicInformationForm({ goToNextStep }: { goToNextStep: (
   const isInitialLoading = isLoadingUser || (!!user?.parentId && isFetchingParent);
 
   if (isInitialLoading) {
-    return (
-      <div className="flex min-h-[400px] w-full items-center justify-center">
-        <Loader size="lg" />
-      </div>
-    );
+    return <PageLoader />;
   }
 
   return (

@@ -3,16 +3,17 @@
 import { Header } from "@/shared/ui/layout/header";
 import { Button } from "@/shared/ui/button";
 import { ChevronLeft } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useQrCode } from "@/features/mdm-sync/model/useQrCode";
+import { useEffect } from "react";
 import { useToast } from "@/shared/ui/toast";
 
 import { QRCodeCard } from "@/shared/ui/cards/qr-code-card";
+import { useQrCode } from "@/features/mdm-sync/model/useQrCode";
 
 interface PairingQRStepProps {
   childName: string;
-  zoneId: string;
-  onboardingCode: string;
+  zoneId?: string;
+  onboardingCode?: string;
+  childId?: string;
   onBack: () => void;
   onComplete: () => void;
   onRollback?: () => void;
@@ -20,14 +21,29 @@ interface PairingQRStepProps {
 
 export default function PairingQRStep({
   childName,
+  childId,
   zoneId,
   onboardingCode,
   onBack,
   onComplete,
   onRollback,
 }: PairingQRStepProps) {
-  const { qrCodeSrc, isLoading: isGenerating, isError, error } = useQrCode(zoneId, onboardingCode);
+  console.log("onboardingCode", onboardingCode);
+  console.log("zoneId", zoneId);
+  console.log("childId", childId);
   const { toast } = useToast();
+  const {
+    qrCodeSrc,
+    isLoading: isGenerating,
+    isPending,
+    isError,
+    error,
+  } = useQrCode(childId!, {
+    zoneId,
+    onboardingCode,
+  });
+
+  const isLoading = isGenerating || isPending;
 
   useEffect(() => {
     if (isError && error) {
@@ -57,12 +73,8 @@ export default function PairingQRStep({
       />
 
       <div className="space-y-8">
-        <button
-          className="cursor-pointer"
-          disabled={isGenerating || !qrCodeSrc}
-          onClick={onComplete}
-        >
-          <QRCodeCard src={qrCodeSrc || ""} isLoading={isGenerating} />
+        <button className="cursor-pointer" disabled={isLoading || !qrCodeSrc} onClick={onComplete}>
+          <QRCodeCard src={qrCodeSrc || ""} isLoading={isLoading} />
         </button>
 
         {/* <Button

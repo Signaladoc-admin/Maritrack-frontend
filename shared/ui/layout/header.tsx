@@ -1,5 +1,6 @@
+import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { cn } from "@/shared/lib/utils";
-import { H2, H4, P } from "@/shared/ui/typography";
+import { H2, H3, H4, P } from "@/shared/ui/typography";
 import { ReactNode } from "react";
 
 interface HeaderProps extends React.HTMLAttributes<HTMLHeadElement> {
@@ -16,22 +17,31 @@ export function Header({
   action,
   className,
   titleVariant = "primary",
-  variant = "sm",
+  variant = "base",
 }: HeaderProps) {
   const titleVariants = {
     primary: "text-primary",
     neutral: "text-neutral-800",
   };
+
   return (
     <header className={cn("bg-background mb-12 flex items-center justify-between", className)}>
       <div className="space-y-2">
         {variant === "base" && (
-          <H2 className={cn("leading-tight", titleVariants[titleVariant])}>{title}</H2>
+          <H3 className={cn("text-2xl leading-tight md:text-3xl", titleVariants[titleVariant])}>
+            {title}
+          </H3>
         )}
         {variant === "sm" && (
-          <H4 className={cn("leading-tight", titleVariants[titleVariant])}>{title}</H4>
+          <H4 className={cn("text-xl leading-tight md:text-2xl", titleVariants[titleVariant])}>
+            {title}
+          </H4>
         )}
-        {subtitle && <P className="text-muted-foreground mt-0! font-medium">{subtitle}</P>}
+        {subtitle && (
+          <div className="text-muted-foreground mt-0! text-sm font-medium md:text-base">
+            {subtitle}
+          </div>
+        )}
       </div>
       <div>{action}</div>
     </header>

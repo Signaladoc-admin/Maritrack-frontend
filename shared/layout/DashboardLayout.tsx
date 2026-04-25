@@ -5,11 +5,10 @@ import { useAuth } from "../auth/AuthProvider";
 import { Sidebar } from "../ui/Sidebar/Sidebar";
 import { MobileNavbar } from "../ui/layout/mobile-navbar";
 import TopNavbar from "../ui/TopNavbar/TopNavbar";
-
 export default function DashboardLayout({ children }: { children: ReactNode }) {
-  const { appRole } = useAuth();
+  const { user } = useAuth();
 
-  const Layout = appRole === "PARENT" ? ParentLayout : BusinessLayout;
+  const Layout = user?.appRole === "PARENT" ? ParentLayout : BusinessLayout;
 
   return <Layout>{children}</Layout>;
 }

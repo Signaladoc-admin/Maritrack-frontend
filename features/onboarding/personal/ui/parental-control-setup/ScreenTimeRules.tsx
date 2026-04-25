@@ -6,6 +6,7 @@ import { Controller, useFormContext } from "react-hook-form";
 import DailyScreenTimeRadioInputs from "./DailyScreenTimeRadioInputs";
 import { TimePicker } from "@/shared/ui/time-picker";
 import { cn } from "@/shared/lib/utils";
+import { parentalControlHeadings } from "@/features/parents/ui/ParentalControlSetup";
 
 export default function ScreenTimeRules() {
   const {
@@ -19,8 +20,8 @@ export default function ScreenTimeRules() {
     <CardWrapper variant="outline">
       <div className="space-y-10!">
         <CardHeader
-          title="Screen Time Rules"
-          description="Set healthy limits for daily phone use."
+          title={parentalControlHeadings.screenTimeRules.title}
+          description={parentalControlHeadings.screenTimeRules.description}
         />
         <div className="space-y-3">
           <Controller
