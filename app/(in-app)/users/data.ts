@@ -112,21 +112,21 @@ export const departments: Department[] = [
     name: "Engineering",
     description: "Engineering department",
     totalUsers: 10,
-    createdAt: new Date(),
+    createdAt: new Date("2024-01-01"),
   },
   {
     id: "2",
     name: "Sales",
     description: "Sales department",
     totalUsers: 20,
-    createdAt: new Date(),
+    createdAt: new Date("2024-01-01"),
   },
   {
     id: "3",
     name: "Marketing",
     description: "Marketing department",
     totalUsers: 30,
-    createdAt: new Date(),
+    createdAt: new Date("2024-01-01"),
   },
 ];
 
@@ -136,20 +136,20 @@ export const locations: Location[] = [
     name: "New York",
     description: "New York location",
     totalUsers: 10,
-    createdAt: new Date(),
+    createdAt: new Date("2024-01-01"),
   },
   {
     id: "2",
     name: "Los Angeles",
     description: "Los Angeles location",
     totalUsers: 20,
-    createdAt: new Date(),
+    createdAt: new Date("2024-01-01"),
   },
   {
     id: "3",
     name: "Chicago",
     description: "Chicago location",
     totalUsers: 30,
-    createdAt: new Date(),
+    createdAt: new Date("2024-01-01"),
   },
 ];

@@ -11,7 +11,6 @@ import { Button } from "@/shared/ui/Button/button";
 import Table from "@/shared/ui/Table/Table";
 import { devicesData } from "../devices/data";
 import { devicesColumns } from "../devices/columns";
-import EntityListItem from "./ui/EntityListItem";
 import DepartmentDetails from "./ui/DepartmentDetails";
 import LocationDetails from "./ui/LocationDetails";
 import { useState } from "react";
