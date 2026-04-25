@@ -15,6 +15,8 @@ import { ProfilePopover } from "./ProfilePopover";
 export function Sidebar() {
   const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentZones();
 
+  console.log(parentZonesRes);
+
   if (isFetchingChildren) {
     return <SidebarSkeleton />;
   }
@@ -40,7 +42,7 @@ export function Sidebar() {
 
         <div className="flex w-full flex-1 flex-col items-center justify-center gap-8">
           <div className="flex flex-col gap-6">
-            {parentZonesRes?.[0]?.parentChildren?.map((child: ChildRelationship) => (
+            {parentZonesRes[0]?.parentChildren?.map((child: ChildRelationship) => (
               <Tooltip key={child.childId}>
                 <TooltipTrigger asChild>
                   <Link href={`/child/${child.childId}`} className="group relative cursor-pointer">

@@ -31,6 +31,8 @@ const ChildDevices = () => {
 
   const { data: childData, isLoading } = useGetChild(child as string);
 
+  console.log(childData);
+
   if (isLoading) {
     return <ChildDevicesSkeleton />;
   }
