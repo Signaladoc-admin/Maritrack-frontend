@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { PricingCard } from "@/shared/ui/PricingCard/PricingCard";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/shared/ui/button";
@@ -122,7 +123,16 @@ export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: 
   ];
 
   return (
-    <div className="space-y-10">
+    <div className="relative space-y-10">
+      <div className="pointer-events-none absolute top-0 bottom-0 left-1/2 w-screen -translate-x-1/2">
+        <Image
+          src="/bg-texture.png"
+          alt=""
+          fill
+          className="select-none object-cover object-center opacity-60"
+          priority={false}
+        />
+      </div>
       {isShowingBackButton && (
         <Button variant="link" onClick={onBack} className="flex items-center gap-1! px-0">
           <ChevronLeft className="h-6! w-6! text-orange-500" /> Go back

@@ -13,7 +13,7 @@ import { formatDate } from "date-fns";
 
 export default function ParentDashboard() {
   const { scrollContainerRef, events } = useDragScroll();
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState<Date | undefined>(undefined);
 
   useEffect(() => {
     setCurrentDate(new Date());

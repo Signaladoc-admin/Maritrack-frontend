@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${jakarta.variable} antialiased`} suppressHydrationWarning>
+      <body className={`${jakarta.variable} overflow-x-hidden antialiased`} suppressHydrationWarning>
         <ToastProvider>
           <Providers>
             <NuqsAdapter>
