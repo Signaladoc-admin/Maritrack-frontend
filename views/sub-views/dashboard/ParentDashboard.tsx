@@ -28,7 +28,7 @@ export default function ParentDashboard() {
         <div className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight text-[#1B3C73]">Hello Janet</h1>
           <p className="text-sm font-medium text-slate-400">
-            {formatDate(currentDate, "MMMM dd, yyyy")}
+            {formatDate(currentDate as Date, "MMMM dd, yyyy")}
           </p>
         </div>
         <ChildrenDropdown />
