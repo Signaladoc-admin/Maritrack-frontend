@@ -1,5 +1,3 @@
-"use client";
-
 import OnboardingPage from "@/features/onboarding/business/ui/OnboardingPage";
 
 export default function BusinessOnboardingPage() {

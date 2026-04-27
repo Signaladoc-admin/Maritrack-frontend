@@ -9,11 +9,12 @@ export function useLogout() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const logoutMutation = useMutation({
     mutationFn: logoutAction,
     onSuccess: () => {
+      logout();
       queryClient.clear();
       toast({
         title: "Success",

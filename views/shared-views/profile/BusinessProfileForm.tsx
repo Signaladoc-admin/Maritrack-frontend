@@ -11,7 +11,7 @@ import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/Modal/dialog";
 import { useLogout } from "@/features/auth/model/useLogout";
 import { useAuth } from "@/shared/auth/AuthProvider";
-import { useUpdateBusiness } from "../model/useBusiness";
+import { useUpdateBusiness } from "../../../entities/business/model/useBusiness";
 import { useGetFullBusinessDetails } from "@/features/onboarding/business/model/useGetBusinessDetails";
 import { useChangePassword } from "@/features/auth/model/useChangePassword";
 import z from "zod";

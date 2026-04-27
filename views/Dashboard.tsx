@@ -1,7 +1,7 @@
 "use client";
 
-import BusinessDashboard from "@/views/sub-views/dashboard/BusinessDashboard";
-import ParentDashboard from "@/views/sub-views/dashboard/ParentDashboard";
+import BusinessDashboard from "@/views/shared-views/dashboard/BusinessDashboard";
+import ParentDashboard from "@/views/shared-views/dashboard/ParentDashboard";
 import { useAuth } from "@/shared/auth/AuthProvider";
 
 export default function Dashboard() {
