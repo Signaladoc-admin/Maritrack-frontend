@@ -13,12 +13,12 @@ import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/Modal/dialog";
 import { useLogout } from "@/features/auth/model/useLogout";
 import { useAuth } from "@/shared/auth/AuthProvider";
-import { useGetParent, useUpdateParent } from "../model/useParents";
+import { useGetParent, useUpdateParent } from "../../../entities/parents/model/useParents";
 import { useChangePassword } from "@/features/auth/model/useChangePassword";
 import { CountryStateInput } from "@/shared/ui/inputs/country-state-input";
 import { InputGroup } from "@/shared/ui/input-group";
 import { useToast } from "@/shared/ui/toast";
-import type { ParentProfile } from "../schema";
+import type { ParentProfile } from "../../../entities/parents/schema";
 import { useUpdateProfile } from "@/entities/user/model/useUserProfile";
 
 const parentProfileSchema = z.object({
