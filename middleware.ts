@@ -16,6 +16,7 @@ const roleAccessMap: Record<string, string[]> = {
     "/billing",
     "/billing/*",
     "/users/*",
+    "/devices/*",
   ],
   PARENT: [
     "/dashboard",
@@ -69,8 +70,17 @@ const authRoutes = [
 function canAccess(role: string, pathname: string): boolean {
   const allowedRoutes = roleAccessMap[role];
   if (!allowedRoutes) return false;
-  if (allowedRoutes.includes("*")) return true;
-  return allowedRoutes.some((route) => pathname.startsWith(route));
+
+  return allowedRoutes.some((route) => {
+    if (route === "*") return true;
+
+    if (route.endsWith("/*")) {
+      const baseRoute = route.slice(0, -2);
+      return pathname === baseRoute || pathname.startsWith(baseRoute + "/");
+    }
+
+    return pathname === route || pathname.startsWith(route + "/");
+  });
 }
 
 export async function middleware(req: NextRequest) {
