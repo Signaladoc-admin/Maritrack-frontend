@@ -86,6 +86,7 @@ export default function ChildrenProfiles({
   }
 
   const handleAddChild = async (data: IChildProfile) => {
+    console.log("activeParentId", activeParentId);
     if (!activeParentId) {
       toast({ title: "Error", message: "Parent profile not found", type: "error" });
       return;

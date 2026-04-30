@@ -15,6 +15,7 @@ import AppControl from "./AppControl";
 import ParentalControlSetup from "@/features/parents/ui/ParentalControlSetup";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
 import LocationPage from "./Location";
+import { useAuth } from "@/shared/auth/AuthProvider";
 // import ParentalControlSetup from "@/features/onboarding/ui/ParentalControlSetup";
 
 const Device = () => {
