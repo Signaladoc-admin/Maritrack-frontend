@@ -7,7 +7,7 @@ import { ChevronLeft } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { usePaymentPlans, useInitializePayment } from "@/features/payments/model/usePayments";
-import { useUserProfile } from "@/entities/user/model/useUserProfile";
+import { useParentZones, useBusinessZones } from "@/features/mdm-sync/model/useMdmSync";
 import { useToast } from "@/shared/ui/toast";
 import { useAuth } from "@/shared/auth/AuthProvider";
 
@@ -47,9 +47,12 @@ export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: 
   const [isLoading, setIsLoading] = useState(false);
   const { data: plans, isLoading: isLoadingPlans } = usePaymentPlans();
   const { mutateAsync: initializePayment } = useInitializePayment();
-  const { data: user } = useUserProfile();
   const { user: fullUserDetails } = useAuth();
   const appRole = fullUserDetails?.appRole;
+
+  const { data: parentZones } = useParentZones({ enabled: appRole === "PARENT" });
+  const { data: businessZones } = useBusinessZones({ enabled: appRole === "BUSINESS" });
+  const zoneId = appRole === "PARENT" ? (parentZones as any)?.[0]?.id : (businessZones as any)?.[0]?.id;
 
   const { toast } = useToast();
 
@@ -58,10 +61,10 @@ export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: 
   };
 
   const handleSelectPremiumPlan = async (planId: string) => {
-    if (!user?.zoneId?.[0]?.id) {
+    if (!zoneId) {
       toast({
         title: "Error",
-        message: `No active zone setup found for your account. ${appRole === "PARENT" ? "Please set up a child profile first." : ""}`,
+        message: "No active zone setup found for your account.",
         type: "error",
       });
       return;
@@ -74,7 +77,7 @@ export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: 
 
       const response = await initializePayment({
         planId,
-        zoneId: user.zoneId[0].id,
+        zoneId,
         callbackUrl,
       });
 

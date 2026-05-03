@@ -7,13 +7,9 @@ import HaveAnAccount from "./HaveAnAccount";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { otpConfirmFormSchema, OtpConfirmFormValues } from "../schema";
-import { useRouter } from "next/navigation";
-import { useNewUserStore } from "@/shared/stores/user.store";
 import { useValidateOtp } from "../model/useValidateOtp";
 
 export default function OtpConfirmForm() {
-  const router = useRouter();
-  const { email, password, setEmail, setPassword } = useNewUserStore();
   const { validateOtp, isSubmitting: isVerifying } = useValidateOtp();
 
   const form = useForm<OtpConfirmFormValues>({

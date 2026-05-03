@@ -44,3 +44,26 @@ export async function getParentZonesAction(): Promise<ActionResult<any>> {
     return { success: false, error: error.message || "Failed to fetch parent zones" };
   }
 }
+
+export async function createBusinessZoneAction(data?: CreateZoneDto): Promise<ActionResult<any>> {
+  return withSafeAction(
+    async () =>
+      await apiClient("/mdm-sync/business/zones", {
+        method: "POST",
+        ...(data?.name && { body: JSON.stringify({ name: data.name }) }),
+      }),
+    "Failed to create business zone"
+  );
+}
+
+export async function getBusinessZonesAction(): Promise<ActionResult<any>> {
+  return withSafeAction(
+    async () => {
+      const response = await apiClient("/mdm-sync/zones/business", {
+        method: "GET",
+      });
+      return response.data ?? response;
+    },
+    "Failed to fetch business zones"
+  );
+}
