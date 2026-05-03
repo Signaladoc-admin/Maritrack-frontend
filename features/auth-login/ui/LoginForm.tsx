@@ -43,7 +43,6 @@ export default function LoginForm() {
     }
   };
 
-  console.log(error);
   return (
     <form className="space-y-7" onSubmit={handleSubmit(onSubmit)}>
       {error && (

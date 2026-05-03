@@ -1,8 +1,9 @@
 "use client";
-
-import { useIsOnboarded } from "@/entities/user/model/useIsOnboarded";
 import ChildrenProfiles from "@/features/onboarding/personal/ui/ChildrenProfiles";
 import ParentalControlSetup from "@/features/parents/ui/ParentalControlSetup";
+import { setOnboardedAction } from "@/features/onboarding/api/onboarding.actions";
+import { createZoneAction } from "@/features/mdm-sync/api/mdm-sync.actions";
+import { useParentZones, mdmSyncKeys } from "@/features/mdm-sync/model/useMdmSync";
 import { MultiStepForm } from "@/shared/ui/multi-step-form";
 import { useState, useEffect, Suspense } from "react";
 import { PageLoader } from "@/shared/ui/loader";
@@ -12,26 +13,33 @@ import { useVerifyPayment } from "@/features/payments/model/usePayments";
 import { useToast } from "@/shared/ui/toast";
 import { Button } from "@/shared/ui/button";
 import { useLogout } from "@/features/auth/model/useLogout";
+import { useUserProfile } from "@/entities/user/model/useUserProfile";
+import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/shared/lib/utils";
 
 function OnboardingContent() {
   const router = useRouter();
+  const { data: userProfile } = useUserProfile();
+  const { data: parentZones } = useParentZones();
+  const queryClient = useQueryClient();
 
   const [currentStep, setCurrentStep] = useQueryState("step", parseAsInteger.withDefault(0));
   const [reference, setReference] = useQueryState("reference");
-
-  const { profile, pcSettings, checkAndRedirect } = useIsOnboarded();
   const [isFullWidth, setIsFullWidth] = useState(false);
 
   const { mutateAsync: verifyPayment } = useVerifyPayment();
   const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
   const { toast } = useToast();
 
+  // Create zone on first landing if one doesn't exist yet
   useEffect(() => {
-    if (profile && pcSettings) {
-      checkAndRedirect(profile, pcSettings);
+    const hasZone = Array.isArray(parentZones) && parentZones.length > 0;
+    if (userProfile && !hasZone) {
+      createZoneAction().then(() => {
+        queryClient.invalidateQueries({ queryKey: mdmSyncKeys.parentZones });
+      });
     }
-  }, [profile, pcSettings, checkAndRedirect]);
+  }, [userProfile, parentZones]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!reference) return;
@@ -64,6 +72,11 @@ function OnboardingContent() {
     }
   }
 
+  async function handleOnboardingComplete() {
+    await setOnboardedAction();
+    router.push("/dashboard");
+  }
+
   const steps = [
     {
       title: "Children Profiles",
@@ -79,10 +92,7 @@ function OnboardingContent() {
       title: "Parental Control & Consent Setup",
       onClick: () => handleStepClick(1),
       component: (
-        <ParentalControlSetup
-          handleSubmit={() => router.push("/dashboard")}
-          goToPrevStep={prevStep}
-        />
+        <ParentalControlSetup handleSubmit={handleOnboardingComplete} goToPrevStep={prevStep} />
       ),
     },
   ];

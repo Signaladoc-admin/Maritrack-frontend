@@ -7,6 +7,7 @@ import { useCreateTeamMembers } from "@/entities/business/model/useTeamMembers";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/shared/ui/toast";
+import { setOnboardedAction } from "@/features/onboarding/api/onboarding.actions";
 
 export interface TeamMember {
   id: string;
@@ -62,6 +63,7 @@ export default function InviteTeamMembersForm({
         message: "Team members invited successfully",
       });
 
+      await setOnboardedAction();
       router.push("/dashboard");
     } catch (error: any) {
       toast({
@@ -119,7 +121,7 @@ export default function InviteTeamMembersForm({
         </Button>
       </div>
       <div className="flex justify-center">
-        <Button variant="link" onClick={() => router.push("/dashboard")}>
+        <Button variant="link" onClick={async () => { await setOnboardedAction(); router.push("/dashboard"); }}>
           Skip for now
         </Button>
       </div>

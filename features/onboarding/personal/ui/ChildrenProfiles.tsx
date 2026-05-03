@@ -12,8 +12,6 @@ import {
   useUpdateChild,
   useDeleteChild,
 } from "@/entities/children/model/useChildren";
-import { getProfileAction } from "@/entities/user/api/user.actions";
-import { createZoneAction } from "@/features/mdm-sync/api/mdm-sync.actions";
 import { useParentZones, mdmSyncKeys } from "@/features/mdm-sync/model/useMdmSync";
 import { useEffect } from "react";
 import { useToast } from "@/shared/ui/toast";
@@ -111,23 +109,10 @@ export default function ChildrenProfiles({
         setChildProfiles((prev) => [...prev, newChildInfo as any]);
         setPendingChild(newChildInfo as any);
 
-        // Ensure zone exists
-        let activeZoneId = user?.zoneId?.[0]?.id;
-        if (!activeZoneId) {
-          await createZoneAction();
-          const updatedProfile = await getProfileAction();
-          activeZoneId = (updatedProfile as any).zoneId?.[0]?.id;
-          queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-        }
-
         queryClient.invalidateQueries({ queryKey: mdmSyncKeys.parentZones });
         toast({ title: "Success", message: "Child profile created", type: "success" });
 
-        if (canProceed) {
-          setCurrentView("qr");
-        } else {
-          setCurrentView("pricing");
-        }
+        setCurrentView(canProceed ? "qr" : "pricing");
       }
     } catch (e: any) {
       toast({

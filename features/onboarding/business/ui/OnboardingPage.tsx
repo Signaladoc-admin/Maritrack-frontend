@@ -1,19 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import InviteTeamMembersForm from "./InviteTeamMembersForm";
 import PricingStep from "@/features/payments/ui/PricingStep";
 import BusinessDetailsForm from "./BusinessDetailsForm";
 import { Button } from "@/shared/ui/button";
 import { useLogout } from "@/features/auth/model/useLogout";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
-import { useCreateZone, useParentZones } from "@/features/mdm-sync/model/useMdmSync";
+import { createBusinessZoneAction } from "@/features/mdm-sync/api/mdm-sync.actions";
+import { useBusinessZones } from "@/features/mdm-sync/model/useMdmSync";
 import { useActiveSubscription } from "@/features/payments/model/usePayments";
 import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
-import { useGetBusiness } from "@/entities/business/model/useBusiness";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { useGetFullBusinessDetails } from "../model/useGetBusinessDetails";
 import { useGetTeamMembers } from "@/entities/business/model/useTeamMembers";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function OnboardingPage() {
   const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
@@ -25,27 +26,32 @@ export default function OnboardingPage() {
 
   const { user } = useAuth();
   const { data: userProfile } = useUserProfile();
-  const { zoneId } = user || {};
-
-  const { data: parentZones } = useParentZones();
+  const queryClient = useQueryClient();
 
   const [freePlanChosen, setFreePlanChosen] = useState(false);
 
-  const { data: subscriptionData } = useActiveSubscription(userProfile?.zoneId?.[0]?.id!);
-  const hasPaid = subscriptionData?.active ?? freePlanChosen ?? false;
+  const { data: businessZones, isLoading: isLoadingZones } = useBusinessZones();
+  const zoneId = (businessZones as any)?.[0]?.id;
 
+  const { data: subscriptionData, isLoading: isLoadingSubscription } = useActiveSubscription(zoneId);
+  const hasPaid = !!subscriptionData?.active;
   const canProceed = hasPaid || freePlanChosen;
 
-  const handleNextStep = () => {
-    setStep((prev) => prev + 1);
-  };
-  const handlePreviousStep = () => {
-    setStep((prev) => prev - 1);
-  };
+  // True until we know whether the user has already paid — prevents pricing step flicker
+  const isResolvingPaymentStatus = isLoadingZones || (!!zoneId && isLoadingSubscription);
 
-  const handleSelectPlan = () => {
-    setFreePlanChosen(true);
-  };
+  // Create business zone on first landing if one doesn't exist yet
+  useEffect(() => {
+    if (userProfile && !zoneId) {
+      createBusinessZoneAction().then(() => {
+        queryClient.invalidateQueries({ queryKey: ["mdm-sync", "businessZones"] });
+      });
+    }
+  }, [userProfile, zoneId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleNextStep = () => setStep((prev) => prev + 1);
+  const handlePreviousStep = () => setStep((prev) => prev - 1);
+  const handleSelectPlan = () => setFreePlanChosen(true);
 
   return (
     <div>
@@ -59,7 +65,7 @@ export default function OnboardingPage() {
           {isLoggingOut ? "Signing out..." : "Sign out"}
         </Button>
       </div>
-      {!hasPaid ? (
+      {isResolvingPaymentStatus ? null : !canProceed ? (
         <PricingStep onBack={() => {}} onSuccess={handleSelectPlan} isShowingBackButton={false} />
       ) : (
         <div className="mx-auto max-w-2xl py-5">
@@ -74,22 +80,11 @@ export default function OnboardingPage() {
             <InviteTeamMembersForm
               onBack={handlePreviousStep}
               isLoadingTeamMembers={isLoadingTeamMembers}
-              // initialTeamMembers={
-              //   (initialTeamMembers as any)?.staff
-              //     .filter((member: any) => member?.user?.email !== userProfile?.email)
-              //     .map((member: any) => ({
-              //       ...member,
-              //       id: member.id,
-              //       location: member.location || "N/A",
-              //       email: member?.user?.email || "N/A",
-              //     })) ?? []
-              // }
             />
           )}
         </div>
       )}
 
-      {/* Sign out modal */}
       <ConfirmationModal
         open={showSignOutModal}
         onOpenChange={setShowSignOutModal}
