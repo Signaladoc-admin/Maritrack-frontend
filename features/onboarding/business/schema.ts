@@ -12,3 +12,15 @@ export const teamMemberSchema = z.object({
   location: z.string().min(1, "Location is required"),
 });
 export type TeamMemberSchemaValues = z.infer<typeof teamMemberSchema>;
+
+export const teamMemberSchemaInApp = z.object({
+  email: z.email("Invalid email"),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  businessRole: z.string().min(1, "Business role is required"),
+  location: z.string().min(1, "Location is required"),
+  position: z.string().min(1, "Position is required"),
+  departmentId: z.string().min(1, "Department is required"),
+  phone: z.string().min(1, "Phone is required"),
+});
+export type TeamMemberSchemaValuesInApp = z.infer<typeof teamMemberSchemaInApp>;

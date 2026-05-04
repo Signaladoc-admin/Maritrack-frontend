@@ -1,4 +1,5 @@
 import { User } from "@/app/(in-app)/users/types";
+import { useCreateTeamMember } from "@/entities/business/model/useTeamMembers";
 import {
   businessUserDetailsSchema,
   BusinessUserDetailsValues,
@@ -42,6 +43,8 @@ export default function AddEditUserDetailsModal({
       resolver: zodResolver(businessUserDetailsSchema),
     });
 
+  const { mutateAsync: createTeamMember, isPending: isCreatingTeamMember } = useCreateTeamMember();
+
   useEffect(() => {
     setValue("firstName", initialData?.firstName!);
     setValue("lastName", initialData?.lastName!);
@@ -55,6 +58,7 @@ export default function AddEditUserDetailsModal({
   }, [initialData]);
   async function onSubmit(data: BusinessUserDetailsValues) {
     console.log(data);
+    // createTeamMember({...data, businessId:initialData?.businessId})
   }
   return (
     <Modal

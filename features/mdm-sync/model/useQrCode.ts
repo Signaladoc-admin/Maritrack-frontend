@@ -68,6 +68,8 @@ export function useQrCode(
     (pc: any) => pc.childId === childId
   )?.child?.onboardingCode;
 
+  console.log("derivedOnboardingCode", derivedOnboardingCode);
+
   const onboardingCode = overrides?.onboardingCode ?? derivedOnboardingCode;
   const zoneId = overrides?.zoneId ?? user?.zoneId?.[0]?.id ?? parentZonesRes?.[0]?.id;
 
