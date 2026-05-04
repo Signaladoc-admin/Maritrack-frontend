@@ -20,6 +20,7 @@ const roleAccessMap: Record<string, string[]> = {
 // Routes that don't require authentication at all
 const publicRoutes = [
   "/",
+  "/landing",
   "/login",
   "/register",
   "/unauthorized",
