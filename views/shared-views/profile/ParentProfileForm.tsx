@@ -125,8 +125,6 @@ function ParentProfileFormInner({
 
   const [showChangePassword, setShowChangePassword] = useState(false);
 
-  console.log(user?.imageUrl);
-
   const {
     control,
     handleSubmit,

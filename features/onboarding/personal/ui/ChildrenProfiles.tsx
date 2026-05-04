@@ -45,7 +45,6 @@ export default function ChildrenProfiles({
 
   const [planChosen, setPlanChosen] = useState(false);
   const canProceed = hasPaid || planChosen;
-  console.log(canProceed);
 
   const { mutateAsync: createChild, isPending: isCreatingChild } = useCreateChild();
   const { mutateAsync: updateChild, isPending: isUpdatingChild } = useUpdateChild();

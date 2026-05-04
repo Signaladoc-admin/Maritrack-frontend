@@ -27,7 +27,6 @@ export default function RegisterForm() {
   const onSubmit = async (data: RegisterValues) => {
     try {
       const res: any = await registerUser(data);
-      console.log("Registered user response:", res);
 
       // Save credentials for subsequent OTP verification and auto-login
       setEmail(data.email);

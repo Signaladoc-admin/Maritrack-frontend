@@ -74,7 +74,6 @@ export default function Home() {
     // Simulate a 3-second API call or process
     setTimeout(() => {
       setIsLoading(false);
-      console.log("Process complete!");
     }, 3000);
   };
 

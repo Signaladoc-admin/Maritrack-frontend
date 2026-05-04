@@ -7,8 +7,6 @@ export default function DepartmentsList() {
   const { user } = useAuth();
   const { data: businessData } = useGetBusiness(user?.businessId!);
 
-  console.log(businessData?.staff);
-
   return (
     <div className="space-y-1">
       {departments.map((department) => (
