@@ -32,25 +32,25 @@ export function useUserById(id: string) {
 
 export function useUpdateProfile() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  // const { toast } = useToast();
 
   return useMutation({
     mutationFn: (data: UpdateProfileDto) => updateProfileAction(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-      toast({
-        type: "success",
-        title: "Profile Updated",
-        message: "Your profile has been updated successfully.",
-      });
+      // toast({
+      //   type: "success",
+      //   title: "Profile Updated",
+      //   message: "Your profile has been updated successfully.",
+      // });
     },
-    onError: (err: any) => {
-      toast({
-        type: "error",
-        title: "Update Failed",
-        message: err.message || "Failed to update profile.",
-      });
-    },
+    // onError: (err: any) => {
+    //   toast({
+    //     type: "error",
+    //     title: "Update Failed",
+    //     message: err.message || "Failed to update profile.",
+    //   });
+    // },
   });
 }
 

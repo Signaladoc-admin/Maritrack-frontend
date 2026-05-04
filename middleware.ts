@@ -2,36 +2,70 @@ import { NextResponse } from "next/server";
 import { decodeJwt } from "jose";
 import type { NextRequest } from "next/server";
 
-// Role → Routes Configuration
+// Route access by platform role
 const roleAccessMap: Record<string, string[]> = {
-  ADMIN: ["*"], // Admin has access to everything for now
-  USER: [
+  BUSINESS: [
     "/dashboard",
     "/settings",
-    "/onboarding",
-    "onboarding/personal",
+    "/onboarding/business",
+    "/profile",
+    "/business",
+    "/business/*",
+    "/team",
+    "/team/*",
+    "/billing",
+    "/billing/*",
+  ],
+  PARENT: [
+    "/dashboard",
+    "/settings",
+    "/onboarding/personal",
     "/profile",
     "/plans",
     "/child",
-    "/device",
+    "/child/*",
   ],
 };
+
+// Extra routes only accessible to business accounts (role=USER + businessRole set)
+const businessOnlyRoutes = ["/onboarding/business"];
 
 // Routes that don't require authentication at all
 const publicRoutes = [
   "/",
   "/landing",
+  "/unauthorized",
+  // Personal auth routes
   "/login",
   "/register",
-  "/unauthorized",
-  "/register/personal",
-  "/register/business",
   "/confirm-email",
+  "/forgot-password",
+  // Business auth routes
+  "/business/login",
+  "/business/register",
+  "/business/confirm-email",
+  "/business/forgot-password",
   "/components",
   "/components-showcase",
+
+  // Test routes: TODO: take out later
+  "/settings",
+  "/plans",
   "/test",
 ];
-const authRoutes = ["/login", "/register", "/register/personal", "/register/business"];
+
+const authRoutes = [
+  // Personal auth routes
+  "/login",
+  "/register",
+  "/confirm-email",
+  "/forgot-password",
+  // Business auth routes
+  "/business/login",
+  "/business/register",
+  "/business/confirm-email",
+  "/business/forgot-password",
+];
 
 function canAccess(role: string, pathname: string): boolean {
   const allowedRoutes = roleAccessMap[role];
@@ -57,39 +91,36 @@ export async function middleware(req: NextRequest) {
   const accessToken = req.cookies.get("accessToken")?.value;
   const token = accessToken || refreshToken;
 
-  // 2. Handle Auth Routes (/login, /register, etc)
-  // These are for GUESTS ONLY. If logged in, redirect home.
+  // 2. Handle Auth Routes (/login, /register, etc) — guests only
   if (authRoutes.includes(pathname)) {
     if (token) {
       try {
         const payload = decodeJwt(token);
         const userRole = (payload as any).role as string | undefined;
-        const redirectPath = userRole === "ADMIN" ? "/admin" : "/dashboard";
-        return NextResponse.redirect(new URL(redirectPath, req.url));
-      } catch (error) {
+        if (userRole === "ADMIN") return NextResponse.redirect(new URL("/admin", req.url));
+        return NextResponse.redirect(new URL("/dashboard", req.url));
+      } catch {
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }
     }
     return NextResponse.next();
   }
 
-  // 3. Handle public routes (/, /confirm-email, /test, etc)
+  // 3. Handle public routes
   if (publicRoutes.includes(pathname)) {
-    // SPECIAL CASE: Redirct root "/" based on auth status
     if (pathname === "/") {
       if (token) {
         try {
           const payload = decodeJwt(token);
           const userRole = (payload as any).role as string | undefined;
-          const redirectPath = userRole === "ADMIN" ? "/admin" : "/dashboard";
-          return NextResponse.redirect(new URL(redirectPath, req.url));
+          return NextResponse.redirect(
+            new URL(userRole === "ADMIN" ? "/admin" : "/dashboard", req.url)
+          );
         } catch {
           return NextResponse.redirect(new URL("/dashboard", req.url));
         }
-      } else {
-        // Redirct guest to login
-        return NextResponse.redirect(new URL("/login", req.url));
       }
+      return NextResponse.redirect(new URL("/login", req.url));
     }
     return NextResponse.next();
   }
@@ -104,17 +135,55 @@ export async function middleware(req: NextRequest) {
   try {
     const payload = decodeJwt(token);
     const userRole = (payload as any).role as string | undefined;
+    const businessRole = (payload as any).businessRole as string | null | undefined;
+    const appRole = businessRole ? "BUSINESS" : "PARENT";
+    const isOnboarded = req.cookies.get("isOnboarded")?.value;
 
-    if (!userRole) {
+    if (!userRole) return NextResponse.next();
+
+    // 5. Onboarding routing
+    if (isOnboarded === "false") {
+      const onboardingPath =
+        appRole === "BUSINESS" ? "/onboarding/business" : "/onboarding/personal";
+
+      if (pathname.startsWith(onboardingPath)) {
+        // Already on their correct onboarding path — allow through
+        return NextResponse.next();
+      }
+
+      if (canAccess(appRole, pathname)) {
+        // Valid route for this role but not yet onboarded
+        return NextResponse.redirect(new URL(onboardingPath, req.url));
+      }
+
+      // Unknown or cross-role route — fall through to normal checks below
+    }
+
+    if (isOnboarded === "true" && pathname.startsWith("/onboarding")) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+
+    // 6. Business-only route guard
+    if (businessOnlyRoutes.some((r) => pathname.startsWith(r))) {
+      if (!businessRole) {
+        return NextResponse.redirect(new URL("/unauthorized", req.url));
+      }
       return NextResponse.next();
     }
 
-    if (!canAccess(userRole, pathname)) {
-      return NextResponse.redirect(new URL("/unauthorized", req.url));
+    // 7. Role-based access
+    if (!canAccess(appRole, pathname)) {
+      const otherRole = appRole === "BUSINESS" ? "PARENT" : "BUSINESS";
+      if (canAccess(otherRole, pathname)) {
+        // Route belongs to the other role
+        return NextResponse.redirect(new URL("/unauthorized", req.url));
+      }
+      // Unknown route — let Next.js render 404
+      return NextResponse.next();
     }
 
     return NextResponse.next();
-  } catch (error: any) {
+  } catch {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);

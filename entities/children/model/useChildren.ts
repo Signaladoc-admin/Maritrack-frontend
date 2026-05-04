@@ -8,8 +8,7 @@ import {
   deleteChildAction,
 } from "../api/child.actions";
 import type { ChildProfile, CreateChildDto, UpdateChildDto, ChildFilterParams } from "../schema";
-import { getParentChildrenAction } from "@/features/child-profile/api/child.action";
-import { useQuery } from "@tanstack/react-query";
+
 import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
 
 const childActions: ResourceActions<ChildProfile, CreateChildDto, UpdateChildDto> = {

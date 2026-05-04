@@ -2,21 +2,21 @@
 
 import { apiClient } from "@/shared/lib/api-client";
 import type { ActionResult } from "@/shared/api/types";
+import { withSafeAction } from "@/shared/lib/safe-action";
 
 export interface CreateZoneDto {
   name?: string;
 }
 
 export async function createZoneAction(data?: CreateZoneDto): Promise<ActionResult<any>> {
-  try {
-    const response = await apiClient("/mdm-sync/zones", {
-      method: "POST",
-      ...(data?.name && { body: JSON.stringify({ name: data.name }) }),
-    });
-    return { success: true, data: response.data };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to create zone" };
-  }
+  return withSafeAction(
+    async () =>
+      await apiClient("/mdm-sync/zones", {
+        method: "POST",
+        ...(data?.name && { body: JSON.stringify({ name: data.name }) }),
+      }),
+    "Failed to create zone"
+  );
 }
 
 export async function getQrCodeAction(
@@ -43,4 +43,27 @@ export async function getParentZonesAction(): Promise<ActionResult<any>> {
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to fetch parent zones" };
   }
+}
+
+export async function createBusinessZoneAction(data?: CreateZoneDto): Promise<ActionResult<any>> {
+  return withSafeAction(
+    async () =>
+      await apiClient("/mdm-sync/business/zones", {
+        method: "POST",
+        ...(data?.name && { body: JSON.stringify({ name: data.name }) }),
+      }),
+    "Failed to create business zone"
+  );
+}
+
+export async function getBusinessZonesAction(): Promise<ActionResult<any>> {
+  return withSafeAction(
+    async () => {
+      const response = await apiClient("/mdm-sync/zones/business", {
+        method: "GET",
+      });
+      return response.data ?? response;
+    },
+    "Failed to fetch business zones"
+  );
 }

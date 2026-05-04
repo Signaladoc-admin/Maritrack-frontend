@@ -36,7 +36,7 @@ const Device = () => {
     setActiveTab(tab);
     const deviceId = params?.device || "device-id";
 
-    activeTab === tabParam && router.push(`/device/${deviceId}?tab=${tab}`);
+    activeTab === tabParam && router.push(`/devices/${deviceId}?tab=${tab}`);
   };
 
   const isMobile = useIsMobile();

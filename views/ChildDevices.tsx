@@ -12,7 +12,7 @@ import { Edit2Icon, Trash2Icon } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { DeleteChildModal } from "@/features/child-profile/ui/ChildDeleteModal";
-import { IChildProfile } from "@/features/onboarding/types";
+import { IChildProfile } from "@/features/onboarding/personal/types";
 import { useGetChild } from "@/features/child-profile/model/useGetChildrenProfile";
 
 import { ChildDevicesSkeleton } from "./ChildDevicesSkeleton";

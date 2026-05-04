@@ -10,10 +10,10 @@ export function useRegister() {
   const mutation = useMutation({
     mutationFn: registerAction,
     onSuccess: (res) => {
-      console.log("Registration Response:", res);
-
-      // Verification token handling removed as useNewUserStore is deleted
-      console.log("Token received:", (res as any).token);
+      toast({
+        type: "success",
+        title: "Registration successful",
+      });
     },
     onError: (err: any) => {
       const errorMessage = err.message || "An unexpected error occurred. Please try again.";

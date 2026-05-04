@@ -6,6 +6,7 @@ export interface ResourceActions<T, CreateDto = any, UpdateDto = any> {
   getAll: (options?: QueryOptions) => Promise<ActionResult<T[]>>;
   getById: (id: string) => Promise<ActionResult<T>>;
   create: (data: CreateDto) => Promise<ActionResult<T>>;
+  createMultiple?: (data: CreateDto[]) => Promise<ActionResult<T[]>>;
   update: (id: string, data: UpdateDto) => Promise<ActionResult<T>>;
   delete: (id: string) => Promise<ActionResult<void>>;
 }
@@ -40,14 +41,30 @@ export function createResourceHooks<T, CreateDto = any, UpdateDto = any>(
       });
     },
 
+    useCreateMultiple: () => {
+      const queryClient = useQueryClient();
+      return useServerActionMutation(
+        actions.createMultiple ||
+          (async () => ({ success: false, error: "createMultiple not implemented" })),
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: keys.all });
+          },
+        }
+      );
+    },
+
     useUpdate: () => {
       const queryClient = useQueryClient();
       return useServerActionMutation(
-        ({ id, data }: { id: string; data: UpdateDto }) => actions.update(id, data),
+        (_payload: { id: string } & UpdateDto) => {
+          const { id, ...data } = _payload;
+          return actions.update(id, data as unknown as UpdateDto);
+        },
         {
-          onSuccess: (_, { id }) => {
+          onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: keys.all });
-            queryClient.invalidateQueries({ queryKey: keys.detail(id) });
+            queryClient.invalidateQueries({ queryKey: keys.detail(variables.id) });
           },
         }
       );

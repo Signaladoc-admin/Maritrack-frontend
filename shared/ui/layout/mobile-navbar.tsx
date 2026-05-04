@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronLeft, Home, Users, User } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
-import { useUIStore } from "@/shared/stores/ui-store";
+import { useUIStore } from "@/shared/stores/ui.store";
 import { useRouter } from "next/navigation";
 
 const navItems = [

@@ -3,12 +3,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { validateOtpAction } from "../api/auth.actions";
-import { useNewUserStore } from "@/shared/stores/user-store";
+import { useNewUserStore } from "@/shared/stores/user.store";
 import { useLogin } from "@/features/auth-login/model/useLogin";
 import { useToast } from "@/shared/ui/toast";
 import type { OtpConfirmFormValues } from "../schema";
-import { useIsOnboarded } from "@/entities/user/model/useIsOnboarded";
-import { getParentalControlMeAction } from "@/entities/parental-controls/api/parental-controls.actions";
 
 export function useValidateOtp() {
   const router = useRouter();
@@ -16,20 +14,13 @@ export function useValidateOtp() {
   const { login } = useLogin();
   const { email, password, token, clearCredentials } = useNewUserStore();
   const queryClient = useQueryClient();
-  const { checkAndRedirect } = useIsOnboarded();
-
-  console.log(password, email);
 
   const mutation = useMutation({
     mutationFn: (data: OtpConfirmFormValues) => {
       if (!email || !token) {
         throw new Error("Session expired. Please register again.");
       }
-      return validateOtpAction({
-        email,
-        token,
-        otp: data.otp,
-      });
+      return validateOtpAction({ email, token, otp: data.otp });
     },
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["session"] });
@@ -39,27 +30,22 @@ export function useValidateOtp() {
         message: "Your account has been successfully verified!",
       });
 
-      // Auto-login
       if (password && email) {
         try {
-          const profile = await login({ email, password });
+          const { redirectTo } = await login({ email, password });
           clearCredentials();
-
-          // Fetch parental controls to determine onboarding status accurately
-          const pcSettings = await getParentalControlMeAction();
-          checkAndRedirect(profile as any, pcSettings);
-        } catch (loginErr) {
-          console.error("Auto-login failed:", loginErr);
+          router.push(redirectTo);
+        } catch {
           toast({
             type: "warning",
             title: "Auto-login Failed",
             message:
               "Your account is verified, but we couldn't log you in automatically. Please log in manually.",
           });
-          // router.push("/login");
+          router.push("/login");
         }
       } else {
-        // router.push("/login");
+        router.push("/login");
       }
     },
     onError: (err: any) => {

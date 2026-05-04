@@ -1,7 +1,7 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
 import { User } from "lucide-react";
 import { CardWrapper } from "./card-wrapper";
-import { useUserStore } from "@/shared/stores/user-store";
+import { useUserStore } from "@/shared/stores/user.store";
 
 export default function ChildSwitcher() {
   const { children, selectedChildId, setSelectedChildId } = useUserStore();

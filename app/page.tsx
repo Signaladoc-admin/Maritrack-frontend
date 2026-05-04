@@ -9,7 +9,10 @@ import { GeofencingModal } from "@/shared/ui/Modal/Modals/GeofencingModal";
 import { SetTimeLimitModal } from "@/shared/ui/Modal/Modals/TimeLimitModal";
 import { PairDeviceModal } from "@/shared/ui/Modal/Modals/PairDeviceModal";
 import { LoaderModal } from "@/shared/ui/Modal/Modals/LoaderModal";
-import { PricingCard, PricingFeatureItem } from "@/shared/ui/PricingCard/PricingCard";
+import {
+  PricingCard2 as PricingCard,
+  PricingFeatureItem,
+} from "@/shared/ui/PricingCard/PricingCard--v1";
 import { DeviceUsageCard } from "@/shared/ui/DeviceStatusCard/DeviceStatusCard";
 import { UserSelect } from "@/shared/ui/UserDropdown/UserDropdown";
 import { DashboardCard } from "@/shared/ui/DashboardWidget/DashboardWidget";
@@ -244,22 +247,22 @@ export default function Home() {
       <div className="flex flex-col items-center justify-center gap-8 p-10 md:flex-row">
         {/* 1. Basic Card Instance */}
         <PricingCard
-          // title="Basic Plan"
-          // price="0"
-          // description="Joy horrible moreover man feelings own shy. Request norland neither mistake for yet."
-          // features={basicFeatures}
-          // buttonText="Get Basic"
+          title="Basic Plan"
+          price="0"
+          description="Joy horrible moreover man feelings own shy. Request norland neither mistake for yet."
+          features={basicFeatures}
+          buttonText="Get Basic"
           isPremium={false}
           onButtonClick={() => console.log("Basic clicked")}
         />
 
         {/* 2. Premium Card Instance */}
         <PricingCard
-          // title="Premium Plan"
-          // price="49"
-          // description="On even feet time have an no at. Relation so in confined smallest children unpacked delicate."
-          // features={premiumFeatures}
-          // buttonText="Get the premium"
+          title="Premium Plan"
+          price="49"
+          description="On even feet time have an no at. Relation so in confined smallest children unpacked delicate."
+          features={premiumFeatures}
+          buttonText="Get the premium"
           isPremium={true}
           onButtonClick={() => console.log("Premium clicked")}
         />
