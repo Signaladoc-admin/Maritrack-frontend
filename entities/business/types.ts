@@ -49,3 +49,11 @@ export interface Business {
 
 /** Legacy alias kept for existing usages */
 export type BusinessProfile = BusinessProfileData;
+
+export interface PaginatedStaff {
+  staff: BusinessStaff[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}

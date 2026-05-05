@@ -1,16 +1,15 @@
-import EntityListItem from "./EntityListItem";
+import EntityListItem from "../../shared/ui/EntityListItem";
 import { useAuth } from "@/shared/auth/AuthProvider";
-import { useGetDepartments } from "@/features/departments/model/useDepartments";
-import { Department } from "@/features/departments/types";
+import { useGetDepartments } from "@/features/business-users/departments/model/useDepartments";
+import { Department } from "@/features/business-users/departments/types";
 
-export default function DepartmentsList() {
+export default function DepartmentsList({ searchTerm }: { searchTerm: string }) {
   const { user } = useAuth();
   const { data: departmentData } = useGetDepartments({
     businessId: user?.businessId!,
+    search: searchTerm,
   });
   const departments = departmentData?.departments || [];
-
-  console.log(departmentData);
 
   return (
     <div className="space-y-1">

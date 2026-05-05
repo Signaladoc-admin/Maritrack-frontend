@@ -1,9 +1,9 @@
-import { Department } from "@/app/(in-app)/users/types";
 import { departmentSchema, DepartmentValues } from "@/entities/user/model/user.schema";
 import {
   useCreateDepartment,
+  useGetDepartment,
   useUpdateDepartment,
-} from "@/features/departments/model/useDepartments";
+} from "@/features/business-users/departments/model/useDepartments";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { Button } from "@/shared/ui/button";
 import { InputGroup } from "@/shared/ui/input-group";
@@ -16,11 +16,11 @@ import { useForm } from "react-hook-form";
 export default function AddEditDepartmentModal({
   open,
   onOpenChange,
-  initialData,
+  selectedId,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  initialData: Department;
+  selectedId: string;
 }) {
   const { register, formState, handleSubmit, setValue } = useForm<DepartmentValues>({
     defaultValues: {
@@ -29,6 +29,9 @@ export default function AddEditDepartmentModal({
     resolver: zodResolver(departmentSchema),
   });
 
+  // If selectedId is truthy, fetch the department data for updating
+  const { data: initialData, isLoading: isGettingDepartment } = useGetDepartment(selectedId);
+
   const { mutateAsync: createDepartment, isPending: isCreatingDepartment } = useCreateDepartment();
   const { mutateAsync: updateDepartment, isPending: isUpdatingDepartment } = useUpdateDepartment();
   const { toast } = useToast();
@@ -36,8 +39,8 @@ export default function AddEditDepartmentModal({
   const businessId = user?.businessId;
 
   useEffect(() => {
-    setValue("name", initialData?.name);
-  }, [initialData]);
+    setValue("name", initialData?.name || "");
+  }, [initialData, setValue, open]);
 
   async function onSubmit(data: DepartmentValues) {
     try {
@@ -63,7 +66,8 @@ export default function AddEditDepartmentModal({
     }
   }
 
-  const isSubmitting = isCreatingDepartment || isUpdatingDepartment;
+  const isSubmitting = isCreatingDepartment || isUpdatingDepartment || isGettingDepartment;
+
   return (
     <Modal
       isOpen={open}

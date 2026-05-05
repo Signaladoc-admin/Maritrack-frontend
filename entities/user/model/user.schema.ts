@@ -148,8 +148,6 @@ export const businessUserDetailsSchema = z.object({
   email: z.string(),
   phone: z.string(),
   address: z.string(),
-  country: z.string().min(1, "Country is required"),
-  state: z.string().min(1, "State is required"),
 });
 export type BusinessUserDetailsValues = z.infer<typeof businessUserDetailsSchema>;
 

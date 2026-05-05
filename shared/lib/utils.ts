@@ -113,5 +113,5 @@ export function formatID(id: string, prefix?: string, length: number = 4): strin
   if (prefix) {
     return `${prefix}-${truncateID(id, length)}`;
   }
-  return truncateID(id, length);
+  return `#${truncateID(id, length)}`;
 }

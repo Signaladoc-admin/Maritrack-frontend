@@ -31,14 +31,29 @@ export async function getTeamMemberAction(id: string) {
 export async function createTeamMemberAction({
   email,
   location,
+  ...rest
 }: {
+  // Required fields (for when inviting via email)
   email: string;
   location: string;
+
+  // Optional fields (for when user fills up their profile)
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  address?: string;
+  role?: string;
+  position?: string;
+  departmentId: string;
 }) {
   return withSafeAction(async () => {
     const res = await apiClient(`/staff`, {
       method: "POST",
-      body: JSON.stringify({ email, location }),
+      body: JSON.stringify({
+        email,
+        location,
+        ...rest,
+      }),
       noRedirect: true,
     });
     return res.data ?? res;

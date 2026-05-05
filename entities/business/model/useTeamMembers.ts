@@ -7,10 +7,15 @@ import {
   updateTeamMemberAction,
 } from "../api/team-members.actions";
 import { createResourceHooks, ResourceActions } from "@/shared/api/createResourceHooks";
-import { BusinessStaff } from "../types";
+import { BusinessStaff, PaginatedStaff } from "../types";
 import { TeamMemberSchemaValues as TeamMemberDto } from "@/features/onboarding/business/schema";
 
-const businessActions: ResourceActions<BusinessStaff, TeamMemberDto> = {
+const businessActions: ResourceActions<
+  BusinessStaff,
+  TeamMemberDto,
+  TeamMemberDto,
+  PaginatedStaff
+> = {
   getAll: async (options?: any) => await getTeamMembersAction(options),
   getById: async (id: string) => await getTeamMemberAction(id),
   create: async (data: TeamMemberDto) => await createTeamMemberAction(data),
@@ -26,7 +31,7 @@ export const {
   useCreateMultiple: useCreateTeamMembers,
   useUpdate: useUpdateTeamMember,
   useDelete: useDeleteTeamMember,
-} = createResourceHooks<BusinessStaff, TeamMemberDto, TeamMemberDto>(
+} = createResourceHooks<BusinessStaff, TeamMemberDto, TeamMemberDto, PaginatedStaff>(
   "team-members",
   businessActions
 );
