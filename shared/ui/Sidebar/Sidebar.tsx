@@ -42,7 +42,7 @@ export function Sidebar() {
 
         <div className="flex w-full flex-1 flex-col items-center justify-center gap-8">
           <div className="flex flex-col gap-6">
-            {parentZonesRes[0]?.parentChildren?.map((child: ChildRelationship) => (
+            {parentZonesRes?.[0]?.parentChildren?.map((child: ChildRelationship) => (
               <Tooltip key={child.childId}>
                 <TooltipTrigger asChild>
                   <Link href={`/child/${child.childId}`} className="group relative cursor-pointer">
@@ -70,9 +70,11 @@ export function Sidebar() {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <button className="group flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-[#EEEEEE] text-[#1B3C73] transition-all">
-                <Plus className="h-5 w-5" />
-              </button>
+              <Link href={"/children/add"}>
+                <button className="group flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-[#EEEEEE] text-[#1B3C73] transition-all">
+                  <Plus className="h-5 w-5" />
+                </button>
+              </Link>
             </TooltipTrigger>
             <TooltipContent side="right" className="ml-2">
               <p>Add a new child</p>

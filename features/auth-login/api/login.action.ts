@@ -33,6 +33,8 @@ export async function loginAction(credentials: LoginValues) {
       body: JSON.stringify(credentials),
     });
 
+    console.log("response", response);
+
     const profile = response.data as UserProfile;
     const accessToken = response.accessToken;
 

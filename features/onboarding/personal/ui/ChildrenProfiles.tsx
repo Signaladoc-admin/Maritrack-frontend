@@ -41,13 +41,14 @@ export default function ChildrenProfiles({
     enabled: !!activeParentId,
   });
 
+  console.log("parentZonesRes", parentZonesRes);
+
   const zoneId = user?.zoneId?.[0]?.id;
   const { data: subscriptionData } = useActiveSubscription(zoneId);
   const hasPaid = subscriptionData?.active ?? false;
 
   const [planChosen, setPlanChosen] = useState(false);
   const canProceed = hasPaid || planChosen;
-  console.log(canProceed);
 
   const { mutateAsync: createChild, isPending: isCreatingChild } = useCreateChild();
   const { mutateAsync: updateChild, isPending: isUpdatingChild } = useUpdateChild();
@@ -86,7 +87,6 @@ export default function ChildrenProfiles({
   }
 
   const handleAddChild = async (data: IChildProfile) => {
-    console.log("activeParentId", activeParentId);
     if (!activeParentId) {
       toast({ title: "Error", message: "Parent profile not found", type: "error" });
       return;
@@ -233,7 +233,7 @@ export default function ChildrenProfiles({
         childId={pendingChild?.id!}
         childName={pendingChild?.name || "Child"}
         onboardingCode={pendingChild?.onboardingCode}
-        zoneId={user?.zoneId?.[0]?.id}
+        zoneId={user?.zoneId?.[0]?.mdmZoneId}
         onBack={() => setCurrentView("list")}
         onComplete={handleFinishPairing}
         onRollback={handlePairingRollback}

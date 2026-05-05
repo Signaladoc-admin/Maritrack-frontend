@@ -10,10 +10,17 @@ import { appData } from "@/app/(in-app)/dashboard/data";
 import { useDragScroll } from "@/shared/hooks/useDragScroll";
 import { useRouter } from "next/navigation";
 import { formatDate } from "date-fns";
+import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
+import { useUserProfile } from "@/entities/user/model/useUserProfile";
 
 export default function ParentDashboard() {
   const { scrollContainerRef, events } = useDragScroll();
   const [currentDate, setCurrentDate] = useState<Date | undefined>(undefined);
+  const { data: user, isLoading: isLoadingUser } = useUserProfile();
+
+  console.log("user:", user);
+
+  console.log("zoneId:", user?.zoneId?.[0]?.id);
 
   useEffect(() => {
     setCurrentDate(new Date());
