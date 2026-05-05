@@ -1,5 +1,6 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { apiClient } from "@/shared/lib/api-client";
 import { withSafeAction } from "@/shared/lib/safe-action";
 import type { LoginValues, UserProfile } from "@/entities/user/model/user.schema";
@@ -26,6 +27,13 @@ interface LoginResponse {
   accessToken: string;
 }
 
+const ONBOARDED_COOKIE_OPTIONS = {
+  httpOnly: true,
+  sameSite: "lax" as const,
+  path: "/",
+  maxAge: 60 * 60 * 24 * 7, // 7 days
+};
+
 export async function loginAction(credentials: LoginValues) {
   return withSafeAction(async () => {
     const response: LoginResponse = await apiClient("/users/login", {
@@ -37,21 +45,24 @@ export async function loginAction(credentials: LoginValues) {
 
     const profile = response.data as UserProfile;
     const accessToken = response.accessToken;
-
-    let redirectTo: string;
+    const cookieStore = await cookies();
 
     if (profile.role === "ADMIN") {
-      redirectTo = "/admin";
-    } else if (profile.businessRole) {
-      const business = await getBusinessAction(profile.businessId!);
-      const hasProfile = !!business.data?.profile;
-      const hasStaff = (business.data?.staff?.length ?? 0) > 0;
-      redirectTo = hasProfile && hasStaff ? "/dashboard" : "/onboarding/business";
-    } else {
-      const pcSettings = await getParentalControlMeAction();
-      redirectTo = pcSettings ? "/dashboard" : "/onboarding/personal";
+      return { profile, accessToken, redirectTo: "/admin" };
     }
 
-    return { profile, accessToken, redirectTo };
+    let isOnboarded: boolean;
+
+    if (profile.businessRole) {
+      const business = await getBusinessAction(profile.businessId!);
+      isOnboarded = !!business.data?.profile;
+    } else {
+      const pcSettings = await getParentalControlMeAction();
+      isOnboarded = !!pcSettings;
+    }
+
+    cookieStore.set("isOnboarded", isOnboarded ? "true" : "false", ONBOARDED_COOKIE_OPTIONS);
+
+    return { profile, accessToken, redirectTo: "/dashboard" };
   }, "Login failed. Please check your credentials and try again.");
 }

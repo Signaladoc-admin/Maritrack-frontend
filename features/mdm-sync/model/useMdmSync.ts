@@ -2,13 +2,20 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerActionMutation, useServerActionQuery } from "@/shared/api/server-action-hooks";
-import { createZoneAction, getQrCodeAction, getParentZonesAction } from "../api/mdm-sync.actions";
+import {
+  createZoneAction,
+  createBusinessZoneAction,
+  getQrCodeAction,
+  getParentZonesAction,
+  getBusinessZonesAction,
+} from "../api/mdm-sync.actions";
 import { useToast } from "@/shared/ui/toast";
 
 export const mdmSyncKeys = {
   all: ["mdm-sync"] as const,
   zones: ["mdm-sync", "zones"] as const,
   parentZones: ["mdm-sync", "parentZones"] as const,
+  businessZones: ["mdm-sync", "businessZones"] as const,
   qrcode: (zoneId: string, onboardingCode: string) =>
     ["mdm-sync", "qrcode", zoneId, onboardingCode] as const,
 };
@@ -43,6 +50,32 @@ export function useGetQrCode(zoneId: string | undefined, onboardingCode: string 
 
 export function useParentZones(options?: { enabled?: boolean }) {
   return useServerActionQuery(mdmSyncKeys.parentZones, getParentZonesAction, [], {
+    ...options,
+    retry: 0,
+  });
+}
+
+export function useCreateBusinessZone() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useServerActionMutation(createBusinessZoneAction, {
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: mdmSyncKeys.businessZones });
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        message: error.message || "Failed to create business zone",
+        type: "error",
+      });
+    },
+  });
+}
+
+export function useBusinessZones(options?: { enabled?: boolean }) {
+  return useServerActionQuery(mdmSyncKeys.businessZones, getBusinessZonesAction, [], {
     ...options,
     retry: 0,
   });

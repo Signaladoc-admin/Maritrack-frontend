@@ -81,25 +81,8 @@ export default function BusinessDetailsForm({
 
   const queryClient = useQueryClient();
 
-  console.log(businessProfile);
-
   const { mutateAsync: createBusinessProfile, isPending: isCreating } = useCreateBusinessProfile();
   const { mutateAsync: updateBusinessProfile, isPending: isUpdating } = useUpdateBusinessProfile();
-
-  // const { mutateAsync: createZone, isPending: isCreatingZone, error } = useCreateZone();
-
-  // console.log(error);
-
-  // const { data: parentZones, isLoading: isLoadingParentZones, error } = useParentZones();
-
-  // console.log(parentZones, error);
-
-  // useEffect(() => {
-  //   if (!isLoadingBusiness && user && !zoneId) {
-  //     // console.log("Creating zone");
-  //     // createZone(undefined);
-  //   }
-  // }, [isLoadingBusiness, user, zoneId]);
 
   const isSubmitting = isCreating || isUpdating;
 
