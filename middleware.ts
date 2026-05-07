@@ -33,6 +33,7 @@ const businessOnlyRoutes = ["/onboarding/business"];
 // Routes that don't require authentication at all
 const publicRoutes = [
   "/",
+  "/landing",
   "/unauthorized",
   // Personal auth routes
   "/login",
