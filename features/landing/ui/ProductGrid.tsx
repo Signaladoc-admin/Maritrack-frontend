@@ -18,8 +18,8 @@ export default function ProductGrid({ businessFeatures, parentFeatures }: Produc
   const [activeTab, setActiveTab] = useState<'businesses' | 'parents'>('businesses');
 
   return (
-    <section className="container mx-auto px-10 ">
-      <div className="text-center mx-auto mb-16">
+    <section className="container mx-auto md:px-10 px-6 ">
+      <div className="text-center mx-auto mb-10 md:mb-16">
         <h2 className="text-5xl md:text-6xl font-bold mb-6">
           A Product for <span className="text-[#04DB62]">All Users</span>
         </h2>
@@ -29,18 +29,18 @@ export default function ProductGrid({ businessFeatures, parentFeatures }: Produc
 
         {/* Tabs */}
         <div className="flex justify-center">
-          <div className="flex bg-[#161A25] rounded-xl p-1">
+          <div className="flex bg-[#161A25] rounded-xl p-2">
             <button
               onClick={() => setActiveTab('businesses')}
-              className={`px-8 py-3 rounded-lg font-medium transition-colors ${activeTab === 'businesses' ? 'bg-[#05E0E4] text-[#161A25]' : 'text-gray-400 hover:text-white'}`}
+              className={`md:px-8 px-5 py-4 rounded-lg font-roboto font-semibold transition-colors text-lg ${activeTab === 'businesses' ? 'bg-[#05E0E4] text-[#161A25] font-semibold' : 'text-gray-400 hover:text-white'}`}
             >
-              Businesses
+              Enterprise Management
             </button>
             <button
               onClick={() => setActiveTab('parents')}
-              className={`px-8 py-3 rounded-lg font-medium transition-colors ${activeTab === 'parents' ? 'bg-[#05E0E4] text-[#161A25]' : 'text-gray-400 hover:text-white'}`}
+              className={`md:px-8 px-5 py-4 rounded-lg font-roboto font-semibold transition-colors text-lg ${activeTab === 'parents' ? 'bg-[#05E0E4] text-[#161A25]' : 'text-gray-400 hover:text-white'}`}
             >
-              Parents
+              Family Management
             </button>
           </div>
         </div>
