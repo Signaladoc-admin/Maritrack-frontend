@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation";
 import { useQueryState } from "nuqs";
 import { useMemo } from "react";
 import { cn } from "@/shared/lib/utils";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 export default function DevicesList() {
   const router = useRouter();
@@ -27,6 +28,10 @@ export default function DevicesList() {
   const [selectedTab, setSelectedTab] = useQueryState("tab", { defaultValue: "ALL" });
   const [selectedFilter, setSelectedFilter] = useQueryState("filter", { defaultValue: "ALL" });
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
+
+  const { user } = useAuth();
+
+  const businessId = user?.businessId;
 
   function handleSelectDevice(device: Device) {
     router.push(`/devices/${device.id}`);

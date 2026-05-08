@@ -10,10 +10,17 @@ import { appData } from "@/app/(in-app)/dashboard/data";
 import { useDragScroll } from "@/shared/hooks/useDragScroll";
 import { useRouter } from "next/navigation";
 import { formatDate } from "date-fns";
+import { useParentZones, useZoneDevices } from "@/features/mdm-sync/model/useMdmSync";
 
 export default function ParentDashboard() {
   const { scrollContainerRef, events } = useDragScroll();
   const [currentDate, setCurrentDate] = useState<Date | undefined>(undefined);
+
+  const { data: parentZonesRes } = useParentZones();
+
+  const zoneId = parentZonesRes?.[0]?.id;
+
+  const { data: devices, isLoading: isLoadingDevices } = useZoneDevices(zoneId);
 
   useEffect(() => {
     setCurrentDate(new Date());
@@ -58,30 +65,25 @@ export default function ParentDashboard() {
         {...events}
         className="flex w-full cursor-grab gap-6 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] *:min-w-[92%] *:shrink-0 active:cursor-grabbing md:*:max-w-[calc((100%-48px)/1.8)] md:*:min-w-[calc((100%-48px)/1.8)] lg:*:max-w-[calc((100%-48px)/2.2)] lg:*:min-w-[calc((100%-48px)/2.2)] [&::-webkit-scrollbar]:hidden"
       >
-        <DeviceUsageCard
-          deviceName="Mide's iPhone"
-          status="active"
-          percentage={37.5}
-          device="Google Pixel 9"
-          isRow={true}
-          onClick={() => router.push(`/devices/1`)}
-        />
-        <DeviceUsageCard
-          deviceName="Mide's iPhone"
-          status="locked"
-          percentage={100}
-          device="Iphone 14"
-          isRow={true}
-          onClick={() => router.push(`/devices/2`)}
-        />
-        <DeviceUsageCard
-          deviceName="Mide's iPhone"
-          status="locked"
-          percentage={100}
-          device="Iphone 14"
-          isRow={true}
-          onClick={() => router.push(`/devices/3`)}
-        />
+        {devices && devices.length > 0 ? (
+          devices.map((device) => (
+            <DeviceUsageCard
+              key={device.id}
+              deviceName={device.model}
+              status="active" // Defaulting to active as per instruction "For data that are not available you can leave them blank"
+              percentage={0} // Defaulting to 0 as battery percentage is not in the provided response
+              device={device.manufacturer}
+              isRow={true}
+              onClick={() => router.push(`/devices/${device.id}`)}
+            />
+          ))
+        ) : !isLoadingDevices ? (
+          <div className="flex h-40 w-full items-center justify-center rounded-[24px] border border-dashed border-[#1B3C73] bg-[#081223] text-[#8198BF]">
+            No devices found
+          </div>
+        ) : (
+          <div className="flex h-40 w-full animate-pulse items-center justify-center rounded-[24px] bg-[#081223]" />
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

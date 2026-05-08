@@ -28,9 +28,6 @@ export default function PairingQRStep({
   onComplete,
   onRollback,
 }: PairingQRStepProps) {
-  console.log("onboardingCode", onboardingCode);
-  console.log("zoneId", zoneId);
-  console.log("childId", childId);
   const { toast } = useToast();
   const {
     qrCodeSrc,

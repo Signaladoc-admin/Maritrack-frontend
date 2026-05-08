@@ -53,7 +53,7 @@ export default function BusinessDashboard() {
           subtitle={
             <div className="flex items-center gap-2">
               <span className="font-normal">Analytics for</span>
-              <select className="rounded-md border-transparent font-semibold bg-transparent outline-none">
+              <select className="rounded-md border-transparent bg-transparent font-semibold outline-none">
                 <option value="this_week">This week</option>
                 <option value="last_week">Last week</option>
                 <option value="this_month">This month</option>
@@ -62,7 +62,10 @@ export default function BusinessDashboard() {
             </div>
           }
         />
-        <Button variant="outline" className="flex items-center gap-2 text-sm font-semibold text-neutral-600 rounded-lg">
+        <Button
+          variant="outline"
+          className="flex items-center gap-2 rounded-lg text-sm font-semibold text-neutral-600"
+        >
           <DownloadCloud size={16} />
           Download
         </Button>
@@ -95,7 +98,7 @@ export default function BusinessDashboard() {
       {/* COMPLIANCE & SECURITY */}
       <div className="space-y-5">
         <H4 className="text-sm font-bold text-[#1a3860]">Compliance & Security</H4>
-        
+
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Row 1 */}
           <MiniLineChartCard
@@ -114,7 +117,7 @@ export default function BusinessDashboard() {
             secondaryLabel="Secured"
             secondaryColor="#22C55E"
           />
-          
+
           {/* Row 2 */}
           <DashboardTableCard
             title="Policy Violation incidents"
@@ -167,7 +170,7 @@ export default function BusinessDashboard() {
       {/* ASSET TRACKING & INVENTORY HEALTH */}
       <div className="space-y-5">
         <H4 className="text-sm font-bold text-[#1a3860]">Asset Tracking & Inventory Health</H4>
-        
+
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Row 1 */}
           <MiniLineChartCard
@@ -186,7 +189,7 @@ export default function BusinessDashboard() {
             secondaryLabel="Functional"
             secondaryColor="#22C55E"
           />
-          
+
           {/* Row 2 */}
           <DashboardTableCard
             title="Lost/Stolen Device Reports"
@@ -197,19 +200,22 @@ export default function BusinessDashboard() {
             data={lostDevicesData}
             timingLabel="This month"
           />
-          <DeviceMapCard
-            title="Jailbreak/Root Detection Rate"
-            timingLabel="This month"
-          />
+          <DeviceMapCard title="Jailbreak/Root Detection Rate" timingLabel="This month" />
         </div>
 
         {/* Full Width Row */}
         <div>
-          <H4 className="text-sm font-bold text-[#1a3860] mb-4 mt-6">Blacklisted Website Categories</H4>
+          <H4 className="mt-6 mb-4 text-sm font-bold text-[#1a3860]">
+            Blacklisted Website Categories
+          </H4>
           <DashboardTableCard
             columns={[
               { key: "website", header: "Websites", className: "w-[40%]" },
-              { key: "category", header: "Category", className: "w-[40%] text-neutral-600 font-semibold text-[13px]" },
+              {
+                key: "category",
+                header: "Category",
+                className: "w-[40%] text-neutral-600 font-semibold text-[13px]",
+              },
               { key: "attempts", header: "Attempts", className: "w-[20%]" },
             ]}
             data={blacklistedWebsitesData}

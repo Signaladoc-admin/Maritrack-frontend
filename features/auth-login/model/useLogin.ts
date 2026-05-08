@@ -7,13 +7,10 @@ export function useLogin() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (credentials: Parameters<typeof loginAction>[0]) => {
-      const result = await loginAction(credentials);
-      if (!result.success) throw new Error(result.error);
-      return result.data;
-    },
-    onSuccess: ({ profile }) => {
-      queryClient.setQueryData(["session"], profile);
+    mutationFn: loginAction,
+    onSuccess: (result) => {
+      if (!result.success) return;
+      queryClient.setQueryData(["session"], result.data.profile);
     },
     onError: (err: any) => {
       const errorMessage = err.message || "An unexpected error occurred. Please try again.";
@@ -25,8 +22,14 @@ export function useLogin() {
     },
   });
 
+  const login = async (...args: Parameters<typeof mutation.mutateAsync>) => {
+    const result = await mutation.mutateAsync(...args);
+    if (!result.success) throw new Error(result.error);
+    return result.data;
+  };
+
   return {
-    login: mutation.mutateAsync,
+    login,
     isSubmitting: mutation.isPending,
     error: mutation.error?.message || null,
     mutation,

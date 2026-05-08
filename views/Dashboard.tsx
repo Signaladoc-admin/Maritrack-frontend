@@ -3,6 +3,7 @@
 import BusinessDashboard from "@/views/shared-views/dashboard/BusinessDashboard";
 import ParentDashboard from "@/views/shared-views/dashboard/ParentDashboard";
 import { useAuth } from "@/shared/auth/AuthProvider";
+import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
 
 export default function Dashboard() {
   const { user } = useAuth();

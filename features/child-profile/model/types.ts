@@ -39,6 +39,7 @@ export interface Child {
 }
 
 export interface ChildRelationship {
+  id: string;
   child: Child;
   childId: string;
   parentId: string;
@@ -47,4 +48,6 @@ export interface ChildRelationship {
   updatedAt: string;
   deleted: boolean;
   deletedAt: string | null;
+  imageUrl: string;
+  name: string;
 }
