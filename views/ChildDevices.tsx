@@ -46,7 +46,7 @@ const ChildDevices = () => {
   return (
     <div>
       <div className="">
-        <Back label="Go back" />
+        <Back label="Go back" href="/dashboard" />
 
         <div className="my-12 flex items-center justify-between">
           <div className="flex items-center gap-5">
