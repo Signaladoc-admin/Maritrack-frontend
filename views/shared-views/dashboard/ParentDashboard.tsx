@@ -22,8 +22,6 @@ export default function ParentDashboard() {
 
   const { data: devices, isLoading: isLoadingDevices } = useZoneDevices(zoneId);
 
-  console.log(devices);
-
   useEffect(() => {
     setCurrentDate(new Date());
   }, []);

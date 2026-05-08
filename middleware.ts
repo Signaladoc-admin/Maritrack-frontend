@@ -124,20 +124,6 @@ export async function middleware(req: NextRequest) {
 
   // 3. Handle public routes
   if (publicRoutes.includes(pathname)) {
-    if (pathname === "/") {
-      if (token) {
-        try {
-          const payload = decodeJwt(token);
-          const userRole = (payload as any).role as string | undefined;
-          return NextResponse.redirect(
-            new URL(userRole === "ADMIN" ? "/admin" : "/dashboard", req.url)
-          );
-        } catch {
-          return NextResponse.redirect(new URL("/dashboard", req.url));
-        }
-      }
-      return NextResponse.redirect(new URL("/login", req.url));
-    }
     return NextResponse.next();
   }
 
