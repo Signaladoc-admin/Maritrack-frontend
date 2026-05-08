@@ -1,7 +1,7 @@
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans, Roboto } from "next/font/google";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import Providers from "./providers";
@@ -12,6 +12,13 @@ const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
   subsets: ["latin"],
 });
+
+const roboto = Roboto({
+  variable: "--font-roboto",
+  subsets: ["latin"],
+});
+
+
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -25,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${jakarta.variable} overflow-x-hidden antialiased`} suppressHydrationWarning>
+      <body className={`${jakarta.variable} ${roboto.variable} overflow-x-hidden antialiased`} suppressHydrationWarning>
         <ToastProvider>
           <Providers>
             <NuqsAdapter>

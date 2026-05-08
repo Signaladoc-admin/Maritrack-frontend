@@ -22,7 +22,7 @@ export default function CtaSection() {
         
         <div className="lg:w-1/2 relative z-10 flex justify-center lg:justify-end">
           <Image 
-            src="/assets/Rectangle1.svg" 
+            src="/assets/herroframe2.png" 
             alt="Dashboard statistics" 
             width={600} 
             height={400} 
