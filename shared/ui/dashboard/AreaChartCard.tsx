@@ -15,7 +15,7 @@ interface AreaChartCardProps {
   xAxisKey: string;
   color: string;
   gradientId: string;
-  timeRange: string;
+  timeRange?: string;
 }
 
 export function AreaChartCard({

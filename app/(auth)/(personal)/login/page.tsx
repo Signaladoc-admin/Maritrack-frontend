@@ -1,6 +1,6 @@
 import { Header } from "@/shared/ui/layout/header";
 import LoginForm from "@/features/auth-login/ui/LoginForm";
-import AuthLayout from "@/features/auth/ui/AuthLayout";
+// import AuthLayout from "@/features/auth/ui/AuthLayout";
 
 export default function LoginPage() {
   return (

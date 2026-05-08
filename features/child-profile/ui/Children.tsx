@@ -9,7 +9,7 @@ import NewChildProfileButton from "./NewChildProfileButton";
 import { useRouter } from "next/navigation";
 
 export default function Children() {
-  const { children, isFetchingChildren } = useParentChildren();
+  const { data: children, isLoading: isFetchingChildren } = useParentChildren();
   const router = useRouter();
 
   return (
@@ -27,7 +27,7 @@ export default function Children() {
         )}
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {children?.map((child: Child) => (
+          {children?.data?.map((child: Child) => (
             <Link href={`/child/${child.id}`} key={child.id}>
               <ChildCard child={child} />
             </Link>
