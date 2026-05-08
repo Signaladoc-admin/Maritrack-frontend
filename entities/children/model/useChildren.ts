@@ -13,9 +13,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
 
 const childActions: ResourceActions<ChildProfile, CreateChildDto, UpdateChildDto> = {
-  getAll: async (options?: ChildFilterParams) => {
+  getAll: async () => {
     try {
-      const data = await getChildrenAction(options);
+      const data = await getChildrenAction();
       return { success: true, data };
     } catch (error: any) {
       return { success: false, error: error.message };
@@ -72,23 +72,23 @@ export const useChildrenByParent = (parentId: string | null | undefined) => {
   );
 };
 
-// export const useParentChildren = () => {
-//   return useQuery({
-//     queryKey: ["children", "parent"],
-//     queryFn: getParentChildrenAction,
-//     staleTime: 5 * 60 * 1000,
-//     refetchOnWindowFocus: false,
-//   });
-// };
-
 export const useParentChildren = () => {
-  const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentZones();
-
-  if (!parentZonesRes) return { children: [], isFetchingChildren };
-
-  const extractedChildren = parentZonesRes?.flatMap(
-    (zone: any) => zone.parentChildren?.map((pc: any) => pc.child) || []
-  );
-  // Remove any undefined/null values that might have snuck in and format
-  return { children: extractedChildren.filter(Boolean) as any, isFetchingChildren };
+  return useQuery({
+    queryKey: ["children", "parent"],
+    queryFn: getParentChildrenAction,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
 };
+
+// export const useParentChildren = () => {
+//   const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentZones();
+
+//   if (!parentZonesRes) return { children: [], isFetchingChildren };
+
+//   const extractedChildren = parentZonesRes?.flatMap(
+//     (zone: any) => zone.parentChildren?.map((pc: any) => pc.child) || []
+//   );
+//   // Remove any undefined/null values that might have snuck in and format
+//   return { children: extractedChildren.filter(Boolean) as any, isFetchingChildren };
+// };

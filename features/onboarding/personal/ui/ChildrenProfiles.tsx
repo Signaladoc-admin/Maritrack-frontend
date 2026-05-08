@@ -39,8 +39,6 @@ export default function ChildrenProfiles({
     enabled: !!activeParentId,
   });
 
-  console.log("parentZonesRes", parentZonesRes);
-
   const zoneId = user?.zoneId?.[0]?.id;
   const { data: subscriptionData } = useActiveSubscription(zoneId);
   const hasPaid = subscriptionData?.active ?? false;
@@ -218,7 +216,7 @@ export default function ChildrenProfiles({
         childId={pendingChild?.id!}
         childName={pendingChild?.name || "Child"}
         onboardingCode={pendingChild?.onboardingCode}
-        zoneId={user?.zoneId?.[0]?.mdmZoneId}
+        zoneId={user?.zoneId?.[0]?.id}
         onBack={() => setCurrentView("list")}
         onComplete={handleFinishPairing}
         onRollback={handlePairingRollback}

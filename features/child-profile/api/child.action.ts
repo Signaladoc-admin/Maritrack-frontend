@@ -18,7 +18,7 @@ export async function getParentChildrenAction(): Promise<ActionResult<any>> {
     const response = await apiClient("/children/parent", {
       method: "GET",
     });
-    return { success: true, data: response.data };
+    return { success: true, data: response.data.children };
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to fetch children" };
   }

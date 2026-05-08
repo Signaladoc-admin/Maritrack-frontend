@@ -15,7 +15,9 @@ const roleAccessMap: Record<string, string[]> = {
     "/team/*",
     "/billing",
     "/billing/*",
+    "/users",
     "/users/*",
+    "/devices",
     "/devices/*",
   ],
   PARENT: [
@@ -26,7 +28,9 @@ const roleAccessMap: Record<string, string[]> = {
     "/plans",
     "/child",
     "/child/*",
+    "/children",
     "/children/*",
+    "/devices/*",
   ],
 };
 
@@ -78,10 +82,10 @@ function canAccess(role: string, pathname: string): boolean {
 
     if (route.endsWith("/*")) {
       const baseRoute = route.slice(0, -2);
-      return pathname === baseRoute || pathname.startsWith(baseRoute + "/");
+      return pathname.startsWith(baseRoute + "/");
     }
 
-    return pathname === route || pathname.startsWith(route + "/");
+    return pathname === route;
   });
 }
 

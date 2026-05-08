@@ -41,7 +41,6 @@ export default function PairingQRStep({
   });
 
   const isLoading = isGenerating || isPending;
-  console.log(qrCodeSrc);
 
   useEffect(() => {
     if (isError && error) {

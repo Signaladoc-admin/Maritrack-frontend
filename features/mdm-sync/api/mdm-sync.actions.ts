@@ -3,6 +3,7 @@
 import { apiClient } from "@/shared/lib/api-client";
 import type { ActionResult } from "@/shared/api/types";
 import { withSafeAction } from "@/shared/lib/safe-action";
+import type { Device } from "@/entities/device/model/types";
 
 export interface CreateZoneDto {
   name?: string;
@@ -39,7 +40,6 @@ export async function getParentZonesAction(): Promise<ActionResult<any>> {
     const response = await apiClient("/mdm-sync/zones/parent", {
       method: "GET",
     });
-    console.log(response);
     return { success: true, data: response.data ?? response };
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to fetch parent zones" };
@@ -58,13 +58,19 @@ export async function createBusinessZoneAction(data?: CreateZoneDto): Promise<Ac
 }
 
 export async function getBusinessZonesAction(): Promise<ActionResult<any>> {
-  return withSafeAction(
-    async () => {
-      const response = await apiClient("/mdm-sync/zones/business", {
-        method: "GET",
-      });
-      return response.data ?? response;
-    },
-    "Failed to fetch business zones"
-  );
+  return withSafeAction(async () => {
+    const response = await apiClient("/mdm-sync/zones/business", {
+      method: "GET",
+    });
+    return response.data ?? response;
+  }, "Failed to fetch business zones");
+}
+
+export async function getZoneDevicesAction(zoneId: string): Promise<ActionResult<Device[]>> {
+  return withSafeAction(async () => {
+    const response = await apiClient(`/mdm-sync/zones/${zoneId}/devices`, {
+      method: "GET",
+    });
+    return response.data.data;
+  }, "Failed to fetch zone devices");
 }
