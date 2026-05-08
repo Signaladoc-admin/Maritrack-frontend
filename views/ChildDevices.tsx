@@ -13,7 +13,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { DeleteChildModal } from "@/features/child-profile/ui/ChildDeleteModal";
 import { IChildProfile } from "@/features/onboarding/personal/types";
-import { useGetChild } from "@/features/child-profile/model/useGetChildrenProfile";
+import { useGetChild, useDeleteChild } from "@/features/child-profile/model/useGetChildrenProfile";
 
 import { ChildDevicesSkeleton } from "./ChildDevicesSkeleton";
 
@@ -30,8 +30,14 @@ const ChildDevices = () => {
   const router = useRouter();
 
   const { data: childData, isLoading } = useGetChild(child as string);
+  const { mutateAsync: deleteChild, isPending: isDeleting } = useDeleteChild();
 
-  console.log(childData);
+  const handleDelete = async () => {
+    if (!child) return;
+    await deleteChild(child);
+    setShowDelete(false);
+    router.push("/children");
+  };
 
   if (isLoading) {
     return <ChildDevicesSkeleton />;
@@ -108,10 +114,10 @@ const ChildDevices = () => {
         onOpenChange={setShowDelete}
         data={childData as IChildProfile}
         title="Are you sure you want to delete this child profile?"
-        description={`Deleting ${childData?.name || "this child"}’s profile cannot be reverted. Are you sure?`}
-        confirmText="Delete"
+        description={`Deleting ${childData?.name || "this child"}'s profile cannot be reverted. Are you sure?`}
+        confirmText={isDeleting ? "Deleting..." : "Delete"}
         cancelText="Cancel"
-        onConfirm={() => console.log("Delete")}
+        onConfirm={handleDelete}
         variant="destructive"
       />
 
