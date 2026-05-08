@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MetricCard } from "@/features/dashboard/ui/MetricCard";
-import { AlertsSummaryCard } from "@/features/dashboard/ui/AlertsSummaryCard";
-import { ChildrenDropdown } from "@/features/dashboard/ui/ChildrenDropdown";
+import { MetricCard } from "@/features/dashboard/business/ui/MetricCard";
+import { AlertsSummaryCard } from "@/features/dashboard/business/ui/AlertsSummaryCard";
+import { ChildrenDropdown } from "@/features/dashboard/business/ui/ChildrenDropdown";
 import { DeviceUsageCard } from "@/shared/ui/DeviceStatusCard/DeviceStatusCard";
 import { InfoListCard } from "@/shared/ui/AppListCard/AppListCard";
 import { appData } from "@/app/(in-app)/dashboard/data";

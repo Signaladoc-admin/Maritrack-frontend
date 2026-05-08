@@ -1,18 +1,14 @@
-import { User } from "@/app/(in-app)/users/types";
 import {
-  useCreateTeamMember,
-  useGetTeamMember,
-  useUpdateTeamMember,
-} from "@/entities/business/model/useTeamMembers";
+  useCreateStaffMember,
+  useGetStaffMember,
+  useUpdateStaffMember,
+} from "@/entities/business/model/useStaffMembers";
 import {
-  BUSINESS_ROLES,
   BusinessRole,
   businessUserDetailsSchema,
   BusinessUserDetailsValues,
-  UserProfile,
 } from "@/entities/user/model/user.schema";
 import { InputGroup } from "@/shared/ui/input-group";
-import { CountryStateInput } from "@/shared/ui/inputs/country-state-input";
 import Modal from "@/shared/ui/modal";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
@@ -32,23 +28,24 @@ export default function AddEditUserDetailsModal({
   onOpenChange: (open: boolean) => void;
   selectedId: string | null;
 }) {
-  const initialValues = {
-    firstName: "Obafemiii",
-    lastName: "Olorede",
-    department: "925149bf-810e-4594-93b8-49191485ae7d",
-    businessRole: BUSINESS_ROLES[0],
-    email: "obafemilared@gmail.com",
-    phone: "080909121",
-    address: "123 Road",
-  };
+  // const initialValues = {
+  //   firstName: "Obafemiii",
+  //   lastName: "Olorede",
+  //   department: "925149bf-810e-4594-93b8-49191485ae7d",
+  //   businessRole: BUSINESS_ROLES[0],
+  //   email: "obafemilared@gmail.com",
+  //   phone: "080909121",
+  //   address: "123 Road",
+  // };
 
   const { register, formState, handleSubmit, control, setValue } =
     useForm<BusinessUserDetailsValues>({
-      defaultValues: initialValues || {
+      defaultValues: {
         firstName: "",
         lastName: "",
         department: "",
         businessRole: undefined,
+        position: "",
         email: "",
         phone: "",
         address: "",
@@ -56,9 +53,11 @@ export default function AddEditUserDetailsModal({
       resolver: zodResolver(businessUserDetailsSchema),
     });
 
-  const { mutateAsync: createTeamMember, isPending: isCreatingTeamMember } = useCreateTeamMember();
-  const { mutateAsync: updateTeamMember, isPending: isUpdatingTeamMember } = useUpdateTeamMember();
-  const { data: initialData, isLoading: isLoadingTeamMember } = useGetTeamMember(selectedId!);
+  const { mutateAsync: createStaffMember, isPending: isCreatingStaffMember } =
+    useCreateStaffMember();
+  const { mutateAsync: updateStaffMember, isPending: isUpdatingStaffMember } =
+    useUpdateStaffMember();
+  const { data: initialData, isLoading: isLoadingStaffMember } = useGetStaffMember(selectedId!);
 
   const { user } = useAuth();
   const { data: departmentsData } = useGetDepartments({
@@ -77,6 +76,7 @@ export default function AddEditUserDetailsModal({
     setValue("lastName", initialData?.user?.lastName!);
     setValue("department", initialData?.staffDepartmentId!);
     setValue("businessRole", initialData?.user?.businessRole!);
+    setValue("position", initialData?.position!);
     setValue("email", initialData?.user?.email!);
     setValue("phone", initialData?.user?.phone!);
     setValue("address", initialData?.location!);
@@ -89,14 +89,15 @@ export default function AddEditUserDetailsModal({
       lastName: data.lastName,
       phone: data.phone,
       departmentId: data.department,
-      role: data.businessRole as BusinessRole,
+      businessRole: data.businessRole,
+      position: data.position,
       location: data.address,
     };
 
     try {
       initialData
-        ? await updateTeamMember({ id: selectedId!, ...payload })
-        : await createTeamMember(payload);
+        ? await updateStaffMember({ id: selectedId!, ...payload })
+        : await createStaffMember(payload);
 
       toast({
         type: "success",
@@ -112,7 +113,7 @@ export default function AddEditUserDetailsModal({
     }
   }
 
-  const isSubmitting = isCreatingTeamMember || isLoadingTeamMember || isUpdatingTeamMember;
+  const isSubmitting = isCreatingStaffMember || isLoadingStaffMember || isUpdatingStaffMember;
 
   return (
     <Modal
@@ -170,6 +171,13 @@ export default function AddEditUserDetailsModal({
                 />
               </InputGroup>
             )}
+          />
+          <InputGroup
+            className=""
+            {...register("position")}
+            placeholder="Manager"
+            label="Position"
+            error={formState.errors.position?.message}
           />
           <InputGroup
             className=""

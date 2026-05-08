@@ -3,17 +3,13 @@
 import { CardWrapper } from "@/shared/ui/card-wrapper";
 import { Input } from "@/shared/ui/input";
 import { TabNavigation } from "@/shared/ui/tab-navigation";
-import { PlusIcon, SquarePen, Trash2 } from "lucide-react";
+import { PlusIcon, QrCode, SquarePen, Trash2 } from "lucide-react";
 import { useQueryState } from "nuqs";
-import { locations, users } from "@/app/(in-app)/users/data";
 import UserDetails from "@/features/business-users/users/ui/UserDetails";
 import { Button } from "@/shared/ui/Button/button";
-import Table from "@/shared/ui/Table/Table";
-import { devicesData } from "@/app/(in-app)/devices/data";
-import { devicesColumns } from "@/app/(in-app)/devices/columns";
 import DepartmentDetails from "@/features/business-users/departments/ui/DepartmentDetails";
 import LocationDetails from "@/features/business-users/locations/ui/LocationDetails";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
 import AddEditUserDetailsModal from "@/features/business-users/users/ui/AddEditUserDetailsModal";
 import { cn } from "@/shared/lib/utils";
@@ -28,16 +24,32 @@ import AddEditLocationModal from "@/features/business-users/locations/ui/AddEdit
 import { useDeleteLocation } from "@/features/business-users/locations/model/useLocations";
 import { useDebounce } from "use-debounce";
 import AssociatedDevicesTable from "@/features/business-users/users/ui/AssociatedDevicesTable";
+import { useSearchParams } from "next/navigation";
+import BusinessUserPairingQR from "@/features/business-users/users/ui/BusinessUserPairingQR";
+import { Dialog, DialogContent } from "@/shared/ui/Modal/dialog";
+import { useIsOrganizationAdmin } from "@/features/business-users/users/model/useIsOrganizationAdmin";
 
-function ActionButtons({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
+function ActionButtons({
+  onOpenQrPairing,
+  onEdit,
+  onDelete,
+}: {
+  onOpenQrPairing?: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  // const { isOrganizationAdmin } = useIsOrganizationAdmin();
+
   return (
     <div className="flex items-center gap-3">
       <Button onClick={onEdit} variant="secondary" size="icon" className="rounded-full p-5">
         <SquarePen className="text-primary size-4.5" />
       </Button>
+      {/* {isOrganizationAdmin && ( */}
       <Button onClick={onDelete} variant="secondary" size="icon" className="rounded-full p-5">
         <Trash2 className="size-4.5 text-red-500" />
       </Button>
+      {/* )} */}
     </div>
   );
 }
@@ -50,8 +62,15 @@ export default function Users() {
     defaultValue: "user-details",
   });
   const [selectedId, setSelectedId] = useQueryState("selectedId", { defaultValue: "" });
+
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+  const [showQrPairing, setShowQrPairing] = useState(false);
+
+  // Reset QR view whenever the selected user or sub-tab changes
+  useEffect(() => {
+    setShowQrPairing(false);
+  }, [selectedId, selectedUserSubTab]);
 
   // Deletion api hooks
   const { mutateAsync: deleteUser, isPending: isDeletingUser } = useDeleteUser();
@@ -114,18 +133,19 @@ export default function Users() {
           />
           <div className="flex items-center gap-2">
             <Input
+              className="h-10!"
               placeholder="Search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
             <Button
-              size="icon"
+              className="h-10 w-10 shrink-0 rounded-xl"
               onClick={() => {
                 setIsAddEditModalOpen(true);
                 setSelectedId("");
               }}
             >
-              <PlusIcon color="white" />
+              <PlusIcon color="white" className="size-5" />
             </Button>
           </div>
           {selectedTab === "users" && <UsersList searchTerm={debouncedSearchTerm} />}
@@ -150,6 +170,7 @@ export default function Users() {
                     itemClassName="px-4"
                   />
                   <ActionButtons
+                    onOpenQrPairing={() => setShowQrPairing(true)}
                     onEdit={() => setIsAddEditModalOpen(true)}
                     onDelete={() => setIsConfirmationModalOpen(true)}
                   />
@@ -205,6 +226,18 @@ export default function Users() {
         onOpenChange={setIsAddEditModalOpen}
         selectedId={selectedId}
       />
+      <Dialog open={showQrPairing} onOpenChange={setShowQrPairing}>
+        <DialogContent className="max-w-md">
+          {selectedId && (
+            <BusinessUserPairingQR
+              staffId={selectedId}
+              onBack={() => setShowQrPairing(false)}
+              onComplete={() => setShowQrPairing(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
       <ConfirmationModal
         open={isConfirmationModalOpen}
         onOpenChange={setIsConfirmationModalOpen}
@@ -218,7 +251,9 @@ export default function Users() {
             ? isDeletingUser
             : selectedTab === "departments"
               ? isDeletingDepartment
-              : false
+              : selectedTab === "locations"
+                ? isDeletingLocation
+                : false
         }
       />
     </div>

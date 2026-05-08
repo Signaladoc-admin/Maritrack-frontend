@@ -20,15 +20,13 @@ export function QRCodeCard({
   return (
     <CardWrapper
       variant="warning"
-      padding="lg"
-      radius="lg"
       className={cn(
-        "flex w-full max-w-[500px] flex-col justify-center p-12 text-center shadow-2xl transition-transform hover:scale-[1.02] sm:aspect-square",
+        "flex w-full max-w-[500px] flex-col justify-center p-8 text-center shadow-2xl transition-transform hover:scale-[1.02] sm:aspect-square",
         className
       )}
     >
       <div className="flex flex-col items-center justify-center rounded-3xl text-center text-white">
-        <div className="mb-4 flex w-full items-center justify-center rounded-3xl bg-white p-4 shadow-lg">
+        <div className="mb-4 flex w-full items-center justify-center rounded-xl bg-white p-4 shadow-lg">
           {isLoading ? (
             <div className="aspect-square h-auto w-72 animate-pulse rounded bg-slate-100" />
           ) : isError ? (
@@ -39,7 +37,7 @@ export function QRCodeCard({
             <QrCode className="h-32 w-32 text-slate-300" />
           )}
         </div>
-        <p className="max-w-[200px] font-medium">{description}</p>
+        <p className="mt-4 max-w-[200px]">{description}</p>
       </div>
     </CardWrapper>
   );

@@ -6,6 +6,12 @@ export const CreateDepartmentValues = z.object({
 
 export type CreateDepartmentValues = z.infer<typeof CreateDepartmentValues>;
 
-export const UpdateDepartmentValues = CreateDepartmentValues.extend({});
+export const updateDepartmentValues = CreateDepartmentValues.extend({});
 
-export type UpdateDepartmentValues = z.infer<typeof UpdateDepartmentValues>;
+export type UpdateDepartmentValues = z.infer<typeof updateDepartmentValues>;
+
+export const assignDeviceToUserSchema = z.object({
+  staffId: z.string("Invalid staff ID"),
+});
+
+export type AssignDeviceToUserValues = z.infer<typeof assignDeviceToUserSchema>;

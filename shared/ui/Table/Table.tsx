@@ -28,6 +28,7 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
     totalPages = 1,
     onPageChange,
     hasHeaders = true,
+    paginationClassName,
   } = props;
 
   const [selectedItems, setSelectedItems] = useState<Set<string | number>>(new Set());
@@ -126,13 +127,13 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
     <div>
       <div
         className={cn(
-          `grid w-full max-w-full min-w-0 grid-cols-1 overflow-hidden bg-gray-50 shadow-sm`,
+          `grid w-full max-w-full min-w-0 grid-cols-1 overflow-hidden bg-gray-50`,
           isPaginated ? "rounded-t-2xl" : "rounded-2xl",
           className
         )}
       >
         <div className="w-full overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="min-w-full divide-y divide-gray-200 border border-gray-200">
             {hasHeaders && (
               <thead className="bg-[#deeaff]">
                 <tr>
@@ -191,7 +192,7 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
                     key={item.id}
                     className={cn(
                       rowClassName ? rowClassName(item, index) : "",
-                      (onItemClick || getRowHref) ? "cursor-pointer" : ""
+                      onItemClick || getRowHref ? "cursor-pointer" : ""
                     )}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -236,7 +237,7 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
                         <div className="relative inline-block text-left" ref={dropdownRef}>
                           <button
                             type="button"
-                            className="focus:ring-primary inline-flex w-full cursor-pointer justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-offset-2 focus:outline-none"
+                            className="focus:ring-primary inline-flex w-full cursor-pointer justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-offset-2 focus:outline-none"
                             onClick={() => toggleDropdown(item.id)}
                           >
                             Actions
@@ -280,13 +281,12 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
       </div>
 
       {isPaginated && (
-        <div className="overflow-hidden rounded-b-2xl shadow-sm">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={onPageChange!}
-          />
-        </div>
+        <Pagination
+          className={paginationClassName}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={onPageChange!}
+        />
       )}
     </div>
   );

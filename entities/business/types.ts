@@ -1,4 +1,5 @@
 import { User } from "@/app/(in-app)/users/types";
+import { BusinessRoleEnum } from "../user/model/user.schema";
 
 export interface BusinessProfileData {
   id: string;
@@ -18,7 +19,8 @@ export interface BusinessStaff {
   location: string | null;
   position: string | null;
   staffDepartmentId: string | null;
-  businessRole: string;
+  onboardingCode: string | null;
+  businessRole: BusinessRoleEnum;
   createdAt: string;
   updatedAt: string;
   deleted: boolean;

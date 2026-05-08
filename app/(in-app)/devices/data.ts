@@ -4,10 +4,6 @@ export const devicesData: Device[] = [
   {
     id: "1",
     model: "iPhone 13 Pro Max",
-    possesor: {
-      name: "John Adeyemi",
-      email: "john.adeyemi@gmail.com",
-    },
     imei: "356789012345671",
     serialNumber: "C02ZL0A1Q6N1",
     macAddress: "A4:5E:60:1A:2B:3C",
@@ -18,7 +14,7 @@ export const devicesData: Device[] = [
   {
     id: "2",
     model: "Samsung Galaxy S22 Ultra",
-    possesor: {
+    possessor: {
       name: "Chioma Okafor",
       email: "chioma.okafor@yahoo.com",
     },
@@ -32,7 +28,7 @@ export const devicesData: Device[] = [
   {
     id: "3",
     model: "Google Pixel 7 Pro",
-    possesor: {
+    possessor: {
       name: "Tunde Balogun",
       email: "tunde.balogun@outlook.com",
     },
@@ -46,7 +42,7 @@ export const devicesData: Device[] = [
   {
     id: "4",
     model: "iPhone 12",
-    possesor: {
+    possessor: {
       name: "Aisha Bello",
       email: "aisha.bello@gmail.com",
     },
@@ -60,10 +56,6 @@ export const devicesData: Device[] = [
   {
     id: "5",
     model: "Samsung Galaxy A54",
-    possesor: {
-      name: "Emeka Nwosu",
-      email: "emeka.nwosu@gmail.com",
-    },
     imei: "867530912345678",
     serialNumber: "A54-XY12345",
     macAddress: "F4:5C:89:10:11:12",
@@ -74,7 +66,7 @@ export const devicesData: Device[] = [
   {
     id: "6",
     model: "iPhone 14 Pro",
-    possesor: {
+    possessor: {
       name: "Zainab Sadiq",
       email: "zainab.sadiq@icloud.com",
     },
@@ -88,10 +80,6 @@ export const devicesData: Device[] = [
   {
     id: "7",
     model: "OnePlus 11",
-    possesor: {
-      name: "Ibrahim Musa",
-      email: "ibrahim.musa@gmail.com",
-    },
     imei: "865432109876543",
     serialNumber: "OP11-5566ZZ",
     macAddress: "AA:BB:CC:DD:EE:01",
@@ -102,10 +90,6 @@ export const devicesData: Device[] = [
   {
     id: "8",
     model: "Xiaomi Redmi Note 12",
-    possesor: {
-      name: "Blessing Eze",
-      email: "blessing.eze@yahoo.com",
-    },
     imei: "867891234567890",
     serialNumber: "RN12-9988AA",
     macAddress: "11:22:33:44:55:66",
@@ -116,7 +100,7 @@ export const devicesData: Device[] = [
   {
     id: "9",
     model: "Tecno Phantom X2",
-    possesor: {
+    possessor: {
       name: "Kehinde Ogunleye",
       email: "kehinde.ogunleye@gmail.com",
     },
@@ -130,7 +114,7 @@ export const devicesData: Device[] = [
   {
     id: "10",
     model: "Infinix Zero Ultra",
-    possesor: {
+    possessor: {
       name: "Sadiq Lawal",
       email: "sadiq.lawal@outlook.com",
     },

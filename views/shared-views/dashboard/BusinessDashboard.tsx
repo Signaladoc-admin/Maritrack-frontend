@@ -3,23 +3,22 @@
 import { Header } from "@/shared/ui/layout/header";
 import { Button } from "@/shared/ui/button";
 import { DownloadCloud, MonitorPlay, WifiOff } from "lucide-react";
-import AnalyticsLineCard from "@/features/dashboard/ui/AnalyticsLineCard";
-import MiniLineChartCard from "@/features/dashboard/ui/MiniLineChartCard";
-import CircularProgressCard from "@/features/dashboard/ui/CircularProgressCard";
-import DashboardTableCard, { Column } from "@/features/dashboard/ui/DashboardTableCard";
-import DeviceMapCard from "@/features/dashboard/ui/DeviceMapCard";
+import AnalyticsLineCard from "@/features/dashboard/business/ui/AnalyticsLineCard";
+import MiniLineChartCard from "@/features/dashboard/business/ui/MiniLineChartCard";
+import CircularProgressCard from "@/features/dashboard/business/ui/CircularProgressCard";
+import DashboardTableCard, { Column } from "@/features/dashboard/business/ui/DashboardTableCard";
+import DeviceMapCard from "@/features/dashboard/business/ui/DeviceMapCard";
 import { H4 } from "@/shared/ui/typography";
 import { cn } from "@/shared/lib/utils";
+import { useBusinessDashboard } from "@/features/dashboard/business/model/useDashboard";
+import { Skeleton } from "@/shared/ui/skeleton";
 
-// Mock Data
-const userAnalyticsData = [10, 15, 12, 18, 40, 25, 15, 20, 30, 38, 45, 48];
-const sessionData = [15, 22, 18, 28, 55, 30, 25, 35, 45, 52, 60, 65];
-const preloadedContentData = [5, 12, 10, 25, 20, 45, 30, 35, 50, 48, 55, 60];
-const offlineLearningData = [20, 15, 25, 18, 30, 22, 40, 35, 55, 45, 60, 50];
+// Static fallback data (used when API returns empty arrays)
+const fallbackData = [0, 0, 0, 0, 0, 0];
 
+// Mock data for sections not yet covered by the dashboard API
 const blockedAppData = [10, 5, 8, 23, 10, 15, 12, 5, 8, 10, 15, 18];
 const jailbreakData = [15, 10, 20, 40, 25, 30, 15, 20, 10, 5, 15, 18];
-const batteryData = [30, 28, 25, 40, 35, 20, 15, 25, 30, 35, 28, 32];
 
 // Table Mock Data
 const violationsData = [
@@ -44,6 +43,40 @@ const blacklistedWebsitesData = [
 ];
 
 export default function BusinessDashboard() {
+  const {
+    isLoading,
+    deviceStats,
+    newDevicesChart,
+    storageChart,
+    wifiChart,
+    mobileChart,
+    managerAppVersionsChart,
+  } = useBusinessDashboard();
+
+  console.log(newDevicesChart);
+
+  const resolve = (data: number[]) => (data.length > 0 ? data : fallbackData);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-10 pb-10">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-10 w-48" />
+          <Skeleton className="h-9 w-28" />
+        </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <Skeleton className="h-48 w-full rounded-2xl" />
+          <Skeleton className="h-48 w-full rounded-2xl" />
+        </div>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-40 w-full rounded-2xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-10 pb-10">
       <div className="flex items-center justify-between">
@@ -53,7 +86,7 @@ export default function BusinessDashboard() {
           subtitle={
             <div className="flex items-center gap-2">
               <span className="font-normal">Analytics for</span>
-              <select className="rounded-md border-transparent font-semibold bg-transparent outline-none">
+              <select className="rounded-md border-transparent bg-transparent font-semibold outline-none">
                 <option value="this_week">This week</option>
                 <option value="last_week">Last week</option>
                 <option value="this_month">This month</option>
@@ -62,7 +95,10 @@ export default function BusinessDashboard() {
             </div>
           }
         />
-        <Button variant="outline" className="flex items-center gap-2 text-sm font-semibold text-neutral-600 rounded-lg">
+        <Button
+          variant="outline"
+          className="flex items-center gap-2 rounded-lg text-sm font-semibold text-neutral-600"
+        >
           <DownloadCloud size={16} />
           Download
         </Button>
@@ -71,31 +107,31 @@ export default function BusinessDashboard() {
       {/* TOP SECTION: Analytics Line Cards */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <AnalyticsLineCard
-          title="Daily active users"
-          count="10,000"
-          percentageChange={2.45}
-          timingLabel="This month"
-          chartColor="#4F46E5" // Indigo
-          badgeLabel="40 Active devices"
-          badgeIndex={4}
-          data={userAnalyticsData}
+          title="New devices"
+          count={String(deviceStats.total)}
+          percentageChange={0}
+          timingLabel="All time"
+          chartColor="#4F46E5"
+          badgeLabel={`${deviceStats.active} Active`}
+          badgeIndex={Math.max(0, newDevicesChart.y.length - 1)}
+          data={resolve(newDevicesChart.y)}
         />
         <AnalyticsLineCard
-          title="Average session duration"
-          count="10:56:22"
-          percentageChange={2.45}
-          timingLabel="Last week"
-          chartColor="#E81CFF" // Pink/Magenta
-          badgeLabel="01:12:44 sessions"
-          badgeIndex={8}
-          data={sessionData}
+          title="Online vs Offline"
+          count={`${deviceStats.online} / ${deviceStats.offline}`}
+          percentageChange={0}
+          timingLabel="Live"
+          chartColor="#E81CFF"
+          badgeLabel={`${deviceStats.locked} Locked`}
+          badgeIndex={0}
+          data={resolve(mobileChart.y)}
         />
       </div>
 
       {/* COMPLIANCE & SECURITY */}
       <div className="space-y-5">
         <H4 className="text-sm font-bold text-[#1a3860]">Compliance & Security</H4>
-        
+
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Row 1 */}
           <MiniLineChartCard
@@ -114,7 +150,7 @@ export default function BusinessDashboard() {
             secondaryLabel="Secured"
             secondaryColor="#22C55E"
           />
-          
+
           {/* Row 2 */}
           <DashboardTableCard
             title="Policy Violation incidents"
@@ -140,25 +176,25 @@ export default function BusinessDashboard() {
         <H4 className="text-sm font-bold text-[#1a3860]">Connectivity & Learning Access</H4>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <AnalyticsLineCard
-            title="Usage of preloaded content"
-            count="20"
-            percentageChange={2.45}
-            timingLabel="Last week"
-            chartColor="#C026D3" // Fuchsia
-            badgeLabel="Learning Videos (20%)"
-            badgeIndex={5}
-            data={preloadedContentData}
+            title="WiFi data usage"
+            count="—"
+            percentageChange={0}
+            timingLabel="This month"
+            chartColor="#C026D3"
+            badgeLabel="WiFi"
+            badgeIndex={Math.max(0, wifiChart.y.length - 1)}
+            data={resolve(wifiChart.y)}
             icon={<MonitorPlay size={16} className="text-[#C026D3]" />}
           />
           <AnalyticsLineCard
-            title="Offline learning hours logged"
-            count="34h 54m 22s"
-            percentageChange={2.45}
-            timingLabel="Last week"
-            chartColor="#0F172A" // Slate 900
-            badgeLabel="2 hours logged"
-            badgeIndex={6}
-            data={offlineLearningData}
+            title="Mobile data usage"
+            count="—"
+            percentageChange={0}
+            timingLabel="This month"
+            chartColor="#0F172A"
+            badgeLabel="Mobile"
+            badgeIndex={Math.max(0, mobileChart.y.length - 1)}
+            data={resolve(mobileChart.y)}
             icon={<WifiOff size={16} className="text-[#0F172A]" />}
           />
         </div>
@@ -167,15 +203,15 @@ export default function BusinessDashboard() {
       {/* ASSET TRACKING & INVENTORY HEALTH */}
       <div className="space-y-5">
         <H4 className="text-sm font-bold text-[#1a3860]">Asset Tracking & Inventory Health</H4>
-        
+
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Row 1 */}
           <MiniLineChartCard
-            title="Battery health score"
-            chartColor="#EF4444" // Red
-            badgeLabel="40%"
+            title="Storage usage"
+            chartColor="#EF4444"
+            badgeLabel="Storage"
             badgeIndex={3}
-            data={batteryData}
+            data={resolve(storageChart.y)}
           />
           <CircularProgressCard
             title="Devices availability"
@@ -186,7 +222,7 @@ export default function BusinessDashboard() {
             secondaryLabel="Functional"
             secondaryColor="#22C55E"
           />
-          
+
           {/* Row 2 */}
           <DashboardTableCard
             title="Lost/Stolen Device Reports"
@@ -197,19 +233,22 @@ export default function BusinessDashboard() {
             data={lostDevicesData}
             timingLabel="This month"
           />
-          <DeviceMapCard
-            title="Jailbreak/Root Detection Rate"
-            timingLabel="This month"
-          />
+          <DeviceMapCard title="Jailbreak/Root Detection Rate" timingLabel="This month" />
         </div>
 
         {/* Full Width Row */}
         <div>
-          <H4 className="text-sm font-bold text-[#1a3860] mb-4 mt-6">Blacklisted Website Categories</H4>
+          <H4 className="mt-6 mb-4 text-sm font-bold text-[#1a3860]">
+            Blacklisted Website Categories
+          </H4>
           <DashboardTableCard
             columns={[
               { key: "website", header: "Websites", className: "w-[40%]" },
-              { key: "category", header: "Category", className: "w-[40%] text-neutral-600 font-semibold text-[13px]" },
+              {
+                key: "category",
+                header: "Category",
+                className: "w-[40%] text-neutral-600 font-semibold text-[13px]",
+              },
               { key: "attempts", header: "Attempts", className: "w-[20%]" },
             ]}
             data={blacklistedWebsitesData}

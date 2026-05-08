@@ -136,12 +136,16 @@ export async function middleware(req: NextRequest) {
     const userRole = (payload as any).role as string | undefined;
     const businessRole = (payload as any).businessRole as string | null | undefined;
     const appRole = businessRole ? "BUSINESS" : "PARENT";
-    const isOnboarded = req.cookies.get("isOnboarded")?.value;
+    const isOnboarded = req.cookies.get("isOnboarded")?.value === "true";
+    // Invited staff are not the org admin — they have no onboarding to complete
+    const isInvited = !!(payload as any).isInvited;
 
     if (!userRole) return NextResponse.next();
 
-    // 5. Onboarding routing
-    if (isOnboarded === "false") {
+    // 5. Onboarding routing — skip entirely for invited business staff
+    if (appRole === "BUSINESS" && isInvited) {
+      // Fall through to role-based access checks below
+    } else if (!isOnboarded) {
       const onboardingPath =
         appRole === "BUSINESS" ? "/onboarding/business" : "/onboarding/personal";
 
@@ -158,7 +162,7 @@ export async function middleware(req: NextRequest) {
       // Unknown or cross-role route — fall through to normal checks below
     }
 
-    if (isOnboarded === "true" && pathname.startsWith("/onboarding")) {
+    if (isOnboarded && pathname.startsWith("/onboarding")) {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
 

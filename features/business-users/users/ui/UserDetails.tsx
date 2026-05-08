@@ -1,10 +1,10 @@
-import { useGetTeamMember } from "@/entities/business/model/useTeamMembers";
+import { useGetStaffMember } from "@/entities/business/model/useStaffMembers";
 import DisplayField from "../../shared/ui/DisplayField";
 import { formatID } from "@/shared/lib/utils";
 import { Skeleton } from "@/shared/ui/skeleton";
 
 export default function UserDetails({ selectedId }: { selectedId: string }) {
-  const { data: teamMember, isLoading } = useGetTeamMember(selectedId!);
+  const { data: staffMember, isLoading } = useGetStaffMember(selectedId!);
 
   function getValue(value: string | undefined | null) {
     return value || "N/A";
@@ -32,49 +32,49 @@ export default function UserDetails({ selectedId }: { selectedId: string }) {
       <DisplayField
         orientation="horizontal"
         label="User ID"
-        value={formatID(getValue(teamMember?.userId))}
+        value={formatID(getValue(staffMember?.userId))}
         className="col-span-2"
       />
       <DisplayField
         orientation="vertical"
         label="First name"
-        value={getValue(teamMember?.user?.firstName)}
+        value={getValue(staffMember?.user?.firstName)}
       />
       <DisplayField
         orientation="vertical"
         label="Last name"
-        value={getValue(teamMember?.user?.lastName)}
+        value={getValue(staffMember?.user?.lastName)}
       />
       <DisplayField
         orientation="vertical"
         label="Email"
-        value={getValue(teamMember?.user?.email)}
+        value={getValue(staffMember?.user?.email)}
       />
       <DisplayField
         orientation="vertical"
         label="Phone"
-        value={getValue(teamMember?.user?.phone)}
+        value={getValue(staffMember?.user?.phone)}
       />
       <DisplayField
         orientation="vertical"
         label="Address"
-        value={getValue(teamMember?.user?.address)}
+        value={getValue(staffMember?.user?.address)}
       />
-      <DisplayField orientation="vertical" label="City" value={getValue(teamMember?.user?.city)} />
+      <DisplayField orientation="vertical" label="City" value={getValue(staffMember?.user?.city)} />
       <DisplayField
         orientation="vertical"
         label="State"
-        value={getValue(teamMember?.user?.state)}
+        value={getValue(staffMember?.user?.state)}
       />
       <DisplayField
         orientation="vertical"
         label="Postal Code"
-        value={getValue(teamMember?.user?.postalCode)}
+        value={getValue(staffMember?.user?.postalCode)}
       />
       <DisplayField
         orientation="vertical"
         label="Country"
-        value={getValue(teamMember?.user?.country)}
+        value={getValue(staffMember?.user?.country)}
       />
     </div>
   );

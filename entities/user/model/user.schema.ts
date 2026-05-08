@@ -13,6 +13,13 @@ export const BUSINESS_ROLES = [
   "DEVICE_MANAGER",
   "DEPARTMENT_MANAGER",
 ] as const;
+
+export enum BusinessRoleEnum {
+  ORGANIZATION_ADMIN = "ORGANIZATION_ADMIN",
+  DEVICE_MANAGER = "DEVICE_MANAGER",
+  DEPARTMENT_MANAGER = "DEPARTMENT_MANAGER",
+}
+
 export type BusinessRole = (typeof BUSINESS_ROLES)[number];
 
 export const UserProfileSchema = z.object({
@@ -21,7 +28,7 @@ export const UserProfileSchema = z.object({
   lastName: z.string().optional().nullable(),
   email: z.string().email().optional(),
   role: z.enum(["ADMIN", "USER"]).optional(),
-  businessRole: z.enum(BUSINESS_ROLES).optional().nullable(),
+  businessRole: z.enum(BusinessRoleEnum).optional().nullable(),
   businessId: z.string().optional().nullable(),
   imageUrl: z.string().optional().nullable(),
   isFirstLogin: z.boolean().optional(),
@@ -145,6 +152,7 @@ export const businessUserDetailsSchema = z.object({
   lastName: z.string().min(1, "Last name is required"),
   department: z.string().min(1, "Department is required"),
   businessRole: z.enum(BUSINESS_ROLES),
+  position: z.string().min(1, "Position is required"),
   email: z.string(),
   phone: z.string(),
   address: z.string(),

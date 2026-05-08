@@ -1,13 +1,15 @@
 import AddTeamMemberForm, { AddTeamMemberFormSkeleton } from "./AddTeamMemberForm";
-import { TeamMemberSchemaValues } from "../schema";
+import { OnboardingStaffMemberValues } from "../schema";
 import TeamMemberCard, { TeamMemberCardSkeleton } from "@/entities/business/ui/TeamMemberCard";
 import { Button } from "@/shared/ui/button";
 import { Header } from "@/shared/ui/layout/header";
-import { useCreateTeamMembers } from "@/entities/business/model/useTeamMembers";
+import { useCreateStaffMembers } from "@/entities/business/model/useStaffMembers";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/shared/ui/toast";
 import { setOnboardedAction } from "@/features/onboarding/api/onboarding.actions";
+import { BusinessRoleEnum } from "@/entities/user/model/user.schema";
+import { useOtherTeamMembers } from "@/entities/business/model/useTeamMembers";
 
 export interface TeamMember {
   id: string;
@@ -17,51 +19,54 @@ export interface TeamMember {
 
 export default function InviteTeamMembersForm({
   onBack,
-  // initialTeamMembers, // Cannot implement initial team members as they're already in the system and trying to submit them causes an error
   isLoadingTeamMembers,
 }: {
   onBack: () => void;
-  // initialTeamMembers: TeamMember[];
   isLoadingTeamMembers: boolean;
 }) {
-  const { mutateAsync: createTeamMembers, isPending: isSubmitting } = useCreateTeamMembers();
+  const { mutateAsync: createStaffMembers, isPending: isSubmitting } = useCreateStaffMembers();
+  const { otherTeamMembers: existingTeamMembers } = useOtherTeamMembers();
 
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]); //initialTeamMembers
+  const [newTeamMembers, setNewTeamMembers] = useState<TeamMember[]>([]);
+  const allTeamMembers = [...(existingTeamMembers || []), ...newTeamMembers];
 
   const router = useRouter();
   const { toast } = useToast();
 
-  function handleAddTeamMember(data: TeamMemberSchemaValues) {
+  function handleAddTeamMember(data: OnboardingStaffMemberValues) {
     const newMember = {
       id: crypto.randomUUID(),
       email: data.email,
       location: data.location,
     };
-    setTeamMembers((prev) => [newMember, ...prev]);
+    setNewTeamMembers((prev) => [newMember, ...prev]);
   }
 
   function handleRemoveTeamMember(member: TeamMember) {
-    setTeamMembers((prev) => prev.filter((m) => m !== member));
+    setNewTeamMembers((prev) => prev.filter((m) => m !== member));
   }
 
   async function handleSubmit() {
     try {
-      const payload = teamMembers.map((m) => ({
+      const payload = newTeamMembers.map((m) => ({
         email: m.email,
         location: m.location,
         firstName: "",
         lastName: "",
         departmentId: "",
-        businessRole: "DEVICE_MANAGER",
+        businessRole: BusinessRoleEnum.DEPARTMENT_MANAGER,
+        position: "",
+        phone: "",
       }));
 
-      await createTeamMembers(payload);
+      await createStaffMembers(payload);
 
-      toast({
-        type: "success",
-        title: "Success",
-        message: "Team members invited successfully",
-      });
+      newTeamMembers.length > 0 &&
+        toast({
+          type: "success",
+          title: "Success",
+          message: "Team members invited successfully",
+        });
 
       await setOnboardedAction();
       router.push("/dashboard");
@@ -86,7 +91,7 @@ export default function InviteTeamMembersForm({
       {isLoadingTeamMembers ? (
         <AddTeamMemberFormSkeleton />
       ) : (
-        <AddTeamMemberForm onAddTeamMember={handleAddTeamMember} teamMembers={teamMembers} />
+        <AddTeamMemberForm onAddTeamMember={handleAddTeamMember} teamMembers={newTeamMembers} />
       )}
 
       <hr />
@@ -98,7 +103,7 @@ export default function InviteTeamMembersForm({
             <TeamMemberCardSkeleton />
           </>
         ) : (
-          teamMembers.map((member, index) => (
+          allTeamMembers.map((member, index) => (
             <TeamMemberCard
               key={index}
               teamMember={member}
@@ -113,7 +118,7 @@ export default function InviteTeamMembersForm({
           Previous
         </Button>
         <Button
-          disabled={isSubmitting || teamMembers.length === 0}
+          disabled={isSubmitting || allTeamMembers.length === 0}
           type="submit"
           onClick={handleSubmit}
         >
@@ -121,7 +126,13 @@ export default function InviteTeamMembersForm({
         </Button>
       </div>
       <div className="flex justify-center">
-        <Button variant="link" onClick={async () => { await setOnboardedAction(); router.push("/dashboard"); }}>
+        <Button
+          variant="link"
+          onClick={async () => {
+            await setOnboardedAction();
+            router.push("/dashboard");
+          }}
+        >
           Skip for now
         </Button>
       </div>

@@ -15,6 +15,7 @@ export default function Modal({
   cancelText,
   cancelClassName,
   onCancel,
+  className,
   children,
 }: {
   isOpen: boolean;
@@ -27,11 +28,13 @@ export default function Modal({
   cancelText?: string;
   cancelClassName?: string;
   onCancel?: () => void;
+  /** Extra classes applied to DialogContent — use to override max-width, padding, etc. */
+  className?: string;
   children: ReactNode;
 }) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="z-99999 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl p-5 sm:max-w-md">
+      <DialogContent className={cn("z-99999 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl p-5 sm:max-w-md", className)}>
         <DialogHeader className="flex flex-col items-start space-y-3">
           <DialogTitle asChild className="mb-0! text-xl">
             <H3 className="text-primary">{title}</H3>

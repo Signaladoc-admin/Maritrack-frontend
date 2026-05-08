@@ -1,37 +1,23 @@
-import {
-  createTeamMemberAction,
-  createTeamMembersAction,
-  deleteTeamMemberAction,
-  getTeamMemberAction,
-  getTeamMembersAction,
-  updateTeamMemberAction,
-} from "../api/team-members.actions";
-import { createResourceHooks, ResourceActions } from "@/shared/api/createResourceHooks";
-import { BusinessStaff, PaginatedStaff } from "../types";
-import { TeamMemberSchemaValues as TeamMemberDto } from "@/features/onboarding/business/schema";
+import { useAuth } from "@/shared/auth/AuthProvider";
+import { useGetStaffMembers } from "./useStaffMembers";
 
-const businessActions: ResourceActions<
-  BusinessStaff,
-  TeamMemberDto,
-  TeamMemberDto,
-  PaginatedStaff
-> = {
-  getAll: async (options?: any) => await getTeamMembersAction(options),
-  getById: async (id: string) => await getTeamMemberAction(id),
-  create: async (data: TeamMemberDto) => await createTeamMemberAction(data),
-  createMultiple: async (data: TeamMemberDto[]) => await createTeamMembersAction(data),
-  update: async (id: string, data: TeamMemberDto) => await updateTeamMemberAction(id, data),
-  delete: async (id: string) => await deleteTeamMemberAction(id),
-};
+export function useAllTeamMembers() {
+  const { data: staffMembers } = useGetStaffMembers();
 
-export const {
-  useGetAll: useGetTeamMembers,
-  useGetById: useGetTeamMember,
-  useCreate: useCreateTeamMember,
-  useCreateMultiple: useCreateTeamMembers,
-  useUpdate: useUpdateTeamMember,
-  useDelete: useDeleteTeamMember,
-} = createResourceHooks<BusinessStaff, TeamMemberDto, TeamMemberDto, PaginatedStaff>(
-  "team-members",
-  businessActions
-);
+  const allTeamMembers = staffMembers?.staff?.map((member) => ({
+    id: member.id,
+    email: member?.user?.email || "",
+    location: member?.location || "",
+  }));
+
+  return { allTeamMembers };
+}
+
+export function useOtherTeamMembers() {
+  const { allTeamMembers } = useAllTeamMembers();
+  const { user } = useAuth(); // get user email to filter it out from the list of staff members
+
+  const otherTeamMembers = allTeamMembers?.filter((member) => member.email !== user?.email);
+
+  return { otherTeamMembers };
+}

@@ -35,6 +35,7 @@ export interface TableProps<T = any> {
   totalPages?: number;
   onPageChange?: (page: number) => void;
   hasHeaders?: boolean;
+  paginationClassName?: string;
 }
 
 export interface ItemWithId {

@@ -22,3 +22,11 @@ export interface CreateDepartmentDto {
 }
 
 export interface UpdateDepartmentDto extends Partial<CreateDepartmentDto> {}
+
+export interface AssignDeviceToUserDto {
+  request: {
+    deviceIds: string[];
+    userId: string;
+    zoneId: string;
+  };
+}

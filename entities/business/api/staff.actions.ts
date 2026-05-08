@@ -1,7 +1,8 @@
+import { BusinessRole } from "@/entities/user/model/user.schema";
 import { apiClient } from "@/shared/lib/api-client";
 import { withSafeAction } from "@/shared/lib/safe-action";
 
-export async function getTeamMembersAction(options?: {
+export async function getStaffMembersAction(options?: {
   page?: number;
   limit?: number;
   search?: string;
@@ -16,19 +17,19 @@ export async function getTeamMembersAction(options?: {
       params: options as Record<string, string>,
     });
     return res.data ?? res;
-  }, "Failed to get team members");
+  }, "Failed to get staff members");
 }
-export async function getTeamMemberAction(id: string) {
+export async function getStaffMemberAction(id: string) {
   return withSafeAction(async () => {
     const res = await apiClient(`/staff/${id}`, {
       method: "GET",
       noRedirect: true,
     });
     return res.data ?? res;
-  }, "Failed to get team member");
+  }, "Failed to get staff member");
 }
 
-export async function createTeamMemberAction({
+export async function createStaffMemberAction({
   email,
   location,
   ...rest
@@ -57,10 +58,21 @@ export async function createTeamMemberAction({
       noRedirect: true,
     });
     return res.data ?? res;
-  }, "Failed to create team member");
+  }, "Failed to create staff member");
 }
 
-export async function createTeamMembersAction(data: { email: string; location: string }[]) {
+export async function createStaffsBulkAction(
+  data: {
+    email: string;
+    firstName?: string;
+    lastName?: string;
+    businessRole?: BusinessRole;
+    location: string;
+    position?: string;
+    departmentId?: string;
+    phone?: string;
+  }[]
+) {
   return withSafeAction(async () => {
     const res = await apiClient(`/staff/multiple`, {
       method: "POST",
@@ -70,10 +82,10 @@ export async function createTeamMembersAction(data: { email: string; location: s
       noRedirect: true,
     });
     return res.data ?? res;
-  }, "Failed to create team members");
+  }, "Failed to create staff member");
 }
 
-export async function updateTeamMemberAction(
+export async function updateStaffMemberAction(
   id: string,
   {
     email,
@@ -90,15 +102,15 @@ export async function updateTeamMemberAction(
       noRedirect: true,
     });
     return res.data ?? res;
-  }, "Failed to update team member");
+  }, "Failed to update staff member");
 }
 
-export async function deleteTeamMemberAction(id: string) {
+export async function deleteStaffMemberAction(id: string) {
   return withSafeAction(async () => {
     const res = await apiClient(`/staff/${id}`, {
       method: "DELETE",
       noRedirect: true,
     });
     return res.data ?? res;
-  }, "Failed to delete team member");
+  }, "Failed to delete staff member");
 }

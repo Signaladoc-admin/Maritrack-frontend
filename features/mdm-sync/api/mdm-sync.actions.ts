@@ -3,6 +3,8 @@
 import { apiClient } from "@/shared/lib/api-client";
 import type { ActionResult } from "@/shared/api/types";
 import { withSafeAction } from "@/shared/lib/safe-action";
+import { AssignDeviceToUserDto } from "@/features/business-users/users/types";
+import { Device } from "@/app/(in-app)/devices/types";
 
 export interface CreateZoneDto {
   name?: string;
@@ -57,13 +59,51 @@ export async function createBusinessZoneAction(data?: CreateZoneDto): Promise<Ac
 }
 
 export async function getBusinessZonesAction(): Promise<ActionResult<any>> {
+  return withSafeAction(async () => {
+    const response = await apiClient("/mdm-sync/zones/business", {
+      method: "GET",
+    });
+    return response.data ?? response;
+  }, "Failed to fetch business zones");
+}
+
+export async function assignUserToDeviceAction(
+  data: AssignDeviceToUserDto
+): Promise<ActionResult<any>> {
   return withSafeAction(
-    async () => {
-      const response = await apiClient("/mdm-sync/zones/business", {
-        method: "GET",
-      });
-      return response.data ?? response;
-    },
-    "Failed to fetch business zones"
+    async () =>
+      await apiClient("/mdm-sync/assign-user-to-device", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    "Failed to assign device to user"
   );
+}
+
+export async function getZoneDevicesAction(zoneId: string): Promise<
+  ActionResult<{
+    status: boolean;
+    statusCode: number;
+    message?: string;
+    devicesData: {
+      code: number;
+      data: Device[];
+      totalElements: number;
+      numberOfElements: number;
+      totalPages: number;
+    };
+  }>
+> {
+  return withSafeAction(async () => {
+    const res = await apiClient(`/mdm-sync/zones/${zoneId}/devices`, {
+      method: "GET",
+    });
+
+    return {
+      devicesData: res.data,
+      status: res.status,
+      statusCode: res.data.code,
+      message: res.data.message,
+    };
+  }, "Failed to fetch zone devices");
 }
