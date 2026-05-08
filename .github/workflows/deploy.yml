@@ -35,7 +35,6 @@ jobs:
             # 4. Build the application (Will halt here if there are code errors)
             npm run build
             
-            # 5. Restart the PM2 process
-            pm2 delete maritrack || true
-            pm2 start npm --name "maritrack" -- run start
+            # 5. Reload the PM2 process gracefully using the ecosystem file
+            pm2 reload ecosystem.config.js --env production
             pm2 save

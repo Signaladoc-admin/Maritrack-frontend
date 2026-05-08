@@ -28,8 +28,6 @@ export default function AddChildView() {
     enabled: !!activeParentId,
   });
 
-  console.log("parentZonesRes", parentZonesRes);
-
   const [pendingChild, setPendingChild] = useState<IChildProfile | null>(null);
 
   const handleAddChild = async (data: IChildProfile) => {
