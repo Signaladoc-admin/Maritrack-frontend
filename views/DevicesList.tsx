@@ -21,6 +21,7 @@ import DevicesTable from "@/features/business-users/users/ui/DevicesTable";
 import AssignDeviceModal from "@/features/business-users/users/ui/AssignDeviceModal";
 import { Input } from "@/shared/ui/input";
 import useGetDevices from "@/entities/business/model/useDevices";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 export default function DevicesList() {
   const router = useRouter();
@@ -30,8 +31,6 @@ export default function DevicesList() {
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
 
   const { devices, numPages, totalElements } = useGetDevices();
-
-  console.log(devices);
 
   function handleSelectDevice(device: Device) {
     router.push(`/devices/${device.id}`);

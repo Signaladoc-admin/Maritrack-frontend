@@ -12,6 +12,9 @@ const config: Config = {
       colors: {
         primary: "#1b3c73",
       },
+      fontFamily: {
+        roboto: ["var(--font-roboto)", "sans-serif"],
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },

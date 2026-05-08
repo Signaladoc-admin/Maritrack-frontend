@@ -15,6 +15,10 @@ const roleAccessMap: Record<string, string[]> = {
     "/team/*",
     "/billing",
     "/billing/*",
+    "/users",
+    "/users/*",
+    "/devices",
+    "/devices/*",
   ],
   PARENT: [
     "/dashboard",
@@ -24,6 +28,9 @@ const roleAccessMap: Record<string, string[]> = {
     "/plans",
     "/child",
     "/child/*",
+    "/children",
+    "/children/*",
+    "/devices/*",
   ],
 };
 
@@ -33,6 +40,7 @@ const businessOnlyRoutes = ["/onboarding/business"];
 // Routes that don't require authentication at all
 const publicRoutes = [
   "/",
+  "/landing",
   "/unauthorized",
   // Personal auth routes
   "/login",
@@ -69,8 +77,17 @@ const authRoutes = [
 function canAccess(role: string, pathname: string): boolean {
   const allowedRoutes = roleAccessMap[role];
   if (!allowedRoutes) return false;
-  if (allowedRoutes.includes("*")) return true;
-  return allowedRoutes.some((route) => pathname.startsWith(route));
+
+  return allowedRoutes.some((route) => {
+    if (route === "*") return true;
+
+    if (route.endsWith("/*")) {
+      const baseRoute = route.slice(0, -2);
+      return pathname.startsWith(baseRoute + "/");
+    }
+
+    return pathname === route;
+  });
 }
 
 export async function middleware(req: NextRequest) {
@@ -107,20 +124,6 @@ export async function middleware(req: NextRequest) {
 
   // 3. Handle public routes
   if (publicRoutes.includes(pathname)) {
-    if (pathname === "/") {
-      if (token) {
-        try {
-          const payload = decodeJwt(token);
-          const userRole = (payload as any).role as string | undefined;
-          return NextResponse.redirect(
-            new URL(userRole === "ADMIN" ? "/admin" : "/dashboard", req.url)
-          );
-        } catch {
-          return NextResponse.redirect(new URL("/dashboard", req.url));
-        }
-      }
-      return NextResponse.redirect(new URL("/login", req.url));
-    }
     return NextResponse.next();
   }
 

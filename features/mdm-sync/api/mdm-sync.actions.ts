@@ -4,7 +4,7 @@ import { apiClient } from "@/shared/lib/api-client";
 import type { ActionResult } from "@/shared/api/types";
 import { withSafeAction } from "@/shared/lib/safe-action";
 import { AssignDeviceToUserDto } from "@/features/business-users/users/types";
-import { Device } from "@/app/(in-app)/devices/types";
+import type { Device } from "@/entities/device/model/types";
 
 export interface CreateZoneDto {
   name?: string;
@@ -80,30 +80,39 @@ export async function assignUserToDeviceAction(
   );
 }
 
-export async function getZoneDevicesAction(zoneId: string): Promise<
-  ActionResult<{
-    status: boolean;
-    statusCode: number;
-    message?: string;
-    devicesData: {
-      code: number;
-      data: Device[];
-      totalElements: number;
-      numberOfElements: number;
-      totalPages: number;
-    };
-  }>
-> {
+export async function getZoneDevicesAction(zoneId: string): Promise<ActionResult<Device[]>> {
   return withSafeAction(async () => {
-    const res = await apiClient(`/mdm-sync/zones/${zoneId}/devices`, {
+    const response = await apiClient(`/mdm-sync/zones/${zoneId}/devices`, {
       method: "GET",
     });
-
-    return {
-      devicesData: res.data,
-      status: res.status,
-      statusCode: res.data.code,
-      message: res.data.message,
-    };
+    return response.data.data;
   }, "Failed to fetch zone devices");
 }
+
+// export async function getZoneDevicesAction(zoneId: string): Promise<
+//   ActionResult<{
+//     status: boolean;
+//     statusCode: number;
+//     message?: string;
+//     devicesData: {
+//       code: number;
+//       data: Device[];
+//       totalElements: number;
+//       numberOfElements: number;
+//       totalPages: number;
+//     };
+//   }>
+// > {
+//   return withSafeAction(async () => {
+//     const res = await apiClient(`/mdm-sync/zones/${zoneId}/devices`, {
+//       method: "GET",
+//     });
+
+//     return {
+//       devicesData: res.data,
+//       status: res.status,
+//       statusCode: res.data.code,
+//       message: res.data.message,
+//     };
+//   }, "Failed to fetch zone devices");
+// }

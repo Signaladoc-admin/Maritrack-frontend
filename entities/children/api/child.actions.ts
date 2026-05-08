@@ -19,13 +19,8 @@ export async function createChildAction(data: CreateChildDto): Promise<ChildProf
   return response.data;
 }
 
-export async function getChildrenAction(params?: ChildFilterParams): Promise<ChildProfile[]> {
-  const searchParams = new URLSearchParams();
-  if (params?.parentId) searchParams.set("parentId", params.parentId);
-
-  const queryString = searchParams.toString();
-  const endpoint = queryString ? `/children?${queryString}` : "/children";
-
+export async function getChildrenAction(): Promise<ChildProfile[]> {
+  const endpoint = "/children/parent";
   const response = await apiClient(endpoint, {
     method: "GET",
   });

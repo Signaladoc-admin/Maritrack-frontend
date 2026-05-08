@@ -17,6 +17,7 @@ import { useAuth } from "@/shared/auth/AuthProvider";
 export default function LoginForm() {
   const router = useRouter();
   const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] = useState(false);
+
   const { setParentId } = useParentStore();
   const { setEmail, setPassword } = useNewUserStore();
   const { login, loginError: error, isSubmitting } = useAuth();
@@ -36,7 +37,8 @@ export default function LoginForm() {
       setEmail(data.email);
       setPassword(data.password);
       if (profile?.parentId) setParentId(profile.parentId);
-      router.push(redirectTo);
+
+      redirectTo ? router.push(redirectTo) : router.push("/dashboard");
     } catch (err) {
       console.log(err);
       // Error handled by hook

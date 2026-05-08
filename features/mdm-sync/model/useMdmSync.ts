@@ -18,9 +18,9 @@ export const mdmSyncKeys = {
   zones: ["mdm-sync", "zones"] as const,
   parentZones: ["mdm-sync", "parentZones"] as const,
   businessZones: ["mdm-sync", "businessZones"] as const,
+  zoneDevices: (zoneId: string) => ["mdm-sync", "zoneDevices", zoneId] as const,
   qrcode: (zoneId: string, onboardingCode: string) =>
     ["mdm-sync", "qrcode", zoneId, onboardingCode] as const,
-  zoneDevices: (zoneId: string) => ["mdm-sync", "zoneDevices", zoneId] as const,
 };
 
 export function useCreateZone() {
@@ -104,6 +104,7 @@ export function useAssignUserToDevice(options?: { enabled?: boolean }) {
 }
 
 export function useGetZoneDevices(zoneId: string | undefined, options?: { enabled?: boolean }) {
+  // export function useZoneDevices(zoneId: string | undefined) {
   return useServerActionQuery(
     mdmSyncKeys.zoneDevices(zoneId || ""),
     getZoneDevicesAction,
@@ -111,6 +112,7 @@ export function useGetZoneDevices(zoneId: string | undefined, options?: { enable
     {
       ...options,
       retry: 0,
+      enabled: !!zoneId,
     }
   );
 }

@@ -13,21 +13,23 @@ import {
 } from "@/shared/ui/dropdown-menu";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
 import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
+import { useParentChildren } from "@/entities/children/model/useChildren";
+import { ChildRelationship } from "@/features/child-profile/model/types";
 
 export function ChildrenDropdown() {
   const { children, selectedChildId, setSelectedChildId, setChildren } = useParentStore();
   const { data: userProfile } = useUserProfile();
   const parentId = userProfile?.parentId;
 
-  const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentZones();
+  const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentChildren();
 
   useEffect(() => {
     if (parentZonesRes) {
       // Map server data to shop-store Child interface if necessary
-      const mappedChildren = parentZonesRes[0]?.parentChildren?.map((child: any) => ({
-        id: child.childId,
-        name: child.child.name,
-        avatar: child.child.imageUrl,
+      const mappedChildren = parentZonesRes?.data?.map((child: ChildRelationship) => ({
+        id: child.id,
+        name: child.name,
+        avatar: child.imageUrl,
       }));
       setChildren(mappedChildren);
     }
