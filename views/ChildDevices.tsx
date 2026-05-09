@@ -1,6 +1,5 @@
 "use client";
 
-import { childrenProfiles } from "@/app/(in-app)/child/[child]/data";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/Avatar/Avatar";
 import { DeviceUsageCard } from "@/shared/ui/DeviceStatusCard/DeviceStatusCard";
 import { EmptyDeviceCard } from "@/shared/ui/DeviceStatusCard/EmptyDevice";
@@ -14,6 +13,7 @@ import { useState } from "react";
 import { DeleteChildModal } from "@/features/child-profile/ui/ChildDeleteModal";
 import { IChildProfile } from "@/features/onboarding/personal/types";
 import { useGetChild, useDeleteChild } from "@/features/child-profile/model/useGetChildrenProfile";
+import { Child } from "@/features/child-profile/model/types";
 
 import { ChildDevicesSkeleton } from "./ChildDevicesSkeleton";
 
@@ -31,6 +31,9 @@ const ChildDevices = () => {
 
   const { data: childData, isLoading } = useGetChild(child as string);
   const { mutateAsync: deleteChild, isPending: isDeleting } = useDeleteChild();
+
+  const typedChild = childData as Child | undefined;
+  const device = typedChild?.device ?? null;
 
   const handleDelete = async () => {
     if (!child) return;
@@ -51,13 +54,15 @@ const ChildDevices = () => {
         <div className="my-12 flex items-center justify-between">
           <div className="flex items-center gap-5">
             <Avatar className="h-[80px] w-[80px]">
-              <AvatarImage src={childData?.image} alt={childData?.name} />
-              <AvatarFallback>{getInitials(childData?.name)}</AvatarFallback>
+              <AvatarImage src={typedChild?.imageUrl ?? undefined} alt={typedChild?.name} />
+              <AvatarFallback>{getInitials(typedChild?.name)}</AvatarFallback>
             </Avatar>
 
             <div className="">
-              <H3 className="text-[#1B3C73]">{childData?.name}</H3>
-              <P className="leading-0 text-slate-400">January 10, 16</P>
+              <H3 className="text-[#1B3C73]">{typedChild?.name}</H3>
+              <P className="leading-0 text-slate-400">
+                {typedChild?.age ? `${typedChild.age} years old` : ""}
+              </P>
             </div>
           </div>
 
@@ -75,31 +80,17 @@ const ChildDevices = () => {
 
         <P className="mb-4 font-medium">Select a device to view</P>
         <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
-          <DeviceUsageCard
-            deviceName="Mide's iPhone"
-            status="active"
-            percentage={37.5}
-            device="Google Pixel 9"
-            isRow={false}
-            onClick={() => router.push(`/device/device-id`)}
-          />
-          <DeviceUsageCard
-            deviceName="Mide's iPhone"
-            status="locked"
-            percentage={100}
-            device="Iphone 14"
-            isRow={false}
-            onClick={() => router.push(`/device/device-id`)}
-          />
-          <DeviceUsageCard
-            deviceName="Mide's iPhone"
-            status="locked"
-            percentage={100}
-            device="Iphone 14"
-            isRow={false}
-            onClick={() => router.push(`/device/device-id`)}
-          />
-          <EmptyDeviceCard onClick={() => setIsPairNewDeviceModalOpen(true)} />
+          {device ? (
+            <DeviceUsageCard
+              deviceName={device.manufacturer || "Device"}
+              status={device.deviceStatus === "ACTIVE" ? "active" : "locked"}
+              percentage={0}
+              device={device.model || device.mdmId}
+              isRow={false}
+              onClick={() => router.push(`/devices/${device.id}`)}
+            />
+          ) : null}
+          {/* <EmptyDeviceCard onClick={() => setIsPairNewDeviceModalOpen(true)} /> */}
         </div>
       </div>
 
@@ -114,7 +105,7 @@ const ChildDevices = () => {
         onOpenChange={setShowDelete}
         data={childData as IChildProfile}
         title="Are you sure you want to delete this child profile?"
-        description={`Deleting ${childData?.name || "this child"}'s profile cannot be reverted. Are you sure?`}
+        description={`Deleting ${typedChild?.name || "this child"}'s profile cannot be reverted. Are you sure?`}
         confirmText={isDeleting ? "Deleting..." : "Delete"}
         cancelText="Cancel"
         onConfirm={handleDelete}
