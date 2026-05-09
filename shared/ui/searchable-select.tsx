@@ -11,6 +11,12 @@ export interface SearchableSelectProps {
   onValueChange: (value: string) => void;
   placeholder?: string;
   isSearchable?: boolean;
+  /** Called with the current search query — use for server-side search. Disables client-side filtering. */
+  onSearch?: (query: string) => void;
+  /** Render custom content inside each option row (check icon and selection highlight are handled by the component). */
+  renderOption?: (option: { label: string; value: string }, isSelected: boolean) => React.ReactNode;
+  /** Show a loading spinner in the dropdown (use while fetching remote results). */
+  isLoading?: boolean;
   disabled?: boolean;
   className?: string;
   id?: string;
@@ -22,6 +28,9 @@ export function SearchableSelect({
   onValueChange,
   placeholder = "Select an option",
   isSearchable = false,
+  onSearch,
+  renderOption,
+  isLoading = false,
   disabled = false,
   className,
   id,
@@ -31,35 +40,37 @@ export function SearchableSelect({
   const [highlightedIndex, setHighlightedIndex] = React.useState(-1);
   const listRef = React.useRef<HTMLDivElement>(null);
 
+  // When onSearch is provided, skip client-side filtering — caller owns the results
   const filteredOptions = React.useMemo(() => {
-    if (!isSearchable || !searchQuery) return options;
+    if (!isSearchable || !searchQuery || onSearch) return options;
     return options.filter((option) =>
       option.label.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [options, isSearchable, searchQuery]);
+  }, [options, isSearchable, searchQuery, onSearch]);
 
   const selectedOption = options.find((opt) => opt.value === value);
 
-  // Reset highlight when search results change
   React.useEffect(() => {
     setHighlightedIndex(-1);
   }, [filteredOptions]);
 
-  // Scroll highlighted item into view
   React.useEffect(() => {
     if (highlightedIndex < 0 || !listRef.current) return;
     const item = listRef.current.children[highlightedIndex] as HTMLElement;
     item?.scrollIntoView({ block: "nearest" });
   }, [highlightedIndex]);
 
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    onSearch?.(query);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!open) return;
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
-        setHighlightedIndex((prev) =>
-          prev < filteredOptions.length - 1 ? prev + 1 : prev
-        );
+        setHighlightedIndex((prev) => (prev < filteredOptions.length - 1 ? prev + 1 : prev));
         break;
       case "ArrowUp":
         e.preventDefault();
@@ -71,6 +82,7 @@ export function SearchableSelect({
           onValueChange(filteredOptions[highlightedIndex].value);
           setOpen(false);
           setSearchQuery("");
+          onSearch?.("");
         }
         break;
       case "Escape":
@@ -84,6 +96,7 @@ export function SearchableSelect({
     onValueChange(optionValue);
     setOpen(false);
     setSearchQuery("");
+    onSearch?.("");
   };
 
   return (
@@ -102,12 +115,16 @@ export function SearchableSelect({
           )}
         >
           <span className="w-full truncate text-left">
-            {selectedOption ? selectedOption.label : placeholder}
+            {selectedOption ? selectedOption.label : <span className="text-muted-foreground">{placeholder}</span>}
           </span>
           <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
+      <PopoverContent
+        className="w-(--radix-popover-trigger-width) p-0"
+        align="start"
+        onWheel={(e) => e.stopPropagation()}
+      >
         {isSearchable && (
           <div className="flex items-center border-b px-3">
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
@@ -115,32 +132,46 @@ export function SearchableSelect({
               className="placeholder:text-muted-foreground flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50"
               placeholder="Search..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               onClick={(e) => e.stopPropagation()}
               onKeyDown={handleKeyDown}
             />
           </div>
         )}
-        <div ref={listRef} className="max-h-60 overflow-y-auto p-1">
-          {filteredOptions.length === 0 ? (
+        <div
+          ref={listRef}
+          className="max-h-60 overflow-y-auto overscroll-contain p-1"
+          onWheel={(e) => {
+            e.stopPropagation();
+            e.currentTarget.scrollTop += e.deltaY;
+          }}
+        >
+          {isLoading ? (
+            <div className="flex items-center justify-center p-4">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#1b3c73] border-t-transparent" />
+            </div>
+          ) : filteredOptions.length === 0 ? (
             <p className="p-2 text-center text-sm text-slate-500">No options found.</p>
           ) : (
-            filteredOptions.map((option, index) => (
-              <div
-                key={option.value}
-                className={cn(
-                  "relative flex w-full cursor-pointer items-center rounded-sm py-1.5 pr-2 pl-8 text-sm select-none",
-                  value === option.value && "bg-slate-50 font-medium text-[#1b3c73]",
-                  highlightedIndex === index ? "bg-slate-100" : "hover:bg-slate-100"
-                )}
-                onClick={() => handleSelect(option.value)}
-              >
-                <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-                  {value === option.value && <Check className="h-4 w-4" />}
-                </span>
-                {option.label}
-              </div>
-            ))
+            filteredOptions.map((option, index) => {
+              const isSelected = value === option.value;
+              return (
+                <div
+                  key={option.value}
+                  className={cn(
+                    "relative flex w-full cursor-pointer items-center rounded-sm py-1.5 pr-2 pl-8 text-sm select-none",
+                    isSelected && "bg-slate-50 font-medium text-[#1b3c73]",
+                    highlightedIndex === index ? "bg-slate-100" : "hover:bg-slate-100"
+                  )}
+                  onClick={() => handleSelect(option.value)}
+                >
+                  <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+                    {isSelected && <Check className="h-4 w-4" />}
+                  </span>
+                  {renderOption ? renderOption(option, isSelected) : option.label}
+                </div>
+              );
+            })
           )}
         </div>
       </PopoverContent>

@@ -1,9 +1,9 @@
 import { appData } from "@/app/(in-app)/dashboard/data";
-import { MetricCard } from "@/features/dashboard/ui/MetricCard";
+import { MetricCard } from "@/features/dashboard/business/ui/MetricCard";
 import { InfoListCard } from "@/shared/ui/AppListCard/AppListCard";
 import { StatsCard } from "@/shared/ui/cards/stats-card";
 import { Instagram, MessageSquare, Power, Youtube } from "lucide-react";
-import { AlertsSummaryCard } from "@/features/dashboard/ui/AlertsSummaryCard";
+import { AlertsSummaryCard } from "@/features/dashboard/business/ui/AlertsSummaryCard";
 import { ActivityTimeline, TimelineItem } from "@/shared/ui/lists/activity-timeline";
 import { websiteData } from "@/features/general/data";
 import { MapCard } from "@/features/general/ui/map-card";

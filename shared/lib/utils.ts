@@ -113,7 +113,7 @@ export function formatID(id: string, prefix?: string, length: number = 4): strin
   if (prefix) {
     return `${prefix}-${truncateID(id, length)}`;
   }
-  return truncateID(id, length);
+  return `#${truncateID(id, length)}`;
 }
 
 export const businessZoneId = "69dfaac7fb7fbec97784ae44";

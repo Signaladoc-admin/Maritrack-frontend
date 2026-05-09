@@ -9,6 +9,7 @@ import {
   filterUsersAction,
   checkEmailAction,
   supportRequestAction,
+  checkIfEmailExistsAction,
 } from "../api/user.actions";
 import type { UpdateProfileDto, SupportRequestDto, UserFilterParams } from "./user.schema";
 import { useToast } from "@/shared/ui/toast";
@@ -103,5 +104,13 @@ export function useSupportRequest() {
         message: err.message || "Failed to send support request.",
       });
     },
+  });
+}
+
+export function useUserExists(email: string) {
+  return useQuery({
+    queryKey: ["user-exists", email],
+    queryFn: () => checkIfEmailExistsAction(email),
+    enabled: !!email && email.includes("@"),
   });
 }

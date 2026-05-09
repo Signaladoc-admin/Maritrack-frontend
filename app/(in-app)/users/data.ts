@@ -21,7 +21,7 @@ export const users: User[] = [
       {
         id: "1",
         model: "iPhone 13 Pro Max",
-        possesor: {
+        possessor: {
           name: "John Doe",
           email: "[EMAIL_ADDRESS]",
         },

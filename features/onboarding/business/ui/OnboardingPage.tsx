@@ -13,7 +13,7 @@ import { useActiveSubscription } from "@/features/payments/model/usePayments";
 import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { useGetFullBusinessDetails } from "../model/useGetBusinessDetails";
-import { useGetTeamMembers } from "@/entities/business/model/useTeamMembers";
+import { useGetStaffMembers } from "@/entities/business/model/useStaffMembers";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function OnboardingPage() {
@@ -22,7 +22,7 @@ export default function OnboardingPage() {
   const [showSignOutModal, setShowSignOutModal] = useState(false);
 
   const { businessProfile, isLoadingBusinessProfile } = useGetFullBusinessDetails();
-  const { data: initialTeamMembers, isPending: isLoadingTeamMembers } = useGetTeamMembers();
+  const { data: initialTeamMembers, isPending: isLoadingTeamMembers } = useGetStaffMembers();
 
   const { user } = useAuth();
   const { data: userProfile } = useUserProfile();
@@ -33,8 +33,9 @@ export default function OnboardingPage() {
   const { data: businessZones, isLoading: isLoadingZones } = useBusinessZones();
   const zoneId = (businessZones as any)?.[0]?.id;
 
-  const { data: subscriptionData, isLoading: isLoadingSubscription } = useActiveSubscription(zoneId);
-  const hasPaid = !!subscriptionData?.active;
+  const { data: subscriptionData, isLoading: isLoadingSubscription } =
+    useActiveSubscription(zoneId);
+  const hasPaid = !!subscriptionData?.data?.active;
   const canProceed = hasPaid || freePlanChosen;
 
   // True until we know whether the user has already paid — prevents pricing step flicker

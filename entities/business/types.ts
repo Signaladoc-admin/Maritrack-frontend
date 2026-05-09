@@ -1,4 +1,6 @@
 import { User } from "@/app/(in-app)/users/types";
+import { BusinessRoleEnum } from "../user/model/user.schema";
+import { StaffDevice } from "../device";
 
 export interface BusinessProfileData {
   id: string;
@@ -18,13 +20,15 @@ export interface BusinessStaff {
   location: string | null;
   position: string | null;
   staffDepartmentId: string | null;
-  businessRole: string;
+  onboardingCode: string | null;
+  businessRole: BusinessRoleEnum;
   createdAt: string;
   updatedAt: string;
   deleted: boolean;
   deletedAt: string | null;
   user?: User;
   business?: Business;
+  device?: StaffDevice;
 }
 
 export interface Business {
@@ -49,3 +53,11 @@ export interface Business {
 
 /** Legacy alias kept for existing usages */
 export type BusinessProfile = BusinessProfileData;
+
+export interface PaginatedStaff {
+  staff: BusinessStaff[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}

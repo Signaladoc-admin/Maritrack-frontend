@@ -8,6 +8,7 @@ import {
   getQrCodeAction,
   getParentZonesAction,
   getBusinessZonesAction,
+  assignUserToDeviceAction,
   getZoneDevicesAction,
 } from "../api/mdm-sync.actions";
 import { useToast } from "@/shared/ui/toast";
@@ -83,12 +84,34 @@ export function useBusinessZones(options?: { enabled?: boolean }) {
   });
 }
 
-export function useZoneDevices(zoneId: string | undefined) {
+export function useAssignUserToDevice() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useServerActionMutation(assignUserToDeviceAction, {
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: mdmSyncKeys.businessZones });
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        message: error.message || "Failed to assign user to device",
+        type: "error",
+      });
+    },
+  });
+}
+
+// export function useGetZoneDevices(zoneId: string | undefined, options?: { enabled?: boolean }) {
+export function useZoneDevices(zoneId: string | undefined, options?: { enabled?: boolean }) {
   return useServerActionQuery(
     mdmSyncKeys.zoneDevices(zoneId || ""),
     getZoneDevicesAction,
     [zoneId as string],
     {
+      ...options,
+      retry: 0,
       enabled: !!zoneId,
     }
   );

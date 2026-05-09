@@ -52,7 +52,6 @@ export function InputsSection() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
     alert(JSON.stringify(values, null, 2));
   }
 

@@ -1,11 +1,13 @@
-import { teamMemberSchema, TeamMemberSchemaValues } from "../schema";
+import { OnboardingStaffMemberValues, onboardingStaffMemberSchema } from "../schema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { InputGroup } from "@/shared/ui/input-group";
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { TeamMember } from "./InviteTeamMembersForm";
+import { useUserExists } from "@/entities/user/model/useUserProfile";
+import { checkIfEmailExistsAction } from "@/entities/user/api/user.actions";
 
 export function AddTeamMemberFormSkeleton() {
   return (
@@ -29,7 +31,7 @@ export default function AddTeamMemberForm({
   onAddTeamMember,
   teamMembers,
 }: {
-  onAddTeamMember: (data: TeamMemberSchemaValues & { id: string }) => void;
+  onAddTeamMember: (data: OnboardingStaffMemberValues & { id: string }) => void;
   teamMembers: TeamMember[];
 }) {
   const emailRef = useRef<HTMLInputElement>(null);
@@ -40,18 +42,38 @@ export default function AddTeamMemberForm({
     reset,
     setError,
     formState: { errors },
-  } = useForm<TeamMemberSchemaValues>({
-    resolver: zodResolver(teamMemberSchema),
+  } = useForm<OnboardingStaffMemberValues>({
+    resolver: zodResolver(onboardingStaffMemberSchema),
     defaultValues: { email: "", location: "" },
     mode: "onTouched",
   });
 
   const { ref: registerEmailRef, ...emailProps } = register("email");
+  const [isLoadingEmailExists, setIsLoadingEmailExists] = useState(false);
 
-  function onSubmit(data: TeamMemberSchemaValues) {
+  console.log(errors);
+
+  async function onSubmit(data: OnboardingStaffMemberValues) {
+    // Check if email already added
     if (teamMembers.some((m) => m.email === data.email)) {
       setError("email", { message: "Email already added" });
       return;
+    }
+
+    // Check if email exists
+    try {
+      setIsLoadingEmailExists(true);
+      const userExists = await checkIfEmailExistsAction(data.email);
+
+      if (userExists) {
+        setError("email", { message: "A user with this email already exists" });
+        return;
+      }
+    } catch (error: any) {
+      setError("email", { message: error?.message });
+      return;
+    } finally {
+      setIsLoadingEmailExists(false);
     }
 
     onAddTeamMember({ id: crypto.randomUUID(), ...data });
@@ -81,7 +103,12 @@ export default function AddTeamMemberForm({
           error={errors.location?.message}
         />
       </div>
-      <Button className="w-full" type="submit" variant="outlinePrimary">
+      <Button
+        disabled={isLoadingEmailExists}
+        className="w-full"
+        type="submit"
+        variant="outlinePrimary"
+      >
         Add
       </Button>
     </form>

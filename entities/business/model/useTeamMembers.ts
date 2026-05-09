@@ -1,32 +1,44 @@
-import {
-  createTeamMemberAction,
-  createTeamMembersAction,
-  deleteTeamMemberAction,
-  getTeamMemberAction,
-  getTeamMembersAction,
-  updateTeamMemberAction,
-} from "../api/team-members.actions";
-import { createResourceHooks, ResourceActions } from "@/shared/api/createResourceHooks";
-import { BusinessStaff } from "../types";
-import { TeamMemberSchemaValues as TeamMemberDto } from "@/features/onboarding/business/schema";
+import { useAuth } from "@/shared/auth/AuthProvider";
+import { useGetStaffMembers } from "./useStaffMembers";
 
-const businessActions: ResourceActions<BusinessStaff, TeamMemberDto> = {
-  getAll: async (options?: any) => await getTeamMembersAction(options),
-  getById: async (id: string) => await getTeamMemberAction(id),
-  create: async (data: TeamMemberDto) => await createTeamMemberAction(data),
-  createMultiple: async (data: TeamMemberDto[]) => await createTeamMembersAction(data),
-  update: async (id: string, data: TeamMemberDto) => await updateTeamMemberAction(id, data),
-  delete: async (id: string) => await deleteTeamMemberAction(id),
-};
+export function useAllTeamMembers(params?: { search: string }) {
+  const { data: staffMembers } = useGetStaffMembers(params);
 
-export const {
-  useGetAll: useGetTeamMembers,
-  useGetById: useGetTeamMember,
-  useCreate: useCreateTeamMember,
-  useCreateMultiple: useCreateTeamMembers,
-  useUpdate: useUpdateTeamMember,
-  useDelete: useDeleteTeamMember,
-} = createResourceHooks<BusinessStaff, TeamMemberDto, TeamMemberDto>(
-  "team-members",
-  businessActions
-);
+  const allTeamMembers = staffMembers?.staff?.map((member) => ({
+    id: member.id,
+    email: member?.user?.email || "",
+    location: member?.location || "",
+  }));
+
+  return { allTeamMembers };
+}
+
+export function useOtherTeamMembers(params?: { search: string }) {
+  const { data: staffMembersData, isLoading } = useGetStaffMembers(params);
+  const { user } = useAuth();
+  const staffMembers = staffMembersData?.staff || [];
+
+  const otherTeamMembers = staffMembers?.filter((member) => member?.user?.email !== user?.email);
+
+  const userEmail = user?.email;
+  const staffUserEmail = staffMembers?.find((member) => member?.user?.email === userEmail);
+
+  console.log(staffUserEmail, "staffUserEmail");
+  console.log(userEmail, "userEmail");
+
+  return { otherTeamMembers, isLoading };
+}
+
+export function useOtherStaffMembersExceptStaff({
+  excludeUserId,
+  ...params
+}: {
+  excludeUserId: string;
+  search?: string;
+}) {
+  const { data: staffMembersData, isLoading } = useGetStaffMembers(params);
+  const staffMembers = staffMembersData?.staff || [];
+  const otherTeamMembers = staffMembers?.filter((member) => member?.user?.id !== excludeUserId);
+
+  return { otherTeamMembers, isLoading };
+}

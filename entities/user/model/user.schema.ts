@@ -13,6 +13,15 @@ export const BUSINESS_ROLES = [
   "DEVICE_MANAGER",
   "DEPARTMENT_MANAGER",
 ] as const;
+
+export const BusinessRoleEnum = {
+  ORGANIZATION_ADMIN: "ORGANIZATION_ADMIN",
+  DEVICE_MANAGER: "DEVICE_MANAGER",
+  DEPARTMENT_MANAGER: "DEPARTMENT_MANAGER",
+} as const;
+
+export type BusinessRoleEnum = (typeof BusinessRoleEnum)[keyof typeof BusinessRoleEnum];
+
 export type BusinessRole = (typeof BUSINESS_ROLES)[number];
 
 export const UserProfileSchema = z.object({
@@ -145,11 +154,10 @@ export const businessUserDetailsSchema = z.object({
   lastName: z.string().min(1, "Last name is required"),
   department: z.string().min(1, "Department is required"),
   businessRole: z.enum(BUSINESS_ROLES),
+  position: z.string().min(1, "Position is required"),
   email: z.string(),
   phone: z.string(),
   address: z.string(),
-  country: z.string().min(1, "Country is required"),
-  state: z.string().min(1, "State is required"),
 });
 export type BusinessUserDetailsValues = z.infer<typeof businessUserDetailsSchema>;
 

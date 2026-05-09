@@ -2,8 +2,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useServerActionQuery, useServerActionMutation } from "./server-action-hooks";
 import { ActionResult, QueryOptions } from "./types";
 
-export interface ResourceActions<T, CreateDto = any, UpdateDto = any> {
-  getAll: (options?: QueryOptions) => Promise<ActionResult<T[]>>;
+export interface ResourceActions<T, CreateDto = any, UpdateDto = any, ListT = T[]> {
+  getAll: (options?: QueryOptions) => Promise<ActionResult<ListT>>;
   getById: (id: string) => Promise<ActionResult<T>>;
   create: (data: CreateDto) => Promise<ActionResult<T>>;
   createMultiple?: (data: CreateDto[]) => Promise<ActionResult<T[]>>;
@@ -11,9 +11,9 @@ export interface ResourceActions<T, CreateDto = any, UpdateDto = any> {
   delete: (id: string) => Promise<ActionResult<void>>;
 }
 
-export function createResourceHooks<T, CreateDto = any, UpdateDto = any>(
+export function createResourceHooks<T, CreateDto = any, UpdateDto = any, ListT = T[]>(
   resourceName: string,
-  actions: ResourceActions<T, CreateDto, UpdateDto>
+  actions: ResourceActions<T, CreateDto, UpdateDto, ListT>
 ) {
   const keys = {
     all: [resourceName, "list"] as const,

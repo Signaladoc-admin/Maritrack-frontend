@@ -3,47 +3,51 @@
 import { Header } from "@/shared/ui/layout/header";
 import { Button } from "@/shared/ui/button";
 import { DownloadCloud, MonitorPlay, WifiOff } from "lucide-react";
-import AnalyticsLineCard from "@/features/dashboard/ui/AnalyticsLineCard";
-import MiniLineChartCard from "@/features/dashboard/ui/MiniLineChartCard";
-import CircularProgressCard from "@/features/dashboard/ui/CircularProgressCard";
-import DashboardTableCard, { Column } from "@/features/dashboard/ui/DashboardTableCard";
-import DeviceMapCard from "@/features/dashboard/ui/DeviceMapCard";
+import AnalyticsLineCard from "@/features/dashboard/business/ui/AnalyticsLineCard";
+import MiniLineChartCard from "@/features/dashboard/business/ui/MiniLineChartCard";
+import CircularProgressCard from "@/features/dashboard/business/ui/CircularProgressCard";
+import DashboardTableCard, { Column } from "@/features/dashboard/business/ui/DashboardTableCard";
+import DeviceMapCard from "@/features/dashboard/business/ui/DeviceMapCard";
 import { H4 } from "@/shared/ui/typography";
-import { cn } from "@/shared/lib/utils";
+import { useBusinessDashboard } from "@/features/dashboard/business/model/useDashboard";
+import { Skeleton } from "@/shared/ui/skeleton";
 
-// Mock Data
-const userAnalyticsData = [10, 15, 12, 18, 40, 25, 15, 20, 30, 38, 45, 48];
-const sessionData = [15, 22, 18, 28, 55, 30, 25, 35, 45, 52, 60, 65];
-const preloadedContentData = [5, 12, 10, 25, 20, 45, 30, 35, 50, 48, 55, 60];
-const offlineLearningData = [20, 15, 25, 18, 30, 22, 40, 35, 55, 45, 60, 50];
-
-const blockedAppData = [10, 5, 8, 23, 10, 15, 12, 5, 8, 10, 15, 18];
-const jailbreakData = [15, 10, 20, 40, 25, 30, 15, 20, 10, 5, 15, 18];
-const batteryData = [30, 28, 25, 40, 35, 20, 15, 25, 30, 35, 28, 32];
-
-// Table Mock Data
-const violationsData = [
-  { incident: "Violation A", date: "18 Apr 2021, 5:30pm" },
-  { incident: "Violation B", date: "18 Apr 2021, 3:23pm" },
-  { incident: "Violation C", date: "20 May 2021, 4:22am" },
-  { incident: "Violation D", date: "12 Jul 2021, 9:30am" },
-];
-
-const lostDevicesData = [
-  { device: "Samsung S7", location: "Victoria Island, Lagos" },
-  { device: "Nokia 3310", location: "Victoria Island, Lagos" },
-  { device: "iPhone 11", location: "Victoria Island, Lagos" },
-  { device: "Motorolla GCX", location: "Victoria Island, Lagos" },
-];
-
-const blacklistedWebsitesData = [
-  { website: "pornhub.com", category: "Adult & Pornographic Content", attempts: 12 },
-  { website: "bet9ja.com", category: "Gambling & Betting Site", attempts: 100 },
-  { website: "facebook.com", category: "Social media", attempts: "3,200" },
-  { website: "netflix.com", category: "Streaming & Entertainment", attempts: 200 },
-];
+// Fallback for chart sections not yet covered by the dashboard API
+const fallbackData = [0, 0, 0, 0, 0, 0];
 
 export default function BusinessDashboard() {
+  const {
+    isLoading,
+    deviceStats,
+    newDevicesChart,
+    storageChart,
+    wifiChart,
+    mobileChart,
+    managerAppVersionsChart,
+  } = useBusinessDashboard();
+
+  const resolve = (data: number[]) => (data.length > 0 ? data : fallbackData);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-10 pb-10">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-10 w-48" />
+          <Skeleton className="h-9 w-28" />
+        </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <Skeleton className="h-48 w-full rounded-2xl" />
+          <Skeleton className="h-48 w-full rounded-2xl" />
+        </div>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-40 w-full rounded-2xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-10 pb-10">
       <div className="flex items-center justify-between">
@@ -74,24 +78,24 @@ export default function BusinessDashboard() {
       {/* TOP SECTION: Analytics Line Cards */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <AnalyticsLineCard
-          title="Daily active users"
-          count="10,000"
-          percentageChange={2.45}
-          timingLabel="This month"
-          chartColor="#4F46E5" // Indigo
-          badgeLabel="40 Active devices"
-          badgeIndex={4}
-          data={userAnalyticsData}
+          title="New devices"
+          count={String(deviceStats.total)}
+          percentageChange={0}
+          timingLabel="All time"
+          chartColor="#4F46E5"
+          badgeLabel={`${deviceStats.active} Active`}
+          badgeIndex={Math.max(0, newDevicesChart.y.length - 1)}
+          data={resolve(newDevicesChart.y)}
         />
         <AnalyticsLineCard
-          title="Average session duration"
-          count="10:56:22"
-          percentageChange={2.45}
-          timingLabel="Last week"
-          chartColor="#E81CFF" // Pink/Magenta
-          badgeLabel="01:12:44 sessions"
-          badgeIndex={8}
-          data={sessionData}
+          title="Online vs Offline"
+          count={`${deviceStats.online} / ${deviceStats.offline}`}
+          percentageChange={0}
+          timingLabel="Live"
+          chartColor="#E81CFF"
+          badgeLabel={`${deviceStats.locked} Locked`}
+          badgeIndex={0}
+          data={resolve(mobileChart.y)}
         />
       </div>
 
@@ -103,17 +107,17 @@ export default function BusinessDashboard() {
           {/* Row 1 */}
           <MiniLineChartCard
             title="Blocked App Installation Attempts"
-            chartColor="#EF4444" // Red
-            badgeLabel="23 Blocked attempts"
-            badgeIndex={3}
-            data={blockedAppData}
+            chartColor="#EF4444"
+            badgeLabel="—"
+            badgeIndex={0}
+            data={fallbackData}
           />
           <CircularProgressCard
             title="Devices with Latest Security Patch"
-            primaryValue={60.6}
+            primaryValue={0}
             primaryLabel="Vulnerable"
             primaryColor="#EF4444"
-            secondaryValue={37.5}
+            secondaryValue={0}
             secondaryLabel="Secured"
             secondaryColor="#22C55E"
           />
@@ -125,15 +129,15 @@ export default function BusinessDashboard() {
               { key: "incident", header: "Incident", className: "w-1/2" },
               { key: "date", header: "DATE", className: "w-1/2 text-right font-medium" },
             ]}
-            data={violationsData}
+            data={[]}
             timingLabel="This month"
           />
           <MiniLineChartCard
             title="Jailbreak/Root Detection Rate"
-            chartColor="#171717" // Black/Dark
-            badgeLabel="40% Detection rate"
-            badgeIndex={3}
-            data={jailbreakData}
+            chartColor="#171717"
+            badgeLabel="—"
+            badgeIndex={0}
+            data={fallbackData}
           />
         </div>
       </div>
@@ -143,25 +147,25 @@ export default function BusinessDashboard() {
         <H4 className="text-sm font-bold text-[#1a3860]">Connectivity & Learning Access</H4>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <AnalyticsLineCard
-            title="Usage of preloaded content"
-            count="20"
-            percentageChange={2.45}
-            timingLabel="Last week"
-            chartColor="#C026D3" // Fuchsia
-            badgeLabel="Learning Videos (20%)"
-            badgeIndex={5}
-            data={preloadedContentData}
+            title="WiFi data usage"
+            count="—"
+            percentageChange={0}
+            timingLabel="This month"
+            chartColor="#C026D3"
+            badgeLabel="WiFi"
+            badgeIndex={Math.max(0, wifiChart.y.length - 1)}
+            data={resolve(wifiChart.y)}
             icon={<MonitorPlay size={16} className="text-[#C026D3]" />}
           />
           <AnalyticsLineCard
-            title="Offline learning hours logged"
-            count="34h 54m 22s"
-            percentageChange={2.45}
-            timingLabel="Last week"
-            chartColor="#0F172A" // Slate 900
-            badgeLabel="2 hours logged"
-            badgeIndex={6}
-            data={offlineLearningData}
+            title="Mobile data usage"
+            count="—"
+            percentageChange={0}
+            timingLabel="This month"
+            chartColor="#0F172A"
+            badgeLabel="Mobile"
+            badgeIndex={Math.max(0, mobileChart.y.length - 1)}
+            data={resolve(mobileChart.y)}
             icon={<WifiOff size={16} className="text-[#0F172A]" />}
           />
         </div>
@@ -174,18 +178,18 @@ export default function BusinessDashboard() {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Row 1 */}
           <MiniLineChartCard
-            title="Battery health score"
-            chartColor="#EF4444" // Red
-            badgeLabel="40%"
+            title="Storage usage"
+            chartColor="#EF4444"
+            badgeLabel="Storage"
             badgeIndex={3}
-            data={batteryData}
+            data={resolve(storageChart.y)}
           />
           <CircularProgressCard
             title="Devices availability"
-            primaryValue={60.6}
+            primaryValue={0}
             primaryLabel="Damaged"
             primaryColor="#EF4444"
-            secondaryValue={37.5}
+            secondaryValue={0}
             secondaryLabel="Functional"
             secondaryColor="#22C55E"
           />
@@ -197,7 +201,7 @@ export default function BusinessDashboard() {
               { key: "device", header: "Device", className: "w-[40%]" },
               { key: "location", header: "Last known location", className: "w-[60%] font-medium" },
             ]}
-            data={lostDevicesData}
+            data={[]}
             timingLabel="This month"
           />
           <DeviceMapCard title="Jailbreak/Root Detection Rate" timingLabel="This month" />
@@ -218,7 +222,7 @@ export default function BusinessDashboard() {
               },
               { key: "attempts", header: "Attempts", className: "w-[20%]" },
             ]}
-            data={blacklistedWebsitesData}
+            data={[]}
             timingLabel="This month"
           />
         </div>

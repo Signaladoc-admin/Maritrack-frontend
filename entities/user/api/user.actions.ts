@@ -93,3 +93,10 @@ export async function supportRequestAction(data: SupportRequestDto): Promise<voi
     body: JSON.stringify(data),
   });
 }
+
+export async function checkIfEmailExistsAction(email: string): Promise<boolean> {
+  const response = await apiClient(`/users/check/${encodeURIComponent(email)}`, {
+    method: "GET",
+  });
+  return response.message.toLowerCase().includes("email exists");
+}

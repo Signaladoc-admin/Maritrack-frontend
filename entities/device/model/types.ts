@@ -1,3 +1,5 @@
+import { User } from "@/app/(in-app)/users/types";
+
 export interface DeviceHardwareInfo {
   cpuSpeed: number;
   release: string;
@@ -38,6 +40,38 @@ export interface Device {
   version: string;
   manufacturer: string;
   model: string;
+}
+export interface StaffDevice {
+  id: string;
+  serialNumber: string;
+  imei: string;
+  mdmDeviceId: string;
+  mdmId: string;
+  macAddress: string;
+  manufacturer: string;
+  assignmentStatus: string;
+  mdmEnrollmentStatus: string;
+  mdmComplianceStatus: string;
+  lastSeenAt: string;
+  lastKnownLocation: string;
+  deviceStatus: string;
+  flagged: boolean;
+  flagReason: string;
+  flaggedByUserId: string;
+  flaggedAt: string;
+  mdmLastSyncAt: string;
+  createdAt: string;
+  updatedAt: string;
+  deleted: boolean;
+  deletedAt: string;
+  currentUserId: string;
+  childId: string;
+  model: string;
+  operatingSystem: string;
+  currentDepartmentId: string;
+  currentLocationId: string;
+  businessId: string;
+  currentUser: User;
 }
 
 export interface DeviceAsset {
