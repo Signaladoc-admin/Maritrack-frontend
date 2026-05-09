@@ -12,6 +12,11 @@ import { TriangleAlert } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { Button } from "@/shared/ui/button";
+import { StaffDevice } from "@/entities/device";
+import {
+  useOtherStaffMembersExceptStaff,
+  useOtherTeamMembers,
+} from "@/entities/business/model/useTeamMembers";
 
 function StaffOptionContent({ staff }: { staff: BusinessStaff }) {
   const firstName = staff.user?.firstName ?? "";
@@ -44,15 +49,11 @@ function StaffOptionContent({ staff }: { staff: BusinessStaff }) {
 export default function ReassignDeviceModal({
   open,
   onOpenChange,
-  deviceId,
-  deviceName,
-  currentOwnerName,
+  selectedDevice,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  deviceId?: string;
-  deviceName?: string;
-  currentOwnerName?: string;
+  selectedDevice: StaffDevice | null;
 }) {
   const [step, setStep] = useState<"select-staff" | "confirm">("select-staff");
   const [selectedStaff, setSelectedStaff] = useState<BusinessStaff | null>(null);
@@ -64,18 +65,19 @@ export default function ReassignDeviceModal({
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm] = useDebounce(searchTerm, 400);
 
-  const { data: staffMembersData, isLoading } = useGetStaffMembers({
+  const { otherTeamMembers, isLoading } = useOtherStaffMembersExceptStaff({
+    excludeUserId: selectedDevice?.currentUserId!,
     search: debouncedSearchTerm,
   });
 
-  const staffMembers: BusinessStaff[] = staffMembersData?.staff ?? [];
-
-  const staffMemberOptions = staffMembers.map((s) => ({
+  const staffMemberOptions = otherTeamMembers.map((s) => ({
     value: s.id,
     label: `${s.user?.firstName ?? ""} ${s.user?.lastName ?? ""}`.trim() || s.user?.email || s.id,
   }));
-
-  const staffById = useMemo(() => new Map(staffMembers.map((s) => [s.id, s])), [staffMembers]);
+  const staffById = useMemo(
+    () => new Map(otherTeamMembers.map((s) => [s.id, s])),
+    [otherTeamMembers]
+  );
 
   const { formState, handleSubmit, reset, control } = useForm<AssignDeviceToUserValues>({
     defaultValues: { staffId: "" },
@@ -102,23 +104,25 @@ export default function ReassignDeviceModal({
   }
 
   async function handleReassign() {
-    if (!selectedStaff || !deviceId || !zoneId) {
+    if (!selectedStaff || !selectedDevice?.mdmDeviceId || !zoneId) {
       toast({ type: "error", title: "Missing required information" });
       return;
     }
-    try {
-      await assignUserToDevice({
-        request: {
-          deviceIds: [deviceId],
-          userId: selectedStaff.userId,
-          zoneId,
-        },
-      });
-      toast({ type: "success", title: "Device reassigned successfully" });
-      handleClose();
-    } catch (error: any) {
-      toast({ type: "error", title: error?.message || "Failed to reassign device" });
+    const res = await assignUserToDevice({
+      request: {
+        deviceIds: [selectedDevice?.mdmDeviceId],
+        userId: selectedStaff.user?.id!,
+        zoneId,
+      },
+    });
+
+    if (!res.success) {
+      toast({ type: "error", title: res.message || "Failed to reassign device" });
+      return;
     }
+
+    toast({ type: "success", title: "Device reassigned successfully" });
+    handleClose();
   }
 
   const newOwnerName = selectedStaff
@@ -133,10 +137,6 @@ export default function ReassignDeviceModal({
       isOpen={open}
       onClose={handleClose}
       title={isConfirmStep ? undefined : "Reassign Device"}
-      // confirmText={isConfirmStep ? "Reassign" : undefined}
-      // cancelText={isConfirmStep ? "Cancel" : undefined}
-      // onConfirm={isConfirmStep ? handleReassign : undefined}
-      // onCancel={isConfirmStep ? () => setStep("select-staff") : undefined}
       confirmClassName={isConfirmStep ? "bg-[#1B3C73]" : undefined}
     >
       {/* Step 1 — select new staff */}
@@ -144,10 +144,12 @@ export default function ReassignDeviceModal({
         <form onSubmit={handleSubmit(onSelectStaff)} className="space-y-1">
           {/* Current device card */}
           <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-            <p className="font-semibold text-slate-800">{deviceName ?? "Device"}</p>
-            {currentOwnerName && (
-              <p className="text-sm text-slate-500">Owned by {currentOwnerName}</p>
-            )}
+            <p className="font-semibold text-slate-800">{selectedDevice?.model ?? "Device"}</p>
+
+            <p className="text-sm text-slate-500">
+              Owned by{" "}
+              {`${selectedDevice?.currentUser?.firstName} ${selectedDevice?.currentUser?.lastName}`}
+            </p>
           </div>
 
           {/* Connector */}

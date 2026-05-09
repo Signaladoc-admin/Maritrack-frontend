@@ -9,6 +9,7 @@ import {
 import { createResourceHooks, ResourceActions } from "@/shared/api/createResourceHooks";
 import { BusinessStaff, PaginatedStaff } from "../types";
 import { StaffMemberValues as StaffMemberDto } from "@/features/onboarding/business/schema";
+import { QueryOptions } from "@/shared/api/types";
 
 const businessActions: ResourceActions<
   BusinessStaff,
@@ -16,7 +17,7 @@ const businessActions: ResourceActions<
   StaffMemberDto,
   PaginatedStaff
 > = {
-  getAll: async (options?: any) => await getStaffMembersAction(options),
+  getAll: async (options?: QueryOptions) => await getStaffMembersAction(options),
   getById: async (id: string) => await getStaffMemberAction(id),
   create: async (data: StaffMemberDto) => await createStaffMemberAction(data),
   createMultiple: async (data: StaffMemberDto[]) => await createStaffsBulkAction(data),

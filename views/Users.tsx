@@ -180,7 +180,7 @@ export default function Users() {
                     <UserDetails selectedId={selectedId!} />
                   )}
                   {selectedUserSubTab === "associated-devices" && (
-                    <AssociatedDevicesTable userId={selectedId!} />
+                    <AssociatedDevicesTable staffId={selectedId!} />
                   )}
                 </div>
               </div>

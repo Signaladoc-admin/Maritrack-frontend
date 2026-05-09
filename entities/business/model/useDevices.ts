@@ -1,9 +1,10 @@
 import {
   useBusinessZones,
-  useGetZoneDevices,
   useParentZones,
+  useZoneDevices,
 } from "@/features/mdm-sync/model/useMdmSync";
 import { useAuth } from "@/shared/auth/AuthProvider";
+import { useGetStaffMember } from "./useStaffMembers";
 
 export default function useGetDevices() {
   const { user } = useAuth();
@@ -14,15 +15,13 @@ export default function useGetDevices() {
 
   const zoneId = isBusinessRole ? (businessZones as any)?.[0]?.id : (parentZones as any)?.[0]?.id;
 
-  const { data: devicesResponse } = useGetZoneDevices(zoneId);
+  const { data: devices } = useZoneDevices(zoneId, { enabled: !!zoneId });
 
-  const devices = devicesResponse?.devicesData?.data || [];
-  const numPages = devicesResponse?.devicesData?.totalPages;
-  const totalElements = devicesResponse?.devicesData?.totalElements;
+  return devices || [];
+}
 
-  return {
-    devices,
-    numPages,
-    totalElements,
-  };
+export function useGetStaffMemberDevices(staffId: string) {
+  const { data: staffMember } = useGetStaffMember(staffId);
+
+  return staffMember?.device ? [staffMember.device] : [];
 }

@@ -84,7 +84,7 @@ export function useBusinessZones(options?: { enabled?: boolean }) {
   });
 }
 
-export function useAssignUserToDevice(options?: { enabled?: boolean }) {
+export function useAssignUserToDevice() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -103,8 +103,8 @@ export function useAssignUserToDevice(options?: { enabled?: boolean }) {
   });
 }
 
-export function useGetZoneDevices(zoneId: string | undefined, options?: { enabled?: boolean }) {
-  // export function useZoneDevices(zoneId: string | undefined) {
+// export function useGetZoneDevices(zoneId: string | undefined, options?: { enabled?: boolean }) {
+export function useZoneDevices(zoneId: string | undefined, options?: { enabled?: boolean }) {
   return useServerActionQuery(
     mdmSyncKeys.zoneDevices(zoneId || ""),
     getZoneDevicesAction,

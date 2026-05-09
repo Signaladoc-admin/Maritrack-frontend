@@ -1,14 +1,14 @@
 import { TableColumn } from "@/shared/ui/Table/types";
-import { Device } from "./types";
 import { formatDate, formatID } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
+import { Device, StaffDevice } from "@/entities/device";
 
 export function getDevicesColumns(handleAssignDevice: (device: Device) => void) {
   const devicesColumns: TableColumn<Device>[] = [
     {
       key: "asset",
       label: "Asset",
-      render: (item: Device) => (
+      render: (item) => (
         <div className="space-y-1 leading-tight">
           <p className="font-semibold text-neutral-800">{item.model}</p>
           <p className="text-xs text-neutral-500">{formatID(item.serialNumber)}</p>
@@ -18,12 +18,11 @@ export function getDevicesColumns(handleAssignDevice: (device: Device) => void) 
     {
       key: "possessor",
       label: "Possessor",
-      render: (item: Device) =>
-        item.possessor ? (
-          <div className="space-y-1 leading-tight">
-            <p className="font-semibold text-neutral-800">{item?.possessor?.name}</p>
-            <p className="text-sm text-neutral-500">{item?.possessor?.email}</p>
-          </div>
+      render: (item) =>
+        (item as any).possessor ? (
+          <span>{(item as any).possessor}</span>
+        ) : !(item as any).possessor ? (
+          <span>N/A</span>
         ) : (
           <Button
             type="button"
@@ -42,64 +41,64 @@ export function getDevicesColumns(handleAssignDevice: (device: Device) => void) 
     {
       key: "imei",
       label: "IMEI",
-      render: (item: Device) => <p>{item.imei}</p>,
+      render: (item) => <p>{item.imeiNumber}</p>,
     },
     {
       key: "serialNumber",
       label: "Serial Number",
-      render: (item: Device) => <p>{item.serialNumber}</p>,
+      render: (item) => <p>{item.serialNumber}</p>,
     },
     {
       key: "macAddress",
       label: "MAC Address",
-      render: (item: Device) => <p>{item.macAddress}</p>,
+      render: (item) => <p>{item.wifiMacAddr}</p>,
     },
     {
       key: "lastSynced",
       label: "Last Synced",
-      render: (item: Device) => <p>{formatDate(item.lastSynced)}</p>,
+      render: (item) => <p>{formatDate(new Date(item.lastReportedTime))}</p>,
     },
   ];
 
   return devicesColumns;
 }
-export function getAssociatedDevicesColumns(handleReassignDevice: (device: Device) => void) {
-  const devicesColumns: TableColumn<Device>[] = [
+export function getAssociatedDevicesColumns(
+  handleOpenReassignDeviceModal: (device: StaffDevice) => void
+) {
+  const devicesColumns: TableColumn<StaffDevice>[] = [
     {
       key: "asset",
       label: "Asset",
-      render: (item: Device) => (
+      render: (item) => (
         <div className="space-y-1 leading-tight">
-          <p className="font-semibold text-neutral-800">{item.model}</p>
-          <p className="text-xs text-neutral-500">{formatID(item.serialNumber)}</p>
+          <p className="font-semibold text-neutral-800">{item.model || "Model N/A"}</p>
+          <p className="text-xs text-neutral-500">{formatID(item.mdmDeviceId)}</p>
         </div>
       ),
     },
     {
       key: "serialNumber",
       label: "Serial Number",
-      render: (item: Device) => <p>{item.serialNumber}</p>,
     },
     {
       key: "macAddress",
       label: "MAC Address",
-      render: (item: Device) => <p>{item.macAddress}</p>,
     },
     {
       key: "lastSynced",
       label: "Last synced",
-      render: (item: Device) => <p>{item.lastSynced}</p>,
+      render: (item) => <p>{formatDate(new Date(item.mdmLastSyncAt))}</p>,
     },
     {
       key: "",
       label: "Action",
-      render: (item: Device) => (
+      render: (item) => (
         <Button
           size="sm"
           variant="outlinePrimary"
           onClick={(e) => {
             e.stopPropagation();
-            handleReassignDevice(item);
+            handleOpenReassignDeviceModal(item);
           }}
         >
           Reassign

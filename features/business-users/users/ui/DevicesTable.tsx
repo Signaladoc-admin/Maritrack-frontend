@@ -1,20 +1,18 @@
 import Table from "@/shared/ui/Table/Table";
-import { devicesData } from "@/app/(in-app)/devices/data";
 import { useRouter } from "next/navigation";
-import { Device } from "@/app/(in-app)/devices/types";
 
-export default function DevicesTable({
+export default function DevicesTable<T extends { id: string | number }>({
   columns,
   paginationClassName,
   data,
 }: {
   columns: any;
   paginationClassName?: string;
-  data: Device[];
+  data: T[];
 }) {
   const router = useRouter();
 
-  function handleRowSelection(device: Device) {
+  function handleRowSelection(device: T) {
     router.push(`/devices/${device?.id}`);
   }
 

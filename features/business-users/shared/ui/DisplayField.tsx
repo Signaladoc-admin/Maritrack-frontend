@@ -18,7 +18,7 @@ export default function DisplayField({
       title={hoverTitle}
       className={cn(
         "gap-2 space-y-2 rounded-lg bg-white p-5 text-sm",
-        orientation === "horizontal" && "grid grid-cols-[200px_1fr]",
+        orientation === "horizontal" && "grid grid-cols-2",
         className
       )}
     >

@@ -1,6 +1,8 @@
 import { BusinessRole } from "@/entities/user/model/user.schema";
 import { apiClient } from "@/shared/lib/api-client";
 import { withSafeAction } from "@/shared/lib/safe-action";
+import { BusinessStaff, PaginatedStaff } from "../types";
+import { ActionResult } from "@/shared/api/types";
 
 export async function getStaffMembersAction(options?: {
   page?: number;
@@ -9,7 +11,7 @@ export async function getStaffMembersAction(options?: {
   location?: string;
   businessId?: string;
   position?: string;
-}) {
+}): Promise<ActionResult<PaginatedStaff>> {
   return withSafeAction(async () => {
     const res = await apiClient(`/staff`, {
       method: "GET",
@@ -19,7 +21,7 @@ export async function getStaffMembersAction(options?: {
     return res.data ?? res;
   }, "Failed to get staff members");
 }
-export async function getStaffMemberAction(id: string) {
+export async function getStaffMemberAction(id: string): Promise<ActionResult<BusinessStaff>> {
   return withSafeAction(async () => {
     const res = await apiClient(`/staff/${id}`, {
       method: "GET",

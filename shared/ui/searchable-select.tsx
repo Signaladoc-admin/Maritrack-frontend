@@ -120,7 +120,11 @@ export function SearchableSelect({
           <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
+      <PopoverContent
+        className="w-(--radix-popover-trigger-width) p-0"
+        align="start"
+        onWheel={(e) => e.stopPropagation()}
+      >
         {isSearchable && (
           <div className="flex items-center border-b px-3">
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
@@ -134,7 +138,14 @@ export function SearchableSelect({
             />
           </div>
         )}
-        <div ref={listRef} className="max-h-60 overflow-y-auto p-1">
+        <div
+          ref={listRef}
+          className="max-h-60 overflow-y-auto overscroll-contain p-1"
+          onWheel={(e) => {
+            e.stopPropagation();
+            e.currentTarget.scrollTop += e.deltaY;
+          }}
+        >
           {isLoading ? (
             <div className="flex items-center justify-center p-4">
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#1b3c73] border-t-transparent" />

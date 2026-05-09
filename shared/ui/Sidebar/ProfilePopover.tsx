@@ -27,12 +27,12 @@ export function ProfilePopover() {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <button className="h-12 w-12 cursor-pointer overflow-hidden rounded-full transition-all hover:ring-2 hover:ring-[#1B3C73] hover:ring-offset-2">
+        <button className="h-10 w-10 cursor-pointer overflow-hidden rounded-full transition-all hover:ring-2 hover:ring-[#1B3C73] hover:ring-offset-2 md:h-12 md:w-12">
           {userProfile?.imageUrl ? (
             <img src={userProfile.imageUrl} alt="Profile" className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-[#EEEEEE] text-[#1B3C73]">
-              <UserIcon className="h-6 w-6" />
+              <UserIcon className="h-5 w-5 md:h-6 md:w-6" strokeWidth={2} />
             </div>
           )}
         </button>

@@ -11,8 +11,7 @@ import { Header } from "@/shared/ui/layout/header";
 import { TabNavigation } from "@/shared/ui/tab-navigation";
 import { DownloadCloud, ListFilter, Plus, SearchIcon } from "lucide-react";
 import { useDebounce } from "use-debounce";
-import { getDevicesColumns } from "@/app/(in-app)/devices/columns";
-import { Device } from "@/app/(in-app)/devices/types";
+import { getDevicesColumns } from "@/features/device/columns";
 import { useRouter } from "next/navigation";
 import { useQueryState } from "nuqs";
 import { useState } from "react";
@@ -22,6 +21,7 @@ import AssignDeviceModal from "@/features/business-users/users/ui/AssignDeviceMo
 import { Input } from "@/shared/ui/input";
 import useGetDevices from "@/entities/business/model/useDevices";
 import { useAuth } from "@/shared/auth/AuthProvider";
+import { Device } from "@/entities/device";
 
 export default function DevicesList() {
   const router = useRouter();
@@ -30,11 +30,7 @@ export default function DevicesList() {
   const [selectedFilter, setSelectedFilter] = useQueryState("filter", { defaultValue: "ALL" });
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
 
-  const { devices, numPages, totalElements } = useGetDevices();
-
-  function handleSelectDevice(device: Device) {
-    router.push(`/devices/${device.id}`);
-  }
+  const devices = useGetDevices();
 
   // const filteredDevices = useMemo(() => {
   //   let result = devicesData;

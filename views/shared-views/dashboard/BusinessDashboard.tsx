@@ -9,38 +9,11 @@ import CircularProgressCard from "@/features/dashboard/business/ui/CircularProgr
 import DashboardTableCard, { Column } from "@/features/dashboard/business/ui/DashboardTableCard";
 import DeviceMapCard from "@/features/dashboard/business/ui/DeviceMapCard";
 import { H4 } from "@/shared/ui/typography";
-import { cn } from "@/shared/lib/utils";
 import { useBusinessDashboard } from "@/features/dashboard/business/model/useDashboard";
 import { Skeleton } from "@/shared/ui/skeleton";
 
-// Static fallback data (used when API returns empty arrays)
+// Fallback for chart sections not yet covered by the dashboard API
 const fallbackData = [0, 0, 0, 0, 0, 0];
-
-// Mock data for sections not yet covered by the dashboard API
-const blockedAppData = [10, 5, 8, 23, 10, 15, 12, 5, 8, 10, 15, 18];
-const jailbreakData = [15, 10, 20, 40, 25, 30, 15, 20, 10, 5, 15, 18];
-
-// Table Mock Data
-const violationsData = [
-  { incident: "Violation A", date: "18 Apr 2021, 5:30pm" },
-  { incident: "Violation B", date: "18 Apr 2021, 3:23pm" },
-  { incident: "Violation C", date: "20 May 2021, 4:22am" },
-  { incident: "Violation D", date: "12 Jul 2021, 9:30am" },
-];
-
-const lostDevicesData = [
-  { device: "Samsung S7", location: "Victoria Island, Lagos" },
-  { device: "Nokia 3310", location: "Victoria Island, Lagos" },
-  { device: "iPhone 11", location: "Victoria Island, Lagos" },
-  { device: "Motorolla GCX", location: "Victoria Island, Lagos" },
-];
-
-const blacklistedWebsitesData = [
-  { website: "pornhub.com", category: "Adult & Pornographic Content", attempts: 12 },
-  { website: "bet9ja.com", category: "Gambling & Betting Site", attempts: 100 },
-  { website: "facebook.com", category: "Social media", attempts: "3,200" },
-  { website: "netflix.com", category: "Streaming & Entertainment", attempts: 200 },
-];
 
 export default function BusinessDashboard() {
   const {
@@ -52,8 +25,6 @@ export default function BusinessDashboard() {
     mobileChart,
     managerAppVersionsChart,
   } = useBusinessDashboard();
-
-  console.log(newDevicesChart);
 
   const resolve = (data: number[]) => (data.length > 0 ? data : fallbackData);
 
@@ -136,17 +107,17 @@ export default function BusinessDashboard() {
           {/* Row 1 */}
           <MiniLineChartCard
             title="Blocked App Installation Attempts"
-            chartColor="#EF4444" // Red
-            badgeLabel="23 Blocked attempts"
-            badgeIndex={3}
-            data={blockedAppData}
+            chartColor="#EF4444"
+            badgeLabel="—"
+            badgeIndex={0}
+            data={fallbackData}
           />
           <CircularProgressCard
             title="Devices with Latest Security Patch"
-            primaryValue={60.6}
+            primaryValue={0}
             primaryLabel="Vulnerable"
             primaryColor="#EF4444"
-            secondaryValue={37.5}
+            secondaryValue={0}
             secondaryLabel="Secured"
             secondaryColor="#22C55E"
           />
@@ -158,15 +129,15 @@ export default function BusinessDashboard() {
               { key: "incident", header: "Incident", className: "w-1/2" },
               { key: "date", header: "DATE", className: "w-1/2 text-right font-medium" },
             ]}
-            data={violationsData}
+            data={[]}
             timingLabel="This month"
           />
           <MiniLineChartCard
             title="Jailbreak/Root Detection Rate"
-            chartColor="#171717" // Black/Dark
-            badgeLabel="40% Detection rate"
-            badgeIndex={3}
-            data={jailbreakData}
+            chartColor="#171717"
+            badgeLabel="—"
+            badgeIndex={0}
+            data={fallbackData}
           />
         </div>
       </div>
@@ -215,10 +186,10 @@ export default function BusinessDashboard() {
           />
           <CircularProgressCard
             title="Devices availability"
-            primaryValue={60.6}
+            primaryValue={0}
             primaryLabel="Damaged"
             primaryColor="#EF4444"
-            secondaryValue={37.5}
+            secondaryValue={0}
             secondaryLabel="Functional"
             secondaryColor="#22C55E"
           />
@@ -230,7 +201,7 @@ export default function BusinessDashboard() {
               { key: "device", header: "Device", className: "w-[40%]" },
               { key: "location", header: "Last known location", className: "w-[60%] font-medium" },
             ]}
-            data={lostDevicesData}
+            data={[]}
             timingLabel="This month"
           />
           <DeviceMapCard title="Jailbreak/Root Detection Rate" timingLabel="This month" />
@@ -251,7 +222,7 @@ export default function BusinessDashboard() {
               },
               { key: "attempts", header: "Attempts", className: "w-[20%]" },
             ]}
-            data={blacklistedWebsitesData}
+            data={[]}
             timingLabel="This month"
           />
         </div>

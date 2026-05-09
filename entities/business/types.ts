@@ -1,5 +1,6 @@
 import { User } from "@/app/(in-app)/users/types";
 import { BusinessRoleEnum } from "../user/model/user.schema";
+import { StaffDevice } from "../device";
 
 export interface BusinessProfileData {
   id: string;
@@ -27,6 +28,7 @@ export interface BusinessStaff {
   deletedAt: string | null;
   user?: User;
   business?: Business;
+  device?: StaffDevice;
 }
 
 export interface Business {

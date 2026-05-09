@@ -41,7 +41,7 @@ export default function ChildrenProfiles({
 
   const zoneId = user?.zoneId?.[0]?.id;
   const { data: subscriptionData } = useActiveSubscription(zoneId);
-  const hasPaid = subscriptionData?.active ?? false;
+  const hasPaid = subscriptionData?.data.active ?? false;
 
   const [planChosen, setPlanChosen] = useState(false);
   const canProceed = hasPaid || planChosen;
