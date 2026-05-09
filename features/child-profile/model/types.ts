@@ -24,6 +24,34 @@ export interface DeleteChildModalProps {
   variant: "destructive" | "default";
 }
 
+export interface ChildDevice {
+  id: string;
+  serialNumber: string;
+  imei: string;
+  mdmDeviceId: string;
+  mdmId: string;
+  macAddress: string;
+  manufacturer: string;
+  model: string | null;
+  operatingSystem: string | null;
+  assignmentStatus: string;
+  mdmEnrollmentStatus: string;
+  mdmComplianceStatus: string | null;
+  deviceStatus: "ACTIVE" | "INACTIVE" | string;
+  lastSeenAt: string | null;
+  lastKnownLocation: { latitude: number; longitude: number } | null;
+  flagged: boolean;
+  flagReason: string | null;
+  mdmLastSyncAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  deleted: boolean;
+  deletedAt: string | null;
+  childId: string;
+  currentUserId: string | null;
+  currentUser: null;
+}
+
 export interface Child {
   id: string;
   name: string;
@@ -31,11 +59,13 @@ export interface Child {
   gender: Gender;
   imageUrl: string | null;
   onboardingCode: string;
-  createdAt: string; // or Date if you parse it
+  createdAt: string;
   updatedAt: string;
   deleted: boolean;
   deletedAt: string | null;
-  image: string | null;
+  device: ChildDevice | null;
+  parentLinks: any[];
+  parent: any[];
 }
 
 export interface ChildRelationship {
