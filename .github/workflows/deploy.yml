@@ -33,8 +33,7 @@ jobs:
       # - name: Test
       #   run: npm test
 
-      # Dotfiles alone are not always enough for next build to see NEXT_PUBLIC_* in CI.
-      # Export every NEXT_PUBLIC_* from VPS_DOTENV into this shell before npm run build.
+      # NEXT_PUBLIC_* is read at `next build` from .env.production.local (same source as deploy/.env).
       - name: Build application
         env:
           VPS_DOTENV: ${{ secrets.VPS_DOTENV }}
@@ -46,41 +45,10 @@ jobs:
             exit 1
           fi
           printf '%s\n' "$VPS_DOTENV" > .env.production.local
-          ENV_EXPORT_SCRIPT="/tmp/maritrack-next-public-env-$$.sh"
-          python3 << 'PY' > "$ENV_EXPORT_SCRIPT"
-          import re
-          import pathlib
-          import shlex
-          import sys
-
-          raw = pathlib.Path(".env.production.local").read_text(encoding="utf-8")
-          lines = ["#!/bin/sh", "set -e"]
-          pat = re.compile(r"^(?:export\s+)?([\w.-]+)\s*=\s*(.*)$")
-          found_api = False
-          for line in raw.splitlines():
-              t = line.strip()
-              if not t or t.startswith("#"):
-                  continue
-              m = pat.match(t)
-              if not m:
-                  continue
-              key, val = m.group(1), m.group(2).strip()
-              if not key.startswith("NEXT_PUBLIC_"):
-                  continue
-              if key == "NEXT_PUBLIC_API_URL":
-                  found_api = True
-              if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
-                  val = val[1:-1]
-              lines.append(f"export {key}={shlex.quote(val)}")
-          if not found_api:
-              print("VPS_DOTENV must include NEXT_PUBLIC_API_URL=...", file=sys.stderr)
-              sys.exit(1)
-          print("\n".join(lines))
-          PY
-          chmod +x "$ENV_EXPORT_SCRIPT"
-          . "$ENV_EXPORT_SCRIPT"
-          rm -f "$ENV_EXPORT_SCRIPT"
-          : "${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL was not set from VPS_DOTENV}"
+          if ! grep -Eq '^[[:space:]]*(export[[:space:]]+)?NEXT_PUBLIC_API_URL=.+' .env.production.local; then
+            echo "VPS_DOTENV must define a non-empty NEXT_PUBLIC_API_URL=... line for the client bundle."
+            exit 1
+          fi
           npm run build
 
       - name: Prepare standalone release
