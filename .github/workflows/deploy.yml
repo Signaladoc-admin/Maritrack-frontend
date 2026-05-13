@@ -1,4 +1,4 @@
-name: Deploy Maritrack
+name: Deploy Maritrack Frontend
 
 on:
   push:
