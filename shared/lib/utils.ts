@@ -116,4 +116,21 @@ export function formatID(id: string, prefix?: string, length: number = 4): strin
   return `#${truncateID(id, length)}`;
 }
 
-export const businessZoneId = "69dfaac7fb7fbec97784ae44";
+export function formatBytes(bytes: number, decimals: number = 2): string {
+  if (!+bytes) return "0 Bytes";
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+}
+
+export function formatAppValue(value: string | undefined): string {
+  if (!value) return "0";
+  if (value.startsWith("Size: ")) {
+    const size = parseInt(value.replace("Size: ", ""));
+    if (isNaN(size)) return value.replace("Size: ", "");
+    return formatBytes(size);
+  }
+  return value;
+}

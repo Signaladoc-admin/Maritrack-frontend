@@ -1,4 +1,3 @@
-import React from "react";
 import { DashboardHeaderWidget } from "@/widgets/business-dashboard/ui/DashboardHeaderWidget";
 import { BasicInfoWidget } from "@/widgets/business-dashboard/ui/BasicInfoWidget";
 import { DeviceUtilizationWidget } from "@/widgets/business-dashboard/ui/DeviceUtilizationWidget";

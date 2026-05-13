@@ -3,12 +3,24 @@ import { ScreenTimeCard } from "@/features/app-control/ui/ScreenTimeCard";
 import { AllAppsCard, apps } from "@/features/app-control/ui/AllAppsCard";
 import { MostUsedAppsCard } from "@/shared/ui/MostUsedAppsCard/MostUsedAppsCard";
 import { AppDetailView } from "@/features/app-control/ui/AppDetailView";
+import { useParams } from "next/navigation";
+import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 
 const AppControl = () => {
+  const params = useParams<{ device: string }>();
   const [view, setView] = React.useState<"list" | "detail">("list");
   const [selectedAppId, setSelectedAppId] = React.useState<string | null>(null);
 
-  const selectedApp = apps.find((a) => a.id === selectedAppId);
+  const { data, isPending } = useDeviceDetail(params?.device || "", "apps", {
+    enabled: !!params?.device,
+  });
+  const fetchedApps = data?.data?.apps || [];
+
+  const selectedApp =
+    fetchedApps.find((a: any) => a.id === selectedAppId) ||
+    apps.find((a) => a.id === selectedAppId);
+
+  console.log("fetchedApps", fetchedApps);
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -27,6 +39,8 @@ const AppControl = () => {
           <AppDetailView app={selectedApp} onBack={() => setView("list")} />
         ) : (
           <AllAppsCard
+            apps={fetchedApps}
+            isLoading={isPending}
             onViewApp={(appId) => {
               setSelectedAppId(appId);
               setView("detail");
