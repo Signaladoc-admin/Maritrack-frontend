@@ -21,17 +21,9 @@ jobs:
           command_timeout: 15m # Gives the server plenty of time to run the Next.js build
           script_stop: true    # Fails the Action instantly if npm run build fails
           script: |
-            # 1. Ensure deploy directory exists and is owned by the current user
-            mkdir -p ${{ secrets.VPS_DEPLOY_PATH_FRONTEND }}
-
-            # 2. Clone the repo if it doesn't exist, otherwise update it
-            if [ ! -d "${{ secrets.VPS_DEPLOY_PATH_FRONTEND }}/.git" ]; then
-                echo "No git repo found. Cloning fresh..."
-                git clone -b dev/dev ${{ secrets.VPS_REPO_URL }} ${{ secrets.VPS_DEPLOY_PATH_FRONTEND }}
-            fi
-
+            # 1. Move to the project folder
             cd ${{ secrets.VPS_DEPLOY_PATH_FRONTEND }}/
-
+            
             # 2. Ensure we are on the right branch and pull fresh code
             git fetch --all
             git reset --hard origin/dev/dev
@@ -42,14 +34,7 @@ jobs:
             
             # 4. Build the application (Will halt here if there are code errors)
             npm run build
-
-            # 5. Ensure PM2 is installed
-            if ! command -v pm2 &> /dev/null
-            then
-                echo "PM2 not found. Installing globally..."
-                npm install -g pm2
-            fi
             
-            # 6. Reload the PM2 process gracefully using the ecosystem file
+            # 5. Reload the PM2 process gracefully using the ecosystem file
             pm2 reload ecosystem.config.js --env production
             pm2 save
