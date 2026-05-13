@@ -24,9 +24,9 @@ jobs:
             export PATH="/root/.nvm/versions/node/v20.20.2/bin/node"
             
             # Append nvm bin to existing PATH, don't replace it
-            export NVM_DIR="$HOME/.nvm"
+            export NVM_DIR="/root/.nvm"
             source "$NVM_DIR/nvm.sh"
-            export PATH="$HOME/.nvm/versions/node/v20.20.2/bin:$PATH"
+            export PATH="/root/.nvm/versions/node/v20.20.2/bin/node"
   
             node -v
             git --version
