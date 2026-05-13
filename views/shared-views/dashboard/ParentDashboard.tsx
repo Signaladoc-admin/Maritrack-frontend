@@ -11,22 +11,70 @@ import { useDragScroll } from "@/shared/hooks/useDragScroll";
 import { useRouter } from "next/navigation";
 import { formatDate } from "date-fns";
 import { useParentZones, useZoneDevices } from "@/features/mdm-sync/model/useMdmSync";
+import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
+import { useParentStore } from "@/shared/stores/user.store";
+import { useGetChild } from "@/features/child-profile/model/useGetChildrenProfile";
+import { Child as ChildType } from "@/features/child-profile/model/types";
+
+function DeviceCard({ device, onClick }: { device: any; onClick: () => void }) {
+  const { data: hardwareData } = useDeviceDetail(device.deviceId || "", "hardware", {
+    enabled: !!device.deviceId,
+  });
+  const batteryLevel = hardwareData?.data?.realTimeStats?.batteryLevel ?? 0;
+
+  return (
+    <DeviceUsageCard
+      deviceName={device.model}
+      status="active"
+      percentage={batteryLevel}
+      device={device.manufacturer}
+      isRow={true}
+      onClick={onClick}
+    />
+  );
+}
 
 export default function ParentDashboard() {
   const { scrollContainerRef, events } = useDragScroll();
   const [currentDate, setCurrentDate] = useState<Date | undefined>(undefined);
+  const router = useRouter();
 
-  const { data: parentZonesRes } = useParentZones();
+  const { selectedChildId, setSelectedChildId, children: storeChildren } = useParentStore();
 
-  const zoneId = parentZonesRes?.[0]?.id;
+  // Ensure a child is selected by default
+  useEffect(() => {
+    if ((selectedChildId === "all" || !selectedChildId) && storeChildren?.length > 0) {
+      setSelectedChildId(storeChildren[0].id);
+    }
+  }, [selectedChildId, storeChildren, setSelectedChildId]);
 
-  const { data: devices, isLoading: isLoadingDevices } = useZoneDevices(zoneId);
+  const { data: childData, isLoading: isLoadingChild } = useGetChild(selectedChildId);
+  const typedChild = childData as ChildType | undefined;
+  const device = typedChild?.device ?? null;
+  const deviceId = device?.mdmId || "";
+
+  // Fetch device metrics
+  const { data: hardwareData, isPending: isHardwarePending } = useDeviceDetail(deviceId, "hardware", {
+    enabled: !!deviceId,
+  });
+  const { data: networkData, isPending: isNetworkPending } = useDeviceDetail(deviceId, "network", {
+    enabled: !!deviceId,
+  });
+  const { data: appsData, isPending: isAppsPending } = useDeviceDetail(deviceId, "apps", {
+    enabled: !!deviceId,
+  });
+
+  const fetchedApps = (appsData?.data?.apps || [])
+    .filter((app: any) => app.systemApp === false)
+    .slice(0, 5);
+  const fetchedHardware = hardwareData?.data?.hardwareInfo || {};
+  const fetchedNetwork = networkData?.data?.realTimeStats || {};
+
+  const batteryLevel = fetchedNetwork?.batteryLevel ?? 0;
 
   useEffect(() => {
     setCurrentDate(new Date());
   }, []);
-
-  const router = useRouter();
 
   return (
     <div className="space-y-10">
@@ -52,7 +100,7 @@ export default function ParentDashboard() {
         />
         <MetricCard
           title="Battery health"
-          value="60%"
+          value={`${batteryLevel}%`}
           trendValue="-10%"
           trendType="negative"
           chartColor="red"
@@ -65,21 +113,14 @@ export default function ParentDashboard() {
         {...events}
         className="flex w-full cursor-grab gap-6 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] *:min-w-[92%] *:shrink-0 active:cursor-grabbing md:*:max-w-[calc((100%-48px)/1.8)] md:*:min-w-[calc((100%-48px)/1.8)] lg:*:max-w-[calc((100%-48px)/2.2)] lg:*:min-w-[calc((100%-48px)/2.2)] [&::-webkit-scrollbar]:hidden"
       >
-        {devices && devices.length > 0 ? (
-          devices.map((device) => (
-            <DeviceUsageCard
-              key={device.id}
-              deviceName={device.model}
-              status="active" // Defaulting to active as per instruction "For data that are not available you can leave them blank"
-              percentage={0} // Defaulting to 0 as battery percentage is not in the provided response
-              device={device.manufacturer}
-              isRow={true}
-              onClick={() => router.push(`/devices/${device.id}`)}
-            />
-          ))
-        ) : !isLoadingDevices ? (
+        {device ? (
+          <DeviceCard
+            device={{ ...device, deviceId }}
+            onClick={() => router.push(`/devices/${deviceId}`)}
+          />
+        ) : !isLoadingChild ? (
           <div className="flex h-40 w-full items-center justify-center rounded-[24px] border border-dashed border-[#1B3C73] bg-[#081223] text-[#8198BF]">
-            No devices found
+            No devices found for this child
           </div>
         ) : (
           <div className="flex h-40 w-full animate-pulse items-center justify-center rounded-[24px] bg-[#081223]" />
@@ -91,7 +132,21 @@ export default function ParentDashboard() {
           title="Most used apps"
           actionText="View all"
           onActionClick={() => console.log("View Apps")}
-          items={appData}
+          items={
+            fetchedApps.length > 0
+              ? fetchedApps.map((app: any) => ({
+                  id: app.id,
+                  name: app.appName || app.packageName,
+                  totalTime: app.totalTime || `Size: ${app.installedAPKSize || 0}`,
+                  icon: () => (
+                    <div className="w-full text-center text-xs text-gray-400">
+                      {app.appName?.slice(0, 2)}
+                    </div>
+                  ),
+                  limits: app.limits || 0,
+                }))
+              : appData
+          }
         />
         <AlertsSummaryCard />
       </div>

@@ -14,6 +14,7 @@ import { DeleteChildModal } from "@/features/child-profile/ui/ChildDeleteModal";
 import { IChildProfile } from "@/features/onboarding/personal/types";
 import { useGetChild, useDeleteChild } from "@/features/child-profile/model/useGetChildrenProfile";
 import { Child } from "@/features/child-profile/model/types";
+import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 
 import { ChildDevicesSkeleton } from "./ChildDevicesSkeleton";
 
@@ -34,6 +35,11 @@ const ChildDevices = () => {
 
   const typedChild = childData as Child | undefined;
   const device = typedChild?.device ?? null;
+
+  const { data: hardwareData } = useDeviceDetail(device?.mdmId || "", "hardware", {
+    enabled: !!device?.mdmId,
+  });
+  const batteryLevel = hardwareData?.data?.realTimeStats?.batteryLevel ?? 0;
 
   const handleDelete = async () => {
     if (!child) return;
@@ -84,10 +90,10 @@ const ChildDevices = () => {
             <DeviceUsageCard
               deviceName={device.manufacturer || "Device"}
               status={device.deviceStatus === "ACTIVE" ? "active" : "locked"}
-              percentage={0}
+              percentage={batteryLevel}
               device={device.model || device.mdmId}
               isRow={false}
-              onClick={() => router.push(`/devices/${device.id}`)}
+              onClick={() => router.push(`/devices/${device.mdmId}`)}
             />
           ) : null}
           {/* <EmptyDeviceCard onClick={() => setIsPairNewDeviceModalOpen(true)} /> */}

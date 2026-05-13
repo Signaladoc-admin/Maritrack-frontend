@@ -50,20 +50,19 @@ export function ChildrenDropdown() {
           className="flex h-auto cursor-pointer items-center gap-4 rounded-[60px] border-none bg-[#F8F9FA] py-2 pr-6 pl-2 shadow-none transition-all hover:bg-neutral-100/50 focus:ring-0 focus:outline-hidden"
         >
           <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#1B3C73]">
-            {isAllSelected ? (
-              <User className="h-5 w-5 text-white" />
-            ) : (
-              <Avatar className="h-full w-full">
-                <AvatarImage src={selectedChild?.avatar} alt={selectedChild?.name} />
-                <AvatarFallback className="bg-[#1B3C73] text-white">
-                  {selectedChild?.name?.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-            )}
+            <Avatar className="h-full w-full">
+              <AvatarImage
+                src={isAllSelected ? children?.[0]?.avatar : selectedChild?.avatar}
+                alt={isAllSelected ? children?.[0]?.name : selectedChild?.name}
+              />
+              <AvatarFallback className="bg-[#1B3C73] text-white">
+                {(isAllSelected ? children?.[0]?.name : selectedChild?.name)?.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
           </div>
           <div className="flex flex-1 items-center justify-between gap-2">
             <span className="text-lg font-bold text-[#1B3C73]">
-              {isAllSelected ? "All Children" : selectedChild?.name}
+              {isAllSelected ? children?.[0]?.name : selectedChild?.name}
             </span>
             <ChevronDown className="h-5 w-5 text-[#1B3C73] transition-transform duration-200" />
           </div>
@@ -71,18 +70,7 @@ export function ChildrenDropdown() {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-72 rounded-3xl p-2 shadow-2xl">
-        <DropdownMenuItem
-          onSelect={() => handleSelect("all")}
-          className={cn(
-            "flex w-full cursor-pointer items-center gap-4 rounded-2xl px-4 py-3 transition-colors hover:bg-[#F8F9FA] focus:bg-[#F8F9FA]",
-            isAllSelected && "bg-[#ECF1F9] focus:bg-[#ECF1F9]"
-          )}
-        >
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1B3C73]">
-            <User className="h-5 w-5 text-white" />
-          </div>
-          <span className="text-base font-bold text-[#1B3C73]">All Children</span>
-        </DropdownMenuItem>
+        {/* Removed All Children option */}
 
         {children?.map((child) => {
           const isSelected = selectedChildId === child.id;

@@ -31,7 +31,7 @@ export function DeviceUsageCard({
   const accentTextClass = isActive ? "text-[#0EDD9F]" : "text-[#FF736A]";
 
   // --- SVG Geometry for Curved Bar ---
-  const radius = 35;
+  const radius = 40;
   const strokeWidth = 15;
   const arcLength = Math.PI * radius;
   const strokeDashoffset = arcLength * (1 - Math.min(percentage, 100) / 100);
