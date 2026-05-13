@@ -50,28 +50,30 @@ jobs:
 
       - name: Deploy release
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          RSA_SECRET: ${{ secrets.RSA_SECRET }}
           SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
-          SERVER_IP: ${{ secrets.SERVER_IP }}
-          SSH_USER: ${{ secrets.SSH_USER }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
           INSTALL_PATH: ${{ secrets.INSTALL_PATH }}
         run: |
           set -euo pipefail
 
-          : "${SSH_PRIVATE_KEY:?SSH_PRIVATE_KEY secret is required}"
+          : "${RSA_SECRET:?RSA_SECRET secret is required}"
           : "${SSH_KNOWN_HOSTS:?SSH_KNOWN_HOSTS secret is required}"
-          : "${SERVER_IP:?SERVER_IP secret is required}"
-          : "${SSH_USER:?SSH_USER secret is required}"
+          : "${VPS_HOST:?VPS_HOST secret is required}"
+          : "${VPS_USER:?VPS_USER secret is required}"
+          : "${SSH_PORT:?SSH_PORT secret is required}"
           : "${INSTALL_PATH:?INSTALL_PATH secret is required}"
 
           mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          printf '%s\n' "$RSA_SECRET" > ~/.ssh/deploy_key
           printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/deploy_key
           chmod 644 ~/.ssh/known_hosts
 
-          SSH=(ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes)
-          REMOTE="${SSH_USER}@${SERVER_IP}"
+          SSH=(ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes)
+          REMOTE="${VPS_USER}@${VPS_HOST}"
           RELEASE_ID="${GITHUB_SHA::12}"
           RELEASE_DIR="${INSTALL_PATH}/releases/${RELEASE_ID}"
 
