@@ -7,6 +7,18 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
 
 let refreshPromise: Promise<string | null> | null = null;
 
+function logApiBaseUrlOnce(source: string) {
+  const g = globalThis as { __maritrackLoggedApiBase?: boolean };
+  if (g.__maritrackLoggedApiBase) return;
+  g.__maritrackLoggedApiBase = true;
+  console.log(
+    `[${source}] NEXT_PUBLIC_API_URL check — API_BASE_URL (inlined):`,
+    JSON.stringify(API_BASE_URL ?? null),
+    "| runtime process.env:",
+    JSON.stringify(process.env.NEXT_PUBLIC_API_URL ?? null),
+  );
+}
+
 export async function apiClient<T = any>(
   endpoint: string,
   options: RequestInit & {
@@ -14,6 +26,7 @@ export async function apiClient<T = any>(
     params?: Record<string, string | number | boolean | undefined>;
   } = {}
 ): Promise<T> {
+  logApiBaseUrlOnce("apiClient");
   const isServer = typeof window === "undefined";
   const { noRedirect, params, ...fetchOptions } = options;
   let url = `${API_BASE_URL}${endpoint}`;

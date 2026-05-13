@@ -1,8 +1,22 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
 
+function logApiBaseUrlOnce(source: string) {
+  const g = globalThis as { __maritrackLoggedApiBase?: boolean };
+  if (g.__maritrackLoggedApiBase) return;
+  g.__maritrackLoggedApiBase = true;
+  console.log(
+    `[${source}] NEXT_PUBLIC_API_URL check — API_BASE_URL (inlined):`,
+    JSON.stringify(API_BASE_URL ?? null),
+    "| runtime process.env:",
+    JSON.stringify(process.env.NEXT_PUBLIC_API_URL ?? null),
+  );
+}
+
 export async function refreshAccessToken() {
   const isServer = typeof window === "undefined";
   if (!isServer) return null;
+
+  logApiBaseUrlOnce("refreshAccessToken");
 
   const { cookies } = await import("next/headers");
   const cookieStore = await cookies();
