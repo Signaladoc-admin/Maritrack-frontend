@@ -22,7 +22,10 @@ function readDotenv(filePath) {
         return env;
       }
 
-      const key = trimmedLine.slice(0, separatorIndex).trim();
+      let key = trimmedLine.slice(0, separatorIndex).trim();
+      if (/^export\s+/i.test(key)) {
+        key = key.replace(/^export\s+/i, "").trim();
+      }
       const value = trimmedLine.slice(separatorIndex + 1).trim().replace(/^["']|["']$/g, "");
 
       if (key) {
