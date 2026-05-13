@@ -39,6 +39,8 @@ jobs:
           NODE_ENV: production
 
       - name: Prepare standalone release
+        env:
+          VPS_DOTENV: ${{ secrets.VPS_DOTENV }}
         run: |
           set -euo pipefail
           rm -rf deploy
@@ -47,6 +49,7 @@ jobs:
           cp -R .next/static deploy/.next/static
           cp -R public deploy/public
           cp ecosystem.config.cjs deploy/ecosystem.config.cjs
+          printf '%s\n' "$VPS_DOTENV" > deploy/.env
 
       - name: Deploy release
         env:
