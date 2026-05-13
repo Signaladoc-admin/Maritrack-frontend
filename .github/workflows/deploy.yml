@@ -1,42 +1,100 @@
-name: Deploy Maritrack to Dev
+name: Deploy Maritrack Frontend
 
 on:
   push:
     branches:
-      - dev/dev  # Triggers only on pushes/merges to dev/dev
+      - dev/dev
+  workflow_dispatch:
+
+concurrency:
+  group: maritrack-deploy-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Execute SSH Deployment Commands
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-          command_timeout: 15m # Gives the server plenty of time to run the Next.js build
-          script_stop: true    # Fails the Action instantly if npm run build fails
-          script: |
-           node -v
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: package-lock.json
 
-            # 1. Move to the project folder
-            cd ${{ secrets.VPS_DEPLOY_PATH_FRONTEND }}/
-            
-            # 2. Ensure we are on the right branch and pull fresh code
-            git fetch --all
-            git reset --hard origin/dev/dev
-            git pull origin dev/dev
-            
-            # 3. Install packages
-            npm install
-            
-            # 4. Build the application (Will halt here if there are code errors)
-            npm run build
-            
-            # 5. Reload the PM2 process gracefully using the ecosystem file
-            pm2 reload ecosystem.config.js --env production
-            pm2 save
+      - name: Install dependencies
+        run: npm ci
+
+      # - name: Lint
+      #   run: npm run lint
+
+      # - name: Test
+      #   run: npm test
+
+      - name: Build application
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Prepare standalone release
+        env:
+          VPS_DOTENV: ${{ secrets.VPS_DOTENV }}
+        run: |
+          set -euo pipefail
+          rm -rf deploy
+          mkdir -p deploy/.next
+          cp -R .next/standalone/. deploy/
+          cp -R .next/static deploy/.next/static
+          cp -R public deploy/public
+          cp ecosystem.config.cjs deploy/ecosystem.config.cjs
+          printf '%s\n' "$VPS_DOTENV" > deploy/.env
+
+      - name: Deploy release
+        env:
+          RSA_SECRET: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          SSH_PORT: ${{ secrets.VPS_SSH_PORT }}
+          INSTALL_PATH: ${{ secrets.INSTALL_PATH }}
+        run: |
+          set -euo pipefail
+
+          : "${RSA_SECRET:?RSA_SECRET secret is required}"
+          : "${SSH_KNOWN_HOSTS:?SSH_KNOWN_HOSTS secret is required}"
+          : "${VPS_HOST:?VPS_HOST secret is required}"
+          : "${VPS_USER:?VPS_USER secret is required}"
+          : "${SSH_PORT:?SSH_PORT secret is required}"
+          : "${INSTALL_PATH:?INSTALL_PATH secret is required}"
+
+          mkdir -p ~/.ssh
+          printf '%s\n' "$RSA_SECRET" > ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/deploy_key
+          chmod 644 ~/.ssh/known_hosts
+
+          SSH=(ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes)
+          REMOTE="${VPS_USER}@${VPS_HOST}"
+          RELEASE_ID="${GITHUB_SHA::12}"
+          RELEASE_DIR="${INSTALL_PATH}/releases/${RELEASE_ID}"
+
+          "${SSH[@]}" "$REMOTE" "mkdir -p '$INSTALL_PATH/releases' '$RELEASE_DIR'"
+          rsync -az --delete -e "${SSH[*]}" deploy/ "${REMOTE}:${RELEASE_DIR}/"
+          "${SSH[@]}" "$REMOTE" "INSTALL_PATH='$INSTALL_PATH' RELEASE_ID='$RELEASE_ID' bash -s" <<'EOF'
+            set -euo pipefail
+
+            RELEASE_DIR="${INSTALL_PATH}/releases/${RELEASE_ID}"
+
+            if ! command -v pm2 >/dev/null 2>&1; then
+              echo "pm2 is not installed on the server" >&2
+              exit 1
+            fi
+
+            ln -sfn "$RELEASE_DIR" "${INSTALL_PATH}/current"
+            cd "${INSTALL_PATH}/current"
+            pm2 startOrReload ecosystem.config.cjs --update-env
+
+            find "${INSTALL_PATH}/releases" -mindepth 1 -maxdepth 1 -type d | sort -r | tail -n +6 | xargs -r rm -rf
+          EOF
