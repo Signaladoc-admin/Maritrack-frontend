@@ -39,7 +39,7 @@ export function LocationView() {
 
         {/* Right Column - Map */}
         <div className="lg:col-span-7">
-          <MapCard />
+          <MapCard deviceId="" />
         </div>
       </div>
     </div>
