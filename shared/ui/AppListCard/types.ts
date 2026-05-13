@@ -6,6 +6,7 @@ export interface InfoListItem {
   icon: IconType | React.ReactNode;
   name: string;
   totalTime?: string;
+  subtitle?: string;
   value?: string | React.ReactNode;
   onClick?: () => void;
 }

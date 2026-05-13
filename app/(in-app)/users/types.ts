@@ -1,4 +1,4 @@
-import { Device } from "../devices/types";
+import { Device } from "@/entities/device";
 
 export interface User {
   id: string;

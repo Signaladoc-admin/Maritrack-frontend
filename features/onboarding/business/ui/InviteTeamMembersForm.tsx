@@ -28,7 +28,15 @@ export default function InviteTeamMembersForm({
   const { otherTeamMembers: existingTeamMembers } = useOtherTeamMembers();
 
   const [newTeamMembers, setNewTeamMembers] = useState<TeamMember[]>([]);
-  const allTeamMembers = [...(existingTeamMembers || []), ...newTeamMembers];
+  const formattedExistingTeamMembers: TeamMember[] = (existingTeamMembers || []).map(
+    (member) => ({
+      id: member.id,
+      email: member.user?.email || "",
+      location: member.location || "",
+    })
+  );
+
+  const allTeamMembers = [...formattedExistingTeamMembers, ...newTeamMembers];
 
   const router = useRouter();
   const { toast } = useToast();
