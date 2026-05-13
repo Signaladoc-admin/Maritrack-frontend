@@ -33,6 +33,21 @@ jobs:
       # - name: Test
       #   run: npm test
 
+      - name: Load VPS_DOTENV for build
+        env:
+          VPS_DOTENV: ${{ secrets.VPS_DOTENV }}
+        run: |
+          set -euo pipefail
+          if [ -z "${VPS_DOTENV}" ]; then
+            echo "VPS_DOTENV secret is empty. It must include NEXT_PUBLIC_API_URL (and other keys) so next build can inline public env vars."
+            exit 1
+          fi
+          printf '%s\n' "$VPS_DOTENV" > .env.production.local
+          if ! grep -Eq '^[[:space:]]*(export[[:space:]]+)?NEXT_PUBLIC_API_URL=.+' .env.production.local; then
+            echo "VPS_DOTENV must define a non-empty NEXT_PUBLIC_API_URL=... line for the client bundle."
+            exit 1
+          fi
+
       - name: Build application
         run: npm run build
         env:
