@@ -21,6 +21,7 @@ jobs:
           command_timeout: 15m # Gives the server plenty of time to run the Next.js build
           script_stop: true    # Fails the Action instantly if npm run build fails
           script: |
+            export PATH="/root/.nvm/versions/node/v20.20.2/bin/node"
             # 1. Move to the project folder
             cd ${{ secrets.VPS_DEPLOY_PATH_FRONTEND }}/
             
