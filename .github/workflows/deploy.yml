@@ -22,6 +22,15 @@ jobs:
           script_stop: true    # Fails the Action instantly if npm run build fails
           script: |
             export PATH="/root/.nvm/versions/node/v20.20.2/bin/node"
+            
+            # Append nvm bin to existing PATH, don't replace it
+            export NVM_DIR="$HOME/.nvm"
+            source "$NVM_DIR/nvm.sh"
+            export PATH="$HOME/.nvm/versions/node/v20.20.2/bin:$PATH"
+  
+            node -v
+            git --version
+
             # 1. Move to the project folder
             cd ${{ secrets.VPS_DEPLOY_PATH_FRONTEND }}/
             
