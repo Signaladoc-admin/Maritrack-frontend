@@ -4,25 +4,22 @@ import React from "react";
 import { ChevronLeft, Ban, PlayCircle, History } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/shared/ui/Card/Card";
 import { Button } from "@/shared/ui/Button/button";
-import { cn } from "@/shared/lib/utils";
+import { cn, formatAppValue } from "@/shared/lib/utils";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from "recharts";
 import { SetTimeLimitModal } from "@/shared/ui/Modal/Modals/TimeLimitModal";
 import { AppListItem } from "./AllAppsCard";
 
-interface AppDetailViewProps {
-  app: AppListItem;
-  onBack: () => void;
-}
-
 const hourlyData = [
-  { name: "00", value: 0.8 },
-  { name: "06", value: 1.2 },
-  { name: "12", value: 0.7 },
-  { name: "18", value: 0.5, isCurrent: true },
-  { name: "24", value: 0.1 },
+  { name: "S", value: 0.5, isCurrent: false },
+  { name: "M", value: 1.2, isCurrent: false },
+  { name: "T", value: 0.8, isCurrent: false },
+  { name: "W", value: 1.5, isCurrent: true },
+  { name: "T", value: 0.9, isCurrent: false },
+  { name: "F", value: 0.4, isCurrent: false },
+  { name: "S", value: 0.2, isCurrent: false },
 ];
 
-export function AppDetailView({ app, onBack }: AppDetailViewProps) {
+export function AppDetailView({ app, onBack }: { app: any; onBack: () => void }) {
   const [isBlocked, setIsBlocked] = React.useState(false);
   const [limitModalOpen, setLimitModalOpen] = React.useState(false);
   const [limits, setLimits] = React.useState<string[]>([]);
@@ -33,6 +30,10 @@ export function AppDetailView({ app, onBack }: AppDetailViewProps) {
     setLimits(["1 hour everyday"]);
     setLimitModalOpen(false);
   };
+
+  console.log(app);
+
+  const appDisplayName = app.appName || app.name;
 
   return (
     <Card className="space-y-6">
@@ -49,18 +50,25 @@ export function AppDetailView({ app, onBack }: AppDetailViewProps) {
           <div className="flex items-center gap-4">
             <div
               className={cn(
-                "h-16 w-16 overflow-hidden rounded-2xl",
+                "flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-gray-100",
                 isBlocked && "ring-4 ring-red-500 ring-offset-2"
               )}
             >
-              <app.icon className="h-full w-full" />
+              {app.icon ? (
+                <app.icon className="h-full w-full" />
+              ) : (
+                <div className="text-xl font-bold text-gray-400">
+                  {appDisplayName?.slice(0, 2).toUpperCase()}
+                </div>
+              )}
             </div>
             <div className="flex flex-col">
               <h3 className="text-xl font-bold text-[#212529]">
-                {app.name} {isBlocked && "(Blocked)"}
+                {appDisplayName} {isBlocked && "(Blocked)"}
               </h3>
               <span className="text-sm font-medium text-[#667085]">
-                Total: {app.totalTime}, Limits: {app.limits}
+                {formatAppValue(app.totalTime || `Size: ${app.installedAPKSize || app.appSize || 0}`)}
+                {app.versionName && `, Version: ${app.versionName}`}
               </span>
             </div>
           </div>
@@ -178,7 +186,7 @@ export function AppDetailView({ app, onBack }: AppDetailViewProps) {
       <SetTimeLimitModal
         open={limitModalOpen}
         onOpenChange={setLimitModalOpen}
-        appName={app.name}
+        appName={appDisplayName}
         // Assuming we could pass a custom onSave if the component supported it
       />
     </Card>

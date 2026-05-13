@@ -2,13 +2,67 @@ import { appData } from "@/app/(in-app)/dashboard/data";
 import { MetricCard } from "@/features/dashboard/business/ui/MetricCard";
 import { InfoListCard } from "@/shared/ui/AppListCard/AppListCard";
 import { StatsCard } from "@/shared/ui/cards/stats-card";
-import { Instagram, MessageSquare, Power, Youtube } from "lucide-react";
+import { Power } from "lucide-react";
 import { AlertsSummaryCard } from "@/features/dashboard/business/ui/AlertsSummaryCard";
 import { ActivityTimeline, TimelineItem } from "@/shared/ui/lists/activity-timeline";
 import { websiteData } from "@/features/general/data";
 import { MapCard } from "@/features/general/ui/map-card";
+import { useParams } from "next/navigation";
+import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 
 const General = () => {
+  const params = useParams<{ device: string }>();
+  const deviceId = params?.device || "";
+
+  const { data: hardwareData, isPending: isHardwarePending } = useDeviceDetail(
+    deviceId,
+    "hardware",
+    { enabled: !!deviceId }
+  );
+  const { data: networkData, isPending: isNetworkPending } = useDeviceDetail(deviceId, "network", {
+    enabled: !!deviceId,
+  });
+  const { data: appsData, isPending: isAppsPending } = useDeviceDetail(deviceId, "apps", {
+    enabled: !!deviceId,
+  });
+
+  const fetchedApps = appsData?.data?.apps || [];
+  const fetchedHardware = hardwareData?.data?.hardwareInfo || {};
+  const fetchedNetwork = networkData?.data?.realTimeStats || {};
+
+  console.log("appsData", fetchedApps);
+  console.log("hardwareData", fetchedHardware);
+  console.log("networkData", fetchedNetwork);
+
+  const top5Apps = Array.isArray(fetchedApps)
+    ? fetchedApps.slice(0, 5).map((app: any) => ({
+        id: app.id,
+        name: app.appName || app.packageName,
+        totalTime: app.totalTime || `Size: ${app.installedAPKSize || 0}`,
+        icon: () => (
+          <div className="w-full text-center text-xs text-gray-400">{app.appName?.slice(0, 2)}</div>
+        ),
+        limits: app.limits || 0,
+      }))
+    : [];
+
+  // const networkList = Array.isArray(fetchedNetwork)
+  //   ? fetchedNetwork
+  //   : fetchedNetwork?.websites || fetchedNetwork?.data || Object.values(fetchedNetwork || {});
+
+  // const top5Websites = Array.isArray(networkList)
+  //   ? networkList.slice(0, 5).map((net: any) => ({
+  //       id: net?.id || Math.random().toString(),
+  //       name: net?.url || net?.name || "Unknown Website",
+  //       totalTime: net?.totalTime || "Unknown",
+  //       icon: () => <div className="w-full text-center text-xs text-gray-400">WEB</div>,
+  //     }))
+  //   : [];
+
+  console.log("top 5 webistes:", fetchedNetwork);
+
+  const batteryHealth = fetchedNetwork?.batteryLevel ? `${fetchedNetwork.batteryLevel}%` : "60%";
+
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
       <StatsCard
@@ -32,7 +86,7 @@ const General = () => {
       />
       <MetricCard
         title="Battery health"
-        value="60%"
+        value={batteryHealth}
         trendValue="-10%"
         trendType="negative"
         chartColor="red"
@@ -40,10 +94,10 @@ const General = () => {
       />
 
       <InfoListCard
-        title="To 5 apps"
+        title="Top 5 apps"
         actionText="View all"
         onActionClick={() => console.log("View Apps")}
-        items={appData}
+        items={top5Apps.length > 0 ? top5Apps : appData}
       />
 
       <AlertsSummaryCard
@@ -68,12 +122,12 @@ const General = () => {
         />
       </ActivityTimeline>
 
-      <InfoListCard
+      {/* <InfoListCard
         title="Top 5 Websites"
         actionText="View history"
         onActionClick={() => console.log("View History")}
-        items={websiteData}
-      />
+        items={top5Websites.length > 0 ? top5Websites : websiteData}
+      /> */}
       <div className="col-span-2">
         <MapCard />
       </div>
