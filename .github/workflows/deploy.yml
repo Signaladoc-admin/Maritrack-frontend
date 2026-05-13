@@ -21,9 +21,14 @@ jobs:
           command_timeout: 15m # Gives the server plenty of time to run the Next.js build
           script_stop: true    # Fails the Action instantly if npm run build fails
           script: |
-            # 1. Move to the project folder
+            # 1. Clone the repo if it doesn't exist, otherwise update it
+            if [ ! -d "${{ secrets.VPS_DEPLOY_PATH_FRONTEND }}/.git" ]; then
+                echo "No git repo found. Cloning fresh..."
+                git clone -b dev/dev ${{ secrets.VPS_REPO_URL }} ${{ secrets.VPS_DEPLOY_PATH_FRONTEND }}
+            fi
+
             cd ${{ secrets.VPS_DEPLOY_PATH_FRONTEND }}/
-            
+
             # 2. Ensure we are on the right branch and pull fresh code
             git fetch --all
             git reset --hard origin/dev/dev
