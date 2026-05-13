@@ -3,6 +3,7 @@
 import React from "react";
 import dynamic from "next/dynamic";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/Card/Card";
+import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 
 // Dynamically import Leaflet components to avoid SSR errors
 const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), {
@@ -14,8 +15,18 @@ const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLa
 const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), { ssr: false });
 const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), { ssr: false });
 
-export function MapCard() {
+export function MapCard({ deviceId }: { deviceId: string }) {
   const [isClient, setIsClient] = React.useState(false);
+
+  const { data: hardwareData, isPending: isHardwarePending } = useDeviceDetail(
+    deviceId,
+    "hardware",
+    { enabled: !!deviceId }
+  );
+
+  const fetchedHardware = hardwareData?.deviceDetails || {};
+
+  console.log("Hardware", fetchedHardware);
 
   React.useEffect(() => {
     setIsClient(true);
@@ -43,22 +54,32 @@ export function MapCard() {
       <CardContent className="p-6!">
         <div className="h-[400px] w-full">
           {/* @ts-ignore */}
-          <MapContainer
-            center={[6.5244, 3.3792]} // Lagos, Nigeria
-            zoom={13}
-            scrollWheelZoom={false}
-            style={{ height: "100%", width: "100%" }}
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <Marker position={[6.5244, 3.3792]}>
-              <Popup>
-                Lagos, Nigeria <br /> Last seen 2h ago.
-              </Popup>
-            </Marker>
-          </MapContainer>
+          {!isHardwarePending && (
+            <MapContainer
+              center={[
+                fetchedHardware?.lastKnownLocation?.latitude,
+                fetchedHardware?.lastKnownLocation?.longitude,
+              ]} // Lagos, Nigeria
+              zoom={13}
+              scrollWheelZoom={false}
+              style={{ height: "100%", width: "100%" }}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <Marker
+                position={[
+                  fetchedHardware?.lastKnownLocation?.latitude,
+                  fetchedHardware?.lastKnownLocation?.longitude,
+                ]}
+              >
+                <Popup>
+                  Lagos, Nigeria <br /> Last seen 2h ago.
+                </Popup>
+              </Marker>
+            </MapContainer>
+          )}
         </div>
       </CardContent>
     </Card>

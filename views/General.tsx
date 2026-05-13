@@ -9,6 +9,7 @@ import { websiteData } from "@/features/general/data";
 import { MapCard } from "@/features/general/ui/map-card";
 import { useParams } from "next/navigation";
 import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
+import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
 
 const General = () => {
   const params = useParams<{ device: string }>();
@@ -26,7 +27,9 @@ const General = () => {
     enabled: !!deviceId,
   });
 
-  const fetchedApps = appsData?.data?.apps || [];
+  const { data: zone } = useParentZones();
+
+  const fetchedApps = (appsData?.data?.apps || []).filter((app: any) => app.systemApp === false);
   const fetchedHardware = hardwareData?.data?.hardwareInfo || {};
   const fetchedNetwork = networkData?.data?.realTimeStats || {};
 
@@ -129,7 +132,7 @@ const General = () => {
         items={top5Websites.length > 0 ? top5Websites : websiteData}
       /> */}
       <div className="col-span-2">
-        <MapCard />
+        <MapCard deviceId={deviceId} />
       </div>
     </div>
   );

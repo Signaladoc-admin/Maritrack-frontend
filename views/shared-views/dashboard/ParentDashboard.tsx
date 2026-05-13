@@ -26,6 +26,8 @@ export default function ParentDashboard() {
     setCurrentDate(new Date());
   }, []);
 
+  console.log(devices);
+
   const router = useRouter();
 
   return (
@@ -74,7 +76,7 @@ export default function ParentDashboard() {
               percentage={0} // Defaulting to 0 as battery percentage is not in the provided response
               device={device.manufacturer}
               isRow={true}
-              onClick={() => router.push(`/devices/${device.id}`)}
+              onClick={() => router.push(`/devices/${device.deviceId}`)}
             />
           ))
         ) : !isLoadingDevices ? (

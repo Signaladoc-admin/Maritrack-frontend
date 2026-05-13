@@ -14,7 +14,7 @@ const AppControl = () => {
   const { data, isPending } = useDeviceDetail(params?.device || "", "apps", {
     enabled: !!params?.device,
   });
-  const fetchedApps = data?.data?.apps || [];
+  const fetchedApps = (data?.data?.apps || []).filter((app: any) => app.systemApp === false);
 
   const selectedApp =
     fetchedApps.find((a: any) => a.id === selectedAppId) ||
