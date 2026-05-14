@@ -20,6 +20,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CountryStateInput } from "@/shared/ui/inputs/country-state-input";
 import { InputGroup } from "@/shared/ui/input-group";
 import { useToast } from "@/shared/ui/toast";
+import { useUpdateProfile } from "@/entities/user/model/useUserProfile";
 
 const BusinessProfileSchema = z.object({
   profilePicture: z.instanceof(File).nullable(),
@@ -106,8 +107,9 @@ function BusinessProfileFormSkeleton() {
 }
 
 function BusinessProfileFormInner({ business }: { business: any }) {
-  const { mutateAsync: updateBusiness, isPending: isUpdating } = useUpdateBusiness();
-  const { user } = useAuth();
+  const { mutateAsync: updateBusiness, isPending: isUpdatingBusinessDetails } = useUpdateBusiness();
+  const { mutateAsync: updateProfileImage, isPending: isUpdatingProfileImage } = useUpdateProfile();
+
   const { toast } = useToast();
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
   const [showSignOut, setShowSignOut] = useState(false);
@@ -143,19 +145,23 @@ function BusinessProfileFormInner({ business }: { business: any }) {
 
   const onSubmit = async (data: BusinessProfileFormValues) => {
     try {
-      await updateBusiness({
-        id: business?.id!,
-        name: data.name,
-        address: data.address,
-        state: data.state,
-        country: data.country,
-        // imageUrl: data.profilePicture || undefined,
+      // await updateBusiness({
+      //   id: business?.id!,
+      //   name: data.name,
+      //   address: data.address,
+      //   state: data.state,
+      //   country: data.country,
+      // });
+      await updateProfileImage({
+        profilePicture: data.profilePicture as File,
       });
       toast({ title: "Business updated successfully", type: "success" });
     } catch (error: any) {
       toast({ title: error.message || "Failed to update business", type: "error" });
     }
   };
+
+  const isUpdating = isUpdatingBusinessDetails || isUpdatingProfileImage;
 
   return (
     <div className="mx-auto max-w-2xl">

@@ -2,19 +2,31 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { cva } from "class-variance-authority";
+
+interface CardProps {
+  className?: string;
+  children: React.ReactNode;
+  variant?: "primary" | "secondary" | "outline";
+}
+
+const cardVariants = cva("rounded-[24px] border border-slate-100 text-slate-900", {
+  variants: {
+    variant: {
+      primary: "rounded-[24px] border border-slate-100 bg-[#F7F7F7] text-slate-900",
+      secondary: "bg-[#F7F7F7]",
+      outline: "border border-neutral-100 shadow-none",
+    },
+  },
+  defaultVariants: {
+    variant: "primary",
+  },
+});
 
 // --- 1. Main Card Wrapper ---
-const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn(
-        // Default color #F7F7F7, rounded corners, subtle border/shadow
-        "rounded-[24px] border border-slate-100 bg-[#F7F7F7] text-slate-900",
-        className
-      )}
-      {...props}
-    />
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, variant, ...props }, ref) => (
+    <div ref={ref} className={cn(cardVariants({ variant }), className)} {...props} />
   )
 );
 Card.displayName = "Card";
@@ -44,9 +56,7 @@ CardTitle.displayName = "CardTitle";
 
 // --- 5. Card Content (The body) ---
 const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("p-6 pt-2", className)} {...props} />
-  )
+  ({ className, ...props }, ref) => <div ref={ref} className={cn("p-4", className)} {...props} />
 );
 CardContent.displayName = "CardContent";
 

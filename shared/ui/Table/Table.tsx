@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import Pagination from "./Pagination";
 import { cn } from "@/shared/lib/utils";
 import Link from "next/link";
+import { Skeleton } from "@/shared/ui/skeleton";
 
 const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
   // Destructure props
@@ -29,6 +30,7 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
     onPageChange,
     hasHeaders = true,
     paginationClassName,
+    isLoading,
   } = props;
 
   const [selectedItems, setSelectedItems] = useState<Set<string | number>>(new Set());
@@ -113,8 +115,42 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="border-primary h-12 w-12 animate-spin rounded-full border-b-2"></div>
+      <div
+        className={cn(
+          "grid w-full max-w-full min-w-0 grid-cols-1 overflow-hidden rounded-2xl bg-gray-50",
+          className
+        )}
+      >
+        <div className="w-full overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 border border-gray-200">
+            {hasHeaders && (
+              <thead className="bg-[#deeaff]">
+                <tr>
+                  {columns.map((column) => (
+                    <th
+                      key={column.label}
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium tracking-wider"
+                    >
+                      {column.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+            )}
+            <tbody className="divide-y divide-gray-200 bg-white">
+              {Array.from({ length: 5 }).map((_, rowIdx) => (
+                <tr key={rowIdx}>
+                  {columns.map((column) => (
+                    <td key={column.label} className="px-6 py-4">
+                      <Skeleton className="h-4 w-full rounded" />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   }
