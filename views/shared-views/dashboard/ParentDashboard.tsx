@@ -1,32 +1,52 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MetricCard } from "@/features/dashboard/business/ui/MetricCard";
-import { AlertsSummaryCard } from "@/features/dashboard/business/ui/AlertsSummaryCard";
 import { ChildrenDropdown } from "@/features/dashboard/business/ui/ChildrenDropdown";
-import { DeviceUsageCard } from "@/shared/ui/DeviceStatusCard/DeviceStatusCard";
-import { InfoListCard } from "@/shared/ui/AppListCard/AppListCard";
-import { appData } from "@/app/(in-app)/dashboard/data";
-import { useDragScroll } from "@/shared/hooks/useDragScroll";
-import { useRouter } from "next/navigation";
 import { formatDate } from "date-fns";
-import { useParentZones, useZoneDevices } from "@/features/mdm-sync/model/useMdmSync";
+import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
+import { useParentStore } from "@/shared/stores/user.store";
+import { useGetChild } from "@/features/child-profile/model/useGetChildrenProfile";
+import { Child as ChildType } from "@/features/child-profile/model/types";
+import { ParentMetricsSection } from "@/features/parents/ui/Dashboard/ParentMetricsSection";
+import { ParentDevicesSection } from "@/features/parents/ui/Dashboard/ParentDevicesSection";
+import { ParentAppsSection } from "@/features/parents/ui/Dashboard/ParentAppsSection";
+import { ParentDashboardSkeleton } from "@/features/parents/ui/Dashboard/ParentDashboardSkeleton";
+
+import { useParentChildren } from "@/entities/children/model/useChildren";
 
 export default function ParentDashboard() {
-  const { scrollContainerRef, events } = useDragScroll();
   const [currentDate, setCurrentDate] = useState<Date | undefined>(undefined);
+  const { selectedChildId, setSelectedChildId, children: storeChildren } = useParentStore();
 
-  const { data: parentZonesRes } = useParentZones();
+  // Fetch children list to handle loading state
+  const { data: childrenData, isLoading: isFetchingChildren } = useParentChildren();
 
-  const zoneId = parentZonesRes?.[0]?.id;
+  const { data: childData, isLoading: isLoadingChild } = useGetChild(selectedChildId);
+  const typedChild = childData as ChildType | undefined;
+  const device = typedChild?.device ?? null;
+  const deviceId = device?.mdmId || "";
 
-  const { data: devices, isLoading: isLoadingDevices } = useZoneDevices(zoneId);
+  // Fetch device metrics
+  const { data: hardwareData, isPending: isHardwarePending } = useDeviceDetail(
+    deviceId,
+    "hardware",
+    {
+      enabled: !!deviceId,
+    }
+  );
+  
+  const { data: appsData, isPending: isAppsPending } = useDeviceDetail(deviceId, "apps", {
+    enabled: !!deviceId,
+  });
 
   useEffect(() => {
     setCurrentDate(new Date());
   }, []);
 
-  const router = useRouter();
+  // Show full dashboard skeleton only during initial children fetch or if child data is loading
+  if ((isFetchingChildren || isLoadingChild) && !childData) {
+    return <ParentDashboardSkeleton />;
+  }
 
   return (
     <div className="space-y-10">
@@ -41,59 +61,24 @@ export default function ParentDashboard() {
         <ChildrenDropdown />
       </header>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <MetricCard
-          title="Total Screen Time"
-          value="4h 20"
-          trendValue="+1h"
-          trendType="positive"
-          chartColor="green"
-          chartData={[30, 45, 60, 80, 70, 90, 100]}
-        />
-        <MetricCard
-          title="Battery health"
-          value="60%"
-          trendValue="-10%"
-          trendType="negative"
-          chartColor="red"
-          chartData={[100, 90, 80, 70, 65, 60, 55]}
-        />
-      </div>
+      {/* Metrics Section */}
+      <ParentMetricsSection 
+        hardwareData={hardwareData} 
+        isPending={isHardwarePending && !!deviceId} 
+      />
 
-      <div
-        ref={scrollContainerRef}
-        {...events}
-        className="flex w-full cursor-grab gap-6 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] *:min-w-[92%] *:shrink-0 active:cursor-grabbing md:*:max-w-[calc((100%-48px)/1.8)] md:*:min-w-[calc((100%-48px)/1.8)] lg:*:max-w-[calc((100%-48px)/2.2)] lg:*:min-w-[calc((100%-48px)/2.2)] [&::-webkit-scrollbar]:hidden"
-      >
-        {devices && devices.length > 0 ? (
-          devices.map((device) => (
-            <DeviceUsageCard
-              key={device.id}
-              deviceName={device.model}
-              status="active" // Defaulting to active as per instruction "For data that are not available you can leave them blank"
-              percentage={0} // Defaulting to 0 as battery percentage is not in the provided response
-              device={device.manufacturer}
-              isRow={true}
-              onClick={() => router.push(`/devices/${device.id}`)}
-            />
-          ))
-        ) : !isLoadingDevices ? (
-          <div className="flex h-40 w-full items-center justify-center rounded-[24px] border border-dashed border-[#1B3C73] bg-[#081223] text-[#8198BF]">
-            No devices found
-          </div>
-        ) : (
-          <div className="flex h-40 w-full animate-pulse items-center justify-center rounded-[24px] bg-[#081223]" />
-        )}
-      </div>
-
+      {/* Main Grid Content */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <InfoListCard
-          title="Most used apps"
-          actionText="View all"
-          onActionClick={() => console.log("View Apps")}
-          items={appData}
+        <ParentDevicesSection 
+          device={device} 
+          deviceId={deviceId} 
+          isLoadingChild={isLoadingChild && !!selectedChildId && selectedChildId !== "all"} 
         />
-        <AlertsSummaryCard />
+        
+        <ParentAppsSection 
+          appsData={appsData} 
+          isPending={isAppsPending && !!deviceId} 
+        />
       </div>
     </div>
   );

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CurrentLocationCard } from "./CurrentLocationCard";
 import { LocationHistoryCard } from "./LocationHistoryCard";
 import { MapCard } from "@/features/general/ui/map-card";
 import GeofencingCard, { GeofencingLocation } from "@/shared/ui/GeofencingCard/GeofencingCard";
+import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 
 const historyItems = [
   { id: "1", name: "Lekki Phase 1", duration: "2h 33mins", date: "January 1, 2026" },
@@ -20,28 +21,38 @@ const geofencingLocations: GeofencingLocation[] = [
   { id: "3", name: "Ikeja, Lagos", radius: "3km" },
 ];
 
-export function LocationView() {
-  const [isGeofencingActive, setIsGeofencingActive] = useState(true);
+import { GeofencingModal } from "@/shared/ui/Modal/Modals/GeofencingModal";
+
+export function LocationView({ deviceId }: { deviceId: string }) {
+  const [isGeofencingModalOpen, setIsGeofencingModalOpen] = useState(false);
+
+  const { data: hardwareData } = useDeviceDetail(deviceId, "hardware", {
+    enabled: !!deviceId,
+  });
+
+  const location = hardwareData?.deviceDetails?.lastKnownLocation;
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Left Column */}
-        <div className="flex flex-col gap-6 lg:col-span-5">
-          <CurrentLocationCard address="23 Ebinpejo Lane, Idumota, Lagos" updatedAt="3:12pm" />
-          <LocationHistoryCard items={historyItems} onSeeMore={() => console.log("See more")} />
+        <div className="flex flex-col gap-6">
+          <CurrentLocationCard lat={location?.latitude} lon={location?.longitude} />
+          {/* <LocationHistoryCard items={historyItems} onSeeMore={() => console.log("See more")} /> */}
           <GeofencingCard
-            locations={geofencingLocations}
-            isActive={isGeofencingActive}
-            onSetGeofencing={() => setIsGeofencingActive(!isGeofencingActive)}
+            isActive={false}
+            onSetGeofencing={() => setIsGeofencingModalOpen(true)}
           />
         </div>
 
         {/* Right Column - Map */}
-        <div className="lg:col-span-7">
-          <MapCard />
-        </div>
+        <MapCard deviceId={deviceId} />
       </div>
+
+      <GeofencingModal
+        open={isGeofencingModalOpen}
+        onOpenChange={setIsGeofencingModalOpen}
+      />
     </div>
   );
 }

@@ -19,6 +19,7 @@ import { useAuth } from "@/shared/auth/AuthProvider";
 import { Button } from "@/shared/ui/button";
 import { useDevice } from "@/entities/device";
 import { cn } from "@/lib/utils";
+import LocationPage from "./Location";
 
 const Device = () => {
   const router = useRouter();
@@ -128,6 +129,7 @@ const Device = () => {
       {activeTab === "general" && <General />}
       {activeTab === "web-history" && <WebHistory />}
       {activeTab === "app-control" && <AppControl />}
+      {activeTab === "location" && <LocationPage />}
       {activeTab === "configuration" && (
         <div className="mx-auto max-w-lg">
           <ParentalControlSetup />

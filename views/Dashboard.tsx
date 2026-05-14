@@ -7,6 +7,8 @@ import { useAuth } from "@/shared/auth/AuthProvider";
 export default function Dashboard() {
   const { user } = useAuth();
 
+  console.log(user);
+
   if (user?.appRole === "BUSINESS") return <BusinessDashboard />;
   else return <ParentDashboard />;
 }
