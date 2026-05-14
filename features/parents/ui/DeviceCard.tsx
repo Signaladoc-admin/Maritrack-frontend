@@ -8,8 +8,6 @@ const DeviceCard = ({ device, onClick }: { device: any; onClick: () => void }) =
   });
   const batteryLevel = hardwareData?.data?.realTimeStats?.batteryLevel ?? 0;
 
-  console.log(device);
-
   return (
     <DeviceUsageCard
       deviceName={device.manufacturer}

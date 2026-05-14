@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Search, ChevronRight, Trash2, Plus } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,20 @@ import {
   DialogFooter,
 } from "@/shared/ui/Modal/dialog";
 import { Button } from "@/shared/ui/Button/button";
+import { z } from "zod";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { searchLocations, LocationSuggestion } from "@/shared/lib/geocoding";
+import { cn } from "@/shared/lib/utils";
+
+const geofencingSchema = z.object({
+  locationName: z.string().min(1, "Location is required"),
+  lat: z.number({ message: "Please select a location from the list" }),
+  lon: z.number({ message: "Please select a location from the list" }),
+  radius: z.number().min(0.1, "Radius must be at least 0.1km"),
+});
+
+type GeofencingFormValues = z.infer<typeof geofencingSchema>;
 
 export function GeofencingModal({
   open,
@@ -18,69 +32,133 @@ export function GeofencingModal({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const [suggestions, setSuggestions] = React.useState<LocationSuggestion[]>([]);
+  const [isSearching, setIsSearching] = React.useState(false);
+  const [showSuggestions, setShowSuggestions] = React.useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<GeofencingFormValues>({
+    resolver: zodResolver(geofencingSchema),
+    defaultValues: {
+      locationName: "",
+      radius: 1,
+    },
+  });
+
+  const locationName = watch("locationName");
+
+  React.useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (locationName && locationName.length >= 3 && showSuggestions) {
+        setIsSearching(true);
+        const results = await searchLocations(locationName);
+        setSuggestions(results);
+        setIsSearching(false);
+      } else {
+        setSuggestions([]);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [locationName, showSuggestions]);
+
+  const handleSelectSuggestion = (suggestion: LocationSuggestion) => {
+    setValue("locationName", suggestion.displayName);
+    setValue("lat", suggestion.lat);
+    setValue("lon", suggestion.lon);
+    setSuggestions([]);
+    setShowSuggestions(false);
+  };
+
+  const onSubmit: SubmitHandler<GeofencingFormValues> = (data) => {
+    console.log("Geofencing Data:", data);
+    // Here you would call your API
+    onOpenChange(false);
+    reset();
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="p-6 sm:max-w-lg">
         <DialogHeader className="mb-2">
           <DialogTitle className="text-xl font-bold text-slate-900">Set Geofencing</DialogTitle>
-          <p className="text-sm text-slate-500">2/4</p>
+          <p className="text-sm text-slate-500">Configure safety zones</p>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* Existing Saved Location (Collapsed) */}
-          <div className="flex cursor-pointer items-center justify-between rounded-lg border border-transparent bg-slate-50 p-4 hover:border-slate-200">
-            <div>
-              <h4 className="font-semibold text-slate-900">Oshodi, Lagos (2km radius)</h4>
-              <p className="text-xs text-slate-400">Location 1</p>
-            </div>
-            <ChevronRight className="h-5 w-5 text-[#1B3C73]" />
-          </div>
-
-          {/* Active Edit Form (Expanded) */}
-          <div className="space-y-4 rounded-lg border border-slate-100 bg-slate-50 p-4">
-            <div className="flex items-center justify-between">
-              <h4 className="font-medium text-slate-900">Location 2</h4>
-              <button className="rounded p-1 text-[#D95D55] hover:bg-red-50">
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div className="relative space-y-4 rounded-lg border border-slate-100 bg-slate-50 p-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700">Enter location</label>
               <div className="relative">
                 <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <input
-                  className="h-11 w-full rounded-md border border-slate-200 pr-3 pl-10 focus:ring-2 focus:ring-[#1B3C73] focus:outline-none"
-                  placeholder="Enter Location here"
+                  {...register("locationName")}
+                  className={cn(
+                    "h-11 w-full rounded-md border bg-white pr-3 pl-10 focus:ring-2 focus:ring-[#1B3C73] focus:outline-none",
+                    errors.locationName ? "border-red-500" : "border-slate-200"
+                  )}
+                  placeholder="Search for a location..."
+                  autoComplete="off"
+                  onFocus={() => setShowSuggestions(true)}
                 />
+                {isSearching && (
+                  <div className="absolute top-1/2 right-3 -translate-y-1/2">
+                    <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+                  </div>
+                )}
               </div>
+              {errors.locationName && (
+                <p className="text-xs text-red-500">{errors.locationName.message}</p>
+              )}
+              {errors.lat && !errors.locationName && (
+                <p className="text-xs text-red-500">Please select a valid location from the list</p>
+              )}
+
+              {/* Suggestions Dropdown */}
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute z-50 mt-1 max-h-60 w-[calc(100%-32px)] overflow-auto rounded-md border border-slate-200 bg-white py-1 shadow-lg">
+                  {suggestions.map((s, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-slate-50 focus:bg-slate-50 focus:outline-none"
+                      onClick={() => handleSelectSuggestion(s)}
+                    >
+                      {s.displayName}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700">Set radius (in KM)</label>
               <input
-                className="h-11 w-full rounded-md border border-slate-200 px-3 focus:ring-2 focus:ring-[#1B3C73] focus:outline-none"
-                placeholder="0"
+                {...register("radius", { valueAsNumber: true })}
+                className={cn(
+                  "h-11 w-full rounded-md border bg-white px-3 focus:ring-2 focus:ring-[#1B3C73] focus:outline-none",
+                  errors.radius ? "border-red-500" : "border-slate-200"
+                )}
+                placeholder="1"
                 type="number"
+                step="0.1"
               />
+              {errors.radius && <p className="text-xs text-red-500">{errors.radius.message}</p>}
             </div>
           </div>
 
-          {/* Add Button */}
-          <button className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-200 py-3 text-slate-600 transition-colors hover:border-[#1B3C73] hover:text-[#1B3C73]">
-            <Plus className="h-4 w-4" />
-            <span className="font-medium">Add another location</span>
-          </button>
-        </div>
-
-        <DialogFooter className="mt-4">
-          <Button
-            className="h-12 w-full bg-[#1B3C73] text-base"
-            onClick={() => onOpenChange(false)}
-          >
-            Save
-          </Button>
-        </DialogFooter>
+          <DialogFooter className="mt-4">
+            <Button type="submit" className="h-12 w-full bg-[#1B3C73] text-base">
+              Save Geofencing
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
