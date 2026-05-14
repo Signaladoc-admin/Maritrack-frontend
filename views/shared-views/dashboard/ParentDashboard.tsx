@@ -15,24 +15,7 @@ import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 import { useParentStore } from "@/shared/stores/user.store";
 import { useGetChild } from "@/features/child-profile/model/useGetChildrenProfile";
 import { Child as ChildType } from "@/features/child-profile/model/types";
-
-function DeviceCard({ device, onClick }: { device: any; onClick: () => void }) {
-  const { data: hardwareData } = useDeviceDetail(device.deviceId || "", "hardware", {
-    enabled: !!device.deviceId,
-  });
-  const batteryLevel = hardwareData?.data?.realTimeStats?.batteryLevel ?? 0;
-
-  return (
-    <DeviceUsageCard
-      deviceName={device.model}
-      status="active"
-      percentage={batteryLevel}
-      device={device.manufacturer}
-      isRow={true}
-      onClick={onClick}
-    />
-  );
-}
+import DeviceCard from "@/features/parents/ui/DeviceCard";
 
 export default function ParentDashboard() {
   const { scrollContainerRef, events } = useDragScroll();
@@ -54,9 +37,13 @@ export default function ParentDashboard() {
   const deviceId = device?.mdmId || "";
 
   // Fetch device metrics
-  const { data: hardwareData, isPending: isHardwarePending } = useDeviceDetail(deviceId, "hardware", {
-    enabled: !!deviceId,
-  });
+  const { data: hardwareData, isPending: isHardwarePending } = useDeviceDetail(
+    deviceId,
+    "hardware",
+    {
+      enabled: !!deviceId,
+    }
+  );
   const { data: networkData, isPending: isNetworkPending } = useDeviceDetail(deviceId, "network", {
     enabled: !!deviceId,
   });
