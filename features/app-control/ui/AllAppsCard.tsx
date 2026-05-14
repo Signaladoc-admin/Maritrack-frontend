@@ -58,8 +58,10 @@ interface AllAppsCardProps {
   isLoading?: boolean;
 }
 
+import { Skeleton } from "@/shared/ui/skeleton";
+
 export function AllAppsCard({ onViewApp, apps: dynamicApps, isLoading }: AllAppsCardProps) {
-  const displayApps = dynamicApps && dynamicApps.length > 0 ? dynamicApps : apps;
+  const hasData = dynamicApps && dynamicApps.length > 0;
 
   return (
     <Card className="h-full w-full">
@@ -68,9 +70,22 @@ export function AllAppsCard({ onViewApp, apps: dynamicApps, isLoading }: AllApps
       </CardHeader>
       <CardContent className="space-y-6">
         {isLoading ? (
-          <div className="flex justify-center p-4">Loading apps...</div>
-        ) : (
-          displayApps.map((app) => (
+          <div className="space-y-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <Skeleton className="h-12 w-12 rounded-xl" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                </div>
+                <Skeleton className="h-4 w-16" />
+              </div>
+            ))}
+          </div>
+        ) : hasData ? (
+          dynamicApps.map((app) => (
             <div key={app.id} className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-gray-100 flex items-center justify-center">
@@ -91,6 +106,10 @@ export function AllAppsCard({ onViewApp, apps: dynamicApps, isLoading }: AllApps
               </button>
             </div>
           ))
+        ) : (
+          <div className="py-12 text-center">
+            <p className="text-sm text-slate-500">No applications found on this device.</p>
+          </div>
         )}
       </CardContent>
     </Card>

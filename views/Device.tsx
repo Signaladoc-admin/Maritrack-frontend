@@ -92,6 +92,7 @@ const Device = () => {
       {activeTab === "general" && <General />}
       {activeTab === "web-history" && <WebHistory />}
       {activeTab === "app-control" && <AppControl />}
+      {activeTab === "location" && <LocationPage />}
       {activeTab === "configuration" && (
         <div className="mx-auto max-w-lg">
           <ParentalControlSetup />

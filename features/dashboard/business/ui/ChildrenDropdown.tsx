@@ -24,16 +24,21 @@ export function ChildrenDropdown() {
   const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentChildren();
 
   useEffect(() => {
-    if (parentZonesRes) {
+    if (parentZonesRes?.data) {
       // Map server data to shop-store Child interface if necessary
-      const mappedChildren = parentZonesRes?.data?.map((child: ChildRelationship) => ({
+      const mappedChildren = parentZonesRes.data.map((child: ChildRelationship) => ({
         id: child.id,
         name: child.name,
         avatar: child.imageUrl,
       }));
       setChildren(mappedChildren);
+
+      // Ensure a child is selected by default
+      if ((selectedChildId === "all" || !selectedChildId) && mappedChildren.length > 0) {
+        setSelectedChildId(mappedChildren[0].id);
+      }
     }
-  }, [parentZonesRes, setChildren]);
+  }, [parentZonesRes, setChildren, selectedChildId, setSelectedChildId]);
 
   const selectedChild = children?.find((c) => c.id === selectedChildId);
   const isAllSelected = selectedChildId === "all";
@@ -62,7 +67,11 @@ export function ChildrenDropdown() {
           </div>
           <div className="flex flex-1 items-center justify-between gap-2">
             <span className="text-lg font-bold text-[#1B3C73]">
-              {isAllSelected ? children?.[0]?.name : selectedChild?.name}
+              {isFetchingChildren 
+                ? "Loading..." 
+                : (isAllSelected 
+                    ? (children?.[0]?.name || "No Children") 
+                    : (selectedChild?.name || "Select Child"))}
             </span>
             <ChevronDown className="h-5 w-5 text-[#1B3C73] transition-transform duration-200" />
           </div>
