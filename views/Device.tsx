@@ -6,26 +6,33 @@ import { TABS } from "@/shared/lib/constants";
 import Back from "@/shared/ui/go-back";
 import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
 import { TabNavigation } from "@/shared/ui/tab-navigation";
-import { Trash, Trash2Icon } from "lucide-react";
+import { Phone, Smartphone, Trash2Icon, X } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import General from "./General";
 import WebHistory from "./WebHistory";
 import AppControl from "./AppControl";
 import ParentalControlSetup from "@/features/parents/ui/ParentalControlSetup";
+import { MarkAsReturnedModal } from "@/features/device/ui/MarkAsReturnedModal";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
-import LocationPage from "./Location";
 import { useAuth } from "@/shared/auth/AuthProvider";
-// import ParentalControlSetup from "@/features/onboarding/ui/ParentalControlSetup";
+import { Button } from "@/shared/ui/button";
+import { useDevice } from "@/entities/device";
+import { cn } from "@/lib/utils";
+import LocationPage from "./Location";
 
 const Device = () => {
   const router = useRouter();
   const params = useParams<{ device: string }>();
   const searchParams = useSearchParams();
+  const { user } = useAuth();
+  const { data: device, isLoading: deviceLoading } = useDevice(params.device);
+  console.log(device);
 
   const tabParam = searchParams?.get("tab") || "general";
   const [activeTab, setActiveTab] = useState(tabParam);
   const [showDelete, setShowDelete] = useState(false);
+  const [showMarkAsReturned, setShowMarkAsReturned] = useState(false);
 
   useEffect(() => {
     if (tabParam && tabParam !== activeTab) {
@@ -69,12 +76,36 @@ const Device = () => {
                 <DateDropdown />
               </div>
             )}
-            <div className="ml-auto flex lg:ml-0">
-              <IconWrapper
-                action={() => setShowDelete(true)}
-                icon={<Trash2Icon className="h-5 w-5 text-[#D95D55]" />}
-              />
-            </div>
+            {user?.appRole === "PARENT" && (
+              <div className="ml-auto flex lg:ml-0">
+                <IconWrapper
+                  action={() => setShowDelete(true)}
+                  icon={<Trash2Icon className="h-5 w-5 text-[#D95D55]" />}
+                />
+              </div>
+            )}
+            {user?.appRole === "BUSINESS" && (
+              <>
+                {device?.assignmentStatus !== "RETURNED" ? (
+                  <Button
+                    variant="secondary"
+                    className="flex items-center gap-3 rounded-full bg-[#f4f7fa]"
+                    onClick={() => setShowMarkAsReturned(true)}
+                  >
+                    <X className="text-red-500" size={18} />
+                    Mark as returned
+                  </Button>
+                ) : (
+                  <div className="flex items-center gap-2 self-stretch rounded-full bg-red-50 px-4 py-1.5 text-sm font-semibold text-red-500">
+                    <Smartphone size={20} color="#D95D55" />
+                    <span>
+                      {device?.assignmentStatus[0].toUpperCase() +
+                        device?.assignmentStatus.slice(1).toLowerCase()}
+                    </span>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -87,6 +118,12 @@ const Device = () => {
         confirmText="Delete"
         onConfirm={() => console.log("Deleted")}
         variant="destructive"
+      />
+
+      <MarkAsReturnedModal
+        open={showMarkAsReturned}
+        onOpenChange={setShowMarkAsReturned}
+        deviceId={params?.device ?? ""}
       />
 
       {activeTab === "general" && <General />}

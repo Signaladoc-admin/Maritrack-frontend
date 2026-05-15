@@ -88,31 +88,3 @@ export async function getZoneDevicesAction(zoneId: string): Promise<ActionResult
     return response.data.data;
   }, "Failed to fetch zone devices");
 }
-
-// export async function getZoneDevicesAction(zoneId: string): Promise<
-//   ActionResult<{
-//     status: boolean;
-//     statusCode: number;
-//     message?: string;
-//     devicesData: {
-//       code: number;
-//       data: Device[];
-//       totalElements: number;
-//       numberOfElements: number;
-//       totalPages: number;
-//     };
-//   }>
-// > {
-//   return withSafeAction(async () => {
-//     const res = await apiClient(`/mdm-sync/zones/${zoneId}/devices`, {
-//       method: "GET",
-//     });
-
-//     return {
-//       devicesData: res.data,
-//       status: res.status,
-//       statusCode: res.data.code,
-//       message: res.data.message,
-//     };
-//   }, "Failed to fetch zone devices");
-// }

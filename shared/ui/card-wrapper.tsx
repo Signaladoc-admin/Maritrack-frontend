@@ -22,7 +22,8 @@ const cardWrapperVariants = cva("w-full rounded-2xl bg-card text-card-foreground
       xs: "p-1",
       sm: "p-3",
       default: "p-4",
-      lg: "p-5",
+      lg: "p-6",
+      xl: "p-8",
     },
     radius: {
       none: "rounded-none",

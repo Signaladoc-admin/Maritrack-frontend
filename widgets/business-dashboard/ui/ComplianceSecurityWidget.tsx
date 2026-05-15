@@ -1,147 +1,115 @@
 "use client";
 
 import * as React from "react";
-import { AreaChartCard } from "@/shared/ui/dashboard/AreaChartCard";
-import { DonutChartCard } from "@/shared/ui/dashboard/DonutChartCard";
-import { DashboardCard } from "@/shared/ui/dashboard/DashboardCard";
-import { Calendar } from "lucide-react";
+import { Skeleton } from "@/shared/ui/skeleton";
+import {
+  DashboardAreaChart,
+  DashboardDonutChart,
+  DashboardDonutSlice,
+  DashboardEmptyState,
+  DashboardTableSkeleton,
+  DashboardTitledCard,
+} from "@/shared/ui/dashboard/analytics-ui";
 
-const blockedAttemptsData = [
-  { day: "MON", attempts: 120 },
-  { day: "TUE", attempts: 180 },
-  { day: "WED", attempts: 150 },
-  { day: "THUR", attempts: 400 },
-  { day: "FRI", attempts: 160 },
-  { day: "SAT", attempts: 250 },
-  { day: "SUN", attempts: 290 },
-];
+interface ViolationIncident {
+  incident: string;
+  date: string;
+}
 
-const securityPatchData = [
-  { name: "Vulnerable", value: 42.4, color: "#EF4444" },
-  { name: "Secured", value: 57.6, color: "#22C55E" },
-];
+interface ComplianceSecurityWidgetProps {
+  blockedAttemptsData?: Record<string, string | number>[];
+  securityPatchData?: DashboardDonutSlice[];
+  violationIncidents?: ViolationIncident[];
+  jailbreakData?: Record<string, string | number>[];
+  isLoading?: boolean;
+}
 
-const jailbreakData = [
-  { day: "MON", rate: 45 },
-  { day: "TUE", rate: 55 },
-  { day: "WED", rate: 30 },
-  { day: "THUR", rate: 80 },
-  { day: "FRI", rate: 45 },
-  { day: "SAT", rate: 65 },
-  { day: "SUN", rate: 60 },
-];
-
-const violationIncidents = [
-  { incident: "Violation A", date: "18 Apr 2021, 5:30pm" },
-  { incident: "Violation B", date: "18 Apr 2021, 5:23pm" },
-  { incident: "Violation C", date: "20 May 2021, 6:22am" },
-  { incident: "Violation D", date: "12 Jul 2021, 9:30am" },
-];
-
-export function ComplianceSecurityWidget() {
+export function ComplianceSecurityWidget({
+  blockedAttemptsData = [],
+  securityPatchData = [],
+  violationIncidents = [],
+  jailbreakData = [],
+  isLoading = false,
+}: ComplianceSecurityWidgetProps) {
   return (
     <div className="mb-8">
-      <h2 className="mb-4 text-base font-semibold text-gray-900">Compliance & Security</h2>
+      <h2 className="text-primary mb-4 text-base font-semibold">Compliance & Security</h2>
 
       <div className="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* Blocked App Installation Attempts */}
-        <DashboardCard
-          title="Blocked App Installation Attempts"
-          titleAction={
-            <button className="flex items-center gap-1.5 rounded bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-600">
-              <Calendar className="h-3 w-3" />
-              This month
-            </button>
-          }
-        >
-          <div className="mt-8">
-            <AreaChartCard
-              title=""
-              value=""
-              trendValue=""
-              trendDirection="up"
+        <DashboardTitledCard title="Blocked App Installation Attempts">
+          {isLoading ? (
+            <Skeleton className="h-[220px] w-full rounded-xl" />
+          ) : blockedAttemptsData.length > 0 ? (
+            <DashboardAreaChart
               data={blockedAttemptsData}
               dataKey="attempts"
               xAxisKey="day"
-              color="#EF4444"
-              gradientId="blockedGradient"
-              timeRangeAction=""
+              initialColor="#EF4444"
+              gradientId="compliance-blocked-attempts"
+              height={220}
             />
-          </div>
-        </DashboardCard>
+          ) : (
+            <DashboardEmptyState height={220} />
+          )}
+        </DashboardTitledCard>
 
-        {/* Devices with Latest Security Patch */}
-        <DonutChartCard
-          title="Devices with Latest Security Patch"
-          data={securityPatchData}
-          timeRangeAction="This month"
-        />
+        <DashboardTitledCard title="Devices with Latest Security Patch">
+          {isLoading ? (
+            <Skeleton className="h-[220px] w-full rounded-xl" />
+          ) : securityPatchData.length > 0 ? (
+            <DashboardDonutChart data={securityPatchData} />
+          ) : (
+            <DashboardEmptyState height={220} />
+          )}
+        </DashboardTitledCard>
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* Policy Violation Incidents Table */}
-        <DashboardCard
-          title="Policy Violation Incidents"
-          titleAction={
-            <button className="flex items-center gap-1.5 rounded bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-600">
-              <Calendar className="h-3 w-3" />
-              This month
-            </button>
-          }
-          className="overflow-hidden"
-          contentClassName="p-0 sm:p-0"
-        >
-          <div className="mt-4 overflow-x-auto px-6 pb-6">
-            <table className="w-full text-left text-sm text-gray-500">
-              <thead className="bg-white text-xs text-gray-400 uppercase">
-                <tr>
-                  <th scope="col" className="px-0 py-3 font-medium">
+        <DashboardTitledCard title="Policy Violation Incidents">
+          {isLoading ? (
+            <DashboardTableSkeleton />
+          ) : violationIncidents.length > 0 ? (
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-[#e5e7eb]">
+                  <th className="pb-3 text-xs font-medium tracking-wide text-[#667085] uppercase">
                     Incident
                   </th>
-                  <th scope="col" className="px-0 py-3 font-medium">
-                    DATE
+                  <th className="pb-3 text-xs font-medium tracking-wide text-[#667085] uppercase">
+                    Date
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {violationIncidents.map((v, idx) => (
-                  <tr key={idx} className="border-b border-gray-50 bg-white last:border-0">
-                    <td className="px-0 py-4 font-medium whitespace-nowrap text-gray-900">
-                      {v.incident}
-                    </td>
-                    <td className="px-0 py-4">{v.date}</td>
+                  <tr key={idx} className="border-b border-[#f3f4f6] last:border-0">
+                    <td className="py-3 font-medium text-slate-900">{v.incident}</td>
+                    <td className="py-3 text-[#667085]">{v.date}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-        </DashboardCard>
+          ) : (
+            <DashboardEmptyState message="No incidents recorded" height={180} />
+          )}
+        </DashboardTitledCard>
 
-        {/* Jailbreak/Root Detection Rate */}
-        <DashboardCard
-          title="Jailbreak/Root Detection Rate"
-          titleAction={
-            <button className="flex items-center gap-1.5 rounded bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-600">
-              <Calendar className="h-3 w-3" />
-              This month
-            </button>
-          }
-        >
-          <div className="mt-8">
-            <AreaChartCard
-              title=""
-              value=""
-              trendValue=""
-              trendDirection="up"
+        <DashboardTitledCard title="Jailbreak/Root Detection Rate">
+          {isLoading ? (
+            <Skeleton className="h-[220px] w-full rounded-xl" />
+          ) : jailbreakData.length > 0 ? (
+            <DashboardAreaChart
               data={jailbreakData}
               dataKey="rate"
               xAxisKey="day"
-              color="#111827"
-              gradientId="jailbreakGradient"
-              timeRangeAction=""
+              initialColor="#111827"
+              gradientId="compliance-jailbreak-rate"
+              height={220}
             />
-          </div>
-        </DashboardCard>
+          ) : (
+            <DashboardEmptyState height={220} />
+          )}
+        </DashboardTitledCard>
       </div>
     </div>
   );

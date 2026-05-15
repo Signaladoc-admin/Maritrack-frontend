@@ -41,37 +41,67 @@ export interface Device {
   manufacturer: string;
   model: string;
 }
+export type DeviceAssignmentStatus = "ASSIGNED" | "UNASSIGNED" | "RETURNED" | "REASSIGNED";
+export type DeviceStatus =
+  | "ACTIVE"
+  | "INACTIVE"
+  | "LOCKED"
+  | "DEACTIVATED"
+  | "LOST"
+  | "DAMAGED"
+  | "OFFLINE";
+export type MdmComplianceStatus = "COMPLIANT" | "NON_COMPLIANT" | null;
+
+export interface DeviceQueryOptions {
+  page?: number;
+  limit?: number;
+  search?: string;
+  assignmentStatus?: DeviceAssignmentStatus;
+  mdmEnrollmentStatus?: string;
+  mdmComplianceStatus?: string;
+  deviceStatus?: DeviceStatus;
+  flagged?: boolean;
+}
+
 export interface StaffDevice {
   id: string;
   serialNumber: string;
   imei: string;
   mdmDeviceId: string;
-  mdmId: string;
+  mdmId: string | null;
   macAddress: string;
   manufacturer: string;
-  assignmentStatus: string;
+  assignmentStatus: DeviceAssignmentStatus;
   mdmEnrollmentStatus: string;
-  mdmComplianceStatus: string;
-  lastSeenAt: string;
-  lastKnownLocation: string;
-  deviceStatus: string;
+  mdmComplianceStatus: MdmComplianceStatus;
+  lastSeenAt: string | null;
+  lastKnownLocation: { latitude: number; longitude: number } | null;
+  deviceStatus: DeviceStatus;
   flagged: boolean;
-  flagReason: string;
-  flaggedByUserId: string;
-  flaggedAt: string;
+  flagReason: string | null;
+  flaggedByUserId: string | null;
+  flaggedAt: string | null;
   mdmLastSyncAt: string;
   createdAt: string;
   updatedAt: string;
   deleted: boolean;
-  deletedAt: string;
-  currentUserId: string;
-  childId: string;
-  model: string;
-  operatingSystem: string;
-  currentDepartmentId: string;
-  currentLocationId: string;
-  businessId: string;
-  currentUser: User;
+  deletedAt: string | null;
+  currentUserId: string | null;
+  childId: string | null;
+  model: string | null;
+  operatingSystem: string | null;
+  currentDepartmentId: string | null;
+  currentLocationId: string | null;
+  businessId: string | null;
+  currentUser?: User;
+}
+
+export interface PaginatedDevices {
+  devices: StaffDevice[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export interface DeviceAsset {
