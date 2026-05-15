@@ -27,7 +27,6 @@ const Device = () => {
   const searchParams = useSearchParams();
   const { user } = useAuth();
   const { data: device, isLoading: deviceLoading } = useDevice(params.device);
-  console.log(device);
 
   const tabParam = searchParams?.get("tab") || "general";
   const [activeTab, setActiveTab] = useState(tabParam);

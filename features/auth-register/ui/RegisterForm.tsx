@@ -10,6 +10,7 @@ import { useRegister } from "../model/useRegister";
 import { registerSchema, type RegisterValues } from "@/entities/user/model/user.schema";
 import { useRouter } from "next/navigation";
 import { useNewUserStore } from "@/shared/stores/user.store";
+import { useAuth } from "../../../shared/auth/AuthProvider";
 
 export default function RegisterForm() {
   const router = useRouter();
