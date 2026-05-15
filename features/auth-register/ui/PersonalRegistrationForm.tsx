@@ -158,7 +158,7 @@ export default function PersonalRegistrationForm() {
           <Button type="button" onClick={handleNextStep} className="w-full">
             Next
           </Button>
-          <HaveAnAccount type="parent" />
+          <HaveAnAccount />
         </>
       )}
 

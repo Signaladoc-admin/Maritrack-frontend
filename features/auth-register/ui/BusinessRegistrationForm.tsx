@@ -131,7 +131,7 @@ export default function BusinessRegistrationForm() {
       <Button className="w-full" disabled={isSubmitting}>
         Next
       </Button>
-      <HaveAnAccount type="business" />
+      <HaveAnAccount />
     </form>
   );
 }

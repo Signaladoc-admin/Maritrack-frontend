@@ -30,7 +30,6 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
     onPageChange,
     hasHeaders = true,
     paginationClassName,
-    isLoading,
   } = props;
 
   const [selectedItems, setSelectedItems] = useState<Set<string | number>>(new Set());
