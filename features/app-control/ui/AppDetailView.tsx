@@ -8,6 +8,8 @@ import { cn, formatAppValue } from "@/shared/lib/utils";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from "recharts";
 import { SetTimeLimitModal } from "@/shared/ui/Modal/Modals/TimeLimitModal";
 import { AppListItem } from "./AllAppsCard";
+import { useParams } from "next/navigation";
+import { useSetAppLimit } from "@/features/mdm-sync/model/useMdmSync";
 
 const hourlyData = [
   { name: "S", value: 0.5, isCurrent: false },
@@ -20,19 +22,75 @@ const hourlyData = [
 ];
 
 export function AppDetailView({ app, onBack }: { app: any; onBack: () => void }) {
+  const params = useParams<{ device: string }>();
+  const setAppLimitMutation = useSetAppLimit();
+
   const [isBlocked, setIsBlocked] = React.useState(false);
   const [limitModalOpen, setLimitModalOpen] = React.useState(false);
-  const [limits, setLimits] = React.useState<string[]>([]);
+  const [limits, setLimits] = React.useState<Record<string, { hour: number; minutes: number }>>({});
 
   // Function to handle limit updates
-  const handleSaveLimit = () => {
-    // Mimicking the "1 hour everyday" state for demonstration
-    setLimits(["1 hour everyday"]);
-    setLimitModalOpen(false);
+  const handleSaveLimit = async (weekLimits: Record<string, { hour: number; minutes: number }>) => {
+    const todayStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    const appUsage: Record<string, any[]> = {};
+
+    Object.entries(weekLimits).forEach(([day, limit]) => {
+      appUsage[day] = [
+        {
+          packageName: app.packageName || "",
+          minutes: limit.minutes,
+          appName: app.appName || app.name || "",
+          hour: limit.hour,
+          day: day,
+          date: todayStr,
+        },
+      ];
+    });
+
+    const payload = {
+      actionId: 0,
+      message: {
+        appUsage,
+      },
+    };
+
+    try {
+      await setAppLimitMutation.mutateAsync({
+        deviceId: params?.device || "",
+        data: payload,
+      });
+      setLimits(weekLimits);
+      setLimitModalOpen(false);
+    } catch (err) {
+      // Error handled by hook's toast notification
+    }
   };
 
-  console.log(app);
+  const getLimitsDisplay = () => {
+    const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    const activeLimits = days.map((day) => {
+      const limit = limits[day];
+      if (!limit || (limit.hour === 0 && limit.minutes === 0)) {
+        return { day, text: "No limit", active: false };
+      }
+      const hourText = limit.hour > 0 ? `${limit.hour}h` : "";
+      const minuteText = limit.minutes > 0 ? `${limit.minutes}m` : "";
+      return { day, text: `${hourText} ${minuteText}`.trim(), active: true };
+    });
 
+    const activeOnly = activeLimits.filter((l) => l.active);
+    if (activeOnly.length === 0) return [];
+
+    const firstLimitText = activeLimits[0].text;
+    const allSame = activeLimits.every((l) => l.active && l.text === firstLimitText);
+    if (allSame && activeLimits.length === 7) {
+      return [`${firstLimitText} everyday`];
+    }
+
+    return activeLimits.filter((l) => l.active).map((l) => `${l.day}: ${l.text}`);
+  };
+
+  const displayLimits = getLimitsDisplay();
   const appDisplayName = app.appName || app.name;
 
   return (
@@ -150,7 +208,7 @@ export function AppDetailView({ app, onBack }: { app: any; onBack: () => void })
 
           <Card className="flex min-h-[120px] items-center justify-center rounded-[32px] border-none bg-slate-50">
             <CardContent className="w-full">
-              {limits.length === 0 ? (
+              {displayLimits.length === 0 ? (
                 <div className="flex flex-col items-center justify-center space-y-4 py-8">
                   <History className="h-10 w-10 text-slate-400" />
                   <p className="font-medium text-slate-500">No limit set for this app</p>
@@ -164,7 +222,7 @@ export function AppDetailView({ app, onBack }: { app: any; onBack: () => void })
               ) : (
                 <div className="flex items-center justify-between py-6">
                   <div className="space-y-2">
-                    {limits.map((limit, idx) => (
+                    {displayLimits.map((limit, idx) => (
                       <p key={idx} className="font-medium text-slate-600">
                         {limit}
                       </p>
@@ -187,7 +245,9 @@ export function AppDetailView({ app, onBack }: { app: any; onBack: () => void })
         open={limitModalOpen}
         onOpenChange={setLimitModalOpen}
         appName={appDisplayName}
-        // Assuming we could pass a custom onSave if the component supported it
+        onSave={handleSaveLimit}
+        isLoading={setAppLimitMutation.isPending}
+        initialLimits={limits}
       />
     </Card>
   );

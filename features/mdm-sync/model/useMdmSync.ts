@@ -10,6 +10,7 @@ import {
   getBusinessZonesAction,
   assignUserToDeviceAction,
   getZoneDevicesAction,
+  setAppLimitAction,
 } from "../api/mdm-sync.actions";
 import { useToast } from "@/shared/ui/toast";
 
@@ -116,3 +117,25 @@ export function useZoneDevices(zoneId: string | undefined, options?: { enabled?:
     }
   );
 }
+
+export function useSetAppLimit() {
+  const { toast } = useToast();
+
+  return useServerActionMutation(setAppLimitAction, {
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        message: "App limit set successfully",
+        type: "success",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        message: error.message || "Failed to set app limit",
+        type: "error",
+      });
+    },
+  });
+}
+
