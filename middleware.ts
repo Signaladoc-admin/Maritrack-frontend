@@ -19,6 +19,8 @@ const roleAccessMap: Record<string, string[]> = {
     "/users/*",
     "/devices",
     "/devices/*",
+    "/plans",
+    "/plans/*",
   ],
   PARENT: [
     "/dashboard",
@@ -26,6 +28,7 @@ const roleAccessMap: Record<string, string[]> = {
     "/onboarding/personal",
     "/profile",
     "/plans",
+    "/plans/*",
     "/child",
     "/child/*",
     "/children",
@@ -54,11 +57,6 @@ const publicRoutes = [
   "/business/forgot-password",
   "/components",
   "/components-showcase",
-
-  // Test routes: TODO: take out later
-  "/settings",
-  "/plans",
-  "/test",
 ];
 
 const authRoutes = [

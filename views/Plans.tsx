@@ -1,17 +1,16 @@
 "use client";
 
 import { useBusinessZones, useParentZones } from "@/features/mdm-sync/model/useMdmSync";
-import {
-  useActiveSubscription,
-  useAllSubscriptions,
-} from "@/features/payments/model/usePayments";
+import { useActiveSubscription, useAllSubscriptions } from "@/features/payments/model/usePayments";
 import { Subscription } from "@/features/payments/types";
 import BillingHistoryTable from "@/features/payments/ui/BillingHistoryTable";
 import PlanCard from "@/features/payments/ui/PlanCard";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { formatCurrency } from "@/shared/lib/utils";
+import { Button } from "@/shared/ui/button";
 import { Header } from "@/shared/ui/layout/header";
 import { Skeleton } from "@/shared/ui/skeleton";
+import { useRouter } from "next/navigation";
 
 // Mirrors PlanCard exactly: same rounded-xl, px-6 py-5, inline border styles
 function PlanCardSkeleton() {
@@ -40,9 +39,7 @@ export default function Plans() {
   });
 
   const zoneId =
-    user?.appRole === "BUSINESS"
-      ? (businessZones as any)?.[0]?.id
-      : (parentZones as any)?.[0]?.id;
+    user?.appRole === "BUSINESS" ? (businessZones as any)?.[0]?.id : (parentZones as any)?.[0]?.id;
 
   const { data: activeSubscriptionRes, isLoading: isLoadingSubscription } =
     useActiveSubscription(zoneId);
@@ -62,6 +59,12 @@ export default function Plans() {
   const isResolving =
     isLoadingZones || (!!zoneId && (isLoadingSubscription || isLoadingAllSubscriptions));
 
+  const router = useRouter();
+
+  const handleUpgrade = () => {
+    router.push("/plans/subscribe");
+  };
+
   return (
     <div className="mx-auto max-w-3xl space-y-10">
       <Header title="Your Plans" subtitle="Manage your subscription and billing history" />
@@ -72,7 +75,11 @@ export default function Plans() {
           <PlanCardSkeleton />
         </div>
       ) : !activeSubscription ? (
-        <p className="text-muted-foreground text-center">No active subscription found</p>
+        <div className="flex flex-col gap-4">
+          <p className="text-muted-foreground text-center">No active subscription found</p>
+
+          <Button onClick={handleUpgrade}>Upgrade</Button>
+        </div>
       ) : (
         <div className="space-y-4">
           <PlanCard

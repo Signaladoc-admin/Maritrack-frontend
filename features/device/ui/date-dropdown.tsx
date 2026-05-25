@@ -19,7 +19,7 @@ const DateDropdown = () => {
       <DropdownMenuTrigger asChild>
         <Button
           variant="secondary"
-          className="flex w-full items-center justify-between bg-[#F8F9FA] font-bold md:w-auto"
+          className="flex w-full items-center justify-between rounded-full bg-[#F8F9FA] font-bold md:w-auto"
         >
           Today
           <Calendar1Icon className="h-5 w-5 text-[#1B3C73]" />

@@ -19,50 +19,36 @@ import { cn } from "@/shared/lib/utils";
 import DevicesTable from "@/features/business-users/users/ui/DevicesTable";
 import AssignDeviceModal from "@/features/business-users/users/ui/AssignDeviceModal";
 import { Input } from "@/shared/ui/input";
-import useGetDevices from "@/entities/business/model/useDevices";
-import { useAuth } from "@/shared/auth/AuthProvider";
-import { Device } from "@/entities/device";
+import { DeviceAssignmentStatus, StaffDevice, useDevices } from "@/entities/device";
 
 export default function DevicesList() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useQueryState("search", { defaultValue: "" });
-  const [selectedTab, setSelectedTab] = useQueryState("tab", { defaultValue: "ALL" });
+  const [selectedTab, setSelectedTab] = useQueryState("assignmentStatus", { defaultValue: "ALL" });
   const [selectedFilter, setSelectedFilter] = useQueryState("filter", { defaultValue: "ALL" });
+  const [pageParam, setPageParam] = useQueryState("page", { defaultValue: "1" });
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
 
-  const devices = useGetDevices();
+  const currentPage = Math.max(1, parseInt(pageParam) || 1);
 
-  // const filteredDevices = useMemo(() => {
-  //   let result = devicesData;
+  const { data: devicesPage, isPending: isDevicesPending } = useDevices({
+    page: currentPage,
+    limit: 10,
+    search: debouncedSearchQuery || undefined,
+    assignmentStatus: selectedTab === "ALL" ? undefined : (selectedTab as DeviceAssignmentStatus),
+  });
 
-  //   if (selectedFilter === "ACTIVE") {
-  //     result = result.filter((device) => device.status === "ACTIVE");
-  //   } else if (selectedFilter === "INACTIVE") {
-  //     result = result.filter((device) => device.status === "INACTIVE");
-  //   }
+  const devices = devicesPage?.devices ?? [];
+  const totalPages = devicesPage?.totalPages ?? 1;
 
-  //   if (debouncedSearchQuery) {
-  //     result = result.filter((device) =>
-  //       device.model.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
-  //     );
-  //   }
-
-  //   if (selectedTab === "DAMAGED_RETURNED") {
-  //     result = result.filter(
-  //       (device) => device.condition === "DAMAGED" || device.condition === "RETURNED"
-  //     );
-  //   } else if (selectedTab === "GOOD") {
-  //     result = result.filter((device) => device.condition === "GOOD");
-  //   }
-
-  //   return result;
-  // }, [selectedFilter, debouncedSearchQuery, selectedTab]);
+  function handlePageChange(page: number) {
+    setPageParam(String(page));
+  }
 
   const [isShowingAssignDeviceModal, setIsShowingAssignDeviceModal] = useState(false);
-  const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
+  const [selectedDevice, setSelectedDevice] = useState<StaffDevice | null>(null);
 
-  function handleAssignDevice(device: Device) {
-    console.log("device", device);
+  function handleAssignDevice(device: StaffDevice) {
     setIsShowingAssignDeviceModal(true);
     setSelectedDevice(device);
   }
@@ -81,8 +67,7 @@ export default function DevicesList() {
           className="w-fit"
           tabs={[
             { label: "All assets", value: "ALL" },
-            { label: "Damaged & returned assets", value: "DAMAGED_RETURNED" },
-            // { label: "Good condition assets", value: "GOOD" },
+            { label: "Damaged & returned assets", value: "RETURNED" },
           ]}
           activeTab={selectedTab}
           onTabChange={(tab) => setSelectedTab(tab)}
@@ -143,7 +128,14 @@ export default function DevicesList() {
         </div>
       </div>
 
-      <DevicesTable data={devices} columns={getDevicesColumns(handleAssignDevice)} />
+      <DevicesTable
+        data={devices}
+        columns={getDevicesColumns(handleAssignDevice)}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        isLoading={isDevicesPending}
+      />
 
       <AssignDeviceModal
         open={isShowingAssignDeviceModal}

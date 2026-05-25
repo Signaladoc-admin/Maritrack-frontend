@@ -21,6 +21,7 @@ export default function LoginForm() {
   const { setParentId } = useParentStore();
   const { setEmail, setPassword } = useNewUserStore();
   const { login, loginError: error, isSubmitting } = useAuth();
+  console.log(error);
 
   const {
     register,

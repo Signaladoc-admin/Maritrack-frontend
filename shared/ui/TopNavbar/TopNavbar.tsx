@@ -21,7 +21,7 @@ export default function TopNavbar() {
     <>
       {/* Top bar */}
       <div className="fixed z-9999 w-screen">
-        <div className="relative flex items-center border-b-[1.5px] border-[#eee] bg-[#f7f7f7] px-5 py-3 text-sm md:py-6">
+        <div className="relative flex items-center border-b-[1.5px] border-[#eee] bg-[#f7f7f7] px-5 py-4 text-sm md:py-6">
           {/* Small screens — hamburger */}
           <button
             className="p-1 text-[#1B3C73] md:hidden"
@@ -53,7 +53,7 @@ export default function TopNavbar() {
           </div>
 
           {/* Avatar — flow on small screens, absolute on large so nav links stay centred */}
-          <div className="ml-auto md:absolute md:right-10 md:bottom-1/2 md:ml-0 md:translate-y-1/2">
+          <div className="absolute right-10 bottom-1/2 ml-0 translate-y-1/2">
             <ProfilePopover />
           </div>
         </div>

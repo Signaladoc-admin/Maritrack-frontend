@@ -43,7 +43,7 @@ export function Header({
           </div>
         )}
       </div>
-      <div>{action}</div>
+      {action && <div>{action}</div>}
     </header>
   );
 }

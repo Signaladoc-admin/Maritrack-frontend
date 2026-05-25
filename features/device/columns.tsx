@@ -3,45 +3,45 @@ import { formatDate, formatID } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Device, StaffDevice } from "@/entities/device";
 
-export function getDevicesColumns(handleAssignDevice: (device: Device) => void) {
-  const devicesColumns: TableColumn<Device>[] = [
+export function getDevicesColumns(handleAssignDevice: (device: StaffDevice) => void) {
+  const devicesColumns: TableColumn<StaffDevice>[] = [
     {
       key: "asset",
       label: "Asset",
       render: (item) => (
         <div className="space-y-1 leading-tight">
-          <p className="font-semibold text-neutral-800">{item.model}</p>
+          <p className="font-semibold text-neutral-800">
+            {[item.manufacturer, item.model].filter(Boolean).join(" ") || "N/A"}
+          </p>
           <p className="text-xs text-neutral-500">{formatID(item.serialNumber)}</p>
         </div>
       ),
     },
     {
-      key: "possessor",
-      label: "Possessor",
+      key: "assignmentStatus",
+      label: "Assignment",
       render: (item) =>
-        (item as any).possessor ? (
-          <span>{(item as any).possessor}</span>
-        ) : !(item as any).possessor ? (
-          <span>N/A</span>
+        item.assignmentStatus === "ASSIGNED" ? (
+          <span className="text-sm text-neutral-600">Assigned</span>
         ) : (
           <Button
             type="button"
             variant="secondary"
             size="sm"
-            className="w-full rounded-full"
+            className="rounded-full"
             onClick={(e) => {
               e.stopPropagation();
               handleAssignDevice(item);
             }}
           >
-            Unassigned
+            Assign
           </Button>
         ),
     },
     {
       key: "imei",
       label: "IMEI",
-      render: (item) => <p>{item.imeiNumber}</p>,
+      render: (item) => <p>{item.imei}</p>,
     },
     {
       key: "serialNumber",
@@ -51,12 +51,12 @@ export function getDevicesColumns(handleAssignDevice: (device: Device) => void) 
     {
       key: "macAddress",
       label: "MAC Address",
-      render: (item) => <p>{item.wifiMacAddr}</p>,
+      render: (item) => <p>{item.macAddress}</p>,
     },
     {
       key: "lastSynced",
       label: "Last Synced",
-      render: (item) => <p>{formatDate(new Date(item.lastReportedTime))}</p>,
+      render: (item) => <p>{formatDate(new Date(item.mdmLastSyncAt))}</p>,
     },
   ];
 

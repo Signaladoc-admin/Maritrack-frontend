@@ -8,6 +8,7 @@ import { useRegisterBusiness } from "../model/useRegisterBusiness";
 import { useRouter } from "next/navigation";
 import { businessRegistrationFormSchema, BusinessRegistrationFormValues } from "../schema";
 import { CountryStateInput } from "@/shared/ui/inputs/country-state-input";
+import HaveAnAccount from "@/features/auth/ui/HaveAnAccount";
 
 export default function BusinessRegistrationForm() {
   const {
@@ -130,6 +131,7 @@ export default function BusinessRegistrationForm() {
       <Button className="w-full" disabled={isSubmitting}>
         Next
       </Button>
+      <HaveAnAccount />
     </form>
   );
 }
