@@ -89,6 +89,42 @@ export async function getZoneDevicesAction(zoneId: string): Promise<ActionResult
   }, "Failed to fetch zone devices");
 }
 
+export interface AppLimitDayDetail {
+  packageName: string;
+  minutes: number;
+  appName: string;
+  hour: number;
+  day: string;
+  date: string;
+}
+
+export interface SetAppLimitPayload {
+  actionId: number;
+  message: {
+    appUsage: Record<string, AppLimitDayDetail[]>;
+  };
+}
+
+export interface SetAppLimitVariables {
+  deviceId: string;
+  data: SetAppLimitPayload;
+}
+
+export async function setAppLimitAction({
+  deviceId,
+  data,
+}: SetAppLimitVariables): Promise<ActionResult<any>> {
+  return withSafeAction(
+    async () =>
+      await apiClient(`/mdm-sync/${deviceId}/action`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    "Failed to set app limit"
+  );
+}
+
+
 // export async function getZoneDevicesAction(zoneId: string): Promise<
 //   ActionResult<{
 //     status: boolean;
