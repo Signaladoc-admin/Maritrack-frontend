@@ -72,12 +72,13 @@ export const useChildrenByParent = (parentId: string | null | undefined) => {
   );
 };
 
-export const useParentChildren = () => {
+export const useParentChildren = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ["children", "parent"],
     queryFn: getParentChildrenAction,
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
+    ...options,
   });
 };
 

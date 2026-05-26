@@ -3,12 +3,17 @@
 import { useMutation } from "@tanstack/react-query";
 import { resendVerificationAction } from "../api/auth.actions";
 import { useToast } from "@/shared/ui/toast";
+import { VerificationTokenMethod } from "../types";
 
 export function useResendVerification() {
   const { toast } = useToast();
 
   const mutation = useMutation({
-    mutationFn: (method: string) => resendVerificationAction(method),
+    mutationFn: async ({ email, method }: { email: string, method?: VerificationTokenMethod }) => {
+      const result = await resendVerificationAction(method, { email });
+      if (!result.success) throw new Error(result.error);
+      return result.data;
+    },
     onSuccess: () => {
       toast({
         type: "success",

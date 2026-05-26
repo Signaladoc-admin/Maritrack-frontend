@@ -3,24 +3,52 @@
 import { apiClient } from "@/shared/lib/api-client";
 import { withSafeAction } from "@/shared/lib/safe-action";
 import { UpdateBusinessDto } from "../schema";
+import { ApiResponse, QueryOptions } from "@/shared/api/types";
+import { Business } from "../types";
+import { requestTokenAction } from "@/features/auth/api/auth.actions";
 
-export async function getBusinessAction(id: string): Promise<any> {
-  return withSafeAction(async () => {
-    const res = await apiClient(`/businesses/${id}`, {
+export async function getBusinessesAction(params?: QueryOptions): Promise<Business[]> {
+  const searchParams = new URLSearchParams();
+  if (params?.name) searchParams.set("name", params.name);
+
+  const queryString = searchParams.toString();
+  const endpoint = queryString ? `/businesses?${queryString}` : "/businesses";
+
+  const response = await apiClient(endpoint, {
+    method: "GET",
+  });
+  return response.data;
+}
+
+export async function getBusinessAction(id: string) {
+  try {
+    const res = await apiClient<ApiResponse<Business>>(`/businesses/${id}`, {
       method: "GET",
       noRedirect: true,
     });
-    return res.data ?? res;
-  }, "Failed to get business");
+    return { success: true, data: res };
+  } catch (error) {
+    return { success: false, error };
+  }
 }
 export async function createBusinessAction(data: any): Promise<any> {
   return withSafeAction(async () => {
-    const res = await apiClient(`/businesses`, {
+    const registerRes = await apiClient(`/businesses`, {
       method: "POST",
       body: JSON.stringify(data),
       noRedirect: true,
     });
-    return res.data ?? res;
+
+    if (!registerRes.status) throw new Error(registerRes.message || 'Registration failed')
+
+    const requestTokenRes = await requestTokenAction('email', { email: data.email })
+    if (!requestTokenRes) throw new Error("Request token failed")
+
+    if (!requestTokenRes.success) {
+      throw new Error(requestTokenRes.error);
+    }
+
+    return { ...requestTokenRes, status: true, data: requestTokenRes.data }
   }, "Failed to create business");
 }
 

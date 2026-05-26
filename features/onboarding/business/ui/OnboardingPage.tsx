@@ -9,12 +9,12 @@ import { useLogout } from "@/features/auth/model/useLogout";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
 import { createBusinessZoneAction } from "@/features/mdm-sync/api/mdm-sync.actions";
 import { useBusinessZones } from "@/features/mdm-sync/model/useMdmSync";
-import { useActiveSubscription } from "@/features/payments/model/usePayments";
+import { useActiveSubscription, useVerifyPayment } from "@/features/payments/model/usePayments";
 import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
-import { useAuth } from "@/shared/auth/AuthProvider";
 import { useGetFullBusinessDetails } from "../model/useGetBusinessDetails";
-import { useGetStaffMembers } from "@/entities/business/model/useStaffMembers";
 import { useQueryClient } from "@tanstack/react-query";
+import { useQueryState } from "nuqs";
+import VerifyPayment from "@/features/payments/ui/VerifyPayment";
 
 export default function OnboardingPage() {
   const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
@@ -22,9 +22,7 @@ export default function OnboardingPage() {
   const [showSignOutModal, setShowSignOutModal] = useState(false);
 
   const { businessProfile, isLoadingBusinessProfile } = useGetFullBusinessDetails();
-  const { data: initialTeamMembers, isPending: isLoadingTeamMembers } = useGetStaffMembers();
 
-  const { user } = useAuth();
   const { data: userProfile } = useUserProfile();
   const queryClient = useQueryClient();
 
@@ -41,6 +39,8 @@ export default function OnboardingPage() {
   // True until we know whether the user has already paid — prevents pricing step flicker
   const isResolvingPaymentStatus = isLoadingZones || (!!zoneId && isLoadingSubscription);
 
+  const [reference] = useQueryState("reference");
+
   // Create business zone on first landing if one doesn't exist yet
   useEffect(() => {
     if (userProfile && !zoneId) {
@@ -48,11 +48,13 @@ export default function OnboardingPage() {
         queryClient.invalidateQueries({ queryKey: ["mdm-sync", "businessZones"] });
       });
     }
-  }, [userProfile, zoneId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [userProfile, zoneId]);
 
   const handleNextStep = () => setStep((prev) => prev + 1);
   const handlePreviousStep = () => setStep((prev) => prev - 1);
   const handleSelectPlan = () => setFreePlanChosen(true);
+
+  if (reference) return <VerifyPayment reference={reference} />
 
   return (
     <div>
@@ -67,7 +69,7 @@ export default function OnboardingPage() {
         </Button>
       </div>
       {isResolvingPaymentStatus ? null : !canProceed ? (
-        <PricingStep onBack={() => {}} onSuccess={handleSelectPlan} isShowingBackButton={false} />
+        <PricingStep onBack={() => { }} onSuccess={handleSelectPlan} isShowingBackButton={false} />
       ) : (
         <div className="mx-auto max-w-2xl py-5">
           {step === 1 && (
@@ -80,7 +82,6 @@ export default function OnboardingPage() {
           {step === 2 && (
             <InviteTeamMembersForm
               onBack={handlePreviousStep}
-              isLoadingTeamMembers={isLoadingTeamMembers}
             />
           )}
         </div>

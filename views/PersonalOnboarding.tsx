@@ -24,12 +24,12 @@ function OnboardingContent() {
   const queryClient = useQueryClient();
 
   const [currentStep, setCurrentStep] = useQueryState("step", parseAsInteger.withDefault(0));
-  const [reference, setReference] = useQueryState("reference");
   const [isFullWidth, setIsFullWidth] = useState(false);
 
-  const { mutateAsync: verifyPayment } = useVerifyPayment();
   const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
-  const { toast } = useToast();
+
+  const [reference, setReference] = useQueryState("reference");
+  const { mutateAsync: verifyPayment } = useVerifyPayment();
 
   // Create zone on first landing if one doesn't exist yet
   useEffect(() => {
@@ -39,26 +39,16 @@ function OnboardingContent() {
         queryClient.invalidateQueries({ queryKey: mdmSyncKeys.parentZones });
       });
     }
-  }, [userProfile, parentZones]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [userProfile, parentZones, queryClient]);
 
   useEffect(() => {
-    if (!reference) return;
-    verifyPayment(reference)
-      .then(() => {
-        toast({ title: "Success", message: "Payment verified successfully", type: "success" });
-        setReference(null);
-        setCurrentStep(0);
-      })
-      .catch((err) => {
-        toast({
-          title: "Verification Failed",
-          message: err.message || "Could not verify payment",
-          type: "error",
-        });
+    if (reference) {
+      verifyPayment(reference).finally(() => {
         setReference(null);
         setCurrentStep(0);
       });
-  }, [reference]); // eslint-disable-line react-hooks/exhaustive-deps
+    }
+  }, [reference, verifyPayment, setReference, setCurrentStep]);
 
   const nextStep = () => setCurrentStep((p) => Math.min((p ?? 0) + 1, 1));
   const prevStep = () => setCurrentStep((p) => Math.max((p ?? 0) - 1, 0));

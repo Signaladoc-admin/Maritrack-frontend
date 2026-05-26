@@ -3,41 +3,11 @@
 import { useServerActionQuery } from "@/shared/api/server-action-hooks";
 import { getQrCodeAction } from "../api/mdm-sync.actions";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
-import { useParentZones } from "./useMdmSync";
-
-interface ParentZoneRes {
-  id: string;
-  name: string;
-  mdmZoneId: string;
-  parentId: string;
-  createdAt: string;
-  updatedAt: string;
-  deleted: boolean;
-  deletedAt: null;
-  parentChildren: [
-    {
-      parentId: string;
-      childId: string;
-      createdAt: string;
-      updatedAt: string;
-      deleted: boolean;
-      deletedAt: null;
-      zoneId: string;
-      child: {
-        name: string;
-        age: number;
-        gender: string;
-        createdAt: string;
-        updatedAt: string;
-        deleted: boolean;
-        deletedAt: null;
-        id: string;
-        onboardingCode: string;
-        imageUrl: string | null;
-      };
-    },
-  ];
-}
+import { useBusinessZones, useParentZones } from "./useMdmSync";
+import { useGetChildren } from "@/features/child-profile/model/useGetChildrenProfile";
+import { useParentChildren } from "@/entities/children/model/useChildren";
+import { useGetStaffMembers } from "@/entities/business/model/useStaffMembers";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 export const mdmSyncKeys = {
   qrcode: (zoneId: string, onboardingCode: string) =>
@@ -50,28 +20,39 @@ function toQrCodeSrc(data: string | null | undefined): string | null {
 }
 
 export function useQrCode(
-  childId: string,
+  entityId: string, // child or staff member id
   overrides?: { zoneId?: string; onboardingCode?: string }
 ) {
-  const { data: user } = useUserProfile();
+  const { user } = useAuth();
 
-  // Not gated on parentId — useUserProfile cache can be stale during onboarding
-  // (parent profile was just created), causing parentId to appear null and permanently
-  // blocking the zone fetch. Always fetch zones; the enabled guard on the QR query handles timing.
-  const { data: parentZonesRes } = useParentZones();
+  console.log(user?.appRole);
 
-  const zoneWithChild = parentZonesRes?.find((zone: ParentZoneRes) =>
-    zone.parentChildren?.some((pc) => pc.childId === childId)
-  );
+  const isParent = !!user?.id && user?.appRole === 'PARENT';
+  const isBusiness = !!user?.id && user?.appRole === 'BUSINESS';
 
-  const derivedOnboardingCode = zoneWithChild?.parentChildren?.find(
-    (pc: any) => pc.childId === childId
-  )?.child?.onboardingCode;
+  const { data: parentZones } = useParentZones({ enabled: isParent });
+  const { data: businessZones } = useBusinessZones({ enabled: isBusiness });
+  const { data: parentChildren } = useParentChildren({ enabled: isParent });
+  const { data: staffMembers } = useGetStaffMembers(undefined, { enabled: isBusiness });
 
-  console.log("derivedOnboardingCode", derivedOnboardingCode);
+  console.log("staffMembers", staffMembers);
+  console.log("parentChildren", parentChildren);
+  console.log("businessZones", businessZones);
+  console.log("parentZones", parentZones);
+
+  const zoneWithChild = parentZones?.find((zone) =>
+    parentChildren?.data?.some((pc) => pc.id === entityId)
+  )?.id;
+  const zoneWithStaffMember = businessZones?.find((zone) =>
+    staffMembers?.staff?.some((sm) => sm.user?.id === entityId)
+  )?.id;
+
+  const derivedOnboardingCode = parentChildren?.data?.find(
+    (pc: any) => pc.id === entityId
+  )?.onboardingCode;
 
   const onboardingCode = overrides?.onboardingCode ?? derivedOnboardingCode;
-  const zoneId = overrides?.zoneId ?? user?.zoneId?.[0]?.id ?? parentZonesRes?.[0]?.id;
+  const zoneId = overrides?.zoneId ?? zoneWithChild ?? zoneWithStaffMember;
 
   const query = useServerActionQuery(
     mdmSyncKeys.qrcode(zoneId || "", onboardingCode || ""),
@@ -94,10 +75,12 @@ export function useQrCode(
 export function useChildQrCode({ childId }: { childId: string }) {
   const { data: user } = useUserProfile();
   const { data: parentZonesRes } = useParentZones();
+  const { data: children } = useGetChildren();
+
+  console.log("children", children);
 
   const onboardingCode =
-    parentZonesRes?.[0]?.parentChildren?.find((child: any) => child.childId === childId)?.child
-      ?.onboardingCode ?? null;
+    children?.find((child: any) => child.id === childId)?.onboardingCode ?? null;
 
   const activeZoneId = user?.zoneId?.[0]?.id || parentZonesRes?.[0]?.id;
 

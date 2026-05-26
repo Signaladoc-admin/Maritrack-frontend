@@ -89,3 +89,14 @@ export interface ActiveSubscription {
   active: boolean;
   subscription: Subscription | null;
 }
+
+
+export interface InitializePaymentRequest {
+  planId: string;
+  zoneId?: string;
+  callbackUrl: string;
+}
+
+export interface InitializePaymentResponse {
+  authorizationUrl: string;
+}

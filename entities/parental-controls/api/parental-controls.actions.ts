@@ -5,6 +5,7 @@ import type {
   ParentalControlDto,
   ParentalControlResponse,
 } from "../model/parental-controls.schema";
+import { ApiResponse } from "@/shared/api/types";
 
 export async function createParentalControlAction(
   data: ParentalControlDto
@@ -42,15 +43,14 @@ export async function getMdmPolicyByParentIdAction(parentId: string): Promise<an
   return response.data;
 }
 
-export async function getParentalControlMeAction(): Promise<ParentalControlResponse | null> {
+export async function getParentalControlMeAction() {
   try {
-    const response = await apiClient("/parental-controls/me", {
+    const response = await apiClient<ApiResponse<ParentalControlResponse>>("/parental-controls/me", {
       method: "GET",
       noRedirect: true,
     });
-    return response.data;
+    return { success: true, data: response.data };
   } catch (error) {
-    console.log("error", error);
-    return null;
+    return { success: false, error };
   }
 }

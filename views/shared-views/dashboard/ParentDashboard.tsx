@@ -34,7 +34,7 @@ export default function ParentDashboard() {
       enabled: !!deviceId,
     }
   );
-  
+
   const { data: appsData, isPending: isAppsPending } = useDeviceDetail(deviceId, "apps", {
     enabled: !!deviceId,
   });
@@ -62,22 +62,22 @@ export default function ParentDashboard() {
       </header>
 
       {/* Metrics Section */}
-      <ParentMetricsSection 
-        hardwareData={hardwareData} 
-        isPending={isHardwarePending && !!deviceId} 
+      <ParentMetricsSection
+        hardwareData={hardwareData}
+        isPending={isHardwarePending && !!deviceId}
       />
 
       {/* Main Grid Content */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <ParentDevicesSection 
-          device={device} 
-          deviceId={deviceId} 
-          isLoadingChild={isLoadingChild && !!selectedChildId && selectedChildId !== "all"} 
+        <ParentDevicesSection
+          device={device}
+          deviceId={deviceId}
+          isLoadingChild={isLoadingChild && !!selectedChildId && selectedChildId !== "all"}
         />
-        
-        <ParentAppsSection 
-          appsData={appsData} 
-          isPending={isAppsPending && !!deviceId} 
+
+        <ParentAppsSection
+          appsData={appsData}
+          isPending={isAppsPending && !!deviceId}
         />
       </div>
     </div>

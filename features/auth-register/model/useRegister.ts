@@ -1,15 +1,12 @@
-import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useServerActionMutation } from "@/shared/api/server-action-hooks";
 import { registerAction } from "../api/register.action";
 import { useToast } from "@/shared/ui/toast";
 
 export function useRegister() {
-  const router = useRouter();
   const { toast } = useToast();
 
-  const mutation = useMutation({
-    mutationFn: registerAction,
-    onSuccess: (res) => {
+  const mutation = useServerActionMutation(registerAction, {
+    onSuccess: () => {
       toast({
         type: "success",
         title: "Registration successful",

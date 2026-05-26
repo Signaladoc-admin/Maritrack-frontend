@@ -1,3 +1,4 @@
+import { QueryOptions } from "@/shared/api/types";
 import * as z from "zod";
 
 export const ParentProfileSchema = z.object({
@@ -47,6 +48,6 @@ export const UpdateParentSchema = z.object({
 
 export type UpdateParentDto = z.infer<typeof UpdateParentSchema>;
 
-export interface ParentFilterParams {
+export interface ParentFilterParams extends QueryOptions {
   name?: string;
 }

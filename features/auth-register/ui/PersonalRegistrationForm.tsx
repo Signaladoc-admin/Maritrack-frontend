@@ -94,7 +94,7 @@ export default function PersonalRegistrationForm() {
       setToken(res.token);
     }
 
-    router.push("/login");
+    router.push("/confirm-email");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {

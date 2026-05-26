@@ -17,11 +17,11 @@ export default function Unauthorized() {
         You do not have the necessary permissions to view this page. If you believe this is an
         error, please contact your administrator.
       </p>
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div className="flex gap-3 flex-wrap justify-center">
+        <Button onClick={() => router.back()}>Go back</Button>
         <Button onClick={() => router.push("/")} variant="outline">
           Go to Home
         </Button>
-        <Button onClick={() => router.push("/login")}>Login with different account</Button>
       </div>
     </div>
   );

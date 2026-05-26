@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import { PricingCard } from "@/shared/ui/PricingCard/PricingCard";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { usePaymentPlans, useInitializePayment } from "@/features/payments/model/usePayments";
-import { useParentZones, useBusinessZones } from "@/features/mdm-sync/model/useMdmSync";
+import { useParentZone, useBusinessZone } from "@/features/mdm-sync/model/useMdmSync";
 import { useToast } from "@/shared/ui/toast";
 import { useAuth } from "@/shared/auth/AuthProvider";
+import { formatPaystackKoboAmount } from "@/shared/lib/utils";
+import { usePathname } from "next/navigation";
 
 function PricingCardSkeleton({ isPremium }: { isPremium?: boolean }) {
   const shimmer = isPremium ? "bg-white/20" : "bg-slate-200";
@@ -44,15 +45,18 @@ interface PricingStepProps {
 }
 
 export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: PricingStepProps) {
-  const [isLoading, setIsLoading] = useState(false);
   const { data: plans, isLoading: isLoadingPlans } = usePaymentPlans();
-  const { mutateAsync: initializePayment } = useInitializePayment();
+
+  const { mutateAsync: initializePayment, isPending: isInitializingPayment } = useInitializePayment();
   const { user: fullUserDetails } = useAuth();
   const appRole = fullUserDetails?.appRole;
 
-  const { data: parentZones } = useParentZones({ enabled: appRole === "PARENT" });
-  const { data: businessZones } = useBusinessZones({ enabled: appRole === "BUSINESS" });
-  const zoneId = appRole === "PARENT" ? (parentZones as any)?.[0]?.id : (businessZones as any)?.[0]?.id;
+  const { data: parentZone } = useParentZone({ enabled: !!appRole && appRole === "PARENT" });
+  const { data: businessZone } = useBusinessZone({ enabled: !!appRole && appRole === "BUSINESS" });
+  const zoneId = appRole === "PARENT" ? parentZone?.id : businessZone?.id;
+
+  const pathname = usePathname()
+  const isOnboarding = pathname.includes("onboarding");
 
   const { toast } = useToast();
 
@@ -61,19 +65,9 @@ export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: 
   };
 
   const handleSelectPremiumPlan = async (planId: string) => {
-    if (!zoneId) {
-      toast({
-        title: "Error",
-        message: "No active zone setup found for your account.",
-        type: "error",
-      });
-      return;
-    }
-
     try {
-      setIsLoading(true);
       const host = window.location.origin;
-      const callbackUrl = `${host}/onboarding/${appRole === "PARENT" ? "personal" : "business"}`;
+      const callbackUrl = isOnboarding ? `${host}/onboarding/${appRole === "PARENT" ? "personal" : "business"}` : `${host}/plans`;
 
       const response = await initializePayment({
         planId,
@@ -86,11 +80,10 @@ export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: 
         window.location.href = response.authorizationUrl;
       } else {
         toast({ title: "Error", message: "Could not generate checkout session", type: "error" });
-        setIsLoading(false);
+
       }
     } catch (e: any) {
       toast({ title: "Error", message: e.message || "Checkout failed", type: "error" });
-      setIsLoading(false);
     }
   };
 
@@ -101,7 +94,7 @@ export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: 
     { text: "Multiple Devices", included: false },
   ];
 
-  if (isLoading) {
+  if (isInitializingPayment) {
     return (
       <div className="flex h-[400px] flex-col items-center justify-center gap-4">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#E5E7EB] border-t-[#1B3C73]" />
@@ -112,7 +105,7 @@ export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: 
 
   // Use the last plan in the array for the premium card
   const premiumPlanData = Array.isArray(plans) && plans.length > 0 ? plans[plans.length - 1] : null;
-  const premiumPrice = premiumPlanData ? String(premiumPlanData.priceNGN) : "49";
+  const premiumPrice = premiumPlanData ? formatPaystackKoboAmount(premiumPlanData.priceNGN) : 49;
   const premiumTitle = premiumPlanData ? premiumPlanData.name.toUpperCase() : "PREMIUM PLAN";
   const premiumDesc = premiumPlanData
     ? premiumPlanData.description
@@ -142,17 +135,17 @@ export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: 
         </Button>
       )}
 
-      <div className="mx-auto max-w-5xl space-y-6">
-        <div className="space-y-4 text-center">
-          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 md:text-5xl">
-            Start today, with free or premium plan, you choose
+      <div className="space-y-16">
+        <div className="space-y-4 text-center max-w-xl mx-auto">
+          <h1 className="text-3xl md:text-[2.35rem] font-extrabold tracking-tight text-slate-900">
+            Start today, with free or <br /> premium plan, you choose
           </h1>
-          <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
+          <p className="text-muted-foreground text-lg">
             With lots of unique and useful features, you can easily manage your wallet easily
             without any problem.
           </p>
         </div>
-        <div className="grid justify-center gap-8 md:grid-cols-2">
+        <div className="grid justify-center gap-8 md:grid-cols-2 mx-auto max-w-4xl">
           {isLoadingPlans ? (
             <>
               <PricingCardSkeleton />

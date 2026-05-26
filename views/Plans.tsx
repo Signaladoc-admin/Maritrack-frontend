@@ -1,16 +1,19 @@
 "use client";
 
-import { useBusinessZones, useParentZones } from "@/features/mdm-sync/model/useMdmSync";
-import { useActiveSubscription, useAllSubscriptions } from "@/features/payments/model/usePayments";
+import { useBusinessZone, useBusinessZones, useParentZone, useParentZones } from "@/features/mdm-sync/model/useMdmSync";
+import { useActiveSubscription, useAllSubscriptions, useVerifyPayment } from "@/features/payments/model/usePayments";
 import { Subscription } from "@/features/payments/types";
 import BillingHistoryTable from "@/features/payments/ui/BillingHistoryTable";
 import PlanCard from "@/features/payments/ui/PlanCard";
+import VerifyPayment from "@/features/payments/ui/VerifyPayment";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { formatCurrency } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Header } from "@/shared/ui/layout/header";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { useRouter } from "next/navigation";
+import { useQueryState } from "nuqs";
+import { useEffect } from "react";
 
 // Mirrors PlanCard exactly: same rounded-xl, px-6 py-5, inline border styles
 function PlanCardSkeleton() {
@@ -31,15 +34,15 @@ function PlanCardSkeleton() {
 export default function Plans() {
   const { user } = useAuth();
 
-  const { data: businessZones, isLoading: isLoadingBusinessZones } = useBusinessZones({
+  const { data: businessZone, isLoading: isLoadingBusinessZone } = useBusinessZone({
     enabled: user?.appRole === "BUSINESS",
   });
-  const { data: parentZones, isLoading: isLoadingParentZones } = useParentZones({
+  const { data: parentZone, isLoading: isLoadingParentZone } = useParentZone({
     enabled: user?.appRole === "PARENT",
   });
 
   const zoneId =
-    user?.appRole === "BUSINESS" ? (businessZones as any)?.[0]?.id : (parentZones as any)?.[0]?.id;
+    user?.appRole === "BUSINESS" ? businessZone?.id : parentZone?.id;
 
   const { data: activeSubscriptionRes, isLoading: isLoadingSubscription } =
     useActiveSubscription(zoneId);
@@ -53,17 +56,21 @@ export default function Plans() {
     ? allSubscriptions.filter((s: Subscription) => s.id !== activeSubscription?.id)
     : [];
 
-  const isLoadingZones =
-    user?.appRole === "BUSINESS" ? isLoadingBusinessZones : isLoadingParentZones;
+  const isLoadingZone =
+    user?.appRole === "BUSINESS" ? isLoadingBusinessZone : isLoadingParentZone;
   // Stay in skeleton until zones resolve AND (if a zone exists) subscription resolves
   const isResolving =
-    isLoadingZones || (!!zoneId && (isLoadingSubscription || isLoadingAllSubscriptions));
+    isLoadingZone || (!!zoneId && (isLoadingSubscription || isLoadingAllSubscriptions));
+
+  const [reference] = useQueryState("reference");
 
   const router = useRouter();
 
   const handleUpgrade = () => {
     router.push("/plans/subscribe");
   };
+
+  if (reference) return <VerifyPayment reference={reference} />
 
   return (
     <div className="mx-auto max-w-3xl space-y-10">
@@ -75,9 +82,8 @@ export default function Plans() {
           <PlanCardSkeleton />
         </div>
       ) : !activeSubscription ? (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 w-fit mx-auto">
           <p className="text-muted-foreground text-center">No active subscription found</p>
-
           <Button onClick={handleUpgrade}>Upgrade</Button>
         </div>
       ) : (

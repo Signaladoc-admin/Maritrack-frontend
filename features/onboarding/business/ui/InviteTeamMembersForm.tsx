@@ -19,10 +19,8 @@ export interface TeamMember {
 
 export default function InviteTeamMembersForm({
   onBack,
-  isLoadingTeamMembers,
 }: {
   onBack: () => void;
-  isLoadingTeamMembers: boolean;
 }) {
   const { mutateAsync: createStaffMembers, isPending: isSubmitting } = useCreateStaffMembers();
   const { otherTeamMembers: existingTeamMembers } = useOtherTeamMembers();
@@ -96,29 +94,19 @@ export default function InviteTeamMembersForm({
           subtitle="Add your staffs & admins"
         />
       </div>
-      {isLoadingTeamMembers ? (
-        <AddTeamMemberFormSkeleton />
-      ) : (
-        <AddTeamMemberForm onAddTeamMember={handleAddTeamMember} teamMembers={newTeamMembers} />
-      )}
+      <AddTeamMemberForm onAddTeamMember={handleAddTeamMember} teamMembers={newTeamMembers} />
+
 
       <hr />
 
       <div className="space-y-3">
-        {isLoadingTeamMembers ? (
-          <>
-            <TeamMemberCardSkeleton />
-            <TeamMemberCardSkeleton />
-          </>
-        ) : (
-          allTeamMembers.map((member, index) => (
-            <TeamMemberCard
-              key={index}
-              teamMember={member}
-              onRemoveTeamMember={handleRemoveTeamMember}
-            />
-          ))
-        )}
+        {allTeamMembers.map((member, index) => (
+          <TeamMemberCard
+            key={index}
+            teamMember={member}
+            onRemoveTeamMember={handleRemoveTeamMember}
+          />
+        ))}
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">

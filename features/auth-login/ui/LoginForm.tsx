@@ -21,7 +21,6 @@ export default function LoginForm() {
   const { setParentId } = useParentStore();
   const { setEmail, setPassword } = useNewUserStore();
   const { login, loginError: error, isSubmitting } = useAuth();
-  console.log(error);
 
   const {
     register,
@@ -33,11 +32,11 @@ export default function LoginForm() {
 
   const onSubmit = async (data: LoginValues) => {
     try {
-      const { profile, redirectTo } = await login(data);
+      const { user, redirectTo } = await login(data);
 
       setEmail(data.email);
       setPassword(data.password);
-      if (profile?.parentId) setParentId(profile.parentId);
+      if (user?.parentId) setParentId(user.parentId);
 
       redirectTo ? router.push(redirectTo) : router.push("/dashboard");
     } catch (err) {

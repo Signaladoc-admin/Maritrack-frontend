@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Shield } from "lucide-react";
 import { heroTrustBadges } from "@/features/landing/data";
+import RegisterOrSignInButtons from "./RegisterOrSignIn";
 
 export default function HeroSection() {
   return (
@@ -28,20 +29,8 @@ export default function HeroSection() {
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-row items-center gap-4">
-              <Link
-              href="/login"
-              className="px-6 py-3 bg-[#1a3a6b] hover:bg-[#1e4580] border border-white/10 transition-colors text-white font-semibold rounded-lg text-sm w-36 flex items-center justify-center"
-            >
-              Start for free
-            </Link>
-            <Link
-              href="/login"
-              className="px-6 py-3 bg-white hover:bg-gray-100 transition-colors text-black font-semibold rounded-lg text-sm w-32 flex items-center justify-center"
-            >
-              Sign In
-            </Link>
-          </div>
+          <RegisterOrSignInButtons />
+
 
           {/* Trust badges */}
           <div className="flex items-center gap-20 text-xs text-[#7496C7]">
@@ -72,6 +61,8 @@ export default function HeroSection() {
           />
         </div>
       </div>
+
+
     </section>
   );
 }

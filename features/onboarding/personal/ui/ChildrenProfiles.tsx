@@ -200,21 +200,10 @@ export default function ChildrenProfiles({
   }
 
   if (currentView === "qr") {
-    // let onboardingCode = pendingChild?.onboardingCode;
-    // if (!onboardingCode && pendingChild?.id) {
-    //   const zoneWithChild = parentZonesRes?.find((zone: any) =>
-    //     zone.parentChildren?.some((pc: any) => pc.childId === pendingChild.id)
-    //   );
-    //   const childRecord = zoneWithChild?.parentChildren?.find(
-    //     (pc: any) => pc.childId === pendingChild.id
-    //   )?.child;
-    //   onboardingCode = childRecord?.onboardingCode;
-    // }
-    // const activeZoneId = user?.zoneId?.[0]?.id || parentZonesRes?.[0]?.id;
     return (
       <PairingQRStep
-        childId={pendingChild?.id!}
-        childName={pendingChild?.name || "Child"}
+        entityId={pendingChild?.id!}
+        entityName={pendingChild?.name || "Child"}
         onboardingCode={pendingChild?.onboardingCode}
         zoneId={user?.zoneId?.[0]?.id}
         onBack={() => setCurrentView("list")}

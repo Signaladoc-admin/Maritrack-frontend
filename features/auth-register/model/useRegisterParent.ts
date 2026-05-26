@@ -13,6 +13,13 @@ export function useRegisterParent() {
       if (!result.success) throw new Error(result.error);
       return result.data;
     },
+    onSuccess: () => {
+      toast({
+        type: "success",
+        title: "Registration Successful",
+        message: "An OTP code has been sent to your email address. Kindly verify your email address to proceed.",
+      });
+    },
     onError: (err: any) => {
       const errorMessage = err.message || "An unexpected error occurred. Please try again.";
       toast({

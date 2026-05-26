@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { ChevronDown, User } from "lucide-react";
+import { useEffect } from "react";
+import { ChevronDown } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { useParentStore } from "@/shared/stores/user.store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/Avatar/Avatar";
@@ -11,34 +11,24 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
-import { useUserProfile } from "@/entities/user/model/useUserProfile";
-import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
 import { useParentChildren } from "@/entities/children/model/useChildren";
-import { ChildRelationship } from "@/features/child-profile/model/types";
 
 export function ChildrenDropdown() {
   const { children, selectedChildId, setSelectedChildId, setChildren } = useParentStore();
-  const { data: userProfile } = useUserProfile();
-  const parentId = userProfile?.parentId;
 
-  const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentChildren();
+  const { data: parentChildren, isFetching: isFetchingChildren } = useParentChildren();
 
   useEffect(() => {
-    if (parentZonesRes?.data) {
+    if (parentChildren?.data) {
       // Map server data to shop-store Child interface if necessary
-      const mappedChildren = parentZonesRes.data.map((child: ChildRelationship) => ({
-        id: child.id,
-        name: child.name,
-        avatar: child.imageUrl,
-      }));
-      setChildren(mappedChildren);
+      setChildren(parentChildren.data);
 
       // Ensure a child is selected by default
-      if ((selectedChildId === "all" || !selectedChildId) && mappedChildren.length > 0) {
-        setSelectedChildId(mappedChildren[0].id);
+      if ((selectedChildId === "all" || !selectedChildId) && parentChildren.data.length > 0) {
+        setSelectedChildId(parentChildren.data[0].id);
       }
     }
-  }, [parentZonesRes, setChildren, selectedChildId, setSelectedChildId]);
+  }, [parentChildren, setChildren, selectedChildId, setSelectedChildId]);
 
   const selectedChild = children?.find((c) => c.id === selectedChildId);
   const isAllSelected = selectedChildId === "all";
@@ -57,21 +47,21 @@ export function ChildrenDropdown() {
           <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#1B3C73]">
             <Avatar className="h-full w-full">
               <AvatarImage
-                src={isAllSelected ? children?.[0]?.avatar : selectedChild?.avatar}
-                alt={isAllSelected ? children?.[0]?.name : selectedChild?.name}
+                src={selectedChild?.imageUrl || ''}
+                alt={selectedChild?.name}
               />
               <AvatarFallback className="bg-[#1B3C73] text-white">
-                {(isAllSelected ? children?.[0]?.name : selectedChild?.name)?.charAt(0)}
+                {selectedChild?.name?.charAt(0)}
               </AvatarFallback>
             </Avatar>
           </div>
           <div className="flex flex-1 items-center justify-between gap-2">
             <span className="text-lg font-bold text-[#1B3C73]">
-              {isFetchingChildren 
-                ? "Loading..." 
-                : (isAllSelected 
-                    ? (children?.[0]?.name || "No Children") 
-                    : (selectedChild?.name || "Select Child"))}
+              {isFetchingChildren
+                ? "Loading..."
+                : (isAllSelected
+                  ? (children?.[0]?.name || "No Children")
+                  : (selectedChild?.name || "Select Child"))}
             </span>
             <ChevronDown className="h-5 w-5 text-[#1B3C73] transition-transform duration-200" />
           </div>
@@ -94,7 +84,7 @@ export function ChildrenDropdown() {
             >
               <div className="flex items-center gap-4">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={child.avatar} alt={child.name} />
+                  <AvatarImage src={child.imageUrl || ''} alt={child.name} />
                   <AvatarFallback className="bg-[#1B3C73] text-white">
                     {child.name?.charAt(0)}
                   </AvatarFallback>
