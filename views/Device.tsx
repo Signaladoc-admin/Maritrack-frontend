@@ -28,22 +28,13 @@ const Device = () => {
   const { user } = useAuth();
   const { data: device, isLoading: deviceLoading } = useDevice(params.device);
 
-  const tabParam = searchParams?.get("tab") || "general";
-  const [activeTab, setActiveTab] = useState(tabParam);
+  const activeTab = searchParams?.get("tab") || "general";
   const [showDelete, setShowDelete] = useState(false);
   const [showMarkAsReturned, setShowMarkAsReturned] = useState(false);
 
-  useEffect(() => {
-    if (tabParam && tabParam !== activeTab) {
-      setActiveTab(tabParam);
-    }
-  }, [tabParam, activeTab]);
-
   const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
     const deviceId = params?.device || "device-id";
-
-    activeTab === tabParam && router.push(`/devices/${deviceId}?tab=${tab}`);
+    router.push(`/devices/${deviceId}?tab=${tab}`);
   };
 
   const isMobile = useIsMobile();

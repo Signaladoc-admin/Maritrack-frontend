@@ -11,6 +11,8 @@ import {
   assignUserToDeviceAction,
   getZoneDevicesAction,
   setAppLimitAction,
+  blockAppAction,
+  unblockAppAction,
 } from "../api/mdm-sync.actions";
 import { useToast } from "@/shared/ui/toast";
 
@@ -139,3 +141,44 @@ export function useSetAppLimit() {
   });
 }
 
+export function useBlockApp() {
+  const { toast } = useToast();
+
+  return useServerActionMutation(blockAppAction, {
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        message: "App blocked successfully",
+        type: "success",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        message: error.message || "Failed to block app",
+        type: "error",
+      });
+    },
+  });
+}
+
+export function useUnblockApp() {
+  const { toast } = useToast();
+
+  return useServerActionMutation(unblockAppAction, {
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        message: "App unblocked successfully",
+        type: "success",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        message: error.message || "Failed to unblock app",
+        type: "error",
+      });
+    },
+  });
+}
