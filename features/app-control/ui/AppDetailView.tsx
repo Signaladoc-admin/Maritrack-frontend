@@ -9,7 +9,7 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from 
 import { SetTimeLimitModal } from "@/shared/ui/Modal/Modals/TimeLimitModal";
 import { AppListItem } from "./AllAppsCard";
 import { useParams } from "next/navigation";
-import { useSetAppLimit } from "@/features/mdm-sync/model/useMdmSync";
+import { useSetAppLimit, useBlockApp, useUnblockApp } from "@/features/mdm-sync/model/useMdmSync";
 
 const hourlyData = [
   { name: "S", value: 0.5, isCurrent: false },
@@ -24,8 +24,30 @@ const hourlyData = [
 export function AppDetailView({ app, onBack }: { app: any; onBack: () => void }) {
   const params = useParams<{ device: string }>();
   const setAppLimitMutation = useSetAppLimit();
+  const blockAppMutation = useBlockApp();
+  const unblockAppMutation = useUnblockApp();
 
   const [isBlocked, setIsBlocked] = React.useState(false);
+
+  const handleBlockToggle = async () => {
+    try {
+      if (isBlocked) {
+        await unblockAppMutation.mutateAsync({
+          deviceId: params?.device || "",
+          packageName: app.packageName || "",
+        });
+        setIsBlocked(false);
+      } else {
+        await blockAppMutation.mutateAsync({
+          deviceId: params?.device || "",
+          packageName: app.packageName || "",
+        });
+        setIsBlocked(true);
+      }
+    } catch (err) {
+      // Error handled by hook's toast notification
+    }
+  };
   const [limitModalOpen, setLimitModalOpen] = React.useState(false);
   const [limits, setLimits] = React.useState<Record<string, { hour: number; minutes: number }>>({});
 
@@ -48,7 +70,7 @@ export function AppDetailView({ app, onBack }: { app: any; onBack: () => void })
     });
 
     const payload = {
-      actionId: 0,
+      actionId: 30,
       message: {
         appUsage,
       },
@@ -132,8 +154,9 @@ export function AppDetailView({ app, onBack }: { app: any; onBack: () => void })
           </div>
 
           <Button
-            onClick={() => setIsBlocked(!isBlocked)}
+            onClick={handleBlockToggle}
             variant={isBlocked ? "default" : "destructive"}
+            disabled={blockAppMutation.isPending || unblockAppMutation.isPending}
             className={cn(
               "h-12 w-32 text-white",
               isBlocked

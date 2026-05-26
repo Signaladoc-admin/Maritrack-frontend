@@ -99,7 +99,7 @@ export interface AppLimitDayDetail {
 }
 
 export interface SetAppLimitPayload {
-  actionId: number;
+  actionId?: number;
   message: {
     appUsage: Record<string, AppLimitDayDetail[]>;
   };
@@ -114,13 +114,51 @@ export async function setAppLimitAction({
   deviceId,
   data,
 }: SetAppLimitVariables): Promise<ActionResult<any>> {
+  console.log(data, deviceId);
+  const payload = {
+    ...data,
+    actionId: data.actionId ?? 30,
+  };
   return withSafeAction(
     async () =>
       await apiClient(`/mdm-sync/${deviceId}/action`, {
         method: "POST",
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       }),
     "Failed to set app limit"
+  );
+}
+
+export interface BlockUnblockAppVariables {
+  deviceId: string;
+  packageName: string;
+}
+
+export async function blockAppAction({
+  deviceId,
+  packageName,
+}: BlockUnblockAppVariables): Promise<ActionResult<any>> {
+  return withSafeAction(
+    async () =>
+      await apiClient(`/mdm-sync/${deviceId}/action`, {
+        method: "POST",
+        body: JSON.stringify({ actionId: 401, message: { packageName } }),
+      }),
+    "Failed to block app"
+  );
+}
+
+export async function unblockAppAction({
+  deviceId,
+  packageName,
+}: BlockUnblockAppVariables): Promise<ActionResult<any>> {
+  return withSafeAction(
+    async () =>
+      await apiClient(`/mdm-sync/${deviceId}/action`, {
+        method: "POST",
+        body: JSON.stringify({ actionId: 201, message: { packageName } }),
+      }),
+    "Failed to unblock app"
   );
 }
 
