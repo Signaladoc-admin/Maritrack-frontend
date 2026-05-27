@@ -13,7 +13,7 @@ interface DashboardHeaderWidgetProps {
 
 export function DashboardHeaderWidget({ date, onDateSelect }: DashboardHeaderWidgetProps) {
   return (
-    <div className="mb-8 flex flex-col justify-between sm:flex-row sm:items-center">
+    <div className="mb-8 flex items-center justify-between flex-wrap gap-10">
       <Header
         className="mb-0!"
         variant="sm"

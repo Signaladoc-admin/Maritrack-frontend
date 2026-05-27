@@ -6,26 +6,11 @@ import { withSafeAction } from "@/shared/lib/safe-action";
 import type { LoginValues, UserProfile } from "@/entities/user/model/user.schema";
 import { getParentalControlMeAction } from "@/entities/parental-controls/api/parental-controls.actions";
 import { getBusinessAction } from "@/entities/business/api/business.actions";
+import { ApiResponse } from "@/shared/api/types";
+import { LoginResponse } from "../types";
+import { ROUTES } from "@/features/auth-register/constants";
 
-interface LoginResponse {
-  status: boolean;
-  statusCode: number;
-  message: string;
-  data: {
-    access_token_expires_on: string;
-    refresh_token: string;
-    date: string;
-    isFirstLogin: boolean;
-    role: string;
-    businessRole: string;
-    email: string;
-    id: string;
-    parentId: string | null;
-    businessId: string | null;
-    imageUrl: string | null;
-  };
-  accessToken: string;
-}
+
 
 const ONBOARDED_COOKIE_OPTIONS = {
   httpOnly: true,
@@ -36,33 +21,31 @@ const ONBOARDED_COOKIE_OPTIONS = {
 
 export async function loginAction(credentials: LoginValues) {
   return withSafeAction(async () => {
-    const response: LoginResponse = await apiClient("/users/login", {
+    const response = await apiClient<ApiResponse<LoginResponse>>("/users/login", {
       method: "POST",
       body: JSON.stringify(credentials),
     });
 
     console.log("response", response);
 
-    const profile = response.data as UserProfile;
+    const user = response.data;
     const accessToken = response.accessToken;
     const cookieStore = await cookies();
 
-    if (profile.role === "ADMIN") {
-      return { profile, accessToken, redirectTo: "/admin" };
-    }
+    let isOnboarded: boolean = false;
 
-    let isOnboarded: boolean;
+    if (user.businessId) {
+      const business = await getBusinessAction(user.businessId);
+      isOnboarded = business.success && !!business.data;
 
-    if (profile.businessRole) {
-      const business = await getBusinessAction(profile.businessId!);
-      isOnboarded = !!business.data?.profile;
+      return { user, accessToken, redirectTo: ROUTES.onboarding.business };
     } else {
       const pcSettings = await getParentalControlMeAction();
-      isOnboarded = !!pcSettings;
+      isOnboarded = pcSettings.success && !!pcSettings.data;
     }
 
     cookieStore.set("isOnboarded", isOnboarded ? "true" : "false", ONBOARDED_COOKIE_OPTIONS);
 
-    return { profile, accessToken, redirectTo: "/dashboard" };
+    return { user, accessToken, redirectTo: ROUTES.dashboard };
   }, "Login failed. Please check your credentials and try again.");
 }

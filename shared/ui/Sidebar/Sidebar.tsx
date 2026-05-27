@@ -1,20 +1,15 @@
 "use client";
 
-import * as React from "react";
-import { Home, LogOut, Plus, User } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Home, Plus, User } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "../Tooltip/Tooltip";
 import Link from "next/link";
-import { childrenProfiles } from "@/app/(in-app)/child/[child]/data";
-import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
-import { Child, ChildRelationship } from "@/features/child-profile/model/types";
-
 import { SidebarSkeleton } from "./SidebarSkeleton";
 import { ProfilePopover } from "./ProfilePopover";
 import { useParentChildren } from "@/entities/children/model/useChildren";
+import { Child } from "@/features/child-profile/model/types";
 
 export function Sidebar() {
-  const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentChildren();
+  const { data: parentChildren, isLoading: isFetchingChildren } = useParentChildren();
 
   if (isFetchingChildren) {
     return <SidebarSkeleton />;
@@ -41,7 +36,7 @@ export function Sidebar() {
 
         <div className="flex w-full flex-1 flex-col items-center justify-center gap-8">
           <div className="flex flex-col gap-6">
-            {parentZonesRes?.data?.map((child: ChildRelationship) => (
+            {parentChildren?.data?.map((child: Child) => (
               <Tooltip key={child.id}>
                 <TooltipTrigger asChild>
                   <Link href={`/child/${child.id}`} className="group relative cursor-pointer">

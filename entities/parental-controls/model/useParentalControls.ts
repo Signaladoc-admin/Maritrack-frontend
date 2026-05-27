@@ -90,7 +90,7 @@ export function useMdmPolicyByParentId(parentId: string | undefined) {
 export function useParentalControlMe() {
   return useQuery({
     queryKey: parentalControlKeys.me,
-    queryFn: () => getParentalControlMeAction(),
+    queryFn: getParentalControlMeAction,
     retry: 1,
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,

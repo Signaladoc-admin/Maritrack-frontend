@@ -1,7 +1,8 @@
 "use server";
 
-import { ActionResult } from "@/shared/api/types";
+import { ActionResult, ApiResponse } from "@/shared/api/types";
 import { apiClient } from "@/shared/lib/api-client";
+import { Child } from "../model/types";
 
 export async function getChildrenAction(): Promise<ActionResult<any>> {
   try {
@@ -13,9 +14,9 @@ export async function getChildrenAction(): Promise<ActionResult<any>> {
     return { success: false, error: error.message || "Failed to fetch children" };
   }
 }
-export async function getParentChildrenAction(): Promise<ActionResult<any>> {
+export async function getParentChildrenAction() {
   try {
-    const response = await apiClient("/children/parent", {
+    const response = await apiClient<ApiResponse<{ children: Child[] }>>("/children/parent", {
       method: "GET",
     });
     return { success: true, data: response.data.children };

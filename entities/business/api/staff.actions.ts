@@ -1,29 +1,25 @@
 import { BusinessRole } from "@/entities/user/model/user.schema";
 import { apiClient } from "@/shared/lib/api-client";
 import { withSafeAction } from "@/shared/lib/safe-action";
-import { BusinessStaff, PaginatedStaff } from "../types";
-import { ActionResult } from "@/shared/api/types";
+import { BusinessStaff, StaffMemberFiltersRequest } from "../types";
+import { ApiResponse, PaginatedResponse } from "@/shared/api/types";
 
-export async function getStaffMembersAction(options?: {
-  page?: number;
-  limit?: number;
-  search?: string;
-  location?: string;
-  businessId?: string;
-  position?: string;
-}): Promise<ActionResult<PaginatedStaff>> {
+export async function getStaffMembersAction(options?: StaffMemberFiltersRequest) {
   return withSafeAction(async () => {
-    const res = await apiClient(`/staff`, {
+    const res = await apiClient<PaginatedResponse<{
+      staff: BusinessStaff[]
+    }>>(`/staff`, {
       method: "GET",
       noRedirect: true,
       params: options as Record<string, string>,
     });
-    return res.data ?? res;
+    return res.data;
+
   }, "Failed to get staff members");
 }
-export async function getStaffMemberAction(id: string): Promise<ActionResult<BusinessStaff>> {
+export async function getStaffMemberAction(id: string) {
   return withSafeAction(async () => {
-    const res = await apiClient(`/staff/${id}`, {
+    const res = await apiClient<ApiResponse<BusinessStaff>>(`/staff/${id}`, {
       method: "GET",
       noRedirect: true,
     });

@@ -14,3 +14,14 @@ export const accountTypes = {
     icon: LuggageIcon,
   },
 };
+
+
+export const ROUTES = {
+  onboarding: {
+    personal: "/onboarding/personal",
+    business: "/onboarding/business",
+    admin: "/onboarding/business",
+  },
+  dashboard: '/dashboard',
+  verify: '/verify-email'
+}

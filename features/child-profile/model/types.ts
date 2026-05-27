@@ -1,5 +1,6 @@
 import { Gender } from "@/shared/lib/constants";
 import { IChildProfile } from "../../onboarding/personal/types";
+import { Parent } from "@/entities/parents/types";
 
 export interface AddEditChildModalProps {
   open: boolean;
@@ -52,6 +53,15 @@ export interface ChildDevice {
   currentUser: null;
 }
 
+export interface ParentLink {
+  parentId: string;
+  childId: string;
+  createdAt: string;
+  updatedAt: string;
+  deleted: boolean;
+  deletedAt: string | null;
+  parent: Parent
+}
 export interface Child {
   id: string;
   name: string;
@@ -64,8 +74,8 @@ export interface Child {
   deleted: boolean;
   deletedAt: string | null;
   device: ChildDevice | null;
-  parentLinks: any[];
-  parent: any[];
+  parentLinks: ParentLink[];
+  parent: Parent[];
 }
 
 export interface ChildRelationship {

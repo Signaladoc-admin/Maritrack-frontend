@@ -10,6 +10,8 @@ import {
   getBusinessZonesAction,
   assignUserToDeviceAction,
   getZoneDevicesAction,
+  getParentZoneAction,
+  getBusinessZoneAction,
   setAppLimitAction,
   blockAppAction,
   unblockAppAction,
@@ -20,7 +22,9 @@ export const mdmSyncKeys = {
   all: ["mdm-sync"] as const,
   zones: ["mdm-sync", "zones"] as const,
   parentZones: ["mdm-sync", "parentZones"] as const,
+  parentZone: ["mdm-sync", "parentZone"] as const,
   businessZones: ["mdm-sync", "businessZones"] as const,
+  businessZone: ["mdm-sync", "businessZone"] as const,
   zoneDevices: (zoneId: string) => ["mdm-sync", "zoneDevices", zoneId] as const,
   qrcode: (zoneId: string, onboardingCode: string) =>
     ["mdm-sync", "qrcode", zoneId, onboardingCode] as const,
@@ -60,6 +64,12 @@ export function useParentZones(options?: { enabled?: boolean }) {
     retry: 0,
   });
 }
+export function useParentZone(options?: { enabled?: boolean }) {
+  return useServerActionQuery(mdmSyncKeys.parentZone, getParentZoneAction, [], {
+    ...options,
+    retry: 0,
+  });
+}
 
 export function useCreateBusinessZone() {
   const queryClient = useQueryClient();
@@ -82,6 +92,12 @@ export function useCreateBusinessZone() {
 
 export function useBusinessZones(options?: { enabled?: boolean }) {
   return useServerActionQuery(mdmSyncKeys.businessZones, getBusinessZonesAction, [], {
+    ...options,
+    retry: 0,
+  });
+}
+export function useBusinessZone(options?: { enabled?: boolean }) {
+  return useServerActionQuery(mdmSyncKeys.businessZone, getBusinessZoneAction, [], {
     ...options,
     retry: 0,
   });

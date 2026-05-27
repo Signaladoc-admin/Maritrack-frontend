@@ -1,10 +1,9 @@
 "use client";
 
-import * as React from "react";
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/shared/ui/Button/button"; // Ensure this path is correct
-import { formatCurrency } from "@/shared/lib/utils";
+import { formatCurrency, formatPaystackKoboAmount } from "@/shared/lib/utils";
 import { IPlan } from "@/features/payments/schema";
 
 // --- Types ---
@@ -29,10 +28,7 @@ export function PricingCard({
   onButtonClick,
   className,
 }: PricingCardProps) {
-  const formattedPrice = React.useMemo(
-    () => formatCurrency(Number(plan?.priceNGN)),
-    [plan?.priceNGN]
-  );
+  const formattedPrice = formatCurrency(plan?.priceNGN ? Number(formatPaystackKoboAmount(plan?.priceNGN)) : 0)
 
   const features = [
     { text: plan?.name.split("—")[0], included: true },
@@ -44,7 +40,7 @@ export function PricingCard({
   return (
     <div
       className={cn(
-        "relative flex h-full w-full flex-col rounded-[32px] p-8 shadow-xl transition-all duration-300",
+        "relative flex h-full w-full flex-col rounded-2xl p-8 shadow-xl transition-all duration-300",
         isPremium
           ? "bg-[#1B3C73] text-white ring-1 ring-[#1B3C73]" // Premium Styles
           : "bg-white text-slate-900 ring-1 ring-slate-100", // Basic Styles
@@ -59,7 +55,7 @@ export function PricingCard({
       )}
 
       {/* Header Section */}
-      <div className="flex min-h-[180px] flex-col space-y-4">
+      <div className="flex flex-col space-y-4">
         <h3
           className={cn(
             "text-sm font-bold tracking-widest uppercase",
@@ -69,26 +65,24 @@ export function PricingCard({
           {isPremium ? "Premium Plan" : "FREE PLAN"}
         </h3>
 
-        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+        <div className="flex flex-wrap items-baseline gap-1">
           <span
             className={cn(
-              "font-extrabold tracking-tight",
+              "font-extrabold tracking-tight text-5xl",
               formattedPrice.length >= 10
-                ? "sm:text-4xl lg:text-5xl"
-                : formattedPrice.length >= 7
-                  ? "sm:text-5xl lg:text-6xl"
-                  : "sm:text-5xl lg:text-6xl"
+                ? "text-3xl lg:text-4xl"
+                : "text-4xl lg:text-5xl"
             )}
           >
             {formattedPrice}
           </span>
           <span
             className={cn(
-              "text-lg font-medium whitespace-nowrap",
+              "text-sm font-semibold whitespace-nowrap",
               isPremium ? "text-slate-300" : "text-slate-400"
             )}
           >
-            {plan?.billingCycle}
+            {plan?.billingCycle ? plan?.billingCycle[0].toUpperCase() + plan?.billingCycle.slice(1) : ""}
           </span>
         </div>
 
@@ -103,7 +97,7 @@ export function PricingCard({
       </div>
 
       {/* Divider */}
-      <div className={cn("mb-8 h-px w-full", isPremium ? "bg-white/20" : "bg-slate-100")} />
+      <div className={cn("my-8 h-px w-full", isPremium ? "bg-white/20" : "bg-slate-100")} />
 
       {/* Features List */}
       <ul className="mb-10 flex-1 space-y-5">

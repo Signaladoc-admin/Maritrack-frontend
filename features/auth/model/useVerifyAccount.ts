@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { verifyAccountAction } from "../api/auth.actions";
+import { validateOtpAction } from "../api/auth.actions";
 import { useToast } from "@/shared/ui/toast";
 import { useRouter } from "next/navigation";
 
@@ -11,13 +11,13 @@ export function useVerifyAccount() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (payload: { email: string; token: string }) => verifyAccountAction(payload),
+    mutationFn: validateOtpAction,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["session"] });
       toast({
         type: "success",
         title: "Account Verified",
-        message: "Your account has been verified. Please log in.",
+        message: "Your account has been verified. You can now proceed to login.",
       });
       router.push("/login");
     },

@@ -10,25 +10,15 @@ import type {
 } from "@/entities/user/model/user.schema";
 import { cookies } from "next/headers";
 import { withSafeAction } from "@/shared/lib/safe-action";
+import { RequestTokenRequest, ValidateOTPRequest, ValidateOTPResponse, VerificationTokenMethod } from "../types";
+import { ApiResponse, MessageResponse } from "@/shared/api/types";
 
-// --- Existing ---
 
-interface ValidateOtpPayload {
-  email: string;
-  token: string;
-  otp: string;
-}
 
-export async function validateOtpAction(payload: ValidateOtpPayload) {
-  return apiClient("/users/validate-otp", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-}
 
 // --- Verify Account ---
 
-export async function verifyAccountAction(payload: { email: string; token: string }) {
+export async function verifyEmailAction(payload: { email: string; token: string }) {
   return apiClient("/users/verify", {
     method: "POST",
     body: JSON.stringify(payload),
@@ -69,16 +59,25 @@ export async function changePasswordAction(data: ChangePasswordDto) {
 
 // --- Verification Token ---
 
-export async function requestTokenAction(method: string) {
-  return apiClient(`/users/request-token/${method}`, {
+export async function requestTokenAction(method: VerificationTokenMethod, payload: RequestTokenRequest) {
+  return withSafeAction(async () => apiClient<ApiResponse<MessageResponse>>(`/users/request-token/${method}`, {
     method: "POST",
-  });
+    body: JSON.stringify(payload),
+  }), "Failed to request token");
 }
 
-export async function resendVerificationAction(method: string) {
-  return apiClient(`/users/resend-verification/${method}`, {
+export async function resendVerificationAction(method: VerificationTokenMethod = 'email', payload: RequestTokenRequest) {
+  return withSafeAction(async () => apiClient<ApiResponse<MessageResponse>>(`/users/resend-verification/${method}`, {
     method: "POST",
-  });
+    body: JSON.stringify(payload),
+  }), "Failed to resend verification");
+}
+
+export async function validateOtpAction(payload: ValidateOTPRequest) {
+  return withSafeAction(async () => apiClient<ApiResponse<ValidateOTPResponse>>("/users/validate-otp", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  }), "Failed to validate OTP");
 }
 
 export async function logoutAction() {

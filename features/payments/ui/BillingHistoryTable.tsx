@@ -1,4 +1,4 @@
-import { formatCurrency, formatDate } from "@/shared/lib/utils";
+import { formatCurrency, formatDate, formatPaystackKoboAmount } from "@/shared/lib/utils";
 import Table from "@/shared/ui/Table/Table";
 import { CloudDownload, DownloadCloud } from "lucide-react";
 import { FaFilePdf } from "react-icons/fa";
@@ -73,7 +73,7 @@ export default function BillingHistoryTable() {
           },
           {
             key: "amount",
-            render: (item) => <span>{formatCurrency(item.amountNGN)}</span>,
+            render: (item) => <span>{formatCurrency(formatPaystackKoboAmount(item.amountNGN))}</span>,
           },
           {
             key: "downloadUrl",

@@ -10,18 +10,18 @@ import { QRCodeCard } from "@/shared/ui/cards/qr-code-card";
 import { useQrCode } from "@/features/mdm-sync/model/useQrCode";
 
 interface PairingQRStepProps {
-  childName: string;
+  entityName?: string;
   zoneId?: string;
   onboardingCode?: string;
-  childId?: string;
+  entityId?: string;
   onBack: () => void;
   onComplete: () => void;
   onRollback?: () => void;
 }
 
 export default function PairingQRStep({
-  childName,
-  childId,
+  entityName,
+  entityId,
   zoneId,
   onboardingCode,
   onBack,
@@ -35,7 +35,7 @@ export default function PairingQRStep({
     isPending,
     isError,
     error,
-  } = useQrCode(childId!, {
+  } = useQrCode(entityId!, {
     zoneId,
     onboardingCode,
   });
@@ -65,7 +65,7 @@ export default function PairingQRStep({
       </Button>
 
       <Header
-        title={`Pair ${childName}'s device`}
+        title={`Pair ${entityName}'s device`}
         subtitle="Pair your child's account by scanning the code"
       />
 

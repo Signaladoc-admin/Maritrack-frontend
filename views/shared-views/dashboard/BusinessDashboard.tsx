@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { useBusinessDashboard } from "@/features/dashboard/business/model/useDashboard";
@@ -12,6 +12,7 @@ import { ComplianceSecurityWidget } from "@/widgets/business-dashboard/ui/Compli
 import { ConnectivityLearningWidget } from "@/widgets/business-dashboard/ui/ConnectivityLearningWidget";
 import { AssetTrackingWidget } from "@/widgets/business-dashboard/ui/AssetTrackingWidget";
 import { BlacklistedWebsitesWidget } from "@/widgets/business-dashboard/ui/BlacklistedWebsitesWidget";
+import { useQrCode } from "@/features/mdm-sync/model/useQrCode";
 
 function zipChart(
   x: string[],

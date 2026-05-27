@@ -185,7 +185,8 @@ export default function ParentalControlSetup({
 
   const { data: existingSettings, isLoading: isLoadingSettings } =
     useParentalControlByParentId(parentId);
-  const { data: meSettings, isLoading: isLoadingMe } = useParentalControlMe();
+  const { data: mySettingsRes, isLoading: isLoadingMe } = useParentalControlMe();
+  const mySettings = mySettingsRes?.data
 
   const pathname = usePathname();
 
@@ -228,7 +229,7 @@ export default function ParentalControlSetup({
 
   // Populate existing data when loaded
   useEffect(() => {
-    const settings = meSettings || existingSettings;
+    const settings = mySettings || existingSettings;
     if (settings) {
       const cats = settings.restrictedCategories || [];
       const alerts = settings.alertEvents || [];
@@ -273,7 +274,7 @@ export default function ParentalControlSetup({
         parentalConsent: settings.parentalConsent,
       });
     }
-  }, [meSettings, existingSettings, methods]);
+  }, [mySettings, existingSettings, methods]);
 
   const onSubmit = async (data: FormValues) => {
     const restrictedCategories: string[] = [];
@@ -335,7 +336,7 @@ export default function ParentalControlSetup({
     };
 
     try {
-      const currentSettingsId = existingSettings?.id || meSettings?.id;
+      const currentSettingsId = existingSettings?.id || mySettings?.id;
       if (currentSettingsId) {
         await updateSettings(payload);
       } else {

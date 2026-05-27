@@ -9,12 +9,13 @@ import {
   Gamepad2,
   Twitch,
 } from "lucide-react";
+import { Child } from "@/features/child-profile/model/types";
 
-export interface Child {
-  id: string;
-  name: string;
-  avatar?: string;
-}
+// export interface Child {
+//   id: string;
+//   name: string;
+//   avatar?: string;
+// }
 
 export interface AppData {
   name: string;
@@ -241,11 +242,7 @@ const MOCK_DATA: Record<string, DashboardData> = {
 
 export const useUserStore = create<UserState>((set, get) => ({
   selectedChildId: "all",
-  children: [
-    { id: "solomon", name: "Solomon Grundy" },
-    { id: "kuroebi", name: "Kuroebi Grundy" },
-    { id: "sammie", name: "Sammie Grundy" },
-  ],
+  children: [],
   setSelectedChildId: (id) => set({ selectedChildId: id }),
   setChildren: (children) => set({ children }),
   getDashboardData: () => {
@@ -263,11 +260,7 @@ export const useParentStore = create<ParentUserState>((set, get) => ({
   parentId: "",
   userId: "",
   selectedChildId: "all",
-  children: [
-    { id: "solomon", name: "Solomon Grundy" },
-    { id: "kuroebi", name: "Kuroebi Grundy" },
-    { id: "sammie", name: "Sammie Grundy" },
-  ],
+  children: [],
   setParentId: (id) => set({ parentId: id }),
   setSelectedChildId: (id) => set({ selectedChildId: id }),
   setChildren: (children) => set({ children }),

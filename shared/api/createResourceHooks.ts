@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerActionQuery, useServerActionMutation } from "./server-action-hooks";
+import type { UseQueryOptions } from "@tanstack/react-query";
 import { ActionResult, QueryOptions } from "./types";
 
 export interface ResourceActions<T, CreateDto = any, UpdateDto = any, ListT = T[]> {
@@ -24,8 +25,11 @@ export function createResourceHooks<T, CreateDto = any, UpdateDto = any, ListT =
   return {
     keys,
 
-    useGetAll: (options?: QueryOptions) => {
-      return useServerActionQuery([...keys.all, options], actions.getAll, [options]);
+    useGetAll: (
+      options?: QueryOptions, 
+      queryOptions?: Omit<UseQueryOptions<ListT, Error, ListT, readonly any[]>, "queryKey" | "queryFn">
+    ) => {
+      return useServerActionQuery([...keys.all, options], actions.getAll, [options], queryOptions);
     },
 
     useGetById: (id: string) => {

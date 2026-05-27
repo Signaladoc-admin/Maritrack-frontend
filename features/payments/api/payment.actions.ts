@@ -2,8 +2,8 @@
 
 import { apiClient } from "@/shared/lib/api-client";
 import { withSafeAction } from "@/shared/lib/safe-action";
-import type { ActionResult } from "@/shared/api/types";
-import { ActiveSubscription, PaymentPlan, Subscription, Transaction } from "../types";
+import type { ActionResult, ApiResponse } from "@/shared/api/types";
+import { ActiveSubscription, InitializePaymentRequest, InitializePaymentResponse, PaymentPlan, Subscription, Transaction } from "../types";
 
 export async function getPaymentPlansAction(): Promise<ActionResult<PaymentPlan[]>> {
   return withSafeAction(async () => {
@@ -12,15 +12,11 @@ export async function getPaymentPlansAction(): Promise<ActionResult<PaymentPlan[
   }, "Failed to fetch payment plans");
 }
 
-export async function initializePaymentAction(data: {
-  planId: string;
-  zoneId: string;
-  callbackUrl: string;
-}): Promise<ActionResult<{ authorizationUrl: string }>> {
+export async function initializePaymentAction(payload: InitializePaymentRequest): Promise<ActionResult<InitializePaymentResponse>> {
   return withSafeAction(async () => {
     const response = await apiClient("/payments/paystack/initialize", {
       method: "POST",
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
     return response.data;
   }, "Failed to initialize payment");
@@ -36,15 +32,9 @@ export async function verifyPaymentAction(reference: string): Promise<ActionResu
   }, "Failed to verify payment");
 }
 
-export async function getActiveSubscriptionAction(zoneId: string): Promise<
-  ActionResult<{
-    data: ActiveSubscription;
-    status: string;
-    message: string;
-  }>
-> {
+export async function getActiveSubscriptionAction(zoneId: string) {
   return withSafeAction(async () => {
-    const response = await apiClient(`/payments/subscriptions/zone/${zoneId}/active`, {
+    const response = await apiClient<ApiResponse<ActiveSubscription>>(`/payments/subscriptions/zone/${zoneId}/active`, {
       method: "GET",
     });
 

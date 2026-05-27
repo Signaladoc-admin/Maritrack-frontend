@@ -81,8 +81,8 @@ export default function AddChildView() {
     return (
       <div className="max-w-2xl">
         <PairingQRStep
-          childId={pendingChild.id!}
-          childName={pendingChild.name || "Child"}
+          entityId={pendingChild.id!}
+          entityName={pendingChild.name || "Child"}
           onboardingCode={pendingChild.onboardingCode}
           zoneId={user?.zoneId?.[0]?.mdmZoneId}
           onBack={() => setPendingChild(null)}

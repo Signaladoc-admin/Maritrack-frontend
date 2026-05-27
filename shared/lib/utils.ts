@@ -13,6 +13,8 @@ export function formatCurrency(amount: number): string {
     maximumFractionDigits: 2,
   }).format(amount);
 }
+export const formatPaystackKoboAmount = (amount: number): number => amount / 100;
+
 export function formatNumber(amount: number): string {
   return new Intl.NumberFormat("en-NG", {
     minimumFractionDigits: 0,
