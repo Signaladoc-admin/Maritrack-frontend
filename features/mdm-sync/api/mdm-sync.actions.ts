@@ -104,3 +104,104 @@ export async function getZoneDevicesAction(zoneId: string): Promise<ActionResult
     return response.data.data;
   }, "Failed to fetch zone devices");
 }
+
+export interface AppLimitDayDetail {
+  packageName: string;
+  minutes: number;
+  appName: string;
+  hour: number;
+  day: string;
+  date: string;
+}
+
+export interface SetAppLimitPayload {
+  actionId?: number;
+  message: {
+    appUsage: Record<string, AppLimitDayDetail[]>;
+  };
+}
+
+export interface SetAppLimitVariables {
+  deviceId: string;
+  data: SetAppLimitPayload;
+}
+
+export async function setAppLimitAction({
+  deviceId,
+  data,
+}: SetAppLimitVariables): Promise<ActionResult<any>> {
+  console.log(data, deviceId);
+  const payload = {
+    ...data,
+    actionId: data.actionId ?? 30,
+  };
+  return withSafeAction(
+    async () =>
+      await apiClient(`/mdm-sync/${deviceId}/action`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+    "Failed to set app limit"
+  );
+}
+
+export interface BlockUnblockAppVariables {
+  deviceId: string;
+  packageName: string;
+}
+
+export async function blockAppAction({
+  deviceId,
+  packageName,
+}: BlockUnblockAppVariables): Promise<ActionResult<any>> {
+  return withSafeAction(
+    async () =>
+      await apiClient(`/mdm-sync/${deviceId}/action`, {
+        method: "POST",
+        body: JSON.stringify({ actionId: 401, message: { packageName } }),
+      }),
+    "Failed to block app"
+  );
+}
+
+export async function unblockAppAction({
+  deviceId,
+  packageName,
+}: BlockUnblockAppVariables): Promise<ActionResult<any>> {
+  return withSafeAction(
+    async () =>
+      await apiClient(`/mdm-sync/${deviceId}/action`, {
+        method: "POST",
+        body: JSON.stringify({ actionId: 201, message: { packageName } }),
+      }),
+    "Failed to unblock app"
+  );
+}
+
+// export async function getZoneDevicesAction(zoneId: string): Promise<
+//   ActionResult<{
+//     status: boolean;
+//     statusCode: number;
+//     message?: string;
+//     devicesData: {
+//       code: number;
+//       data: Device[];
+//       totalElements: number;
+//       numberOfElements: number;
+//       totalPages: number;
+//     };
+//   }>
+// > {
+//   return withSafeAction(async () => {
+//     const res = await apiClient(`/mdm-sync/zones/${zoneId}/devices`, {
+//       method: "GET",
+//     });
+
+//     return {
+//       devicesData: res.data,
+//       status: res.status,
+//       statusCode: res.data.code,
+//       message: res.data.message,
+//     };
+//   }, "Failed to fetch zone devices");
+// }

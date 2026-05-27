@@ -12,6 +12,9 @@ import {
   getZoneDevicesAction,
   getParentZoneAction,
   getBusinessZoneAction,
+  setAppLimitAction,
+  blockAppAction,
+  unblockAppAction,
 } from "../api/mdm-sync.actions";
 import { useToast } from "@/shared/ui/toast";
 
@@ -131,4 +134,67 @@ export function useZoneDevices(zoneId: string | undefined, options?: { enabled?:
       enabled: !!zoneId,
     }
   );
+}
+
+export function useSetAppLimit() {
+  const { toast } = useToast();
+
+  return useServerActionMutation(setAppLimitAction, {
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        message: "App limit set successfully",
+        type: "success",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        message: error.message || "Failed to set app limit",
+        type: "error",
+      });
+    },
+  });
+}
+
+export function useBlockApp() {
+  const { toast } = useToast();
+
+  return useServerActionMutation(blockAppAction, {
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        message: "App blocked successfully",
+        type: "success",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        message: error.message || "Failed to block app",
+        type: "error",
+      });
+    },
+  });
+}
+
+export function useUnblockApp() {
+  const { toast } = useToast();
+
+  return useServerActionMutation(unblockAppAction, {
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        message: "App unblocked successfully",
+        type: "success",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        message: error.message || "Failed to unblock app",
+        type: "error",
+      });
+    },
+  });
 }
