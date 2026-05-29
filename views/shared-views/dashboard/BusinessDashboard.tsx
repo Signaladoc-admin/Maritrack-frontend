@@ -45,6 +45,17 @@ const BusinessDashboard = () => {
     deviceLocations,
     devicesAvailabilityData,
     securityPatchData,
+    preloadedContentValue,
+    offlineLearningValue,
+    lostReports,
+    avgSessionDuration,
+    screenTimePerUser,
+    sessionDurationChartData,
+    blockedAttemptsData,
+    jailbreakData,
+    violationIncidents,
+    batteryData,
+    blacklistedWebsites,
   } = useBusinessDashboard();
 
   return (
@@ -60,14 +71,22 @@ const BusinessDashboard = () => {
         />
         <DeviceUtilizationWidget
           dailyActiveDevices={deviceStats.active}
+          avgSessionDuration={avgSessionDuration}
+          screenTimePerUser={screenTimePerUser}
           activeUsersChartData={zipChart(newDevicesChart.x, newDevicesChart.y, "month", "users")}
+          sessionDurationChartData={sessionDurationChartData}
           isLoading={isLoading}
         />
         <ComplianceSecurityWidget
           securityPatchData={securityPatchData}
+          blockedAttemptsData={blockedAttemptsData}
+          violationIncidents={violationIncidents}
+          jailbreakData={jailbreakData}
           isLoading={isLoading}
         />
         <ConnectivityLearningWidget
+          preloadedContentValue={preloadedContentValue}
+          offlineLearningValue={offlineLearningValue}
           preloadedContentData={zipChart(storageChart.x, storageChart.y, "month", "usage")}
           offlineLearningData={zipChart(wifiChart.x, wifiChart.y, "month", "hours")}
           isLoading={isLoading}
@@ -75,12 +94,15 @@ const BusinessDashboard = () => {
         <AssetTrackingWidget
           devicesAvailabilityData={devicesAvailabilityData}
           deviceLocations={deviceLocations}
+          batteryData={batteryData}
+          lostReports={lostReports}
           isLoading={isLoading}
         />
-        <BlacklistedWebsitesWidget isLoading={isLoading} />
+        <BlacklistedWebsitesWidget websites={blacklistedWebsites} isLoading={isLoading} />
       </div>
     </DashboardFilterProvider>
   );
+
 };
 
 export default BusinessDashboard;

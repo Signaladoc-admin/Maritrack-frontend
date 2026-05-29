@@ -5,7 +5,7 @@ import { useNewUserStore } from "@/shared/stores/user.store";
 import { Header } from "@/shared/ui/layout/header";
 import { useToast } from "@/shared/ui/toast";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 function maskEmail(email: string) {
   if (!email) return "your email";
@@ -17,20 +17,29 @@ function maskEmail(email: string) {
 
 export default function ConfirmEmail() {
   const { email } = useNewUserStore();
-
   const router = useRouter()
   const { toast } = useToast()
 
+  // Zustand persist rehydrates from localStorage asynchronously after mount.
+  // We wait for it to finish before checking if the email exists,
+  // otherwise email is always "" on the first render.
+  const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
+    if (useNewUserStore.persist.hasHydrated()) {
+      setHydrated(true);
+    } else {
+      const unsub = useNewUserStore.persist.onFinishHydration(() => setHydrated(true));
+      return unsub;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
     if (!email) {
-      toast({
-        type: 'error',
-        title: 'Error',
-        message: 'Email not found. Redirecting to login...'
-      })
+      toast({ type: 'error', title: 'Error', message: 'Email not found. Redirecting to login...' })
       router.push('/login')
     }
-  }, [email, router, toast])
+  }, [hydrated, email, router, toast])
 
   return (
     <div className="w-fit mx-auto lg:mx-0 lg:w-full">

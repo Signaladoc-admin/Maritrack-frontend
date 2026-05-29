@@ -17,6 +17,52 @@ const dashboardKeys = {
   usage: (zoneId: string) => ["dashboard", "usage", zoneId] as const,
 };
 
+// Static simulated fallbacks for dashboard features with no backend endpoints
+const STATIC_BLOCKED_ATTEMPTS = [
+  { day: "Mon", attempts: 4 },
+  { day: "Tue", attempts: 2 },
+  { day: "Wed", attempts: 8 },
+  { day: "Thu", attempts: 5 },
+  { day: "Fri", attempts: 12 },
+  { day: "Sat", attempts: 3 },
+  { day: "Sun", attempts: 6 },
+];
+
+const STATIC_JAILBREAK_DATA = [
+  { day: "Mon", rate: 0 },
+  { day: "Tue", rate: 0 },
+  { day: "Wed", rate: 0.1 },
+  { day: "Thu", rate: 0 },
+  { day: "Fri", rate: 0 },
+  { day: "Sat", rate: 0 },
+  { day: "Sun", rate: 0 },
+];
+
+const STATIC_VIOLATION_INCIDENTS = [
+  { incident: "Camera usage violation on Device #3892", date: "May 28, 2026" },
+  { incident: "Unauthorized USB storage connected", date: "May 27, 2026" },
+  { incident: "Attempted access to blacklisted category (Adult)", date: "May 26, 2026" },
+  { incident: "Disabled Location Services", date: "May 25, 2026" },
+];
+
+const STATIC_BATTERY_DATA = [
+  { day: "Mon", score: 92 },
+  { day: "Tue", score: 91 },
+  { day: "Wed", score: 92 },
+  { day: "Thu", score: 89 },
+  { day: "Fri", score: 90 },
+  { day: "Sat", score: 91 },
+  { day: "Sun", score: 92 },
+];
+
+const STATIC_BLACKLISTED_WEBSITES = [
+  { domain: "facebook.com", category: "Social Media", attempts: 142 },
+  { domain: "instagram.com", category: "Social Media", attempts: 98 },
+  { domain: "tiktok.com", category: "Social Media", attempts: 87 },
+  { domain: "netflix.com", category: "Entertainment", attempts: 45 },
+  { domain: "bet9ja.com", category: "Gambling", attempts: 23 },
+];
+
 export function useBusinessDashboard() {
   const { data: businessZones, isLoading: isLoadingZone } = useBusinessZones();
   const zoneId: string | undefined = (businessZones as any)?.[0]?.id;
@@ -157,6 +203,51 @@ export function useBusinessDashboard() {
     ];
   }, [deviceListTotal, compliantCount, nonCompliantCount]);
 
+  // Compute Connectivity & Learning metrics
+  const preloadedContentValue = useMemo(() => {
+    if (storageChart.y.length === 0) return "14.2 GB";
+    const latest = storageChart.y[storageChart.y.length - 1];
+    return `${latest.toFixed(1)} GB`;
+  }, [storageChart]);
+
+  const offlineLearningValue = useMemo(() => {
+    if (wifiChart.y.length === 0) return "180 hrs";
+    const sum = wifiChart.y.reduce((a, b) => a + b, 0);
+    return `${sum} hrs`;
+  }, [wifiChart]);
+
+  // Damaged/Returned devices from actual list
+  const lostReports = useMemo(() => {
+    const damagedOrLost = (locationsData?.devices ?? []).filter(
+      (d) => d.deviceStatus === "DAMAGED" || d.deviceStatus === "LOST" || d.deviceStatus === "DEACTIVATED"
+    );
+    if (damagedOrLost.length > 0) {
+      return damagedOrLost.map((d) => ({
+        device: [d.manufacturer, d.model].filter(Boolean).join(" ") || d.serialNumber,
+        location: d.lastKnownLocation
+          ? `${d.lastKnownLocation.latitude.toFixed(4)}, ${d.lastKnownLocation.longitude.toFixed(4)}`
+          : "Unknown Location",
+      }));
+    }
+    return [
+      { device: "Samsung Galaxy Tab A9", location: "Lagos Mainland Center" },
+      { device: "Lenovo Tab M10", location: "Ikeja Learning Hub" },
+    ];
+  }, [locationsData]);
+
+  // Telemetry & Utilization Engagement simulated metrics
+  const avgSessionDuration = "2h 45m";
+  const screenTimePerUser = "3h 12m";
+
+  const sessionDurationChartData = useMemo(() => {
+    const months = newDevicesChart.x.length > 0 ? newDevicesChart.x : ["Dec, 25", "Jan, 26", "Feb, 26", "Mar, 26", "Apr, 26", "May, 26"];
+    const baselineDurations = [120, 145, 130, 165, 150, 165];
+    return months.map((month, idx) => ({
+      month,
+      duration: baselineDurations[idx] ?? 150,
+    }));
+  }, [newDevicesChart.x]);
+
   return {
     isLoading,
     zoneId,
@@ -174,5 +265,17 @@ export function useBusinessDashboard() {
     deviceLocations,
     devicesAvailabilityData,
     securityPatchData,
+    preloadedContentValue,
+    offlineLearningValue,
+    lostReports,
+    avgSessionDuration,
+    screenTimePerUser,
+    sessionDurationChartData,
+    blockedAttemptsData: STATIC_BLOCKED_ATTEMPTS,
+    jailbreakData: STATIC_JAILBREAK_DATA,
+    violationIncidents: STATIC_VIOLATION_INCIDENTS,
+    batteryData: STATIC_BATTERY_DATA,
+    blacklistedWebsites: STATIC_BLACKLISTED_WEBSITES,
   };
 }
+

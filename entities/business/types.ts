@@ -66,3 +66,17 @@ export interface StaffMemberFiltersRequest extends QueryOptions {
   businessId?: string;
   position?: string;
 }
+
+export interface RegisterBusinessRequest {
+  name: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  adminBusinessRole: string;
+  password: string;
+  address: string;
+  state: string;
+  country: string;
+  organizationSize: string;
+  estimatedDevices: number;
+}

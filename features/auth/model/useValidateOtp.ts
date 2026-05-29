@@ -12,15 +12,15 @@ export function useValidateOtp() {
   const router = useRouter();
   const { toast } = useToast();
   const { login } = useLogin();
-  const { email, password, token, clearCredentials } = useNewUserStore();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: (data: OtpConfirmFormValues) => {
-      if (!email || !token) {
+      const { email } = useNewUserStore.getState();
+      if (!email) {
         throw new Error("Session expired. Please register again.");
       }
-      return validateOtpAction({ email, token, otp: data.otp });
+      return validateOtpAction({ email, otp: data.otp });
     },
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["session"] });
@@ -30,6 +30,7 @@ export function useValidateOtp() {
         message: "Your account has been successfully verified!",
       });
 
+      const { email, password, clearCredentials } = useNewUserStore.getState();
       if (password && email) {
         try {
           const { redirectTo } = await login({ email, password });

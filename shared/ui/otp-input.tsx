@@ -35,7 +35,7 @@ interface OTPInputProps {
 
 export function OTPInput({
   length = 4,
-  value,
+  value = "",
   onChange,
   onComplete,
   inputType = "numeric",
