@@ -66,7 +66,7 @@ export async function validateOtpAction(payload: ValidateOTPRequest) {
       method: "POST",
       body: JSON.stringify(payload),
     })
-    console.log(res)
+    console.log("validate otp result:", res)
     return res
   }, "Failed to validate OTP");
 }

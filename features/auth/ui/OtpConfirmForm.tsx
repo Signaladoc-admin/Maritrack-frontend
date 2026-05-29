@@ -29,6 +29,9 @@ export default function OtpConfirmForm() {
   });
 
   const onSubmit = async (data: OtpConfirmFormValues) => {
+    // Blur the active OTP input before the async submission so the Enter
+    // key event doesn't carry over to the login form after navigation.
+    (document.activeElement as HTMLElement)?.blur();
     try {
       await validateOtp({ otp: data.otp });
     } catch (err) {
