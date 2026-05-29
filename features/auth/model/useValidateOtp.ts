@@ -17,10 +17,10 @@ export function useValidateOtp() {
 
   const mutation = useMutation({
     mutationFn: (data: OtpConfirmFormValues) => {
-      if (!email || !token) {
+      if (!email) {
         throw new Error("Session expired. Please register again.");
       }
-      return validateOtpAction({ email, token, otp: data.otp });
+      return validateOtpAction({ email, otp: data.otp });
     },
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["session"] });

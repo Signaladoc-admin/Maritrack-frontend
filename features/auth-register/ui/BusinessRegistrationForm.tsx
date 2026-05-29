@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { businessRegistrationFormSchema, BusinessRegistrationFormValues } from "../schema";
 import { CountryStateInput } from "@/shared/ui/inputs/country-state-input";
 import HaveAnAccount from "@/features/auth/ui/HaveAnAccount";
+import { BusinessRole } from "@/entities/user/model/user.schema";
+import { useNewUserStore } from "@/shared/stores/user.store";
 
 export default function BusinessRegistrationForm() {
   const {
@@ -34,6 +36,7 @@ export default function BusinessRegistrationForm() {
   });
   const { registerBusiness, isSubmitting } = useRegisterBusiness();
   const router = useRouter();
+  const { setEmail, setToken } = useNewUserStore();
 
   const onSubmit = async (data: BusinessRegistrationFormValues) => {
     // it uses normal req body
@@ -43,15 +46,20 @@ export default function BusinessRegistrationForm() {
       lastName: data.businessName,
       email: data.businessEmail,
       organizationSize: data.organizationSize,
-      adminBusinessRole: "ORGANIZATION_ADMIN",
+      adminBusinessRole: "ORGANIZATION_ADMIN" as BusinessRole,
       estimatedDevices: Number(data.estimatedDevices),
       address: data.address,
       country: data.country,
       state: data.state,
       password: data.password,
     };
-    await registerBusiness(payload);
-    router.push("/login");
+    const res = await registerBusiness(payload);
+
+    setEmail(data.businessEmail);
+
+    if (res.success) {
+      router.push("/confirm-email");
+    }
   };
 
   return (

@@ -9,16 +9,17 @@ export function useRegisterBusiness() {
     mutationFn: async (data: Parameters<typeof registerBusinessAction>[0]) => {
       const result = await registerBusinessAction(data);
       if (!result.success) throw new Error(result.error);
-      return result.data;
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         type: "success",
         title: "Registration successful",
+        message: data.data.message
       });
     },
     onError: (err: any) => {
-      const errorMessage = err.message || "An unexpected error occurred. Please try again.";
+      const errorMessage = err?.message || "An unexpected error occurred. Please try again.";
       toast({
         type: "error",
         title: "Registration Failed",

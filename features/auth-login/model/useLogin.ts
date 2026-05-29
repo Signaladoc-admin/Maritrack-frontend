@@ -13,7 +13,7 @@ export function useLogin() {
       return result.data;
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(["session"], data.user);
+      queryClient.setQueryData(["session"], data.profile);
     },
     onError: (err: any) => {
       const errorMessage = err.message || "An unexpected error occurred. Please try again.";

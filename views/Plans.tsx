@@ -7,7 +7,7 @@ import BillingHistoryTable from "@/features/payments/ui/BillingHistoryTable";
 import PlanCard from "@/features/payments/ui/PlanCard";
 import VerifyPayment from "@/features/payments/ui/VerifyPayment";
 import { useAuth } from "@/shared/auth/AuthProvider";
-import { formatCurrency } from "@/shared/lib/utils";
+import { formatCurrency, formatPaystackKoboAmount } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Header } from "@/shared/ui/layout/header";
 import { Skeleton } from "@/shared/ui/skeleton";
@@ -89,7 +89,7 @@ export default function Plans() {
       ) : (
         <div className="space-y-4">
           <PlanCard
-            price={formatCurrency(activeSubscription.plan?.priceNGN || 0)}
+            price={formatCurrency(formatPaystackKoboAmount(activeSubscription.plan?.priceNGN) || 0)}
             name={activeSubscription.plan?.name || ""}
             billingCycle={activeSubscription.plan?.billingCycle || ""}
             isCurrent={activeSubscriptionRes?.data?.active}
@@ -97,7 +97,7 @@ export default function Plans() {
           {otherSubscriptions.map((subscription: Subscription) => (
             <PlanCard
               key={subscription.id}
-              price={formatCurrency(subscription.plan?.priceNGN || 0)}
+              price={formatCurrency(formatPaystackKoboAmount(subscription.plan?.priceNGN) || 0)}
               name={subscription.plan?.name || ""}
               billingCycle={subscription.plan?.billingCycle || ""}
             />

@@ -5,7 +5,6 @@ import { useLogin } from "@/features/auth-login/model/useLogin";
 import { jwtDecode } from "jwt-decode";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
 import { PageLoader } from "../ui/loader";
-import type { LoginResponse } from "@/features/auth-login/types";
 
 type UserPayload = {
   iat: number;
@@ -37,7 +36,7 @@ interface AuthContextType {
   login: (_credentials: {
     email: string;
     password: string;
-  }) => Promise<{ user: LoginResponse | null; redirectTo: string }>;
+  }) => Promise<{ profile: UserProfile | null; message: string; redirectTo: string }>;
   logout: () => void;
   isSubmitting: boolean;
   loginError: string | null;
@@ -138,9 +137,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function handleLogin({ email, password }: { email: string; password: string }) {
-    const { user, accessToken: newToken, redirectTo } = await login({ email, password });
+    const { profile, message, accessToken: newToken, redirectTo } = await login({ email, password });
     if (newToken) setAccessToken(newToken);
-    return { user, redirectTo };
+    return { profile, message, redirectTo };
   }
 
   return (

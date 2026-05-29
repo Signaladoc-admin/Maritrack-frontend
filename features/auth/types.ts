@@ -6,8 +6,8 @@ export interface RequestTokenRequest {
 
 export interface ValidateOTPRequest {
     email: string
-    token: string
-    otp: string
+    token?: string
+    otp?: string
 }
 
 export interface ValidateOTPResponse {
@@ -15,3 +15,12 @@ export interface ValidateOTPResponse {
     refreshToken: string;
     isOnboarded: boolean;
 }
+
+export interface ResetPasswordRequest {
+    password: string;
+    email: string;
+    token?: string;
+    otp?: string
+}
+
+export interface ForgotPasswordRequest { email: string }

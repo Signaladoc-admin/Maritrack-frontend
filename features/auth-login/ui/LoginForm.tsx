@@ -7,12 +7,13 @@ import { InputGroup } from "@/shared/ui/input-group";
 import Modal from "@/shared/ui/modal";
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import UserAccountTypeSelectionCard from "@/features/auth-register/ui/UserAccountTypeSelectionCard";
 import { accountTypes } from "@/features/auth-register/constants";
 import { loginSchema, type LoginValues } from "@/entities/user/model/user.schema";
 import { useParentStore, useNewUserStore } from "@/shared/stores/user.store";
 import { useAuth } from "@/shared/auth/AuthProvider";
+import { useToast } from "@/shared/ui/toast";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -21,6 +22,11 @@ export default function LoginForm() {
   const { setParentId } = useParentStore();
   const { setEmail, setPassword } = useNewUserStore();
   const { login, loginError: error, isSubmitting } = useAuth();
+
+  const { toast } = useToast()
+
+  const pathname = usePathname()
+  const isBusinessAuthRoute = pathname?.includes("/business")
 
   const {
     register,
@@ -32,11 +38,17 @@ export default function LoginForm() {
 
   const onSubmit = async (data: LoginValues) => {
     try {
-      const { user, redirectTo } = await login(data);
+      const { profile, message, redirectTo } = await login(data);
+
+      toast({
+        title: message,
+        type: "success",
+        ...(profile?.isFirstLogin && { message: "Please complete your onboarding to continue" }),
+      })
 
       setEmail(data.email);
       setPassword(data.password);
-      if (user?.parentId) setParentId(user.parentId);
+      if (profile?.parentId) setParentId(profile.parentId);
 
       redirectTo ? router.push(redirectTo) : router.push("/dashboard");
     } catch (err) {
@@ -55,6 +67,7 @@ export default function LoginForm() {
         type="email"
         error={errors.email?.message}
         {...register("email")}
+        placeholder="abcde@example.com"
       />
       <div className="space-y-2">
         <InputGroup
@@ -62,10 +75,15 @@ export default function LoginForm() {
           type="password"
           error={errors.password?.message}
           {...register("password")}
+          placeholder="••••••••"
         />
         <div className="flex justify-end">
           <Link
-            href="/forgot-password"
+            href={
+              isBusinessAuthRoute
+                ? "/business/forgot-password"
+                : "/forgot-password"
+            }
             className="text-muted-foreground text-right text-sm font-medium"
           >
             Forgot password?
@@ -81,7 +99,7 @@ export default function LoginForm() {
           type="button"
           onClick={() => setIsCreateAccountModalOpen(true)}
           variant="link"
-          className="text-primary px-0 font-semibold"
+          className="text-primary px-0 font-semibold text-sm"
         >
           Create an account
         </Button>
