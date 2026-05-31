@@ -24,54 +24,6 @@ export type BusinessRoleEnum = (typeof BusinessRoleEnum)[keyof typeof BusinessRo
 
 export type BusinessRole = (typeof BUSINESS_ROLES)[number];
 
-export const UserProfileSchema = z.object({
-  id: z.string(),
-  firstName: z.string().optional().nullable(),
-  lastName: z.string().optional().nullable(),
-  email: z.string().email().optional(),
-  role: z.enum(["ADMIN", "USER"]).optional(),
-  businessRole: z.enum(BUSINESS_ROLES).optional().nullable(),
-  businessId: z.string().optional().nullable(),
-  imageUrl: z.string().optional().nullable(),
-  isFirstLogin: z.boolean().optional(),
-  isEmailVerified: z.boolean().optional(),
-  status: z.string().optional(),
-  phone: z.string().optional().nullable(),
-  firstLogin: z.boolean().optional(),
-  isOnline: z.boolean().optional(),
-  parentId: z.string().optional().nullable(),
-  zoneId: z.array(z.string()).optional(),
-});
-
-export type UserProfile = z.infer<typeof UserProfileSchema>;
-
-/** True when the user belongs to a business account */
-export const isBusinessUser = (user: UserProfile | null | undefined): boolean =>
-  !!user?.businessRole;
-
-/** True when the user is a personal parent account */
-export const isPersonalUser = (user: UserProfile | null | undefined): boolean =>
-  !!user && !user.businessRole && user.role !== "ADMIN";
-
-export interface IUserProfile {
-  id: string;
-  email: string;
-  status: string;
-  firstName: string;
-  lastName: string;
-  role: "ADMIN" | "USER";
-  imageUrl: string;
-  isFirstLogin?: boolean;
-  isEmailVerified?: boolean;
-  parentId: string | null;
-  businessId: string | null;
-  zoneId: {
-    name: string;
-    id: string;
-    mdmZoneId: string;
-  }[];
-}
-
 export const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),

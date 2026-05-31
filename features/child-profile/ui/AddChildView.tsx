@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import CreateChildProfileForm from "@/features/onboarding/personal/ui/CreateChildProfileForm";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
@@ -13,6 +13,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/shared/ui/toast";
 import { IChildProfile } from "@/features/onboarding/personal/types";
 import PairingQRStep from "@/features/onboarding/personal/ui/PairingQRStep";
+import { useAuth } from "@/shared/auth/AuthProvider";
+import { useGetZone } from "@/entities/zone/model/useGetZone";
+import { useActiveSubscription } from "@/features/payments/model/usePayments";
+import LoaderText from "@/shared/ui/LoaderText";
+import { Button } from "@/shared/ui/button";
+import { Header } from "@/shared/ui/layout/header";
 
 export default function AddChildView() {
   const router = useRouter();
@@ -24,11 +30,31 @@ export default function AddChildView() {
 
   const { mutateAsync: createChild, isPending: isCreatingChild } = useCreateChild();
 
-  const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentZones({
-    enabled: !!activeParentId,
-  });
-
   const [pendingChild, setPendingChild] = useState<IChildProfile | null>(null);
+
+  const { zone, status: zoneStatus } = useGetZone();
+  const zoneId = zone?.id;
+
+  const { data: activeSubscriptionRes, status: subscriptionStatus } =
+    useActiveSubscription(zoneId);
+
+  const [isLoadingSubscription, setIsLoadingSubscription] = useState(true);
+
+  useEffect(() => {
+    const zoneSettled = zoneStatus === "success" || zoneStatus === "error";
+    const subscriptionSettled =
+      !zoneId || subscriptionStatus === "success" || subscriptionStatus === "error";
+
+    if (zoneSettled && subscriptionSettled) {
+      setIsLoadingSubscription(false);
+    }
+  }, [zoneStatus, zoneId, subscriptionStatus]);
+
+  useEffect(() => {
+    if (!activeSubscriptionRes?.data?.active && !isLoadingSubscription) {
+      toast({ title: "No active subscription", message: "You need an active subscription to add a child.", type: "error" });
+    }
+  }, [isLoadingSubscription, activeSubscriptionRes]);
 
   const handleAddChild = async (data: IChildProfile) => {
     if (!activeParentId) {
@@ -76,6 +102,26 @@ export default function AddChildView() {
       });
     }
   };
+
+  if (isLoadingSubscription) {
+    return (
+      <LoaderText
+        text="Checking subscription status..."
+      />
+    )
+  }
+
+  if (!activeSubscriptionRes?.data?.active) {
+    return (
+      <>
+        <div className="flex flex-col gap-4 justify-center items-center min-h-[70vh]">
+          <h3 className="text-xl font-bold">No active subscription</h3>
+          <p className="text-muted-foreground text-center">You need an active subscription to add a child.</p>
+          <Button href="/plans/subscribe" className="mt-4">Upgrade</Button>
+        </div>
+      </>
+    )
+  }
 
   if (pendingChild) {
     return (

@@ -109,6 +109,10 @@ export async function apiClient<T = any>(
         if (isServer && cookieStore) {
           cookieStore.delete("accessToken");
           cookieStore.delete("refreshToken");
+          cookieStore.delete("isEmailVerified");
+          cookieStore.delete("isOnboarded");
+          cookieStore.delete("userMeta");
+
         }
         redirect("/login");
       }
@@ -124,6 +128,9 @@ export async function apiClient<T = any>(
       if (isServer && cookieStore) {
         cookieStore.delete("accessToken");
         cookieStore.delete("refreshToken");
+        cookieStore.delete("isEmailVerified");
+        cookieStore.delete("isOnboarded");
+        cookieStore.delete("userMeta");
       }
       redirect("/login");
     }
@@ -135,7 +142,7 @@ export async function apiClient<T = any>(
 
     const errorMessage = Array.isArray(message)
       ? message.filter((m: any) => typeof m === "string").join(", ") ||
-        message.map((m: any) => (typeof m === "object" ? JSON.stringify(m) : String(m))).join(", ")
+      message.map((m: any) => (typeof m === "object" ? JSON.stringify(m) : String(m))).join(", ")
       : typeof message === "string"
         ? message
         : response.statusText;

@@ -13,6 +13,10 @@ import { BusinessRole } from "@/entities/user/model/user.schema";
 import { useNewUserStore } from "@/shared/stores/user.store";
 
 export default function BusinessRegistrationForm() {
+  const { setEmail, setToken, businessDetails, setBusinessDetails, setRegistrationType } = useNewUserStore();
+  const { registerBusiness, isSubmitting } = useRegisterBusiness();
+  const router = useRouter();
+
   const {
     control,
     setValue,
@@ -22,21 +26,18 @@ export default function BusinessRegistrationForm() {
   } = useForm<BusinessRegistrationFormValues>({
     resolver: zodResolver(businessRegistrationFormSchema),
     defaultValues: {
-      businessName: "",
+      businessName: businessDetails?.businessName || "",
       businessEmail: "",
-      estimatedDevices: "",
-      organizationSize: undefined,
-      address: "",
-      country: "",
-      state: "",
-      password: "",
-      confirmPassword: "",
+      estimatedDevices: businessDetails?.estimatedDevices || "",
+      organizationSize: businessDetails?.organizationSize || undefined,
+      address: businessDetails?.address || "",
+      country: businessDetails?.country || "",
+      state: businessDetails?.state || "",
+      password: businessDetails?.password || "",
+      confirmPassword: businessDetails?.confirmPassword || "",
     },
     mode: "onTouched",
   });
-  const { registerBusiness, isSubmitting } = useRegisterBusiness();
-  const router = useRouter();
-  const { setEmail, setToken } = useNewUserStore();
 
   const onSubmit = async (data: BusinessRegistrationFormValues) => {
     // it uses normal req body
@@ -56,6 +57,8 @@ export default function BusinessRegistrationForm() {
     const res = await registerBusiness(payload);
 
     setEmail(data.businessEmail);
+    setRegistrationType("business");
+    setBusinessDetails(data);
 
     if (res.success) {
       router.push("/confirm-email");

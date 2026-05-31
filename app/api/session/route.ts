@@ -14,5 +14,9 @@ export async function GET() {
     return NextResponse.json({ error: "No session" }, { status: 401 });
   }
 
-  return NextResponse.json({ accessToken });
+  // NUDGE: Remove userMeta temporary cookie retrieval when session restore gets unified on backend
+  const userMetaStr = cookieStore.get("userMeta")?.value;
+  const userMeta = userMetaStr ? JSON.parse(userMetaStr) : null;
+
+  return NextResponse.json({ accessToken, userMeta });
 }

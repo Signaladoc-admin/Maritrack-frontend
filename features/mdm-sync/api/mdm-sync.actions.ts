@@ -42,7 +42,7 @@ export async function getParentZonesAction() {
     const response = await apiClient<ApiResponse<ParentZone[]>>("/mdm-sync/zones/parent", {
       method: "GET",
     });
-    return response.data;
+    return response.data ?? [];
   }, "Failed to fetch parent zones");
 }
 
@@ -51,7 +51,7 @@ export async function getParentZoneAction() {
     const response = await apiClient<ApiResponse<ParentZone[]>>("/mdm-sync/zones/parent", {
       method: "GET",
     });
-    return response.data?.[0];
+    return response.data?.[0] ?? null;
   }, "Failed to fetch parent zone");
 }
 
@@ -71,7 +71,7 @@ export async function getBusinessZonesAction(): Promise<ActionResult<BusinessZon
     const response = await apiClient<ApiResponse<BusinessZone[]>>("/mdm-sync/zones/business", {
       method: "GET",
     });
-    return response.data ?? response;
+    return response.data ?? [];
   }, "Failed to fetch business zones");
 }
 export async function getBusinessZoneAction() {
@@ -79,7 +79,7 @@ export async function getBusinessZoneAction() {
     const response = await apiClient<ApiResponse<BusinessZone[]>>("/mdm-sync/zones/business", {
       method: "GET",
     });
-    return (response.data ?? response)[0];
+    return response.data?.[0] ?? null;
   }, "Failed to fetch business zone");
 }
 
@@ -101,7 +101,7 @@ export async function getZoneDevicesAction(zoneId: string): Promise<ActionResult
     const response = await apiClient(`/mdm-sync/zones/${zoneId}/devices`, {
       method: "GET",
     });
-    return response.data.data;
+    return response?.data?.data ?? [];
   }, "Failed to fetch zone devices");
 }
 

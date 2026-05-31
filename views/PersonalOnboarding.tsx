@@ -88,7 +88,7 @@ function OnboardingContent() {
   ];
 
   return (
-    <div className={cn("relative", isFullWidth ? "p-0" : "p-14")}>
+    <div className={cn("relative", isFullWidth ? "p-0" : "p-8 lg:p-14")}>
       <Button
         variant="ghost"
         className={cn(

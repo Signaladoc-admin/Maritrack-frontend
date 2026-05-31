@@ -94,10 +94,16 @@ interface NewUserState {
   email: string;
   password: string;
   token: string | null;
+  registrationType: "personal" | "business" | null;
+  personalDetails: any | null;
+  businessDetails: any | null;
   setEmail: (email: string) => void;
   setPassword: (password: string) => void;
   setParentId: (parentId: string) => void;
   setToken: (token: string) => void;
+  setRegistrationType: (type: "personal" | "business" | null) => void;
+  setPersonalDetails: (details: any | null) => void;
+  setBusinessDetails: (details: any | null) => void;
   clearCredentials: () => void;
 }
 
@@ -276,11 +282,17 @@ export const useNewUserStore = create<NewUserState>()(
       email: "",
       password: "",
       token: null,
+      registrationType: null,
+      personalDetails: null,
+      businessDetails: null,
       setEmail: (email: string) => set({ email }),
       setPassword: (password: string) => set({ password }),
       setParentId: (parentId: string) => set({ parentId }),
       setToken: (token: string) => set({ token }),
-      clearCredentials: () => set({ email: "", password: "", token: null }),
+      setRegistrationType: (registrationType: "personal" | "business" | null) => set({ registrationType }),
+      setPersonalDetails: (personalDetails: any | null) => set({ personalDetails }),
+      setBusinessDetails: (businessDetails: any | null) => set({ businessDetails }),
+      clearCredentials: () => set({ email: "", password: "", token: null, registrationType: null, personalDetails: null, businessDetails: null }),
     }),
     {
       name: "maritrack-new-user-storage",

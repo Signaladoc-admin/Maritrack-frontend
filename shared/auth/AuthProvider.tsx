@@ -1,10 +1,11 @@
-import { useRouter } from "next/navigation";
-import type { BusinessRole, UserProfile } from "@/entities/user/model/user.schema";
+import type { BusinessRole } from "@/entities/user/model/user.schema";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { useLogin } from "@/features/auth-login/model/useLogin";
 import { jwtDecode } from "jwt-decode";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
 import { PageLoader } from "../ui/loader";
+import { AuthUserProfile } from "@/entities/user";
+import type { LoginResponse } from "@/features/auth-login/types";
 
 type UserPayload = {
   iat: number;
@@ -16,6 +17,7 @@ type UserPayload = {
   parentId: string | null;
   businessId: string | null;
   imageUrl: string | null;
+  zoneId: string | null;
 };
 
 export function getTokenPayload(token: string): UserPayload | null {
@@ -26,18 +28,14 @@ export function getTokenPayload(token: string): UserPayload | null {
   }
 }
 
-type User = UserProfile & {
-  appRole: "PARENT" | "BUSINESS";
-  userRole: BusinessRole | "USER" | "ADMIN";
-};
-
 interface AuthContextType {
-  user: User | null;
+  user: AuthUserProfile | null;
   login: (_credentials: {
     email: string;
     password: string;
-  }) => Promise<{ profile: UserProfile | null; message: string; redirectTo: string }>;
+  }) => Promise<{ data: LoginResponse | null; message: string }>;
   logout: () => void;
+  resetLoginError: () => void;
   isSubmitting: boolean;
   loginError: string | null;
 }
@@ -47,30 +45,53 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [user, setUser] = useState<LoginResponse | null>(null);
+  // NUDGE: Remove userMeta temporary state when session restore gets unified on backend
+  const [userMeta, setUserMeta] = useState<{
+    businessId: string | null;
+    parentId: string | null;
+    zoneId: string | null;
+    role: "USER" | "ADMIN" | undefined;
+    businessRole: BusinessRole | null;
+  } | null>(null);
+
+  const { data: userProfile } = useUserProfile()
 
   const userPayload = accessToken ? getTokenPayload(accessToken) : null;
-  const userRole = userPayload?.businessRole ?? userPayload?.role;
+  // NUDGE: Remove userMeta temporary fallback when session restore gets unified on backend
+  const userRole = userMeta?.businessRole ?? userMeta?.role ?? userPayload?.businessRole ?? userPayload?.role;
   const appRole = userRole === "USER" ? "PARENT" : "BUSINESS";
 
-  const { data: userProfile } = useUserProfile();
+  console.log("userPayload", userPayload)
+  console.log("userProfile", userProfile)
+  console.log("userMeta", userMeta)
 
-  const user: User = {
-    id: userPayload?.id!,
-    role: userPayload?.role!,
-    businessRole: userPayload?.businessRole!,
-    email: userPayload?.email!,
-    parentId: userPayload?.parentId!,
-    businessId: userPayload?.businessId!,
-    imageUrl: userPayload?.imageUrl!,
-    userRole: userRole!,
-    appRole: appRole!,
-    firstName: userProfile?.firstName!,
-    lastName: userProfile?.lastName!,
+  // NUDGE: Remove userMeta temporary reconstruction when session restore gets unified on backend
+  const activeUser = accessToken && userPayload ? {
+    id: userPayload.id,
+    role: userMeta?.role ?? userPayload.role ?? "USER",
+    businessRole: userMeta?.businessRole ?? userPayload.businessRole ?? null,
+    email: userPayload.email,
+    parentId: userMeta ? userMeta.parentId : userPayload.parentId,
+    businessId: userMeta ? userMeta.businessId : userPayload.businessId,
+    imageUrl: userPayload.imageUrl || null,
+    zoneId: userMeta ? userMeta.zoneId : userPayload.zoneId,
+    appRole: appRole,
+    firstName: userProfile?.firstName,
+    lastName: userProfile?.lastName,
+    date: user?.date ?? new Date().toISOString(),
+    isFirstLogin: user?.isFirstLogin ?? false,
+    access_token_expires_on: user?.access_token_expires_on ?? "",
+    refresh_token: user?.refresh_token ?? "",
+  } as AuthUserProfile : null;
+
+  const { login, isSubmitting, error: loginError, mutation } = useLogin();
+
+  const logout = () => {
+    setAccessToken(null);
+    setUserMeta(null);
+    setUser(null);
   };
-
-  const { login, isSubmitting, error: loginError } = useLogin();
-
-  const logout = () => setAccessToken(null);
 
   // On mount: restore token from cookie, or refresh if expired
   useEffect(() => {
@@ -81,10 +102,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const sessionRes = await fetch("/api/session", { credentials: "include" });
         if (cancelled) return;
         if (sessionRes.ok) {
-          const { accessToken: cookieToken } = await sessionRes.json();
+          const { accessToken: cookieToken, userMeta: restoredMeta } = await sessionRes.json();
           const payload = getTokenPayload(cookieToken);
           if (payload?.exp && payload.exp * 1000 > Date.now() + 60_000) {
             setAccessToken(cookieToken);
+            if (restoredMeta) {
+              setUserMeta(restoredMeta);
+            }
             return;
           }
         }
@@ -93,8 +117,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const res = await fetch("/api/refresh", { method: "POST", credentials: "include" });
         if (cancelled) return;
         if (!res.ok) throw new Error("Refresh failed");
-        const { accessToken: refreshedToken } = await res.json();
+        const { accessToken: refreshedToken, userMeta: restoredMeta } = await res.json();
         setAccessToken(refreshedToken);
+        if (restoredMeta) {
+          setUserMeta(restoredMeta);
+        }
       } catch {
         if (!cancelled) logout();
       } finally {
@@ -122,8 +149,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const res = await fetch("/api/refresh", { method: "POST", credentials: "include" });
         if (!res.ok) throw new Error("Refresh failed");
-        const { accessToken: newToken } = await res.json();
+        const { accessToken: newToken, userMeta: restoredMeta } = await res.json();
         setAccessToken(newToken);
+        if (restoredMeta) {
+          setUserMeta(restoredMeta);
+        }
       } catch {
         logout();
       }
@@ -137,17 +167,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function handleLogin({ email, password }: { email: string; password: string }) {
-    const { profile, message, accessToken: newToken, redirectTo } = await login({ email, password });
+    const { data, accessToken: newToken, message } = await login({ email, password });
     if (newToken) setAccessToken(newToken);
-    return { profile, message, redirectTo };
+    if (data) {
+      setUserMeta({
+        businessId: data.businessId,
+        parentId: data.parentId,
+        zoneId: data.zoneId,
+        role: data.role,
+        businessRole: data.businessRole,
+      });
+      setUser(data);
+    }
+    return { data, message };
   }
 
   return (
     <AuthContext.Provider
       value={{
-        user,
+        user: activeUser,
         logout,
         login: handleLogin,
+        resetLoginError: mutation.reset,
         isSubmitting,
         loginError: loginError || null,
       }}

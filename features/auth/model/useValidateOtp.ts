@@ -4,23 +4,27 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { validateOtpAction } from "../api/auth.actions";
 import { useNewUserStore } from "@/shared/stores/user.store";
-import { useLogin } from "@/features/auth-login/model/useLogin";
+import { useAuth } from "@/shared/auth/AuthProvider";
 import { useToast } from "@/shared/ui/toast";
 import type { OtpConfirmFormValues } from "../schema";
 
 export function useValidateOtp() {
   const router = useRouter();
   const { toast } = useToast();
-  const { login } = useLogin();
+  const { login } = useAuth();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (data: OtpConfirmFormValues) => {
+    mutationFn: async (data: OtpConfirmFormValues) => {
       const { email } = useNewUserStore.getState();
       if (!email) {
         throw new Error("Session expired. Please register again.");
       }
-      return validateOtpAction({ email, otp: data.otp });
+      const result = await validateOtpAction({ email, otp: data.otp });
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      return result.data;
     },
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["session"] });
@@ -33,9 +37,9 @@ export function useValidateOtp() {
       const { email, password, clearCredentials } = useNewUserStore.getState();
       if (password && email) {
         try {
-          const { redirectTo } = await login({ email, password });
+          await login({ email, password });
           clearCredentials();
-          router.push(redirectTo);
+          router.push("/dashboard");
         } catch {
           toast({
             type: "warning",

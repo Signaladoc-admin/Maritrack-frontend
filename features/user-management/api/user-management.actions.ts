@@ -1,8 +1,9 @@
 "use server";
 
 import { apiClient } from "@/shared/lib/api-client";
-import type { UserProfile, AdminUpdateProfileDto } from "@/entities/user/model/user.schema";
+import type { AdminUpdateProfileDto } from "@/entities/user/model/user.schema";
 import type { ActionResult, QueryOptions } from "@/shared/api/types";
+import { UserProfile } from "@/entities/user";
 
 // --- CRUD Actions (conforming to ResourceActions interface) ---
 

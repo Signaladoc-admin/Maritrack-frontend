@@ -55,6 +55,8 @@ export default function ParentProfileForm() {
   const { user } = useAuth();
   const { data: parent, isLoading: isFetchingParent } = useGetParent(user?.parentId!);
 
+  console.log(parent)
+
   if (isFetchingParent) {
     return <ParentProfileFormSkeleton />;
   }
@@ -153,7 +155,7 @@ function ParentProfileFormInner({
       });
 
       // Update profile picture for user
-      if (data.profilePicture) {
+      if (data.profilePicture instanceof File) {
         await updateProfile({ profilePicture: data.profilePicture });
       }
 

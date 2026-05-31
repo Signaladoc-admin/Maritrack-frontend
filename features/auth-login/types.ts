@@ -1,4 +1,20 @@
+import { BusinessRole } from "@/entities/user/model/user.schema";
 import { BaseEntity } from "@/shared/api/types";
+
+export interface LoginResponse extends BaseEntity {
+    id: string;
+    access_token_expires_on: string;
+    refresh_token: string;
+    date: string;
+    isFirstLogin: boolean;
+    role: 'USER' | 'ADMIN';
+    businessRole: BusinessRole;
+    email: string;
+    parentId: string | null;
+    businessId: string | null;
+    imageUrl: string | null;
+    zoneId: string | null;
+}
 
 export interface User {
     id: string;
@@ -7,12 +23,22 @@ export interface User {
     access_token_expires_on: string;
     date: string;
     isFirstLogin: boolean;
-    role: string;
-    businessRole: string;
+    role: 'USER' | 'ADMIN';
+    businessRole: BusinessRole;
     parentId: string | null;
     businessId: string | null;
     imageUrl: string | null;
     zoneId: string | null;
 }
 
-export interface LoginResponse extends User, BaseEntity { }
+export interface UserTokenPayload {
+    role: "USER" | "ADMIN",
+    businessRole: BusinessRole | null,
+    email: string,
+    id: string,
+    parentId: string | null,
+    businessId: string | null,
+    iat: number,
+    exp: number
+}
+

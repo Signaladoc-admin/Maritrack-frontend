@@ -11,7 +11,7 @@ import {
   supportRequestAction,
   checkIfEmailExistsAction,
 } from "../api/user.actions";
-import type { UpdateProfileDto, SupportRequestDto, UserFilterParams } from "./user.schema";
+import type { SupportRequestDto, UserFilterParams } from "./user.schema";
 import { useToast } from "@/shared/ui/toast";
 
 // --- Profile Hooks ---
@@ -35,7 +35,7 @@ export function useUpdateProfile() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: UpdateProfileDto) => updateProfileAction(data),
+    mutationFn: updateProfileAction,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },

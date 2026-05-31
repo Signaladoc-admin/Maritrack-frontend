@@ -19,6 +19,8 @@ export default function PersonalRegistrationForm() {
   const router = useRouter();
   const [step, setStep] = useState(1);
 
+  const { setEmail, setPassword, setToken, personalDetails, setPersonalDetails, setRegistrationType } = useNewUserStore();
+
   const {
     register,
     control,
@@ -32,21 +34,20 @@ export default function PersonalRegistrationForm() {
   } = useForm<ParentRegistrationFormValues>({
     resolver: zodResolver(parentRegistrationFormSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
+      firstName: personalDetails?.firstName || "",
+      lastName: personalDetails?.lastName || "",
       email: "",
-      password: "",
-      confirmPassword: "",
-      gender: undefined,
-      address: "",
-      country: "",
-      state: "",
+      password: personalDetails?.password || "",
+      confirmPassword: personalDetails?.confirmPassword || "",
+      gender: personalDetails?.gender || undefined,
+      address: personalDetails?.address || "",
+      country: personalDetails?.country || "",
+      state: personalDetails?.state || "",
     },
     mode: "onTouched",
   });
 
   const { registerParent, isSubmitting, error } = useRegisterParent();
-  const { setEmail, setPassword, setToken } = useNewUserStore();
 
   const passwordValue = watch("password");
   const confirmValue = watch("confirmPassword");
@@ -90,6 +91,8 @@ export default function PersonalRegistrationForm() {
 
     setEmail(data.email);
     setPassword(data.password);
+    setRegistrationType("personal");
+    setPersonalDetails(data);
     if (res?.token) {
       setToken(res.token);
     }

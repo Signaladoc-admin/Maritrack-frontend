@@ -3,7 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { createResourceHooks } from "@/shared/api/createResourceHooks";
 import { useServerActionMutation } from "@/shared/api/server-action-hooks";
-import type { UserProfile, AdminUpdateProfileDto } from "@/entities/user/model/user.schema";
+import type { AdminUpdateProfileDto } from "@/entities/user/model/user.schema";
 import {
   getAllUsersAction,
   getUserByIdAction,
@@ -14,6 +14,7 @@ import {
   deleteUserAction,
 } from "../api/user-management.actions";
 import type { ActionResult } from "@/shared/api/types";
+import { UserProfile } from "@/entities/user";
 
 // --- Standard CRUD hooks via createResourceHooks ---
 

@@ -6,7 +6,6 @@ import CreateChildProfileForm from "./CreateChildProfileForm";
 import { ChildProfileCard, ChildProfileCardSkeleton } from "@/shared/ui/cards/child-profile-card";
 
 import PairingQRStep from "./PairingQRStep";
-import { useUserProfile } from "@/entities/user/model/useUserProfile";
 import {
   useCreateChild,
   useUpdateChild,
@@ -20,6 +19,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import NewChildProfileButton from "@/features/child-profile/ui/NewChildProfileButton";
 import { useActiveSubscription } from "@/features/payments/model/usePayments";
 import PricingStep from "@/features/payments/ui/PricingStep";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 export default function ChildrenProfiles({
   goToNextStep,
@@ -31,15 +31,16 @@ export default function ChildrenProfiles({
   const [childProfiles, setChildProfiles] = useState<IChildProfile[]>([]);
   const queryClient = useQueryClient();
 
-  const { data: user, isLoading: isLoadingUser } = useUserProfile();
-  const storedParentId = useParentStore((state) => state.parentId);
-  const activeParentId = user?.parentId || storedParentId;
+  const { user } = useAuth()
+  const activeParentId = user?.parentId || '';
 
   const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentZones({
     enabled: !!activeParentId,
   });
 
-  const zoneId = user?.zoneId?.[0]?.id;
+  const zoneId = user?.zoneId || '';
+  console.log('zoneId', zoneId)
+
   const { data: subscriptionData } = useActiveSubscription(zoneId);
   const hasPaid = subscriptionData?.data.active ?? false;
 
@@ -66,7 +67,7 @@ export default function ChildrenProfiles({
     onViewChange?.(currentView);
   }, [currentView, onViewChange]);
 
-  const isInitialLoading = isLoadingUser || (!!activeParentId && isFetchingChildren);
+  const isInitialLoading = !!activeParentId && isFetchingChildren
 
   const [selectedChildProfile, setSelectedChildProfile] = useState<IChildProfile | null>(null);
   const [pendingChild, setPendingChild] = useState<IChildProfile | null>(null);
@@ -83,11 +84,6 @@ export default function ChildrenProfiles({
   }
 
   const handleAddChild = async (data: IChildProfile) => {
-    if (!activeParentId) {
-      toast({ title: "Error", message: "Parent profile not found", type: "error" });
-      return;
-    }
-
     try {
       const res: any = await createChild({
         name: data.name,
@@ -205,7 +201,7 @@ export default function ChildrenProfiles({
         entityId={pendingChild?.id!}
         entityName={pendingChild?.name || "Child"}
         onboardingCode={pendingChild?.onboardingCode}
-        zoneId={user?.zoneId?.[0]?.id}
+        zoneId={zoneId || undefined}
         onBack={() => setCurrentView("list")}
         onComplete={handleFinishPairing}
         onRollback={handlePairingRollback}

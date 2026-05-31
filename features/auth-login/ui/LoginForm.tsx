@@ -6,7 +6,7 @@ import { Button } from "@/shared/ui/button";
 import { InputGroup } from "@/shared/ui/input-group";
 import Modal from "@/shared/ui/modal";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import UserAccountTypeSelectionCard from "@/features/auth-register/ui/UserAccountTypeSelectionCard";
 import { accountTypes } from "@/features/auth-register/constants";
@@ -14,6 +14,7 @@ import { loginSchema, type LoginValues } from "@/entities/user/model/user.schema
 import { useParentStore, useNewUserStore } from "@/shared/stores/user.store";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { useToast } from "@/shared/ui/toast";
+import { getUserByIdAction } from "@/entities/user/api/user.actions";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -21,12 +22,17 @@ export default function LoginForm() {
 
   const { setParentId } = useParentStore();
   const { setEmail, setPassword } = useNewUserStore();
-  const { login, loginError: error, isSubmitting } = useAuth();
+  const { login, loginError: error, isSubmitting, resetLoginError } = useAuth();
 
   const { toast } = useToast()
 
   const pathname = usePathname()
   const isBusinessAuthRoute = pathname?.includes("/business")
+
+  useEffect(() => {
+    resetLoginError();
+  }, []);
+
 
   const {
     register,
@@ -36,24 +42,31 @@ export default function LoginForm() {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = async (data: LoginValues) => {
+  const onSubmit = async (credentials: LoginValues) => {
     try {
-      const { profile, message, redirectTo } = await login(data);
+      const { data: user, message } = await login(credentials);
 
       toast({
         title: message,
         type: "success",
-        ...(profile?.isFirstLogin && { message: "Please complete your onboarding to continue" }),
+        ...(user?.isFirstLogin && { message: "Please complete your onboarding to continue" }),
       })
 
-      setEmail(data.email);
-      setPassword(data.password);
-      if (profile?.parentId) setParentId(profile.parentId);
+      setEmail(credentials.email);
+      setPassword(credentials.password);
+      if (user?.parentId) setParentId(user.parentId);
 
-      redirectTo ? router.push(redirectTo) : router.push("/dashboard");
-    } catch (err) {
-      console.log(err);
-      // Error handled by hook
+      router.push("/dashboard");
+    } catch (err: any) {
+      // Toast is already shown by useLogin's onError.
+      // For unverified email specifically, redirect to the confirm-email page.
+      if (err?.message?.toLowerCase().includes("not verified")) {
+        const confirmPath = isBusinessAuthRoute
+          ? "/business/confirm-email"
+          : "/confirm-email";
+
+        setTimeout(() => router.push(confirmPath), 1500)
+      }
     }
   };
 

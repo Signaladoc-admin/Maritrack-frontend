@@ -8,6 +8,7 @@ import { useGetChildren } from "@/features/child-profile/model/useGetChildrenPro
 import { useParentChildren } from "@/entities/children/model/useChildren";
 import { useGetStaffMembers } from "@/entities/business/model/useStaffMembers";
 import { useAuth } from "@/shared/auth/AuthProvider";
+import { useGetZone } from "@/entities/zone/model/useGetZone";
 
 export const mdmSyncKeys = {
   qrcode: (zoneId: string, onboardingCode: string) =>
@@ -34,11 +35,6 @@ export function useQrCode(
   const { data: businessZones } = useBusinessZones({ enabled: isBusiness });
   const { data: parentChildren } = useParentChildren({ enabled: isParent });
   const { data: staffMembers } = useGetStaffMembers(undefined, { enabled: isBusiness });
-
-  console.log("staffMembers", staffMembers);
-  console.log("parentChildren", parentChildren);
-  console.log("businessZones", businessZones);
-  console.log("parentZones", parentZones);
 
   const zoneWithChild = parentZones?.find((zone) =>
     parentChildren?.data?.some((pc) => pc.id === entityId)
@@ -74,23 +70,22 @@ export function useQrCode(
 
 export function useChildQrCode({ childId }: { childId: string }) {
   const { data: user } = useUserProfile();
+  const { user: authUser } = useAuth();
   const { data: parentZonesRes } = useParentZones();
+  console.log(parentZonesRes, "parentZonesRes")
   const { data: children } = useGetChildren();
-
-  console.log("children", children);
 
   const onboardingCode =
     children?.find((child: any) => child.id === childId)?.onboardingCode ?? null;
 
-  const activeZoneId = user?.zoneId?.[0]?.id || parentZonesRes?.[0]?.id;
+  const { zone } = useGetZone({ enabled: !user?.zone?.id })
+  const activeZoneId = authUser?.zoneId || zone?.id
 
   const query = useServerActionQuery(
     mdmSyncKeys.qrcode(activeZoneId || "", onboardingCode ?? ""),
     getQrCodeAction,
     [activeZoneId as string, onboardingCode as string],
     {
-      // Both values must be ready — previously only checked activeZoneId,
-      // which caused the query to fire with onboardingCode=null before parentZonesRes loaded.
       enabled: !!activeZoneId && !!onboardingCode,
       staleTime: 1000 * 60 * 5,
       retry: 1,

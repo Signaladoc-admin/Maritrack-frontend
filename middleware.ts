@@ -72,6 +72,8 @@ const authRoutes = [
   "/business/forgot-password",
 ];
 
+const confirmEmailRoutes = ["/confirm-email", "/business/confirm-email"];
+
 function canAccess(role: string, pathname: string): boolean {
   const allowedRoutes = roleAccessMap[role];
   if (!allowedRoutes) return false;
@@ -112,9 +114,34 @@ export async function middleware(req: NextRequest) {
         const payload = decodeJwt(token);
         const userRole = (payload as any).role as string | undefined;
         if (userRole === "ADMIN") return NextResponse.redirect(new URL("/admin", req.url));
+
+        // An unverified user's token doesn't grant app access — treat them as a guest
+        // so they can freely navigate to /login, /confirm-email, etc.
+        const isEmailVerified = req.cookies.get("isEmailVerified")?.value === "true";
+        if (!isEmailVerified) return NextResponse.next();
+
+        // Redirect back to the page the user came from, if it's a safe same-origin route
+        const referer = req.headers.get("referer");
+        if (referer) {
+          try {
+            const refererUrl = new URL(referer);
+            const refererPath = refererUrl.pathname;
+            const isSameOrigin = refererUrl.origin === req.nextUrl.origin;
+            const isAuthOrPublic =
+              authRoutes.includes(refererPath) || publicRoutes.includes(refererPath);
+
+            if (isSameOrigin && !isAuthOrPublic) {
+              return NextResponse.redirect(new URL(refererPath, req.url));
+            }
+          } catch {
+            // invalid referer URL — fall through to default
+          }
+        }
+
         return NextResponse.redirect(new URL("/dashboard", req.url));
       } catch {
-        return NextResponse.redirect(new URL("/dashboard", req.url));
+        // Invalid/expired token — let the user through to the auth page
+        return NextResponse.next();
       }
     }
     return NextResponse.next();
@@ -138,10 +165,24 @@ export async function middleware(req: NextRequest) {
     const businessRole = (payload as any).businessRole as string | null | undefined;
     const appRole = businessRole ? "BUSINESS" : "PARENT";
     const isOnboarded = req.cookies.get("isOnboarded")?.value === "true";
+    const isEmailVerified = req.cookies.get("isEmailVerified")?.value === "true";
+
     // Invited staff are not the org admin — they have no onboarding to complete
     const isInvited = !!(payload as any).isInvited;
 
     if (!userRole) return NextResponse.next();
+
+    // 5a. Email verification gate — always allow confirm-email pages through
+    if (!isEmailVerified) {
+      const confirmEmailPath =
+        appRole === "BUSINESS" ? "/business/confirm-email" : "/confirm-email";
+
+      if (confirmEmailRoutes.some((r) => pathname.startsWith(r))) {
+        return NextResponse.next();
+      }
+
+      return NextResponse.redirect(new URL(confirmEmailPath, req.url));
+    }
 
     // 5. Onboarding routing — skip entirely for invited business staff
     if (appRole === "BUSINESS" && isInvited) {

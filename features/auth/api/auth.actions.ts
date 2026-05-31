@@ -3,14 +3,12 @@
 import { apiClient } from "@/shared/lib/api-client";
 import type {
   ChangePasswordDto,
-  ForgotPasswordDto,
-  ResetForgottenPasswordDto,
-  UserProfile,
 } from "@/entities/user/model/user.schema";
 import { cookies } from "next/headers";
 import { withSafeAction } from "@/shared/lib/safe-action";
 import { ForgotPasswordRequest, RequestTokenRequest, ResetPasswordRequest, ValidateOTPRequest, ValidateOTPResponse, VerificationTokenMethod } from "../types";
 import { ApiResponse, MessageResponse } from "@/shared/api/types";
+import { UserProfile } from "@/entities/user";
 
 
 
@@ -46,7 +44,7 @@ export async function resetPasswordAction(payload: ResetPasswordRequest) {
 
 // --- Verification Token ---
 
-export async function requestTokenAction(method: VerificationTokenMethod, payload: RequestTokenRequest) {
+export async function requestTokenAction(method: VerificationTokenMethod = 'email', payload: RequestTokenRequest) {
   return withSafeAction(async () => apiClient<ApiResponse<MessageResponse>>(`/users/request-token/${method}`, {
     method: "POST",
     body: JSON.stringify(payload),
@@ -66,7 +64,11 @@ export async function validateOtpAction(payload: ValidateOTPRequest) {
       method: "POST",
       body: JSON.stringify(payload),
     })
-    console.log("validate otp result:", res)
+
+    // NUDGE: Remove justVerified temporary bypass once isEmailVerified is correctly handled on backend
+    const cookieStore = await cookies();
+    cookieStore.set("justVerified", "true", { maxAge: 60, path: "/" });
+
     return res
   }, "Failed to validate OTP");
 }
@@ -86,6 +88,8 @@ export async function logoutAction() {
   cookieStore.delete("accessToken");
   cookieStore.delete("refreshToken");
   cookieStore.delete("isOnboarded");
+  cookieStore.delete('isEmailVerified');
+  cookieStore.delete("userMeta");
 
   return { success: true };
 }

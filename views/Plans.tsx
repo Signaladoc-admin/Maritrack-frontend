@@ -1,5 +1,6 @@
 "use client";
 
+import { useGetZone } from "@/entities/zone/model/useGetZone";
 import { useBusinessZone, useBusinessZones, useParentZone, useParentZones } from "@/features/mdm-sync/model/useMdmSync";
 import { useActiveSubscription, useAllSubscriptions, useVerifyPayment } from "@/features/payments/model/usePayments";
 import { Subscription } from "@/features/payments/types";
@@ -32,17 +33,9 @@ function PlanCardSkeleton() {
 }
 
 export default function Plans() {
-  const { user } = useAuth();
+  const { zone, isLoading: isLoadingZone } = useGetZone();
 
-  const { data: businessZone, isLoading: isLoadingBusinessZone } = useBusinessZone({
-    enabled: user?.appRole === "BUSINESS",
-  });
-  const { data: parentZone, isLoading: isLoadingParentZone } = useParentZone({
-    enabled: user?.appRole === "PARENT",
-  });
-
-  const zoneId =
-    user?.appRole === "BUSINESS" ? businessZone?.id : parentZone?.id;
+  const zoneId = zone?.id;
 
   const { data: activeSubscriptionRes, isLoading: isLoadingSubscription } =
     useActiveSubscription(zoneId);
@@ -56,8 +49,6 @@ export default function Plans() {
     ? allSubscriptions.filter((s: Subscription) => s.id !== activeSubscription?.id)
     : [];
 
-  const isLoadingZone =
-    user?.appRole === "BUSINESS" ? isLoadingBusinessZone : isLoadingParentZone;
   // Stay in skeleton until zones resolve AND (if a zone exists) subscription resolves
   const isResolving =
     isLoadingZone || (!!zoneId && (isLoadingSubscription || isLoadingAllSubscriptions));
