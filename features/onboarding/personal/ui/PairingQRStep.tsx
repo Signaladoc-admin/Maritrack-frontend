@@ -8,11 +8,9 @@ import { useToast } from "@/shared/ui/toast";
 
 import { QRCodeCard } from "@/shared/ui/cards/qr-code-card";
 import { useQrCode } from "@/features/mdm-sync/model/useQrCode";
-import { useGetZone } from "@/entities/zone/model/useGetZone";
 
 interface PairingQRStepProps {
   entityName?: string;
-  zoneId?: string;
   onboardingCode?: string;
   entityId?: string;
   onBack: () => void;
@@ -23,7 +21,6 @@ interface PairingQRStepProps {
 export default function PairingQRStep({
   entityName,
   entityId,
-  // zoneId,
   onboardingCode,
   onBack,
   onComplete,
@@ -36,20 +33,12 @@ export default function PairingQRStep({
     isPending,
     isError,
     error,
-  } = useQrCode(entityId!, {
-    // zoneId,
-    onboardingCode,
-  });
+  } = useQrCode(entityId!);
 
-  const { zone } = useGetZone()
+  // const { zone } = useGetZone()
   const isLoading = isGenerating || isPending;
 
-  const zoneId = zone?.id
-
-  console.log("entityName", entityName)
-  console.log("entityId", entityId)
-  console.log("zoneId", zoneId)
-  console.log("onboardingCode", onboardingCode)
+  // const zoneId = zone?.id
 
   useEffect(() => {
     if (isError && error) {

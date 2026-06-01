@@ -14,11 +14,6 @@ import { withSafeAction } from "@/shared/lib/safe-action";
 // --- Profile ---
 
 export async function getProfileAction(): Promise<UserProfile | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("accessToken")?.value || cookieStore.get("refreshToken")?.value;
-
-  if (!token) return null;
-
   try {
     const response = await apiClient("/users/user", {
       method: "GET",

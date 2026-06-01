@@ -5,7 +5,6 @@ import { Controller, useForm } from "react-hook-form";
 import { SearchableSelect } from "@/shared/ui/searchable-select";
 import { useToast } from "@/shared/ui/toast";
 import { assignDeviceToUserSchema, AssignDeviceToUserValues } from "../schema";
-import { useBusinessZones } from "@/features/mdm-sync/model/useMdmSync";
 import { useGetStaffMembers } from "@/entities/business/model/useStaffMembers";
 import { BusinessStaff } from "@/entities/business/types";
 import { useMemo, useState } from "react";
@@ -51,8 +50,6 @@ export default function AssignDeviceModal({
   const [selectedStaff, setSelectedStaff] = useState<BusinessStaff | null>(null);
 
   const { toast } = useToast();
-  const { data: zonesData } = useBusinessZones();
-  const zoneId = zonesData?.[0]?.id;
 
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm] = useDebounce(searchTerm, 400);
@@ -82,17 +79,21 @@ export default function AssignDeviceModal({
     onOpenChange(false);
   }
 
-  function onSelectStaff(data: AssignDeviceToUserValues) {
-    const staff = staffById.get(data.staffId);
-    if (!staff) {
-      toast({ type: "error", title: "Selected staff member not found" });
-      return;
-    }
+  function onSelectStaff(staff: BusinessStaff) {
     setSelectedStaff(staff);
     setStep("pair-device");
   }
 
   const isPairStep = step === "pair-device";
+
+  function onSubmit(data: AssignDeviceToUserValues) {
+    const staff = staffById.get(data.staffId);
+    if (!staff) {
+      toast({ type: "error", title: "Selected staff member not found" });
+      return;
+    }
+    onSelectStaff(staff);
+  }
 
   return (
     <Modal
@@ -102,11 +103,11 @@ export default function AssignDeviceModal({
       className={isPairStep ? "sm:max-w-3xl" : undefined}
       {...(!isPairStep && {
         confirmText: "Next",
-        onConfirm: handleSubmit(onSelectStaff),
+        onConfirm: handleSubmit(onSubmit),
       })}
     >
       {step === "select-staff" && (
-        <form onSubmit={handleSubmit(onSelectStaff)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <Controller
             control={control}
             name="staffId"
@@ -131,11 +132,9 @@ export default function AssignDeviceModal({
         </form>
       )}
 
-      {isPairStep && selectedStaff && (
+      {isPairStep && !!selectedStaff && (
         <BusinessPairingQR
-          staffId={selectedStaff.userId}
-          zoneId={zoneId}
-          onboardingCode={(selectedStaff as any).onboardingCode ?? ""}
+          staffMember={selectedStaff}
           onBack={() => setStep("select-staff")}
           onComplete={handleClose}
         />

@@ -14,14 +14,13 @@ import { loginSchema, type LoginValues } from "@/entities/user/model/user.schema
 import { useParentStore, useNewUserStore } from "@/shared/stores/user.store";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { useToast } from "@/shared/ui/toast";
-import { getUserByIdAction } from "@/entities/user/api/user.actions";
 
 export default function LoginForm() {
   const router = useRouter();
   const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] = useState(false);
 
   const { setParentId } = useParentStore();
-  const { setEmail, setPassword } = useNewUserStore();
+  const { clearCredentials, setEmail } = useNewUserStore();
   const { login, loginError: error, isSubmitting, resetLoginError } = useAuth();
 
   const { toast } = useToast()
@@ -52,8 +51,7 @@ export default function LoginForm() {
         ...(user?.isFirstLogin && { message: "Please complete your onboarding to continue" }),
       })
 
-      setEmail(credentials.email);
-      setPassword(credentials.password);
+      clearCredentials();
       if (user?.parentId) setParentId(user.parentId);
 
       router.push("/dashboard");
@@ -61,6 +59,7 @@ export default function LoginForm() {
       // Toast is already shown by useLogin's onError.
       // For unverified email specifically, redirect to the confirm-email page.
       if (err?.message?.toLowerCase().includes("not verified")) {
+        setEmail(credentials.email);
         const confirmPath = isBusinessAuthRoute
           ? "/business/confirm-email"
           : "/confirm-email";

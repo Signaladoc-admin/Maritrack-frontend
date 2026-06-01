@@ -32,14 +32,7 @@ export async function loginAction(credentials: LoginValues) {
     // 1. Check email verification first — no point checking onboarding for an unverified account
     const userDetails = await getUserByIdAction(user.id);
 
-    // NUDGE: Remove justVerified temporary bypass once isEmailVerified is correctly handled on backend
-    const justVerified = cookieStore.get("justVerified")?.value === "true";
-    if (justVerified) {
-      cookieStore.delete("justVerified");
-    }
-
-    const isEmailVerified = justVerified || false;
-    //  userDetails.success && userDetails.data.isEmailVerified;
+    const isEmailVerified = !!userDetails.success && !!userDetails.data.isEmailVerified;
 
     if (!isEmailVerified) {
       // api-client.ts already wrote accessToken/refreshToken cookies from the login response.

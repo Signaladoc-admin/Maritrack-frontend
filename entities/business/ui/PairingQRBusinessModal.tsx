@@ -5,28 +5,21 @@ import { useToast } from "@/shared/ui/toast";
 import { QRCodeCard } from "@/shared/ui/cards/qr-code-card";
 import { useQrCode } from "@/features/mdm-sync/model/useQrCode";
 import { ShieldCheck } from "lucide-react";
+import { BusinessStaff } from "../types";
 
 interface BusinessPairingQRProps {
-  staffId: string;
-  zoneId?: string;
-  onboardingCode?: string;
-  hasTitle?: boolean;
+  staffMember: BusinessStaff;
   onComplete: () => void;
   onBack: () => void;
 }
 
 export default function BusinessPairingQR({
-  staffId,
-  zoneId,
-  onboardingCode,
+  staffMember,
   onComplete,
   onBack,
 }: BusinessPairingQRProps) {
   const { toast } = useToast();
-  const { qrCodeSrc, isLoading, isPending, isError, error } = useQrCode(staffId, {
-    zoneId,
-    onboardingCode,
-  });
+  const { qrCodeSrc, isLoading, isPending, isError, error } = useQrCode(staffMember.id);
 
   const isGenerating = isLoading || isPending;
 

@@ -10,6 +10,7 @@ import {
   useCreateChild,
   useUpdateChild,
   useDeleteChild,
+  useParentChildren,
 } from "@/entities/children/model/useChildren";
 import { useParentZones, mdmSyncKeys } from "@/features/mdm-sync/model/useMdmSync";
 import { useEffect } from "react";
@@ -28,18 +29,21 @@ export default function ChildrenProfiles({
   goToNextStep: () => void;
   onViewChange?: (view: "form" | "list" | "pricing" | "qr") => void;
 }) {
-  const [childProfiles, setChildProfiles] = useState<IChildProfile[]>([]);
   const queryClient = useQueryClient();
 
   const { user } = useAuth()
   const activeParentId = user?.parentId || '';
 
-  const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentZones({
-    enabled: !!activeParentId,
-  });
+  const { data: children, isLoading: isFetchingChildren } = useParentChildren({ enabled: !!activeParentId })
+  console.log('children', children)
+
+  const childProfiles: IChildProfile[] = (children?.data || []).map((child) => ({
+    ...child,
+    gender: child.gender as "MALE" | "FEMALE",
+    imageUrl: child.imageUrl || undefined,
+  }));
 
   const zoneId = user?.zoneId || '';
-  console.log('zoneId', zoneId)
 
   const { data: subscriptionData } = useActiveSubscription(zoneId);
   const hasPaid = subscriptionData?.data.active ?? false;
@@ -51,15 +55,6 @@ export default function ChildrenProfiles({
   const { mutateAsync: updateChild, isPending: isUpdatingChild } = useUpdateChild();
   const { mutateAsync: deleteChild } = useDeleteChild();
   const { toast } = useToast();
-
-  useEffect(() => {
-    if (Array.isArray(parentZonesRes)) {
-      const extractedChildren = parentZonesRes.flatMap(
-        (zone: any) => zone.parentChildren?.map((pc: any) => pc.child) || []
-      );
-      setChildProfiles(extractedChildren.filter(Boolean) as any);
-    }
-  }, [parentZonesRes]);
 
   const [currentView, setCurrentView] = useState<"form" | "list" | "pricing" | "qr">("list");
 
@@ -101,9 +96,9 @@ export default function ChildrenProfiles({
           onboardingCode,
         };
 
-        setChildProfiles((prev) => [...prev, newChildInfo as any]);
         setPendingChild(newChildInfo as any);
 
+        queryClient.invalidateQueries({ queryKey: ["children", "parent"] });
         queryClient.invalidateQueries({ queryKey: mdmSyncKeys.parentZones });
         toast({ title: "Success", message: "Child profile created", type: "success" });
 
@@ -128,7 +123,7 @@ export default function ChildrenProfiles({
           gender: data.gender as any,
         } as any);
       }
-      setChildProfiles((prev) => prev.map((child) => (child.id === data.id ? data : child)));
+      queryClient.invalidateQueries({ queryKey: ["children", "parent"] });
       toast({ title: "Success", message: "Child profile updated", type: "success" });
       setCurrentView("list");
     } catch (e: any) {
@@ -155,7 +150,7 @@ export default function ChildrenProfiles({
     if (pendingChild?.id) {
       try {
         await deleteChild(pendingChild.id);
-        setChildProfiles((prev) => prev.filter((cp) => cp.id !== pendingChild.id));
+        queryClient.invalidateQueries({ queryKey: ["children", "parent"] });
       } catch (deleteError) {
         console.error("Failed to delete child during rollback:", deleteError);
       }
@@ -201,7 +196,6 @@ export default function ChildrenProfiles({
         entityId={pendingChild?.id!}
         entityName={pendingChild?.name || "Child"}
         onboardingCode={pendingChild?.onboardingCode}
-        zoneId={zoneId || undefined}
         onBack={() => setCurrentView("list")}
         onComplete={handleFinishPairing}
         onRollback={handlePairingRollback}

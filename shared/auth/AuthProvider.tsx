@@ -7,6 +7,8 @@ import { PageLoader } from "../ui/loader";
 import { AuthUserProfile } from "@/entities/user";
 import type { LoginResponse } from "@/features/auth-login/types";
 
+import { useNewUserStore } from "@/shared/stores/user.store";
+
 type UserPayload = {
   iat: number;
   exp: number;
@@ -62,10 +64,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const userRole = userMeta?.businessRole ?? userMeta?.role ?? userPayload?.businessRole ?? userPayload?.role;
   const appRole = userRole === "USER" ? "PARENT" : "BUSINESS";
 
-  console.log("userPayload", userPayload)
-  console.log("userProfile", userProfile)
-  console.log("userMeta", userMeta)
-
   // NUDGE: Remove userMeta temporary reconstruction when session restore gets unified on backend
   const activeUser = accessToken && userPayload ? {
     id: userPayload.id,
@@ -91,6 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccessToken(null);
     setUserMeta(null);
     setUser(null);
+    useNewUserStore.getState().clearCredentials();
   };
 
   // On mount: restore token from cookie, or refresh if expired

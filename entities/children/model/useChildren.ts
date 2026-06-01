@@ -7,12 +7,12 @@ import {
   updateChildAction,
   deleteChildAction,
 } from "../api/child.actions";
-import type { ChildProfile, CreateChildDto, UpdateChildDto, ChildFilterParams } from "../schema";
+import type { CreateChildDto, UpdateChildDto } from "../schema";
 import { getParentChildrenAction } from "@/features/child-profile/api/child.action";
 import { useQuery } from "@tanstack/react-query";
-import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
+import { Child } from "@/features/child-profile/model/types";
 
-const childActions: ResourceActions<ChildProfile, CreateChildDto, UpdateChildDto> = {
+const childActions: ResourceActions<Child, CreateChildDto, UpdateChildDto> = {
   getAll: async () => {
     try {
       const data = await getChildrenAction();
@@ -61,7 +61,7 @@ export const {
   useCreate: useCreateChild,
   useUpdate: useUpdateChild,
   useDelete: useDeleteChild,
-} = createResourceHooks<ChildProfile, CreateChildDto, UpdateChildDto>("children", childActions);
+} = createResourceHooks<Child, CreateChildDto, UpdateChildDto>("children", childActions);
 
 export const useChildrenByParent = (parentId: string | null | undefined) => {
   return useServerActionQuery(

@@ -36,7 +36,7 @@ export function useCreateZone() {
 
   return useServerActionMutation(createZoneAction, {
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: mdmSyncKeys.zones });
+      queryClient.invalidateQueries({ queryKey: mdmSyncKeys.all });
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
     onError: (error) => {
@@ -77,7 +77,7 @@ export function useCreateBusinessZone() {
 
   return useServerActionMutation(createBusinessZoneAction, {
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: mdmSyncKeys.businessZones });
+      queryClient.invalidateQueries({ queryKey: mdmSyncKeys.all });
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
     onError: (error) => {

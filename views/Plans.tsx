@@ -1,8 +1,6 @@
 "use client";
 
-import { useGetZone } from "@/entities/zone/model/useGetZone";
-import { useBusinessZone, useBusinessZones, useParentZone, useParentZones } from "@/features/mdm-sync/model/useMdmSync";
-import { useActiveSubscription, useAllSubscriptions, useVerifyPayment } from "@/features/payments/model/usePayments";
+import { useActiveSubscription, useAllSubscriptions } from "@/features/payments/model/usePayments";
 import { Subscription } from "@/features/payments/types";
 import BillingHistoryTable from "@/features/payments/ui/BillingHistoryTable";
 import PlanCard from "@/features/payments/ui/PlanCard";
@@ -14,7 +12,6 @@ import { Header } from "@/shared/ui/layout/header";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { useRouter } from "next/navigation";
 import { useQueryState } from "nuqs";
-import { useEffect } from "react";
 
 // Mirrors PlanCard exactly: same rounded-xl, px-6 py-5, inline border styles
 function PlanCardSkeleton() {
@@ -33,9 +30,8 @@ function PlanCardSkeleton() {
 }
 
 export default function Plans() {
-  const { zone, isLoading: isLoadingZone } = useGetZone();
-
-  const zoneId = zone?.id;
+  const { user } = useAuth()
+  const zoneId = user?.zoneId || '';
 
   const { data: activeSubscriptionRes, isLoading: isLoadingSubscription } =
     useActiveSubscription(zoneId);
@@ -51,7 +47,7 @@ export default function Plans() {
 
   // Stay in skeleton until zones resolve AND (if a zone exists) subscription resolves
   const isResolving =
-    isLoadingZone || (!!zoneId && (isLoadingSubscription || isLoadingAllSubscriptions));
+    zoneId && (isLoadingSubscription || isLoadingAllSubscriptions);
 
   const [reference] = useQueryState("reference");
 

@@ -31,7 +31,6 @@ export default function BusinessUserPairingQR({
     <PairingQRStep
       entityId={staffId}
       entityName={userName}
-      zoneId={zoneId}
       onboardingCode={staffMember?.user?.id ?? staffId}
       onBack={onBack}
       onComplete={onComplete}

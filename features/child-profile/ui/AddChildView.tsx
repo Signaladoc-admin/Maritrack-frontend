@@ -8,17 +8,14 @@ import { useParentStore } from "@/shared/stores/user.store";
 import { useCreateChild } from "@/entities/children/model/useChildren";
 import { getProfileAction } from "@/entities/user/api/user.actions";
 import { createZoneAction } from "@/features/mdm-sync/api/mdm-sync.actions";
-import { mdmSyncKeys, useParentZones } from "@/features/mdm-sync/model/useMdmSync";
+import { mdmSyncKeys } from "@/features/mdm-sync/model/useMdmSync";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/shared/ui/toast";
 import { IChildProfile } from "@/features/onboarding/personal/types";
 import PairingQRStep from "@/features/onboarding/personal/ui/PairingQRStep";
-import { useAuth } from "@/shared/auth/AuthProvider";
-import { useGetZone } from "@/entities/zone/model/useGetZone";
 import { useActiveSubscription } from "@/features/payments/model/usePayments";
 import LoaderText from "@/shared/ui/LoaderText";
 import { Button } from "@/shared/ui/button";
-import { Header } from "@/shared/ui/layout/header";
 
 export default function AddChildView() {
   const router = useRouter();
@@ -32,8 +29,7 @@ export default function AddChildView() {
 
   const [pendingChild, setPendingChild] = useState<IChildProfile | null>(null);
 
-  const { zone, status: zoneStatus } = useGetZone();
-  const zoneId = zone?.id;
+  const zoneId = user?.zone.id;
 
   const { data: activeSubscriptionRes, status: subscriptionStatus } =
     useActiveSubscription(zoneId);
@@ -41,14 +37,12 @@ export default function AddChildView() {
   const [isLoadingSubscription, setIsLoadingSubscription] = useState(true);
 
   useEffect(() => {
-    const zoneSettled = zoneStatus === "success" || zoneStatus === "error";
-    const subscriptionSettled =
-      !zoneId || subscriptionStatus === "success" || subscriptionStatus === "error";
+    const subscriptionSettled = subscriptionStatus === "success" || subscriptionStatus === "error";
 
-    if (zoneSettled && subscriptionSettled) {
+    if (subscriptionSettled) {
       setIsLoadingSubscription(false);
     }
-  }, [zoneStatus, zoneId, subscriptionStatus]);
+  }, [subscriptionStatus]);
 
   useEffect(() => {
     if (!activeSubscriptionRes?.data?.active && !isLoadingSubscription) {
@@ -79,14 +73,12 @@ export default function AddChildView() {
           onboardingCode,
         };
 
-        console.log("newChildInfo:", newChildInfo);
-
         // Ensure zone exists
-        let activeZoneId = user?.zoneId?.[0]?.id;
+        let activeZoneId = user?.zone.id;
         if (!activeZoneId) {
           await createZoneAction();
           const updatedProfile = await getProfileAction();
-          activeZoneId = (updatedProfile as any).zoneId?.[0]?.id;
+          activeZoneId = (updatedProfile as any).zone.id;
           queryClient.invalidateQueries({ queryKey: ["user-profile"] });
         }
 
@@ -130,7 +122,6 @@ export default function AddChildView() {
           entityId={pendingChild.id!}
           entityName={pendingChild.name || "Child"}
           onboardingCode={pendingChild.onboardingCode}
-          zoneId={user?.zoneId?.[0]?.mdmZoneId}
           onBack={() => setPendingChild(null)}
           onComplete={() => router.push("/children")}
         />

@@ -18,6 +18,9 @@ export interface QueryOptions {
 }
 
 export interface PaginatedResponse<T> {
+  status: boolean;
+  statusCode: number;
+  message: string;
   data: T;
   total: number;
   page: number;

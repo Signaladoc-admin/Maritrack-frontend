@@ -3,12 +3,10 @@
 import { useServerActionQuery } from "@/shared/api/server-action-hooks";
 import { getQrCodeAction } from "../api/mdm-sync.actions";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
-import { useBusinessZones, useParentZones } from "./useMdmSync";
 import { useGetChildren } from "@/features/child-profile/model/useGetChildrenProfile";
-import { useParentChildren } from "@/entities/children/model/useChildren";
-import { useGetStaffMembers } from "@/entities/business/model/useStaffMembers";
+import { useChild } from "@/entities/children/model/useChildren";
+import { useGetStaffMember } from "@/entities/business/model/useStaffMembers";
 import { useAuth } from "@/shared/auth/AuthProvider";
-import { useGetZone } from "@/entities/zone/model/useGetZone";
 
 export const mdmSyncKeys = {
   qrcode: (zoneId: string, onboardingCode: string) =>
@@ -21,34 +19,17 @@ function toQrCodeSrc(data: string | null | undefined): string | null {
 }
 
 export function useQrCode(
-  entityId: string, // child or staff member id
-  overrides?: { zoneId?: string; onboardingCode?: string }
+  userTypeId: string, // child id or staff member id
 ) {
   const { user } = useAuth();
 
-  console.log(user?.appRole);
-
   const isParent = !!user?.id && user?.appRole === 'PARENT';
-  const isBusiness = !!user?.id && user?.appRole === 'BUSINESS';
 
-  const { data: parentZones } = useParentZones({ enabled: isParent });
-  const { data: businessZones } = useBusinessZones({ enabled: isBusiness });
-  const { data: parentChildren } = useParentChildren({ enabled: isParent });
-  const { data: staffMembers } = useGetStaffMembers(undefined, { enabled: isBusiness });
+  const { data: child } = useChild(userTypeId, { enabled: isParent })
+  const { data: staffMember } = useGetStaffMember(userTypeId, { enabled: !isParent })
 
-  const zoneWithChild = parentZones?.find((zone) =>
-    parentChildren?.data?.some((pc) => pc.id === entityId)
-  )?.id;
-  const zoneWithStaffMember = businessZones?.find((zone) =>
-    staffMembers?.staff?.some((sm) => sm.user?.id === entityId)
-  )?.id;
-
-  const derivedOnboardingCode = parentChildren?.data?.find(
-    (pc: any) => pc.id === entityId
-  )?.onboardingCode;
-
-  const onboardingCode = overrides?.onboardingCode ?? derivedOnboardingCode;
-  const zoneId = overrides?.zoneId ?? zoneWithChild ?? zoneWithStaffMember;
+  const onboardingCode = isParent ? child?.onboardingCode : staffMember?.onboardingCode;
+  const zoneId = user?.zoneId;
 
   const query = useServerActionQuery(
     mdmSyncKeys.qrcode(zoneId || "", onboardingCode || ""),
@@ -71,15 +52,12 @@ export function useQrCode(
 export function useChildQrCode({ childId }: { childId: string }) {
   const { data: user } = useUserProfile();
   const { user: authUser } = useAuth();
-  const { data: parentZonesRes } = useParentZones();
-  console.log(parentZonesRes, "parentZonesRes")
   const { data: children } = useGetChildren();
 
   const onboardingCode =
     children?.find((child: any) => child.id === childId)?.onboardingCode ?? null;
 
-  const { zone } = useGetZone({ enabled: !user?.zone?.id })
-  const activeZoneId = authUser?.zoneId || zone?.id
+  const activeZoneId = authUser?.zoneId || user?.zone?.id
 
   const query = useServerActionQuery(
     mdmSyncKeys.qrcode(activeZoneId || "", onboardingCode ?? ""),

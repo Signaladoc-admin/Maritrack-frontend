@@ -6,7 +6,6 @@ import { ChevronLeft } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { usePaymentPlans, useInitializePayment } from "@/features/payments/model/usePayments";
-import { useParentZone, useBusinessZone } from "@/features/mdm-sync/model/useMdmSync";
 import { useToast } from "@/shared/ui/toast";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { formatPaystackKoboAmount } from "@/shared/lib/utils";
@@ -48,12 +47,10 @@ export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: 
   const { data: plans, isLoading: isLoadingPlans } = usePaymentPlans();
 
   const { mutateAsync: initializePayment, isPending: isInitializingPayment } = useInitializePayment();
-  const { user: fullUserDetails } = useAuth();
-  const appRole = fullUserDetails?.appRole;
+  const { user } = useAuth();
+  const appRole = user?.appRole;
 
-  const { data: parentZone } = useParentZone({ enabled: !!appRole && appRole === "PARENT" });
-  const { data: businessZone } = useBusinessZone({ enabled: !!appRole && appRole === "BUSINESS" });
-  const zoneId = appRole === "PARENT" ? parentZone?.id : businessZone?.id;
+  const zoneId = user?.zoneId || ''
 
   const pathname = usePathname()
   const isOnboarding = pathname.includes("onboarding");

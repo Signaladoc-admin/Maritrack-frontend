@@ -6,9 +6,9 @@ import { ActionResult, QueryOptions } from "./types";
 export interface ResourceActions<T, CreateDto = any, UpdateDto = any, ListT = T[]> {
   getAll: (options?: QueryOptions) => Promise<ActionResult<ListT>>;
   getById: (id: string) => Promise<ActionResult<T>>;
-  create: (data: CreateDto) => Promise<ActionResult<T>>;
-  createMultiple?: (data: CreateDto[]) => Promise<ActionResult<T[]>>;
-  update: (id: string, data: UpdateDto) => Promise<ActionResult<T>>;
+  create: (data: CreateDto) => Promise<ActionResult<any>>;
+  createMultiple?: (data: CreateDto[]) => Promise<ActionResult<any[]>>;
+  update: (id: string, data: UpdateDto) => Promise<ActionResult<any>>;
   delete: (id: string) => Promise<ActionResult<void>>;
 }
 
@@ -32,8 +32,14 @@ export function createResourceHooks<T, CreateDto = any, UpdateDto = any, ListT =
       return useServerActionQuery([...keys.all, options], actions.getAll, [options], queryOptions);
     },
 
-    useGetById: (id: string) => {
-      return useServerActionQuery([...keys.detail(id)], actions.getById, [id], { enabled: !!id });
+    useGetById: (
+      id: string,
+      queryOptions?: Omit<UseQueryOptions<T, Error, T, readonly any[]>, "queryKey" | "queryFn">
+    ) => {
+      return useServerActionQuery([...keys.detail(id)], actions.getById, [id], {
+        enabled: !!id,
+        ...queryOptions,
+      });
     },
 
     useCreate: () => {

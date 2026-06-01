@@ -1,6 +1,7 @@
 import { Gender } from "@/shared/lib/constants";
 import { IChildProfile } from "../../onboarding/personal/types";
 import { Parent } from "@/entities/parents/types";
+import { BaseEntity } from "@/shared/api/types";
 
 export interface AddEditChildModalProps {
   open: boolean;
@@ -25,7 +26,7 @@ export interface DeleteChildModalProps {
   variant: "destructive" | "default";
 }
 
-export interface ChildDevice {
+export interface ChildDevice extends BaseEntity {
   id: string;
   serialNumber: string;
   imei: string;
@@ -44,50 +45,34 @@ export interface ChildDevice {
   flagged: boolean;
   flagReason: string | null;
   mdmLastSyncAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-  deleted: boolean;
-  deletedAt: string | null;
   childId: string;
   currentUserId: string | null;
   currentUser: null;
 }
 
-export interface ParentLink {
+export interface ParentLink extends BaseEntity {
   parentId: string;
   childId: string;
-  createdAt: string;
-  updatedAt: string;
-  deleted: boolean;
-  deletedAt: string | null;
   parent: Parent
 }
-export interface Child {
+export interface Child extends BaseEntity {
   id: string;
   name: string;
   age: number;
   gender: Gender;
   imageUrl: string | null;
   onboardingCode: string;
-  createdAt: string;
-  updatedAt: string;
-  deleted: boolean;
-  deletedAt: string | null;
   device: ChildDevice | null;
   parentLinks: ParentLink[];
   parent: Parent[];
 }
 
-export interface ChildRelationship {
+export interface ChildRelationship extends BaseEntity {
   id: string;
   child: Child;
   childId: string;
   parentId: string;
   zoneId: string;
-  createdAt: string;
-  updatedAt: string;
-  deleted: boolean;
-  deletedAt: string | null;
   imageUrl: string;
   name: string;
 }

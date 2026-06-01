@@ -1,6 +1,6 @@
 "use server";
 
-import { ActionResult, ApiResponse } from "@/shared/api/types";
+import { ActionResult, PaginatedResponse } from "@/shared/api/types";
 import { apiClient } from "@/shared/lib/api-client";
 import { Child } from "../model/types";
 
@@ -16,7 +16,7 @@ export async function getChildrenAction(): Promise<ActionResult<any>> {
 }
 export async function getParentChildrenAction() {
   try {
-    const response = await apiClient<ApiResponse<{ children: Child[] }>>("/children/parent", {
+    const response = await apiClient<PaginatedResponse<{ children: Child[] }>>("/children/parent", {
       method: "GET",
     });
     return { success: true, data: response.data.children };
