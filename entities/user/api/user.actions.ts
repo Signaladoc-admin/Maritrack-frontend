@@ -3,21 +3,17 @@
 import { apiClient } from "@/shared/lib/api-client";
 import { cookies } from "next/headers";
 import type {
-  UserProfile,
   UpdateProfileDto,
   SupportRequestDto,
   UserFilterParams,
-  IUserProfile,
 } from "../model/user.schema";
+import { UserDetails, UserProfile } from "../model/types";
+import { ApiResponse, MessageResponse } from "@/shared/api/types";
+import { withSafeAction } from "@/shared/lib/safe-action";
 
 // --- Profile ---
 
-export async function getProfileAction(): Promise<IUserProfile | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("accessToken")?.value || cookieStore.get("refreshToken")?.value;
-
-  if (!token) return null;
-
+export async function getProfileAction(): Promise<UserProfile | null> {
   try {
     const response = await apiClient("/users/user", {
       method: "GET",
@@ -29,22 +25,24 @@ export async function getProfileAction(): Promise<IUserProfile | null> {
   }
 }
 
-export async function getUserByIdAction(id: string): Promise<UserProfile> {
-  const response = await apiClient(`/users/user/${id}`, {
-    method: "GET",
-  });
-  return response.data;
+export async function getUserByIdAction(id: string) {
+  return withSafeAction(async () => {
+    const response = await apiClient<ApiResponse<UserDetails>>(`/users/user/${id}`, {
+      method: "GET",
+    });
+    return response.data;
+  }, "Failed to get user details")
 }
 
-export async function updateProfileAction(data: UpdateProfileDto): Promise<UserProfile> {
+export async function updateProfileAction(data: UpdateProfileDto): Promise<ApiResponse<MessageResponse>> {
   const formData = new FormData();
   if (data.firstName) formData.append("firstName", data.firstName);
   if (data.lastName) formData.append("lastName", data.lastName);
   if (data.phone) formData.append("phone", data.phone);
   if (data.status) formData.append("status", data.status);
-  if (data.profilePicture instanceof File) {
-    formData.append("profilePicture", data.profilePicture);
-  } else if (typeof data.profilePicture === "string") {
+  if (data.imageUrl) {
+    formData.append("imageUrl", data.imageUrl);
+  } else if (data.profilePicture instanceof File) {
     formData.append("profilePicture", data.profilePicture);
   }
 
@@ -52,6 +50,7 @@ export async function updateProfileAction(data: UpdateProfileDto): Promise<UserP
     method: "PATCH",
     body: formData,
   });
+  console.log(response)
   return response.data;
 }
 
@@ -92,4 +91,11 @@ export async function supportRequestAction(data: SupportRequestDto): Promise<voi
     method: "POST",
     body: JSON.stringify(data),
   });
+}
+
+export async function checkIfEmailExistsAction(email: string): Promise<boolean> {
+  const response = await apiClient(`/users/check/${encodeURIComponent(email)}`, {
+    method: "GET",
+  });
+  return response.message.toLowerCase().includes("email exists");
 }

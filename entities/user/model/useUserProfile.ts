@@ -9,8 +9,9 @@ import {
   filterUsersAction,
   checkEmailAction,
   supportRequestAction,
+  checkIfEmailExistsAction,
 } from "../api/user.actions";
-import type { UpdateProfileDto, SupportRequestDto, UserFilterParams } from "./user.schema";
+import type { SupportRequestDto, UserFilterParams } from "./user.schema";
 import { useToast } from "@/shared/ui/toast";
 
 // --- Profile Hooks ---
@@ -32,24 +33,11 @@ export function useUserById(id: string) {
 
 export function useUpdateProfile() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (data: UpdateProfileDto) => updateProfileAction(data),
+    mutationFn: updateProfileAction,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-      toast({
-        type: "success",
-        title: "Profile Updated",
-        message: "Your profile has been updated successfully.",
-      });
-    },
-    onError: (err: any) => {
-      toast({
-        type: "error",
-        title: "Update Failed",
-        message: err.message || "Failed to update profile.",
-      });
     },
   });
 }
@@ -103,5 +91,13 @@ export function useSupportRequest() {
         message: err.message || "Failed to send support request.",
       });
     },
+  });
+}
+
+export function useUserExists(email: string) {
+  return useQuery({
+    queryKey: ["user-exists", email],
+    queryFn: () => checkIfEmailExistsAction(email),
+    enabled: !!email && email.includes("@"),
   });
 }

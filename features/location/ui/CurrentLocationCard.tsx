@@ -2,9 +2,17 @@
 
 import { MapPin } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/Card/Card";
-import { CurrentLocationCardProps } from "../types";
+import { useReverseGeocode } from "../model/useReverseGeocode";
 
-export function CurrentLocationCard({ address, updatedAt, className }: CurrentLocationCardProps) {
+interface CurrentLocationCardProps {
+  lat?: number;
+  lon?: number;
+  className?: string;
+}
+
+export function CurrentLocationCard({ lat, lon, className }: CurrentLocationCardProps) {
+  const { address, updatedAt } = useReverseGeocode(lat, lon);
+
   return (
     <Card className={className}>
       <CardHeader className="flex flex-row items-center justify-between">

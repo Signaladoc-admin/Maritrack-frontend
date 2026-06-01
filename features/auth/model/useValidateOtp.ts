@@ -3,33 +3,28 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { validateOtpAction } from "../api/auth.actions";
-import { useNewUserStore } from "@/shared/stores/user-store";
-import { useLogin } from "@/features/auth-login/model/useLogin";
+import { useNewUserStore } from "@/shared/stores/user.store";
+import { useAuth } from "@/shared/auth/AuthProvider";
 import { useToast } from "@/shared/ui/toast";
 import type { OtpConfirmFormValues } from "../schema";
-import { useIsOnboarded } from "@/entities/user/model/useIsOnboarded";
-import { getParentalControlMeAction } from "@/entities/parental-controls/api/parental-controls.actions";
 
 export function useValidateOtp() {
   const router = useRouter();
   const { toast } = useToast();
-  const { login } = useLogin();
-  const { email, password, token, clearCredentials } = useNewUserStore();
+  const { login } = useAuth();
   const queryClient = useQueryClient();
-  const { checkAndRedirect } = useIsOnboarded();
-
-  console.log(password, email);
 
   const mutation = useMutation({
-    mutationFn: (data: OtpConfirmFormValues) => {
-      if (!email || !token) {
+    mutationFn: async (data: OtpConfirmFormValues) => {
+      const { email } = useNewUserStore.getState();
+      if (!email) {
         throw new Error("Session expired. Please register again.");
       }
-      return validateOtpAction({
-        email,
-        token,
-        otp: data.otp,
-      });
+      const result = await validateOtpAction({ email, otp: data.otp });
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      return result.data;
     },
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["session"] });
@@ -39,27 +34,23 @@ export function useValidateOtp() {
         message: "Your account has been successfully verified!",
       });
 
-      // Auto-login
+      const { email, password, clearCredentials } = useNewUserStore.getState();
       if (password && email) {
         try {
-          const profile = await login({ email, password });
+          await login({ email, password });
           clearCredentials();
-
-          // Fetch parental controls to determine onboarding status accurately
-          const pcSettings = await getParentalControlMeAction();
-          checkAndRedirect(profile as any, pcSettings);
-        } catch (loginErr) {
-          console.error("Auto-login failed:", loginErr);
+          router.push("/dashboard");
+        } catch {
           toast({
             type: "warning",
             title: "Auto-login Failed",
             message:
               "Your account is verified, but we couldn't log you in automatically. Please log in manually.",
           });
-          // router.push("/login");
+          router.push("/login");
         }
       } else {
-        // router.push("/login");
+        router.push("/login");
       }
     },
     onError: (err: any) => {

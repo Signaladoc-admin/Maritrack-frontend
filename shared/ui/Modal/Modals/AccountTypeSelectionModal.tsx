@@ -3,7 +3,6 @@
 import * as React from "react";
 import { User, Briefcase } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/Modal/dialog";
-import { cn } from "@/lib/utils";
 
 interface AccountTypeModalProps {
   open: boolean;

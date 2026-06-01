@@ -3,66 +3,72 @@
 import { useServerActionQuery } from "@/shared/api/server-action-hooks";
 import { getQrCodeAction } from "../api/mdm-sync.actions";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
-import { useParentZones } from "./useMdmSync";
+import { useGetChildren } from "@/features/child-profile/model/useGetChildrenProfile";
+import { useChild } from "@/entities/children/model/useChildren";
+import { useGetStaffMember } from "@/entities/business/model/useStaffMembers";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 export const mdmSyncKeys = {
   qrcode: (zoneId: string, onboardingCode: string) =>
     ["mdm-sync", "qrcode", zoneId, onboardingCode] as const,
 };
 
-export function useQrCode(zoneId?: string, onboardingCode?: string) {
+function toQrCodeSrc(data: string | null | undefined): string | null {
+  if (!data) return null;
+  return data.startsWith("data:image") ? data : `data:image/png;base64,${data}`;
+}
+
+export function useQrCode(
+  userTypeId: string, // child id or staff member id
+) {
+  const { user } = useAuth();
+
+  const isParent = !!user?.id && user?.appRole === 'PARENT';
+
+  const { data: child } = useChild(userTypeId, { enabled: isParent })
+  const { data: staffMember } = useGetStaffMember(userTypeId, { enabled: !isParent })
+
+  const onboardingCode = isParent ? child?.onboardingCode : staffMember?.onboardingCode;
+  const zoneId = user?.zoneId;
+
   const query = useServerActionQuery(
     mdmSyncKeys.qrcode(zoneId || "", onboardingCode || ""),
     getQrCodeAction,
     [zoneId as string, onboardingCode as string],
     {
       enabled: !!zoneId && !!onboardingCode,
-      staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+      staleTime: 1000 * 60 * 5,
       retry: 1,
     }
   );
 
-  const qrCodeSrc = query.data
-    ? query.data.startsWith("data:image")
-      ? query.data
-      : `data:image/png;base64,${query.data}`
-    : null;
-
   return {
     ...query,
-    qrCodeSrc,
+    qrCodeSrc: toQrCodeSrc(query.data),
+    isPending: !zoneId || !onboardingCode,
   };
 }
 
 export function useChildQrCode({ childId }: { childId: string }) {
   const { data: user } = useUserProfile();
-  const { data: parentZonesRes } = useParentZones();
+  const { user: authUser } = useAuth();
+  const { data: children } = useGetChildren();
 
   const onboardingCode =
-    parentZonesRes?.[0].parentChildren.find((child: any) => child.childId === childId)?.child
-      ?.onboardingCode || null;
+    children?.find((child: any) => child.id === childId)?.onboardingCode ?? null;
 
-  const activeZoneId = user?.zoneId?.[0]?.id || parentZonesRes?.[0]?.id;
+  const activeZoneId = authUser?.zoneId || user?.zone?.id
 
   const query = useServerActionQuery(
-    mdmSyncKeys.qrcode(activeZoneId || "", onboardingCode),
+    mdmSyncKeys.qrcode(activeZoneId || "", onboardingCode ?? ""),
     getQrCodeAction,
-    [activeZoneId as string, onboardingCode],
+    [activeZoneId as string, onboardingCode as string],
     {
-      enabled: !!activeZoneId,
-      staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+      enabled: !!activeZoneId && !!onboardingCode,
+      staleTime: 1000 * 60 * 5,
       retry: 1,
     }
   );
 
-  const qrCodeSrc = query.data
-    ? query.data.startsWith("data:image")
-      ? query.data
-      : `data:image/png;base64,${query.data}`
-    : null;
-
-  return {
-    ...query,
-    qrCodeSrc,
-  };
+  return { ...query, qrCodeSrc: toQrCodeSrc(query.data) };
 }

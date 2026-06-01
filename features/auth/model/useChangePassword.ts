@@ -9,7 +9,11 @@ export function useChangePassword() {
   const { toast } = useToast();
 
   const mutation = useMutation({
-    mutationFn: (data: ChangePasswordDto) => changePasswordAction(data),
+    mutationFn: async (data: ChangePasswordDto) => {
+      const result = await changePasswordAction(data);
+      if (!result.success) throw new Error(result.error);
+      return result.data;
+    },
     onSuccess: () => {
       toast({
         type: "success",
@@ -17,11 +21,11 @@ export function useChangePassword() {
         message: "Your password has been changed successfully.",
       });
     },
-    onError: (err: any) => {
+    onError: (error) => {
       toast({
         type: "error",
-        title: "Change Failed",
-        message: err.message || "Failed to change password.",
+        title: "Failed to change password",
+        message: error.message,
       });
     },
   });
@@ -29,7 +33,7 @@ export function useChangePassword() {
   return {
     changePassword: mutation.mutateAsync,
     isSubmitting: mutation.isPending,
-    error: mutation.error?.message || null,
+    error: mutation.error?.message ?? null,
     mutation,
   };
 }

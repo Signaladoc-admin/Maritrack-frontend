@@ -3,15 +3,15 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronLeft, Home, Users, User } from "lucide-react";
+import { ChevronLeft, Home, Users } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
-import { useUIStore } from "@/shared/stores/ui-store";
+import { useUIStore } from "@/shared/stores/ui.store";
 import { useRouter } from "next/navigation";
+import { ProfilePopover } from "../Sidebar/ProfilePopover";
 
 const navItems = [
   { label: "Home", href: "/dashboard", icon: Home },
   { label: "Children", href: "/children", icon: Users },
-  { label: "Profile", href: "/profile", icon: User },
 ];
 
 export function MobileNavbar() {
@@ -52,6 +52,7 @@ export function MobileNavbar() {
                 </Link>
               );
             })}
+            <ProfilePopover />
           </div>
         )}
       </div>

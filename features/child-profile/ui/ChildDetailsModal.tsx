@@ -13,12 +13,15 @@ import { FilledUserIcon } from "@/shared/ui/icons";
 import { Controller, useForm } from "react-hook-form";
 import { FileUpload } from "@/shared/ui/image-upload";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { childProfileSchema } from "@/features/onboarding/schema";
+import { childProfileSchema } from "@/features/onboarding/personal/schema";
 import { z } from "zod";
-import { IChildProfile } from "@/features/onboarding/types";
+import { IChildProfile } from "@/features/onboarding/personal/types";
 import { InputGroup } from "@/shared/ui/input-group";
+import { useUpdateChild } from "../model/useGetChildrenProfile";
 
 export function AddEditChildModal({ open, onOpenChange, initialData }: AddEditChildModalProps) {
+  const { mutateAsync: updateChild, isPending } = useUpdateChild(initialData?.id || "");
+
   const { handleSubmit, register, control, formState } = useForm<
     z.infer<typeof childProfileSchema>
   >({
@@ -31,14 +34,15 @@ export function AddEditChildModal({ open, onOpenChange, initialData }: AddEditCh
     },
   });
 
-  const onSubmit = (data: z.infer<typeof childProfileSchema>) => {
-    const formattedData: IChildProfile = {
-      ...data,
-      id: initialData?.id,
-      image: data.profileImage ? URL.createObjectURL(data.profileImage) : initialData?.image,
-    };
-
-    console.log(formattedData);
+  const onSubmit = async (data: z.infer<typeof childProfileSchema>) => {
+    if (!initialData?.id) return;
+    await updateChild({
+      name: data.name,
+      age: Number(data.age),
+      gender: data.gender,
+      profilePicture: data.profileImage,
+    });
+    onOpenChange(false);
   };
 
   return (
@@ -120,8 +124,8 @@ export function AddEditChildModal({ open, onOpenChange, initialData }: AddEditCh
             </div>
           </div>
           <DialogFooter>
-            <Button className="w-full bg-[#1B3C73]">
-              {initialData ? "Save Changes" : "Create Profile"}
+            <Button className="w-full bg-[#1B3C73]" disabled={isPending}>
+              {isPending ? "Saving..." : initialData ? "Save Changes" : "Create Profile"}
             </Button>
           </DialogFooter>
         </form>

@@ -1,0 +1,29 @@
+import { cn } from "@/shared/lib/utils";
+
+export default function DisplayField({
+  orientation = "vertical",
+  label,
+  value,
+  className,
+  hoverTitle,
+}: {
+  orientation?: "vertical" | "horizontal";
+  label: string;
+  value: string;
+  className?: string;
+  hoverTitle?: string;
+}) {
+  return (
+    <div
+      title={hoverTitle}
+      className={cn(
+        "gap-2 space-y-2 rounded-lg bg-white p-5 text-sm",
+        orientation === "horizontal" && "grid grid-cols-2",
+        className
+      )}
+    >
+      <p className="text-neutral-500">{label}</p>
+      <p className="font-semibold text-neutral-700">{value}</p>
+    </div>
+  );
+}

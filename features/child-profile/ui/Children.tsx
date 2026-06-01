@@ -6,13 +6,11 @@ import { Child } from "../model/types";
 import Link from "next/link";
 import { CardWrapper } from "@/shared/ui/card-wrapper";
 import NewChildProfileButton from "./NewChildProfileButton";
-import { useState } from "react";
-import { AddEditChildModal } from "./ChildDetailsModal";
+import { useRouter } from "next/navigation";
 
 export default function Children() {
-  const { children, isFetchingChildren } = useParentChildren();
-
-  const [isShowingCreateChildModal, setIsShowingCreateChildModal] = useState(false);
+  const { data: children, isLoading: isFetchingChildren } = useParentChildren();
+  const router = useRouter();
 
   return (
     <>
@@ -29,7 +27,7 @@ export default function Children() {
         )}
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {children?.map((child: Child) => (
+          {children?.data?.map((child: Child) => (
             <Link href={`/child/${child.id}`} key={child.id}>
               <ChildCard child={child} />
             </Link>
@@ -38,23 +36,12 @@ export default function Children() {
 
         <div className="mt-4 max-w-lg">
           <NewChildProfileButton
-            onClick={() => setIsShowingCreateChildModal(true)}
+            onClick={() => router.push("/children/add")}
             text="New Child Profile"
             variant="vertical"
           />
         </div>
       </div>
-
-      <AddEditChildModal
-        open={isShowingCreateChildModal}
-        initialData={{
-          age: 11,
-          gender: "MALE",
-          name: "Obafemi Jnr.",
-          profileImage: undefined,
-        }}
-        onOpenChange={setIsShowingCreateChildModal}
-      />
     </>
   );
 }

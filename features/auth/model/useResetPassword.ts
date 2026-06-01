@@ -2,43 +2,48 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { resetPasswordAction, resetForgottenPasswordAction } from "../api/auth.actions";
-import type {
-  ResetPasswordDto,
-  ResetForgottenPasswordDto,
-} from "@/entities/user/model/user.schema";
 import { useToast } from "@/shared/ui/toast";
 import { useRouter } from "next/navigation";
+import { ResetPasswordRequest } from "../types";
 
 export function useResetPassword() {
   const { toast } = useToast();
   const router = useRouter();
 
   const resetMutation = useMutation({
-    mutationFn: (data: ResetPasswordDto) => resetPasswordAction(data),
-    onSuccess: () => {
+    mutationFn: async (data: ResetPasswordRequest) => {
+      const result = await resetPasswordAction(data);
+      if (!result.success) throw new Error(result.error);
+      return result.data;
+    },
+    onSuccess: (data) => {
       toast({
         type: "success",
         title: "Password Reset",
-        message: "Your password has been reset successfully.",
+        message: data?.message,
       });
       router.push("/login");
     },
-    onError: (err: any) => {
+    onError: (err) => {
       toast({
         type: "error",
         title: "Reset Failed",
-        message: err.message || "Failed to reset password.",
+        message: err?.message || "Failed to reset password.",
       });
     },
   });
 
   const resetForgottenMutation = useMutation({
-    mutationFn: (data: ResetForgottenPasswordDto) => resetForgottenPasswordAction(data),
-    onSuccess: () => {
+    mutationFn: async (data: ResetPasswordRequest) => {
+      const result = await resetForgottenPasswordAction(data);
+      if (!result.success) throw new Error(result.error);
+      return result.data;
+    },
+    onSuccess: (data) => {
       toast({
         type: "success",
-        title: "Password Reset",
-        message: "Your password has been reset successfully. Please log in.",
+        title: "Forgotten Password Reset",
+        message: data?.message,
       });
       router.push("/login");
     },

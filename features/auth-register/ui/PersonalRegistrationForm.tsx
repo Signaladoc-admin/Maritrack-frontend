@@ -12,12 +12,14 @@ import { useRegisterParent } from "../model/useRegisterParent";
 import { genderOptions } from "@/lib/constants/shared";
 import { SearchableSelect } from "@/shared/ui/searchable-select";
 import { ChevronLeft } from "lucide-react";
-import { useNewUserStore } from "@/shared/stores/user-store";
+import { useNewUserStore } from "@/shared/stores/user.store";
 import { CountryStateInput } from "@/shared/ui/inputs/country-state-input";
 
 export default function PersonalRegistrationForm() {
   const router = useRouter();
   const [step, setStep] = useState(1);
+
+  const { setEmail, setPassword, setToken, personalDetails, setPersonalDetails, setRegistrationType } = useNewUserStore();
 
   const {
     register,
@@ -32,21 +34,20 @@ export default function PersonalRegistrationForm() {
   } = useForm<ParentRegistrationFormValues>({
     resolver: zodResolver(parentRegistrationFormSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
+      firstName: personalDetails?.firstName || "",
+      lastName: personalDetails?.lastName || "",
       email: "",
-      password: "",
-      confirmPassword: "",
-      gender: undefined,
-      address: "",
-      country: "",
-      state: "",
+      password: personalDetails?.password || "",
+      confirmPassword: personalDetails?.confirmPassword || "",
+      gender: personalDetails?.gender || undefined,
+      address: personalDetails?.address || "",
+      country: personalDetails?.country || "",
+      state: personalDetails?.state || "",
     },
     mode: "onTouched",
   });
 
   const { registerParent, isSubmitting, error } = useRegisterParent();
-  const { setEmail, setPassword, setToken } = useNewUserStore();
 
   const passwordValue = watch("password");
   const confirmValue = watch("confirmPassword");
@@ -90,11 +91,13 @@ export default function PersonalRegistrationForm() {
 
     setEmail(data.email);
     setPassword(data.password);
+    setRegistrationType("personal");
+    setPersonalDetails(data);
     if (res?.token) {
       setToken(res.token);
     }
 
-    router.push("/login");
+    router.push("/confirm-email");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
@@ -143,7 +146,7 @@ export default function PersonalRegistrationForm() {
             type="password"
             label="Password"
             placeholder="Password here"
-            isEnabled
+            isPasswordValidationEnabled
             {...register("password")}
             error={errors.password?.message}
           />

@@ -1,20 +1,29 @@
 "use client";
 
 import { Button } from "@/shared/ui/button";
-import { OTPInput } from "@/shared/ui/otp-input";
-import { InputGroup } from "@/shared/ui/input-group";
 import HaveAnAccount from "./HaveAnAccount";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { otpConfirmFormSchema, OtpConfirmFormValues } from "../schema";
-import { useRouter } from "next/navigation";
-import { useNewUserStore } from "@/shared/stores/user-store";
 import { useValidateOtp } from "../model/useValidateOtp";
+import { useNewUserStore } from "@/shared/stores/user.store";
+import { useQueryState } from "nuqs";
+import { useEffect } from "react";
+import { OtpInputField } from "./OtpInputField";
+import { useRouter } from "next/navigation";
 
 export default function OtpConfirmForm() {
   const router = useRouter();
-  const { email, password, setEmail, setPassword } = useNewUserStore();
   const { validateOtp, isSubmitting: isVerifying } = useValidateOtp();
+  const { setToken, registrationType } = useNewUserStore();
+  const [token] = useQueryState("token");
+
+  const { email, password, clearCredentials } = useNewUserStore.getState();
+  console.log(email, password)
+
+  useEffect(() => {
+    if (token) setToken(token);
+  }, [token, setToken]);
 
   const form = useForm<OtpConfirmFormValues>({
     resolver: zodResolver(otpConfirmFormSchema),
@@ -24,42 +33,45 @@ export default function OtpConfirmForm() {
   });
 
   const onSubmit = async (data: OtpConfirmFormValues) => {
+    // Blur the active OTP input before the async submission so the Enter
+    // key event doesn't carry over to the login form after navigation.
+    (document.activeElement as HTMLElement)?.blur();
     try {
-      await validateOtp(data);
+      await validateOtp({ otp: data.otp });
     } catch (err) {
       // Error handled by hook
     }
   };
 
+  const handleChangeEmail = () => {
+    if (registrationType === "business") {
+      router.push("/business/register");
+    } else {
+      router.push("/register");
+    }
+  };
+
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-7">
-      <div className="space-y-2">
-        <InputGroup label="Enter OTP">
-          <Controller
-            control={form.control}
-            name="otp"
-            render={({ field }) => (
-              <div className="space-y-2">
-                <OTPInput value={field.value} onChange={field.onChange} length={6} />
-                {form.formState.errors.otp && (
-                  <p className="text-destructive text-sm">{form.formState.errors.otp.message}</p>
-                )}
-              </div>
-            )}
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
+      <Controller
+        control={form.control}
+        name="otp"
+        render={({ field }) => (
+          <OtpInputField
+            value={field.value}
+            onChange={field.onChange}
+            error={form.formState.errors.otp?.message}
+            email={email || ""}
+            length={6}
+            onChangeEmail={handleChangeEmail}
           />
-        </InputGroup>
-        <div className="text-muted-foreground flex items-center justify-between text-sm font-medium">
-          <Button variant="link" className="text-muted-foreground px-0">
-            Resend code in 10s
-          </Button>
-          <Button variant="link" className="text-muted-foreground px-0">
-            Change email
-          </Button>
-        </div>
-      </div>
+        )}
+      />
+      
       <Button type="submit" className="w-full" disabled={isVerifying}>
         {isVerifying ? "Verifying..." : "Continue"}
       </Button>
+
       <HaveAnAccount />
     </form>
   );

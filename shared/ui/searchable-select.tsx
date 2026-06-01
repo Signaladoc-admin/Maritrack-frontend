@@ -11,6 +11,12 @@ export interface SearchableSelectProps {
   onValueChange: (value: string) => void;
   placeholder?: string;
   isSearchable?: boolean;
+  /** Called with the current search query — use for server-side search. Disables client-side filtering. */
+  onSearch?: (query: string) => void;
+  /** Render custom content inside each option row (check icon and selection highlight are handled by the component). */
+  renderOption?: (option: { label: string; value: string }, isSelected: boolean) => React.ReactNode;
+  /** Show a loading spinner in the dropdown (use while fetching remote results). */
+  isLoading?: boolean;
   disabled?: boolean;
   className?: string;
   id?: string;
@@ -22,21 +28,76 @@ export function SearchableSelect({
   onValueChange,
   placeholder = "Select an option",
   isSearchable = false,
+  onSearch,
+  renderOption,
+  isLoading = false,
   disabled = false,
   className,
   id,
 }: SearchableSelectProps) {
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [highlightedIndex, setHighlightedIndex] = React.useState(-1);
+  const listRef = React.useRef<HTMLDivElement>(null);
 
+  // When onSearch is provided, skip client-side filtering — caller owns the results
   const filteredOptions = React.useMemo(() => {
-    if (!isSearchable || !searchQuery) return options;
+    if (!isSearchable || !searchQuery || onSearch) return options;
     return options.filter((option) =>
       option.label.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [options, isSearchable, searchQuery]);
+  }, [options, isSearchable, searchQuery, onSearch]);
 
   const selectedOption = options.find((opt) => opt.value === value);
+
+  React.useEffect(() => {
+    setHighlightedIndex(-1);
+  }, [filteredOptions]);
+
+  React.useEffect(() => {
+    if (highlightedIndex < 0 || !listRef.current) return;
+    const item = listRef.current.children[highlightedIndex] as HTMLElement;
+    item?.scrollIntoView({ block: "nearest" });
+  }, [highlightedIndex]);
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    onSearch?.(query);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!open) return;
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        setHighlightedIndex((prev) => (prev < filteredOptions.length - 1 ? prev + 1 : prev));
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : 0));
+        break;
+      case "Enter":
+        e.preventDefault();
+        if (highlightedIndex >= 0 && highlightedIndex < filteredOptions.length) {
+          onValueChange(filteredOptions[highlightedIndex].value);
+          setOpen(false);
+          setSearchQuery("");
+          onSearch?.("");
+        }
+        break;
+      case "Escape":
+        e.preventDefault();
+        setOpen(false);
+        break;
+    }
+  };
+
+  const handleSelect = (optionValue: string) => {
+    onValueChange(optionValue);
+    setOpen(false);
+    setSearchQuery("");
+    onSearch?.("");
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -47,16 +108,23 @@ export function SearchableSelect({
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
+          onKeyDown={!isSearchable ? handleKeyDown : undefined}
           className={cn(
-            "border-input ring-offset-background placeholder:text-muted-foreground flex h-10 w-full items-center justify-between rounded border-[1.5px] bg-transparent px-3 py-2 text-base focus:ring-[1.5px] focus:ring-[#1b3c73] focus:ring-offset-0 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+            "ring-offset-background flex h-[50px] w-full items-center rounded-xl border border-[#E5E7EB] bg-[#fafafa] px-4 text-base transition-colors focus-within:ring-[1.5px] focus-within:ring-[#1b3c73] focus-within:ring-offset-0 focus-within:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
             className
           )}
         >
-          <span className="truncate">{selectedOption ? selectedOption.label : placeholder}</span>
+          <span className="w-full truncate text-left">
+            {selectedOption ? selectedOption.label : <span className="text-muted-foreground">{placeholder}</span>}
+          </span>
           <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+      <PopoverContent
+        className="w-(--radix-popover-trigger-width) p-0"
+        align="start"
+        onWheel={(e) => e.stopPropagation()}
+      >
         {isSearchable && (
           <div className="flex items-center border-b px-3">
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
@@ -64,34 +132,46 @@ export function SearchableSelect({
               className="placeholder:text-muted-foreground flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50"
               placeholder="Search..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               onClick={(e) => e.stopPropagation()}
+              onKeyDown={handleKeyDown}
             />
           </div>
         )}
-        <div className="max-h-60 overflow-y-auto p-1">
-          {filteredOptions.length === 0 ? (
+        <div
+          ref={listRef}
+          className="max-h-60 overflow-y-auto overscroll-contain p-1"
+          onWheel={(e) => {
+            e.stopPropagation();
+            e.currentTarget.scrollTop += e.deltaY;
+          }}
+        >
+          {isLoading ? (
+            <div className="flex items-center justify-center p-4">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#1b3c73] border-t-transparent" />
+            </div>
+          ) : filteredOptions.length === 0 ? (
             <p className="p-2 text-center text-sm text-slate-500">No options found.</p>
           ) : (
-            filteredOptions.map((option) => (
-              <div
-                key={option.value}
-                className={cn(
-                  "relative flex w-full cursor-pointer items-center rounded-sm py-1.5 pr-2 pl-8 text-sm select-none hover:bg-slate-100",
-                  value === option.value ? "bg-slate-50 font-medium text-[#1b3c73]" : ""
-                )}
-                onClick={() => {
-                  onValueChange(option.value);
-                  setOpen(false);
-                  setSearchQuery("");
-                }}
-              >
-                <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-                  {value === option.value && <Check className="h-4 w-4" />}
-                </span>
-                {option.label}
-              </div>
-            ))
+            filteredOptions.map((option, index) => {
+              const isSelected = value === option.value;
+              return (
+                <div
+                  key={option.value}
+                  className={cn(
+                    "relative flex w-full cursor-pointer items-center rounded-sm py-1.5 pr-2 pl-8 text-sm select-none",
+                    isSelected && "bg-slate-50 font-medium text-[#1b3c73]",
+                    highlightedIndex === index ? "bg-slate-100" : "hover:bg-slate-100"
+                  )}
+                  onClick={() => handleSelect(option.value)}
+                >
+                  <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+                    {isSelected && <Check className="h-4 w-4" />}
+                  </span>
+                  {renderOption ? renderOption(option, isSelected) : option.label}
+                </div>
+              );
+            })
           )}
         </div>
       </PopoverContent>

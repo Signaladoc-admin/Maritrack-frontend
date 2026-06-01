@@ -1,6 +1,6 @@
 import { CardWrapper } from "@/shared/ui/card-wrapper";
 import { cn } from "@/shared/lib/utils";
-import { AppData } from "@/shared/stores/user-store";
+import { AppData } from "@/shared/stores/user.store";
 
 export function TopApps({ className, apps }: { className?: string; apps?: AppData[] }) {
   if (!apps) return null;
