@@ -13,8 +13,7 @@ export async function getStaffMembersAction(options?: StaffMemberFiltersRequest)
       noRedirect: true,
       params: options as Record<string, string>,
     });
-    return res.data;
-
+    return res;
   }, "Failed to get staff members");
 }
 export async function getStaffMemberAction(id: string) {

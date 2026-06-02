@@ -9,13 +9,13 @@ import {
 import { createResourceHooks, ResourceActions } from "@/shared/api/createResourceHooks";
 import { BusinessStaff } from "../types";
 import { StaffMemberValues as StaffMemberDto } from "@/features/onboarding/business/schema";
-import { QueryOptions } from "@/shared/api/types";
+import { PaginatedResponse, QueryOptions } from "@/shared/api/types";
 
 const businessActions: ResourceActions<
   BusinessStaff,
   StaffMemberDto,
   StaffMemberDto,
-  { staff: BusinessStaff[] }
+  PaginatedResponse<{ staff: BusinessStaff[] }>
 > = {
   getAll: async (options?: QueryOptions) => await getStaffMembersAction(options),
   getById: async (id: string) => await getStaffMemberAction(id),
@@ -32,7 +32,7 @@ export const {
   useCreateMultiple: useCreateStaffMembers,
   useUpdate: useUpdateStaffMember,
   useDelete: useDeleteStaffMember,
-} = createResourceHooks<BusinessStaff, StaffMemberDto, StaffMemberDto, { staff: BusinessStaff[] }>(
+} = createResourceHooks<BusinessStaff, StaffMemberDto, StaffMemberDto, PaginatedResponse<{ staff: BusinessStaff[] }>>(
   "staff-members",
   businessActions
 );

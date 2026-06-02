@@ -20,6 +20,8 @@ import DevicesTable from "@/features/business-users/users/ui/DevicesTable";
 import AssignDeviceModal from "@/features/business-users/users/ui/AssignDeviceModal";
 import { Input } from "@/shared/ui/input";
 import { DeviceAssignmentStatus, StaffDevice, useDevices } from "@/entities/device";
+import { useGetStaffMembers } from "@/entities/business/model/useStaffMembers";
+
 
 export default function DevicesList() {
   const router = useRouter();
@@ -31,15 +33,28 @@ export default function DevicesList() {
 
   const currentPage = Math.max(1, parseInt(pageParam) || 1);
 
-  const { data: devicesPage, isPending: isDevicesPending } = useDevices({
+  const PAGE_SIZE = 10;
+
+  // TODO: Replace with a business-scoped devices endpoint when available on the backend.
+  // Fetching all staff at once to avoid missing devices that land on other staff pages.
+  // const { data: staffMembers, isPending: isDevicesPending } = useGetStaffMembers({
+  //   limit: 1000,
+  //   search: debouncedSearchQuery || undefined,
+  //   assignmentStatus: selectedTab === "ALL" ? undefined : (selectedTab as DeviceAssignmentStatus),
+  // });
+
+  // const allDevices = staffMembers?.data?.staff?.flatMap((s) => s.device ? [s.device] : []) ?? [];
+  // const totalPages = Math.max(1, Math.ceil(allDevices.length / PAGE_SIZE));
+  // const devices = allDevices.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  const { data: devicesRes, isLoading: isDevicesPending } = useDevices({
     page: currentPage,
     limit: 10,
     search: debouncedSearchQuery || undefined,
     assignmentStatus: selectedTab === "ALL" ? undefined : (selectedTab as DeviceAssignmentStatus),
-  });
-
-  const devices = devicesPage?.devices ?? [];
-  const totalPages = devicesPage?.totalPages ?? 1;
+  })
+  const devices = devicesRes?.devices || []
+  const totalPages = devicesRes?.totalPages || 1
 
   function handlePageChange(page: number) {
     setPageParam(String(page));
@@ -94,7 +109,7 @@ export default function DevicesList() {
                   className={cn(
                     "flex items-center gap-2",
                     selectedFilter === "ALL" &&
-                      "bg-primary hover:bg-primary! text-white hover:text-white!"
+                    "bg-primary hover:bg-primary! text-white hover:text-white!"
                   )}
                 >
                   All
@@ -104,7 +119,7 @@ export default function DevicesList() {
                   className={cn(
                     "flex items-center gap-2",
                     selectedFilter === "ACTIVE" &&
-                      "bg-primary hover:bg-primary! text-white hover:text-white!"
+                    "bg-primary hover:bg-primary! text-white hover:text-white!"
                   )}
                 >
                   Active
@@ -114,7 +129,7 @@ export default function DevicesList() {
                   className={cn(
                     "flex items-center gap-2",
                     selectedFilter === "INACTIVE" &&
-                      "bg-primary hover:bg-primary! text-white hover:text-white!"
+                    "bg-primary hover:bg-primary! text-white hover:text-white!"
                   )}
                 >
                   Inactive

@@ -80,3 +80,14 @@ export interface RegisterBusinessRequest {
   organizationSize: string;
   estimatedDevices: number;
 }
+
+export interface StaffMembersPaginatedResponse {
+  status: boolean;
+  statusCode: number;
+  message: string;
+  data: { staff: BusinessStaff[] };
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}

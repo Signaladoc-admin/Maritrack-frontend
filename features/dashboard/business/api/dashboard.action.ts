@@ -24,3 +24,13 @@ export async function getDashboardUsageAction(zoneId: string): Promise<ActionRes
     return response.data ?? response;
   }, "Failed to fetch dashboard usage");
 }
+
+export async function getDashboardLogsAction(zoneId: string): Promise<ActionResult<any>> {
+  return withSafeAction(async () => {
+    const response = await apiClient(`/mdm-sync/dashboard/logs/${zoneId}`, { method: "GET" });
+
+    console.log('logsRaw', response)
+
+    return response.data ?? response;
+  }, "Failed to fetch dashboard logs");
+}

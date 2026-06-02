@@ -2,19 +2,21 @@
 
 import { useMemo } from "react";
 import { useServerActionQuery } from "@/shared/api/server-action-hooks";
-import { useBusinessZones } from "@/features/mdm-sync/model/useMdmSync";
 import { useDevices } from "@/entities/device/model/useDevices";
 import type { DashboardDonutSlice } from "@/shared/ui/dashboard/analytics-ui";
 import {
   getDashboardAppsAction,
   getDashboardDevicesAction,
+  getDashboardLogsAction,
   getDashboardUsageAction,
 } from "../api/dashboard.action";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 const dashboardKeys = {
   devices: (zoneId: string) => ["dashboard", "devices", zoneId] as const,
   apps: (zoneId: string) => ["dashboard", "apps", zoneId] as const,
   usage: (zoneId: string) => ["dashboard", "usage", zoneId] as const,
+  logs: (zoneId: string) => ["dashboard", "logs", zoneId] as const,
 };
 
 // Static simulated fallbacks for dashboard features with no backend endpoints
@@ -64,8 +66,10 @@ const STATIC_BLACKLISTED_WEBSITES = [
 ];
 
 export function useBusinessDashboard() {
-  const { data: businessZones, isLoading: isLoadingZone } = useBusinessZones();
-  const zoneId: string | undefined = (businessZones as any)?.[0]?.id;
+  const { user } = useAuth()
+  const zoneId = user?.zoneId
+
+  console.log("zoneId", zoneId)
 
   const { data: devicesRaw, isLoading: isLoadingDevices } = useServerActionQuery(
     dashboardKeys.devices(zoneId ?? ""),
@@ -88,16 +92,23 @@ export function useBusinessDashboard() {
     { enabled: !!zoneId, retry: false },
   );
 
+  const { data: logsRaw, isLoading: isLoadingLogs } = useServerActionQuery(
+    dashboardKeys.logs(zoneId ?? ""),
+    getDashboardLogsAction,
+    [zoneId as string],
+    { enabled: !!zoneId, retry: false },
+  );
+
   // ---------------------------------------------------------------------------
   // Targeted count queries — limit:1 transfers only pagination metadata.
   // ---------------------------------------------------------------------------
-  const { data: totalData,      isLoading: isLoadingTotal }      = useDevices({ limit: 1 });
-  const { data: assignedData,   isLoading: isLoadingAssigned }   = useDevices({ assignmentStatus: "ASSIGNED",     limit: 1 });
-  const { data: unassignedData, isLoading: isLoadingUnassigned } = useDevices({ assignmentStatus: "UNASSIGNED",   limit: 1 });
-  const { data: damagedData,    isLoading: isLoadingDamaged }    = useDevices({ deviceStatus: "DAMAGED",          limit: 1 });
-  const { data: activeData,     isLoading: isLoadingActive }     = useDevices({ deviceStatus: "ACTIVE",           limit: 1 });
-  const { data: inactiveData,   isLoading: isLoadingInactive }   = useDevices({ deviceStatus: "INACTIVE",         limit: 1 });
-  const { data: compliantData,  isLoading: isLoadingCompliant }  = useDevices({ mdmComplianceStatus: "COMPLIANT", limit: 1 });
+  const { data: totalData, isLoading: isLoadingTotal } = useDevices({ limit: 1 });
+  const { data: assignedData, isLoading: isLoadingAssigned } = useDevices({ assignmentStatus: "ASSIGNED", limit: 1 });
+  const { data: unassignedData, isLoading: isLoadingUnassigned } = useDevices({ assignmentStatus: "UNASSIGNED", limit: 1 });
+  const { data: damagedData, isLoading: isLoadingDamaged } = useDevices({ deviceStatus: "DAMAGED", limit: 1 });
+  const { data: activeData, isLoading: isLoadingActive } = useDevices({ deviceStatus: "ACTIVE", limit: 1 });
+  const { data: inactiveData, isLoading: isLoadingInactive } = useDevices({ deviceStatus: "INACTIVE", limit: 1 });
+  const { data: compliantData, isLoading: isLoadingCompliant } = useDevices({ mdmComplianceStatus: "COMPLIANT", limit: 1 });
 
   // Full device records — used for map pins. Memoized reference kept stable
   // so the map's FitBounds effect only fires when coordinates actually change.
@@ -108,7 +119,6 @@ export function useBusinessDashboard() {
     isLoadingActive || isLoadingInactive || isLoadingCompliant || isLoadingLocations;
 
   const isLoading =
-    isLoadingZone ||
     isLoadingDeviceStats ||
     (!!zoneId && (isLoadingDevices || isLoadingApps || isLoadingUsage));
 
@@ -160,13 +170,13 @@ export function useBusinessDashboard() {
   // /api/v1/devices — server-filtered counts
   // ---------------------------------------------------------------------------
 
-  const deviceListTotal  = totalData?.total      ?? 0;
-  const assignedCount    = assignedData?.total    ?? 0;
-  const unassignedCount  = unassignedData?.total  ?? 0;
-  const damagedCount     = damagedData?.total     ?? 0;
-  const activeCount      = activeData?.total      ?? 0;
-  const inactiveCount    = inactiveData?.total    ?? 0;
-  const compliantCount   = compliantData?.total   ?? 0;
+  const deviceListTotal = totalData?.total ?? 0;
+  const assignedCount = assignedData?.total ?? 0;
+  const unassignedCount = unassignedData?.total ?? 0;
+  const damagedCount = damagedData?.total ?? 0;
+  const activeCount = activeData?.total ?? 0;
+  const inactiveCount = inactiveData?.total ?? 0;
+  const compliantCount = compliantData?.total ?? 0;
   const nonCompliantCount = deviceListTotal - compliantCount;
 
   // GPS pins — memoized so FitBounds only fires when coordinates actually change.
@@ -189,7 +199,7 @@ export function useBusinessDashboard() {
   const devicesAvailabilityData = useMemo<DashboardDonutSlice[]>(() => {
     if (deviceListTotal === 0) return [];
     return [
-      { name: "Active",   value: Math.round((activeCount   / deviceListTotal) * 100), color: "#22C55E" },
+      { name: "Active", value: Math.round((activeCount / deviceListTotal) * 100), color: "#22C55E" },
       { name: "Inactive", value: Math.round((inactiveCount / deviceListTotal) * 100), color: "#EF4444" },
     ];
   }, [deviceListTotal, activeCount, inactiveCount]);
@@ -198,7 +208,7 @@ export function useBusinessDashboard() {
   const securityPatchData = useMemo<DashboardDonutSlice[]>(() => {
     if (deviceListTotal === 0) return [];
     return [
-      { name: "Compliant",     value: Math.round((compliantCount    / deviceListTotal) * 100), color: "#22C55E" },
+      { name: "Compliant", value: Math.round((compliantCount / deviceListTotal) * 100), color: "#22C55E" },
       { name: "Non-compliant", value: Math.round((nonCompliantCount / deviceListTotal) * 100), color: "#EF4444" },
     ];
   }, [deviceListTotal, compliantCount, nonCompliantCount]);

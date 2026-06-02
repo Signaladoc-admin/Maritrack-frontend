@@ -10,7 +10,7 @@ export default function UsersList({ searchTerm }: { searchTerm: string }) {
     businessId: user?.businessId!,
     search: searchTerm,
   });
-  const staffMembers = usersData?.staff || [];
+  const staffMembers = usersData?.data?.staff || [];
 
   if (isLoading)
     return (

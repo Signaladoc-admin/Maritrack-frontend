@@ -14,7 +14,7 @@ import BusinessPairingQR from "@/entities/business/ui/PairingQRBusinessModal";
 function StaffOptionContent({ staff }: { staff: BusinessStaff }) {
   const firstName = staff.user?.firstName ?? "";
   const lastName = staff.user?.lastName ?? "";
-  const initials = `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase() || "?";
+  const initials = `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase() || "-";
   const fullName = `${firstName} ${lastName}`.trim() || staff.user?.email;
   const isAdmin = staff.businessRole === "ORGANIZATION_ADMIN";
 
@@ -58,7 +58,7 @@ export default function AssignDeviceModal({
     search: debouncedSearchTerm,
   });
 
-  const staffMembers: BusinessStaff[] = staffMembersData?.staff ?? [];
+  const staffMembers: BusinessStaff[] = staffMembersData?.data?.staff ?? [];
 
   const staffMemberOptions = staffMembers.map((s) => ({
     value: s.id,
