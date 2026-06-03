@@ -1,25 +1,22 @@
-import { formatCurrency, formatDate, formatPaystackKoboAmount } from "@/shared/lib/utils";
 import Table from "@/shared/ui/Table/Table";
-import { CloudDownload, DownloadCloud } from "lucide-react";
-import { FaFilePdf } from "react-icons/fa";
 import { usePaymentHistory } from "../model/usePayments";
-import { useBusinessZones } from "@/features/mdm-sync/model/useMdmSync";
 import { Skeleton } from "@/shared/ui/skeleton";
-
-export interface BillingRecord {
-  id: string;
-  invoiceName: string;
-  date: string;
-  planName: string;
-  amount: string;
-  downloadUrl?: string;
-}
+import { useAuth } from "@/shared/auth/AuthProvider";
+import { getBillingsHistoryColumns } from "../columns";
+import { useState } from "react";
 
 export default function BillingHistoryTable() {
-  const { data: zones } = useBusinessZones();
-  const zoneId = zones?.[0]?.id;
+  const { user } = useAuth();
+  const zoneId = user?.zoneId || "";
+  // const [page, setPage] = useState(1);
+  const { data: paymentHistory, isLoading } = usePaymentHistory(zoneId,
+    // { page }
+  );
 
-  const { data: paymentHistory, isLoading } = usePaymentHistory(zoneId);
+  const transactions = paymentHistory?.data?.results || [];
+  // const totalPages = paymentHistory?.totalPages || 1;
+
+  console.log("paymentHistory", paymentHistory)
 
   if (isLoading) {
     return (
@@ -42,7 +39,7 @@ export default function BillingHistoryTable() {
     );
   }
 
-  const transactions = paymentHistory?.results || [];
+
 
   return (
     <div>
@@ -52,42 +49,9 @@ export default function BillingHistoryTable() {
         hasHeaders={false}
         emptyMessage="You have no billing history yet."
         data={transactions}
-        columns={[
-          {
-            key: "file",
-            render: () => <FaFilePdf className="text-primary" size={30} />,
-          },
-          {
-            key: "invoiceName",
-            render: (item) => (
-              <span className="font-bold text-neutral-800">{item.invoiceNumber}</span>
-            ),
-          },
-          {
-            key: "date",
-            render: (item) => <span>{formatDate(item.paidAt)}</span>,
-          },
-          {
-            key: "planName",
-            render: (item) => <span>{item.plan.name}</span>,
-          },
-          {
-            key: "amount",
-            render: (item) => <span>{formatCurrency(formatPaystackKoboAmount(item.amountNGN))}</span>,
-          },
-          {
-            key: "downloadUrl",
-            render: (item) => (
-              <a
-                href={item.invoiceUrl!}
-                aria-label={`Download ${item.invoiceNumber}`}
-                className="text-[#6B7280] transition-colors hover:text-[#1B3C73]"
-              >
-                <DownloadCloud size={25} />
-              </a>
-            ),
-          },
-        ]}
+        columns={getBillingsHistoryColumns(() => { })}
+      // totalPages={totalPages}
+      // onPageChange={setPage}
       />
     </div>
   );

@@ -7,6 +7,7 @@ import "leaflet/dist/leaflet.css";
 import Providers from "./providers";
 import { ToastProvider } from "@/shared/ui/toast";
 import { Sidebar } from "@/shared/ui/Sidebar/Sidebar";
+import ZoneIdPreview from "@/components/ui/ZoneIdPreview";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -38,6 +39,7 @@ export default function RootLayout({
           <Providers>
             <NuqsAdapter>
               <main>{children}</main>
+              <ZoneIdPreview />
               {/* <Sidebar />
             <main className="ml-[100px] flex-1">{children}</main> */}
             </NuqsAdapter>

@@ -13,6 +13,7 @@ import { useEffect } from "react";
 import { useToast } from "@/shared/ui/toast";
 import { useQueryState } from "nuqs";
 import { usePathname, useRouter } from "next/navigation";
+import { QueryOptions } from "@/shared/api/types";
 
 export const paymentKeys = {
   all: ["payments"] as const,
@@ -70,11 +71,11 @@ export function useAllSubscriptions(zoneId: string | undefined) {
   );
 }
 
-export function usePaymentHistory(zoneId: string | undefined) {
+export function usePaymentHistory(zoneId: string | undefined, options?: QueryOptions) {
   return useServerActionQuery(
     paymentKeys.paymentHistory(zoneId ?? ""),
     getPaymentHistoryAction,
     [zoneId ?? ""],
-    { enabled: !!zoneId }
+    { enabled: !!zoneId, ...options }
   );
 }
