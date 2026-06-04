@@ -95,14 +95,11 @@ export interface AppLimitDayDetail {
   appName: string;
   hour: number;
   day: string;
-  date: string;
+  date?: string;
 }
 
 export interface SetAppLimitPayload {
-  actionId?: number;
-  message: {
-    appUsage: Record<string, AppLimitDayDetail[]>;
-  };
+  appUsage: Record<string, AppLimitDayDetail[]>;
 }
 
 export interface SetAppLimitVariables {
@@ -115,15 +112,11 @@ export async function setAppLimitAction({
   data,
 }: SetAppLimitVariables): Promise<ActionResult<any>> {
   console.log(data, deviceId);
-  const payload = {
-    ...data,
-    actionId: data.actionId ?? 30,
-  };
   return withSafeAction(
     async () =>
-      await apiClient(`/mdm-sync/${deviceId}/action`, {
+      await apiClient(`/mdm-sync/${deviceId}/applimits`, {
         method: "POST",
-        body: JSON.stringify(payload),
+        body: JSON.stringify(data),
       }),
     "Failed to set app limit"
   );

@@ -53,27 +53,24 @@ export function AppDetailView({ app, onBack }: { app: any; onBack: () => void })
 
   // Function to handle limit updates
   const handleSaveLimit = async (weekLimits: Record<string, { hour: number; minutes: number }>) => {
-    const todayStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
     const appUsage: Record<string, any[]> = {};
 
     Object.entries(weekLimits).forEach(([day, limit]) => {
-      appUsage[day] = [
-        {
-          packageName: app.packageName || "",
-          minutes: limit.minutes,
-          appName: app.appName || app.name || "",
-          hour: limit.hour,
-          day: day,
-          date: todayStr,
-        },
-      ];
+      if (limit.hour > 0 || limit.minutes > 0) {
+        appUsage[day] = [
+          {
+            packageName: app.packageName || "",
+            minutes: limit.minutes,
+            appName: app.appName || app.name || "",
+            hour: limit.hour,
+            day: day,
+          },
+        ];
+      }
     });
 
     const payload = {
-      actionId: 30,
-      message: {
-        appUsage,
-      },
+      appUsage,
     };
 
     try {
