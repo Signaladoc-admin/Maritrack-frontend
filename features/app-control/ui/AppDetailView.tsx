@@ -57,8 +57,6 @@ export function AppDetailView({ app, onBack }: { app: any; onBack: () => void })
   const [limitModalOpen, setLimitModalOpen] = useState(false);
   const [limits, setLimits] = useState<Record<string, { hour: number; minutes: number }>>({});
 
-  console.log("app limits: ", appLimitsQuery.data);
-
   useEffect(() => {
     if (appLimitsQuery.data?.appUsage) {
       const usage = appLimitsQuery.data.appUsage;
@@ -66,7 +64,6 @@ export function AppDetailView({ app, onBack }: { app: any; onBack: () => void })
 
       Object.entries(usage).forEach(([day, dayDetails]) => {
         const appDetail = dayDetails.find((d: any) => d.packageName === app.packageName);
-        console.log("app details: ", appDetail);
         if (appDetail) {
           currentAppLimits[day] = { hour: appDetail.hour, minutes: appDetail.minutes };
         }
@@ -136,8 +133,6 @@ export function AppDetailView({ app, onBack }: { app: any; onBack: () => void })
 
   const displayLimits = getLimitsDisplay();
   const appDisplayName = app.appName || app.name;
-
-  console.log("limits: ", displayLimits);
 
   return (
     <Card className="space-y-6">

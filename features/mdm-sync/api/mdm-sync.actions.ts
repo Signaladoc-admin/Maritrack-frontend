@@ -124,7 +124,6 @@ export async function getAppLimitsAction(deviceId: string): Promise<ActionResult
     const response = await apiClient(`/mdm-sync/${deviceId}/applimits`, {
       method: "GET",
     });
-    console.log(response.data.data);
     return response.data.data;
   }, "Failed to fetch app limits");
 }
@@ -133,7 +132,6 @@ export async function setAppLimitAction({
   deviceId,
   data,
 }: SetAppLimitVariables): Promise<ActionResult<any>> {
-  console.log(data, deviceId);
   return withSafeAction(
     async () =>
       await apiClient(`/mdm-sync/${deviceId}/applimits`, {
