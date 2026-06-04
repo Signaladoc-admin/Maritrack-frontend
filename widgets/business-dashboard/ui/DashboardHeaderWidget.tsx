@@ -13,24 +13,26 @@ interface DashboardHeaderWidgetProps {
 
 export function DashboardHeaderWidget({ date, onDateSelect }: DashboardHeaderWidgetProps) {
   return (
-    <div className="mb-8 flex items-center justify-between flex-wrap gap-10">
+    <div className="mb-8 flex items-center justify-between flex-wrap gap-y-4 gap-x-10">
       <Header
         className="mb-0!"
         variant="sm"
         title="Analytics"
-        subtitle={
-          <div className="flex items-center gap-2 text-sm text-[#667085]">
-            <span className="whitespace-nowrap text-base">Analytics for</span>
-            <DateRangePicker
-              date={date}
-              onSelect={onDateSelect}
-              triggerClassName="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors"
-            />
-          </div>
-        }
+      // subtitle={
+      //   <div className="flex items-center gap-2 text-sm text-[#667085]">
+      //     <span className="whitespace-nowrap text-base">Analytics for</span>
+      //     {date && (
+      //       <DateRangePicker
+      //         date={date}
+      //         onSelect={onDateSelect}
+      //         triggerClassName="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors"
+      //       />
+      //     )}
+      //   </div>
+      // }
       />
 
-      <div className="mt-4 sm:mt-0">
+      <div>
         <Button variant="outline" size="sm" className="gap-2">
           <DownloadCloud className="size-4!" />
           <span className="font-medium">Download</span>

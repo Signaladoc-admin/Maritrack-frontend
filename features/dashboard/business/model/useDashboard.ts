@@ -69,8 +69,6 @@ export function useBusinessDashboard() {
   const { user } = useAuth()
   const zoneId = user?.zoneId
 
-  console.log("zoneId", zoneId)
-
   const { data: devicesRaw, isLoading: isLoadingDevices } = useServerActionQuery(
     dashboardKeys.devices(zoneId ?? ""),
     getDashboardDevicesAction,
@@ -109,6 +107,14 @@ export function useBusinessDashboard() {
   const { data: activeData, isLoading: isLoadingActive } = useDevices({ deviceStatus: "ACTIVE", limit: 1 });
   const { data: inactiveData, isLoading: isLoadingInactive } = useDevices({ deviceStatus: "INACTIVE", limit: 1 });
   const { data: compliantData, isLoading: isLoadingCompliant } = useDevices({ mdmComplianceStatus: "COMPLIANT", limit: 1 });
+  const { data: nonCompliantData, isLoading: isLoadingNonCompliant } = useDevices({ mdmComplianceStatus: "NON_COMPLIANT", limit: 1 });
+  const { data: damagedOrReturnedData, isLoading: isLoadingDamagedOrReturned } = useDevices({ assignmentStatus: "RETURNED", flagged: true, limit: 1 });
+
+  console.log('active', activeData)
+  console.log('inactive', inactiveData)
+  console.log('compliant', compliantData)
+  console.log('non compliant', nonCompliantData)
+  console.log('damaged or returned', damagedOrReturnedData)
 
   // Full device records — used for map pins. Memoized reference kept stable
   // so the map's FitBounds effect only fires when coordinates actually change.
@@ -116,7 +122,7 @@ export function useBusinessDashboard() {
 
   const isLoadingDeviceStats =
     isLoadingTotal || isLoadingAssigned || isLoadingUnassigned || isLoadingDamaged ||
-    isLoadingActive || isLoadingInactive || isLoadingCompliant || isLoadingLocations;
+    isLoadingActive || isLoadingInactive || isLoadingCompliant || isLoadingNonCompliant || isLoadingLocations || isLoadingDamagedOrReturned;
 
   const isLoading =
     isLoadingDeviceStats ||
@@ -173,11 +179,12 @@ export function useBusinessDashboard() {
   const deviceListTotal = totalData?.total ?? 0;
   const assignedCount = assignedData?.total ?? 0;
   const unassignedCount = unassignedData?.total ?? 0;
-  const damagedCount = damagedData?.total ?? 0;
+  const damagedCount = damagedOrReturnedData?.total ?? 0;
   const activeCount = activeData?.total ?? 0;
   const inactiveCount = inactiveData?.total ?? 0;
   const compliantCount = compliantData?.total ?? 0;
-  const nonCompliantCount = deviceListTotal - compliantCount;
+  const nonCompliantCount = nonCompliantData?.total ?? 0;
+
 
   // GPS pins — memoized so FitBounds only fires when coordinates actually change.
   const deviceLocations = useMemo(
@@ -223,12 +230,12 @@ export function useBusinessDashboard() {
   const offlineLearningValue = useMemo(() => {
     if (wifiChart.y.length === 0) return "180 hrs";
     const sum = wifiChart.y.reduce((a, b) => a + b, 0);
-    return `${sum} hrs`;
+    return `${sum} hr${sum !== 1 ? 's' : ''}`;
   }, [wifiChart]);
 
   // Damaged/Returned devices from actual list
   const lostReports = useMemo(() => {
-    const damagedOrLost = (locationsData?.devices ?? []).filter(
+    const damagedOrLost = (damagedOrReturnedData?.devices ?? []).filter(
       (d) => d.deviceStatus === "DAMAGED" || d.deviceStatus === "LOST" || d.deviceStatus === "DEACTIVATED"
     );
     if (damagedOrLost.length > 0) {
@@ -239,11 +246,8 @@ export function useBusinessDashboard() {
           : "Unknown Location",
       }));
     }
-    return [
-      { device: "Samsung Galaxy Tab A9", location: "Lagos Mainland Center" },
-      { device: "Lenovo Tab M10", location: "Ikeja Learning Hub" },
-    ];
-  }, [locationsData]);
+    return [];
+  }, [damagedOrReturnedData]);
 
   // Telemetry & Utilization Engagement simulated metrics
   const avgSessionDuration = "2h 45m";

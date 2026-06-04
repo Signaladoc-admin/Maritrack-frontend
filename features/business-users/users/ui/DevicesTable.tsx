@@ -22,8 +22,8 @@ export default function DevicesTable<T extends { id: string | number }>({
 }: DevicesTableProps<T>) {
   const router = useRouter();
 
-  function handleRowSelection(device: T) {
-    router.push(`/devices/${device?.id}`);
+  function handleRowSelection(device: any) {
+    router.push(`/devices/${device?.mdmDeviceId}`);
   }
 
   return (

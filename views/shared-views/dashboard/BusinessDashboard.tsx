@@ -12,7 +12,6 @@ import { ComplianceSecurityWidget } from "@/widgets/business-dashboard/ui/Compli
 import { ConnectivityLearningWidget } from "@/widgets/business-dashboard/ui/ConnectivityLearningWidget";
 import { AssetTrackingWidget } from "@/widgets/business-dashboard/ui/AssetTrackingWidget";
 import { BlacklistedWebsitesWidget } from "@/widgets/business-dashboard/ui/BlacklistedWebsitesWidget";
-import { useQrCode } from "@/features/mdm-sync/model/useQrCode";
 
 function zipChart(
   x: string[],

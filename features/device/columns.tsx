@@ -1,10 +1,10 @@
 import { TableColumn } from "@/shared/ui/Table/types";
 import { formatDate, formatID } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
-import { Device, StaffDevice } from "@/entities/device";
+import { DeviceWithUserDetails, StaffDevice } from "@/entities/device";
 
 export function getDevicesColumns(handleAssignDevice: (device: StaffDevice) => void) {
-  const devicesColumns: TableColumn<StaffDevice>[] = [
+  const devicesColumns: TableColumn<DeviceWithUserDetails>[] = [
     {
       key: "asset",
       label: "Asset",
@@ -21,8 +21,11 @@ export function getDevicesColumns(handleAssignDevice: (device: StaffDevice) => v
       key: "assignmentStatus",
       label: "Assignment",
       render: (item) =>
-        item.assignmentStatus === "ASSIGNED" ? (
-          <span className="text-sm text-neutral-600">Assigned</span>
+        !!item.currentUserDetails ? (
+          <div className="space-y-1 leading-tight">
+            <p className="font-semibold text-neutral-900">{`${item.currentUserDetails?.firstName} ${item.currentUserDetails?.lastName}`}</p>
+            <p className="text-neutral-500">{item.currentUserDetails?.email}</p>
+          </div>
         ) : (
           <Button
             type="button"
