@@ -4,13 +4,15 @@ import React from "react";
 import { cn } from "@/shared/lib/utils";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
+export type ChartColor = "green" | "red" | "yellow" | "blue"
+
 interface MetricCardProps {
   title: string;
   value: string;
   trendValue?: string;
   trendType?: "positive" | "negative";
   chartData: number[]; // Simple array for mini bars
-  chartColor: "green" | "red" | "yellow" | "blue";
+  chartColor: ChartColor;
   footerText?: string;
   className?: string;
 }

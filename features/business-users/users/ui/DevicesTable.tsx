@@ -23,7 +23,7 @@ export default function DevicesTable<T extends { id: string | number }>({
   const router = useRouter();
 
   function handleRowSelection(device: any) {
-    router.push(`/devices/${device?.mdmDeviceId}`);
+    router.push(`/devices/${device?.mdmDeviceId}?tab=general`);
   }
 
   return (

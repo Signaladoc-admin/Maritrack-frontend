@@ -3,7 +3,7 @@ import CardHeader from "@/shared/ui/card-header";
 import SubHeading from "./SubHeading";
 import { SettingsToggle } from "@/shared/ui/settings-toggle";
 import { useFormContext, Controller } from "react-hook-form";
-import { parentalControlHeadings } from "@/features/parents/ui/ParentalControlSetup";
+import { devicesControlHeadings } from "@/features/parents/ui/DeviceConfigurationSetup";
 
 export default function MonitoringPermissionsSetup() {
   const {
@@ -15,8 +15,8 @@ export default function MonitoringPermissionsSetup() {
     <CardWrapper variant="outline">
       <div className="space-y-10!">
         <CardHeader
-          title={parentalControlHeadings.monitoringPermissions.title}
-          description={parentalControlHeadings.monitoringPermissions.description}
+          title={devicesControlHeadings.monitoringPermissions.title}
+          description={devicesControlHeadings.monitoringPermissions.description}
         />
         <div className="space-y-3">
           <SubHeading title="What do you want to monitor?" />

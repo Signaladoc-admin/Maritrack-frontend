@@ -1,6 +1,5 @@
 "use client";
 import ChildrenProfiles from "@/features/onboarding/personal/ui/ChildrenProfiles";
-import ParentalControlSetup from "@/features/parents/ui/ParentalControlSetup";
 import { setOnboardedAction } from "@/features/onboarding/api/onboarding.actions";
 import { MultiStepForm } from "@/shared/ui/multi-step-form";
 import { useState, useEffect, Suspense } from "react";
@@ -11,6 +10,8 @@ import { useVerifyPayment } from "@/features/payments/model/usePayments";
 import { Button } from "@/shared/ui/button";
 import { useLogout } from "@/features/auth/model/useLogout";
 import { cn } from "@/shared/lib/utils";
+import DeviceConfigurationSetup from "@/features/parents/ui/DeviceConfigurationSetup";
+import DevicesConfigurationSetup from "@/features/parents/ui/DeviceConfigurationSetup";
 
 function OnboardingContent() {
   const router = useRouter();
@@ -64,7 +65,10 @@ function OnboardingContent() {
       title: "Parental Control & Consent Setup",
       onClick: () => handleStepClick(1),
       component: (
-        <ParentalControlSetup handleSubmit={handleOnboardingComplete} goToPrevStep={prevStep} />
+        <DevicesConfigurationSetup
+          handleSubmit={handleOnboardingComplete}
+          goToPrevStep={prevStep}
+        />
       ),
     },
   ];

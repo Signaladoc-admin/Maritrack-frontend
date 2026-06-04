@@ -11,7 +11,7 @@ interface DeviceDetails {
     mdmComplianceStatus: string | null,
     lastSeenAt: string | null,
     lastKnownLocation: string | null,
-    deviceStatus: string,
+    deviceStatus: "ACTIVE" | "INACTIVE",
     flagged: boolean,
     flagReason: string | null,
     flaggedByUserId: string | null,
@@ -177,10 +177,7 @@ interface RealTimeStats {
     currDialer: string
 }
 
-export interface MDMDeviceDetailsResponse {
-    code: number,
-    message: string,
-    data: {
+export interface DeviceHardwareDetails {
         id: string,
         osType: string,
         deviceInitTime: number,
@@ -196,6 +193,11 @@ export interface MDMDeviceDetailsResponse {
         version: string,
         manufacturer: string,
         model: string
-    },
+    }
+
+export interface MDMDeviceDetailsResponse {
+    code: number,
+    message: string,
+    data: DeviceHardwareDetails,
     deviceDetails: DeviceDetails
 }

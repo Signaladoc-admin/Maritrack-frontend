@@ -24,6 +24,7 @@ import AlertsAndNotifications from "../../onboarding/personal/ui/parental-contro
 import ParentalConfirmation from "../../onboarding/personal/ui/parental-control-setup/ParentalConfirmation";
 import { CardWrapper } from "@/shared/ui/card-wrapper";
 import CardHeader from "@/shared/ui/card-header";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 const formSchema = z
   .object({
@@ -145,11 +146,20 @@ const formSchema = z
   });
 
 type FormValues = z.infer<typeof formSchema>;
+type AppRole = "PARENT" | "BUSINESS";
 
-export const parentalControlHeadings = {
-  title: "Parental Control & Consent Setup",
-  description:
-    "Set boundaries, permissions, and alerts for your child's device. These rules apply by default to all children and can be adjusted individually later.",
+export const devicesControlHeadings = {
+  header: {
+    PARENT: {
+      title: "Parental Control & Consent Setup",
+      description:
+        "Set boundaries, permissions, and alerts for your child's device. These rules apply by default to all children and can be adjusted individually later.",
+    },
+    BUSINESS: {
+      title: "Device Control & Consent Setup",
+      description: "Set boundaries, permissions, and alerts for your agent’s device.",
+    },
+  },
 
   monitoringPermissions: {
     title: "Monitoring Permissions",
@@ -173,7 +183,7 @@ export const parentalControlHeadings = {
   },
 };
 
-export default function ParentalControlSetup({
+export default function DevicesConfigurationSetup({
   goToPrevStep,
   handleSubmit,
 }: {
@@ -186,7 +196,7 @@ export default function ParentalControlSetup({
   const { data: existingSettings, isLoading: isLoadingSettings } =
     useParentalControlByParentId(parentId);
   const { data: mySettingsRes, isLoading: isLoadingMe } = useParentalControlMe();
-  const mySettings = mySettingsRes?.data
+  const mySettings = mySettingsRes?.data;
 
   const pathname = usePathname();
 
@@ -194,6 +204,8 @@ export default function ParentalControlSetup({
 
   const { mutateAsync: createSettings, isPending: isCreating } = useCreateParentalControl();
   const { mutateAsync: updateSettings, isPending: isUpdating } = useUpdateParentalControl();
+
+  const { user } = useAuth();
 
   const methods = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -359,30 +371,32 @@ export default function ParentalControlSetup({
     return (
       <div className="animate-pulse">
         <Header
-          title={parentalControlHeadings.title}
-          subtitle={parentalControlHeadings.description}
+          title={devicesControlHeadings.header[user?.appRole?.toUpperCase() as AppRole]?.title}
+          subtitle={
+            devicesControlHeadings.header[user?.appRole?.toUpperCase() as AppRole]?.description
+          }
         />
 
         <div className="mt-10 space-y-6">
           <SectionSkeleton
-            title={parentalControlHeadings.monitoringPermissions.title}
-            subtitle={parentalControlHeadings.monitoringPermissions.description}
+            title={devicesControlHeadings.monitoringPermissions.title}
+            subtitle={devicesControlHeadings.monitoringPermissions.description}
           />
           <SectionSkeleton
-            title={parentalControlHeadings.screenTimeRules.title}
-            subtitle={parentalControlHeadings.screenTimeRules.description}
+            title={devicesControlHeadings.screenTimeRules.title}
+            subtitle={devicesControlHeadings.screenTimeRules.description}
           />
           <SectionSkeleton
-            title={parentalControlHeadings.appManagementPreferences.title}
-            subtitle={parentalControlHeadings.appManagementPreferences.description}
+            title={devicesControlHeadings.appManagementPreferences.title}
+            subtitle={devicesControlHeadings.appManagementPreferences.description}
           />
           <SectionSkeleton
-            title={parentalControlHeadings.alertsAndNotifications.title}
-            subtitle={parentalControlHeadings.alertsAndNotifications.description}
+            title={devicesControlHeadings.alertsAndNotifications.title}
+            subtitle={devicesControlHeadings.alertsAndNotifications.description}
           />
           <SectionSkeleton
-            title={parentalControlHeadings.parentalConfirmationAndConsent.title}
-            subtitle={parentalControlHeadings.parentalConfirmationAndConsent.description}
+            title={devicesControlHeadings.parentalConfirmationAndConsent.title}
+            subtitle={devicesControlHeadings.parentalConfirmationAndConsent.description}
           />
         </div>
       </div>
@@ -392,8 +406,10 @@ export default function ParentalControlSetup({
   return (
     <div className="space-y-6">
       <Header
-        title={parentalControlHeadings.title}
-        subtitle={parentalControlHeadings.description}
+        title={devicesControlHeadings.header[user?.appRole?.toUpperCase() as AppRole]?.title}
+        subtitle={
+          devicesControlHeadings.header[user?.appRole?.toUpperCase() as AppRole]?.description
+        }
       />
 
       {isOnboardingPath && <LoaderModal open={isSubmitting} text="Setting up your account" />}

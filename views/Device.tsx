@@ -6,20 +6,19 @@ import { TABS } from "@/shared/lib/constants";
 import Back from "@/shared/ui/go-back";
 import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
 import { TabNavigation } from "@/shared/ui/tab-navigation";
-import { Phone, Smartphone, Trash2Icon, X } from "lucide-react";
+import { Smartphone, Trash2Icon, X } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import General from "./General";
 import WebHistory from "./WebHistory";
 import AppControl from "./AppControl";
-import ParentalControlSetup from "@/features/parents/ui/ParentalControlSetup";
 import { MarkAsReturnedModal } from "@/features/device/ui/MarkAsReturnedModal";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { Button } from "@/shared/ui/button";
 import { useDevice } from "@/entities/device";
-import { cn } from "@/lib/utils";
 import LocationPage from "./Location";
+import DevicesConfigurationSetup from "@/features/parents/ui/DeviceConfigurationSetup";
 
 const Device = () => {
   const router = useRouter();
@@ -122,7 +121,7 @@ const Device = () => {
       {activeTab === "location" && <LocationPage />}
       {activeTab === "configuration" && (
         <div className="mx-auto max-w-lg">
-          <ParentalControlSetup />
+          <DevicesConfigurationSetup />
         </div>
       )}
     </div>

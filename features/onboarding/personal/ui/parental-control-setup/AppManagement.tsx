@@ -3,7 +3,7 @@ import { Controller, useFormContext } from "react-hook-form";
 import { CardWrapper } from "@/shared/ui/card-wrapper";
 import CardHeader from "@/shared/ui/card-header";
 import SubHeading from "./SubHeading";
-import { parentalControlHeadings } from "@/features/parents/ui/ParentalControlSetup";
+import { devicesControlHeadings } from "@/features/parents/ui/DeviceConfigurationSetup";
 
 export default function AppManagement() {
   const {
@@ -15,8 +15,8 @@ export default function AppManagement() {
     <CardWrapper variant="outline">
       <div className="space-y-10!">
         <CardHeader
-          title={parentalControlHeadings.appManagementPreferences.title}
-          description={parentalControlHeadings.appManagementPreferences.description}
+          title={devicesControlHeadings.appManagementPreferences.title}
+          description={devicesControlHeadings.appManagementPreferences.description}
         />
         <div className="space-y-2">
           <SubHeading title="App installation approval" />

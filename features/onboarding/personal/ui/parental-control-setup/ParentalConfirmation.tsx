@@ -2,7 +2,7 @@ import { InputGroup } from "@/shared/ui/input-group";
 import { Controller, useFormContext } from "react-hook-form";
 import { CardWrapper } from "@/shared/ui/card-wrapper";
 import CardHeader from "@/shared/ui/card-header";
-import { parentalControlHeadings } from "@/features/parents/ui/ParentalControlSetup";
+import { devicesControlHeadings } from "@/features/parents/ui/DeviceConfigurationSetup";
 
 export default function ParentalConfirmation() {
   const {
@@ -14,8 +14,8 @@ export default function ParentalConfirmation() {
     <CardWrapper variant="outline" className="space-y-10!">
       <div>
         <CardHeader
-          title={parentalControlHeadings.parentalConfirmationAndConsent.title}
-          description={parentalControlHeadings.parentalConfirmationAndConsent.description}
+          title={devicesControlHeadings.parentalConfirmationAndConsent.title}
+          description={devicesControlHeadings.parentalConfirmationAndConsent.description}
         />
 
         <div className="space-y-4">
