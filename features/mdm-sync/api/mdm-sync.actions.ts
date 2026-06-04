@@ -95,7 +95,7 @@ export interface AppLimitDayDetail {
   appName: string;
   hour: number;
   day: string;
-  date?: string;
+  date?: string | number;
 }
 
 export interface SetAppLimitPayload {
@@ -105,6 +105,28 @@ export interface SetAppLimitPayload {
 export interface SetAppLimitVariables {
   deviceId: string;
   data: SetAppLimitPayload;
+}
+
+export interface AppLimitData {
+  deviceId: string | null;
+  createdBy: string | null;
+  updatedTime: number;
+  appUsage: Record<string, AppLimitDayDetail[]>;
+}
+
+export interface GetAppLimitResponse {
+  code: number;
+  data: AppLimitData;
+}
+
+export async function getAppLimitsAction(deviceId: string): Promise<ActionResult<AppLimitData>> {
+  return withSafeAction(async () => {
+    const response = await apiClient(`/mdm-sync/${deviceId}/applimits`, {
+      method: "GET",
+    });
+    console.log(response.data.data);
+    return response.data.data;
+  }, "Failed to fetch app limits");
 }
 
 export async function setAppLimitAction({

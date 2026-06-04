@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { ChevronLeft, Ban, PlayCircle, History } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { ChevronLeft, Ban, PlayCircle, History, Loader2 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/shared/ui/Card/Card";
 import { Button } from "@/shared/ui/Button/button";
 import { cn, formatAppValue } from "@/shared/lib/utils";
@@ -9,7 +9,12 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from 
 import { SetTimeLimitModal } from "@/shared/ui/Modal/Modals/TimeLimitModal";
 import { AppListItem } from "./AllAppsCard";
 import { useParams } from "next/navigation";
-import { useSetAppLimit, useBlockApp, useUnblockApp } from "@/features/mdm-sync/model/useMdmSync";
+import {
+  useSetAppLimit,
+  useBlockApp,
+  useUnblockApp,
+  useGetAppLimit,
+} from "@/features/mdm-sync/model/useMdmSync";
 
 const hourlyData = [
   { name: "S", value: 0.5, isCurrent: false },
@@ -23,11 +28,12 @@ const hourlyData = [
 
 export function AppDetailView({ app, onBack }: { app: any; onBack: () => void }) {
   const params = useParams<{ device: string }>();
+  const appLimitsQuery = useGetAppLimit(params?.device);
   const setAppLimitMutation = useSetAppLimit();
   const blockAppMutation = useBlockApp();
   const unblockAppMutation = useUnblockApp();
 
-  const [isBlocked, setIsBlocked] = React.useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
 
   const handleBlockToggle = async () => {
     try {
@@ -48,8 +54,27 @@ export function AppDetailView({ app, onBack }: { app: any; onBack: () => void })
       // Error handled by hook's toast notification
     }
   };
-  const [limitModalOpen, setLimitModalOpen] = React.useState(false);
-  const [limits, setLimits] = React.useState<Record<string, { hour: number; minutes: number }>>({});
+  const [limitModalOpen, setLimitModalOpen] = useState(false);
+  const [limits, setLimits] = useState<Record<string, { hour: number; minutes: number }>>({});
+
+  console.log("app limits: ", appLimitsQuery.data);
+
+  useEffect(() => {
+    if (appLimitsQuery.data?.appUsage) {
+      const usage = appLimitsQuery.data.appUsage;
+      const currentAppLimits: Record<string, { hour: number; minutes: number }> = {};
+
+      Object.entries(usage).forEach(([day, dayDetails]) => {
+        const appDetail = dayDetails.find((d: any) => d.packageName === app.packageName);
+        console.log("app details: ", appDetail);
+        if (appDetail) {
+          currentAppLimits[day] = { hour: appDetail.hour, minutes: appDetail.minutes };
+        }
+      });
+
+      setLimits(currentAppLimits);
+    }
+  }, [appLimitsQuery.data, app.packageName]);
 
   // Function to handle limit updates
   const handleSaveLimit = async (weekLimits: Record<string, { hour: number; minutes: number }>) => {
@@ -112,6 +137,8 @@ export function AppDetailView({ app, onBack }: { app: any; onBack: () => void })
   const displayLimits = getLimitsDisplay();
   const appDisplayName = app.appName || app.name;
 
+  console.log("limits: ", displayLimits);
+
   return (
     <Card className="space-y-6">
       <CardContent>
@@ -144,7 +171,9 @@ export function AppDetailView({ app, onBack }: { app: any; onBack: () => void })
                 {appDisplayName} {isBlocked && "(Blocked)"}
               </h3>
               <span className="text-sm font-medium text-[#667085]">
-                {formatAppValue(app.totalTime || `Size: ${app.installedAPKSize || app.appSize || 0}`)}
+                {formatAppValue(
+                  app.totalTime || `Size: ${app.installedAPKSize || app.appSize || 0}`
+                )}
                 {app.versionName && `, Version: ${app.versionName}`}
               </span>
             </div>
@@ -228,7 +257,12 @@ export function AppDetailView({ app, onBack }: { app: any; onBack: () => void })
 
           <Card className="flex min-h-[120px] items-center justify-center rounded-[32px] border-none bg-slate-50">
             <CardContent className="w-full">
-              {displayLimits.length === 0 ? (
+              {appLimitsQuery.isLoading ? (
+                <div className="flex flex-col items-center justify-center space-y-4 py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-[#1B3C73]" />
+                  <p className="font-medium text-slate-500">Loading limits...</p>
+                </div>
+              ) : displayLimits.length === 0 ? (
                 <div className="flex flex-col items-center justify-center space-y-4 py-8">
                   <History className="h-10 w-10 text-slate-400" />
                   <p className="font-medium text-slate-500">No limit set for this app</p>

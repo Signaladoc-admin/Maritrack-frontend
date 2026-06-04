@@ -13,6 +13,7 @@ import {
   setAppLimitAction,
   blockAppAction,
   unblockAppAction,
+  getAppLimitsAction,
 } from "../api/mdm-sync.actions";
 import { useToast } from "@/shared/ui/toast";
 
@@ -24,6 +25,7 @@ export const mdmSyncKeys = {
   zoneDevices: (zoneId: string) => ["mdm-sync", "zoneDevices", zoneId] as const,
   qrcode: (zoneId: string, onboardingCode: string) =>
     ["mdm-sync", "qrcode", zoneId, onboardingCode] as const,
+  appLimits: (deviceId: string) => ["mdm-sync", "appLimits", deviceId] as const,
 };
 
 export function useCreateZone() {
@@ -121,10 +123,12 @@ export function useZoneDevices(zoneId: string | undefined, options?: { enabled?:
 }
 
 export function useSetAppLimit() {
+  const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useServerActionMutation(setAppLimitAction, {
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: mdmSyncKeys.appLimits(variables.deviceId) });
       toast({
         title: "Success",
         message: "App limit set successfully",
@@ -139,6 +143,19 @@ export function useSetAppLimit() {
       });
     },
   });
+}
+
+export function useGetAppLimit(deviceId: string | undefined, options?: { enabled?: boolean }) {
+  return useServerActionQuery(
+    mdmSyncKeys.appLimits(deviceId || ""),
+    getAppLimitsAction,
+    [deviceId as string],
+    {
+      ...options,
+      retry: 0,
+      enabled: !!deviceId && options?.enabled !== false,
+    }
+  );
 }
 
 export function useBlockApp() {
