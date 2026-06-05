@@ -5,7 +5,6 @@ import HaveAnAccount from "./HaveAnAccount";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { otpConfirmFormSchema, OtpConfirmFormValues } from "../schema";
-import { useValidateOtp } from "../model/useValidateOtp";
 import { useNewUserStore } from "@/shared/stores/user.store";
 import { useQueryState } from "nuqs";
 import { useEffect } from "react";
@@ -19,7 +18,7 @@ export default function OtpConfirmForm() {
   const { setToken, registrationType } = useNewUserStore();
   const [token] = useQueryState("token");
 
-  const { email, password, clearCredentials } = useNewUserStore.getState();
+  const { email, password } = useNewUserStore.getState();
   console.log(email, password)
 
   useEffect(() => {

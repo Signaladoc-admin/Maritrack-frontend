@@ -62,7 +62,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const userPayload = accessToken ? getTokenPayload(accessToken) : null;
   // NUDGE: Remove userMeta temporary fallback when session restore gets unified on backend
   const userRole = userMeta?.businessRole ?? userMeta?.role ?? userPayload?.businessRole ?? userPayload?.role;
-  const appRole = userRole === "USER" ? "PARENT" : "BUSINESS";
+  const appRole = user?.businessId ? "BUSINESS" : "PARENT";
+
 
   // NUDGE: Remove userMeta temporary reconstruction when session restore gets unified on backend
   const activeUser = accessToken && userPayload ? {

@@ -3,13 +3,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { verifyUserAction } from "../api/auth.actions";
 import { useToast } from "@/shared/ui/toast";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { VerifyUserRequest } from "../types";
 
 export function useVerifyAccount() {
   const { toast } = useToast();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const pathname = usePathname()
+  const isBusinessPath = pathname.toLowerCase().includes('business')
 
   const mutation = useMutation({
     mutationFn: async (data: VerifyUserRequest) => {
@@ -28,7 +30,8 @@ export function useVerifyAccount() {
         title: "Account Verified",
         message: res?.data?.message || "Your account has been verified. You can now proceed to login.",
       });
-      router.push("/login");
+
+      isBusinessPath ? router.push("/business/login") : router.push("/login");
     },
     onError: (err: any) => {
       toast({

@@ -4,7 +4,7 @@ import OtpConfirmForm from "@/features/auth/ui/OtpConfirmForm";
 import { useNewUserStore } from "@/shared/stores/user.store";
 import { Header } from "@/shared/ui/layout/header";
 import { useToast } from "@/shared/ui/toast";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 function maskEmail(email: string) {
@@ -33,11 +33,14 @@ export default function ConfirmEmail() {
     }
   }, []);
 
+  const pathname = usePathname()
+  const isBusinessPath = pathname.toLowerCase().includes('business')
+
   useEffect(() => {
     if (!hydrated) return;
     if (!email) {
       toast({ type: 'error', title: 'Error', message: 'Email not found. Redirecting to login...' })
-      router.push('/login')
+      router.push(isBusinessPath ? '/business/login' : '/login')
     }
   }, [hydrated, email, router, toast])
 

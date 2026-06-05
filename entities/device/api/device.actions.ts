@@ -40,3 +40,14 @@ export async function markDeviceAsReturnedAction(deviceId: string, flagReason: s
     return res.data ?? res;
   }, "Failed to mark device as returned");
 }
+export async function exportDevicesAction() {
+  return withSafeAction(async () => {
+    const res = await apiClient(`/devices/export/devices`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return res.data ?? res;
+  }, "Failed to export devices");
+}
