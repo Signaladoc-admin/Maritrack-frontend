@@ -111,14 +111,11 @@ export interface AppLimitDayDetail {
   appName: string;
   hour: number;
   day: string;
-  date: string;
+  date?: string | number;
 }
 
 export interface SetAppLimitPayload {
-  actionId?: number;
-  message: {
-    appUsage: Record<string, AppLimitDayDetail[]>;
-  };
+  appUsage: Record<string, AppLimitDayDetail[]>;
 }
 
 export interface SetAppLimitVariables {
@@ -126,20 +123,36 @@ export interface SetAppLimitVariables {
   data: SetAppLimitPayload;
 }
 
+export interface AppLimitData {
+  deviceId: string | null;
+  createdBy: string | null;
+  updatedTime: number;
+  appUsage: Record<string, AppLimitDayDetail[]>;
+}
+
+export interface GetAppLimitResponse {
+  code: number;
+  data: AppLimitData;
+}
+
+export async function getAppLimitsAction(deviceId: string): Promise<ActionResult<AppLimitData>> {
+  return withSafeAction(async () => {
+    const response = await apiClient(`/mdm-sync/${deviceId}/applimits`, {
+      method: "GET",
+    });
+    return response.data.data;
+  }, "Failed to fetch app limits");
+}
+
 export async function setAppLimitAction({
   deviceId,
   data,
 }: SetAppLimitVariables): Promise<ActionResult<any>> {
-  console.log(data, deviceId);
-  const payload = {
-    ...data,
-    actionId: data.actionId ?? 30,
-  };
   return withSafeAction(
     async () =>
-      await apiClient(`/mdm-sync/${deviceId}/action`, {
+      await apiClient(`/mdm-sync/${deviceId}/applimits`, {
         method: "POST",
-        body: JSON.stringify(payload),
+        body: JSON.stringify(data),
       }),
     "Failed to set app limit"
   );
@@ -158,7 +171,7 @@ export async function blockAppAction({
     async () =>
       await apiClient(`/mdm-sync/${deviceId}/action`, {
         method: "POST",
-        body: JSON.stringify({ actionId: 401, message: { packageName } }),
+        body: JSON.stringify({ deviceIds: [deviceId], actionId: 27, message: packageName }),
       }),
     "Failed to block app"
   );
@@ -172,7 +185,7 @@ export async function unblockAppAction({
     async () =>
       await apiClient(`/mdm-sync/${deviceId}/action`, {
         method: "POST",
-        body: JSON.stringify({ actionId: 201, message: { packageName } }),
+        body: JSON.stringify({ deviceIds: [deviceId], actionId: 28, message: packageName }),
       }),
     "Failed to unblock app"
   );

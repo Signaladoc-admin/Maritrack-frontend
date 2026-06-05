@@ -13,7 +13,7 @@ import { Button } from "@/shared/ui/Button/button";
 import { z } from "zod";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { searchLocations, LocationSuggestion } from "@/shared/lib/geocoding";
+import { useSearchBoxCore, useSearchSession } from "@mapbox/search-js-react";
 import { cn } from "@/shared/lib/utils";
 
 const geofencingSchema = z.object({
@@ -32,9 +32,14 @@ export function GeofencingModal({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const [suggestions, setSuggestions] = React.useState<LocationSuggestion[]>([]);
+  const [suggestions, setSuggestions] = React.useState<any[]>([]);
   const [isSearching, setIsSearching] = React.useState(false);
   const [showSuggestions, setShowSuggestions] = React.useState(false);
+
+  const searchBoxCore = useSearchBoxCore({
+    accessToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "",
+  });
+  const searchSession = useSearchSession(searchBoxCore);
 
   const {
     register,
@@ -57,8 +62,13 @@ export function GeofencingModal({
     const timer = setTimeout(async () => {
       if (locationName && locationName.length >= 3 && showSuggestions) {
         setIsSearching(true);
-        const results = await searchLocations(locationName);
-        setSuggestions(results);
+        try {
+          const results = await searchSession.suggest(locationName, { limit: 10 });
+          setSuggestions(results.suggestions);
+        } catch (error) {
+          console.error("Mapbox search error:", error);
+          setSuggestions([]);
+        }
         setIsSearching(false);
       } else {
         setSuggestions([]);
@@ -66,14 +76,28 @@ export function GeofencingModal({
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [locationName, showSuggestions]);
+  }, [locationName, showSuggestions, searchSession]);
 
-  const handleSelectSuggestion = (suggestion: LocationSuggestion) => {
-    setValue("locationName", suggestion.displayName);
-    setValue("lat", suggestion.lat);
-    setValue("lon", suggestion.lon);
-    setSuggestions([]);
-    setShowSuggestions(false);
+  const handleSelectSuggestion = async (suggestion: any) => {
+    try {
+      setIsSearching(true);
+      const retrieveResult = await searchSession.retrieve(suggestion);
+      const feature = retrieveResult.features[0];
+
+      if (feature) {
+        const addressName =
+          feature.properties.full_address || feature.properties.name || suggestion.name;
+        setValue("locationName", addressName);
+        setValue("lon", feature.geometry.coordinates[0]);
+        setValue("lat", feature.geometry.coordinates[1]);
+      }
+    } catch (error) {
+      console.error("Mapbox retrieve error:", error);
+    } finally {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      setIsSearching(false);
+    }
   };
 
   const onSubmit: SubmitHandler<GeofencingFormValues> = (data) => {
@@ -130,7 +154,8 @@ export function GeofencingModal({
                       className="w-full px-4 py-2 text-left text-sm hover:bg-slate-50 focus:bg-slate-50 focus:outline-none"
                       onClick={() => handleSelectSuggestion(s)}
                     >
-                      {s.displayName}
+                      {s.full_address ||
+                        `${s.name}${s.place_formatted ? `, ${s.place_formatted}` : ""}`}
                     </button>
                   ))}
                 </div>
