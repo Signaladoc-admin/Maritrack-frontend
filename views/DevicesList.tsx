@@ -14,13 +14,12 @@ import { useDebounce } from "use-debounce";
 import { getDevicesColumns } from "@/features/device/columns";
 import { useRouter } from "next/navigation";
 import { useQueryState } from "nuqs";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { cn } from "@/shared/lib/utils";
 import DevicesTable from "@/features/business-users/users/ui/DevicesTable";
 import AssignDeviceModal from "@/features/business-users/users/ui/AssignDeviceModal";
 import { Input } from "@/shared/ui/input";
-import { DeviceAssignmentStatus, DeviceWithUserDetails, StaffDevice, useDevices } from "@/entities/device";
-import { getUserByIdAction } from "@/entities/user/api/user.actions";
+import { DeviceAssignmentStatus, StaffDevice, useDevices } from "@/entities/device";
 
 
 export default function DevicesList() {
@@ -42,48 +41,8 @@ export default function DevicesList() {
   const devices = devicesRes?.devices || []
   const totalPages = devicesRes?.totalPages || 1
 
-  // Fetch each staff user details where a device within the list is assigned to the user
-  const [devicesWithStaffMembers, setDevicesWithStaffMembers] = useState<DeviceWithUserDetails[]>([])
-  const [isLoadingStaffMembersInDevices, setIsLoadingStaffMembersInDevices] = useState(false)
-
-
-  // Fetch each staff user details where a device within the list is assigned to the user
-  useEffect(() => {
-    const fetchDevicesWithStaffMembers = async () => {
-      try {
-        setIsLoadingStaffMembersInDevices(true);
-        const devicesWithStaff: DeviceWithUserDetails[] = await Promise.all(
-          devices.map(async (d) => {
-            if (!d.currentUserId) return d;
-
-            const currentUser = await getUserByIdAction(d.currentUserId);
-
-            if (currentUser.success) {
-              return {
-                ...d,
-                currentUserDetails: currentUser.data,
-              };
-            }
-            return d;
-          })
-        );
-        setDevicesWithStaffMembers(devicesWithStaff);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoadingStaffMembersInDevices(false);
-      }
-    };
-
-    fetchDevicesWithStaffMembers();
-
-  }, [devicesRes, devicesRes?.devices, devicesRes?.page]);
-
-  console.log("devicesWithStaffMembers", devicesWithStaffMembers);
-
-
   const [isShowingAssignDeviceModal, setIsShowingAssignDeviceModal] = useState(false);
-  const [selectedDevice, setSelectedDevice] = useState<StaffDevice | null>(null);
+  const [_, setSelectedDevice] = useState<StaffDevice | null>(null);
 
   function handlePageChange(page: number) {
     setPage(String(page));
@@ -170,12 +129,12 @@ export default function DevicesList() {
       </div>
 
       <DevicesTable
-        data={devicesWithStaffMembers}
+        data={devices}
         columns={getDevicesColumns(handleAssignDevice)}
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
-        isLoading={isDevicesPending || isLoadingStaffMembersInDevices}
+        isLoading={isDevicesPending}
       />
 
       <AssignDeviceModal

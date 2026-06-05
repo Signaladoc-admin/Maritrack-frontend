@@ -1,8 +1,6 @@
 import { CardWrapper } from "@/shared/ui/card-wrapper";
-import React from "react";
 import { MDMDeviceDetailsResponse } from "../types";
-import { useUserById } from "@/entities/user/model/useUserProfile";
-import { useGetStaffMember, useGetStaffMembers } from "@/entities/business/model/useStaffMembers";
+import { useGetStaffMembers } from "@/entities/business/model/useStaffMembers";
 import { formatID } from "@/shared/lib/utils";
 
 export default function DevicePossesorDetailsCard({
@@ -19,8 +17,8 @@ export default function DevicePossesorDetailsCard({
   const staffMember = staffMemberData?.data?.staff[0];
 
   return (
-    <CardWrapper className="h-full" padding="lg">
-      <div className="space-y-2">
+    <CardWrapper className="rounded-[32px] bg-[#F8F9FA]" padding="lg">
+      <div className="space-y-2 flex flex-col justify-center h-full">
         <p className="text-sm font-medium text-slate-400">Possessor</p>
         <h3 className="text-primary text-2xl font-semibold">
           {staffMember?.user?.firstName} {staffMember?.user?.lastName}

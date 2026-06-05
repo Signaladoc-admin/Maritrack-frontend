@@ -6,7 +6,7 @@ import type {
 } from "@/entities/user/model/user.schema";
 import { cookies } from "next/headers";
 import { withSafeAction } from "@/shared/lib/safe-action";
-import { ForgotPasswordRequest, RequestTokenRequest, ResetPasswordRequest, ValidateOTPRequest, ValidateOTPResponse, VerificationTokenMethod } from "../types";
+import { ForgotPasswordRequest, RequestTokenRequest, ResetPasswordRequest, ValidateOTPRequest, ValidateOTPResponse, VerificationTokenMethod, VerifyUserRequest } from "../types";
 import { ApiResponse, MessageResponse } from "@/shared/api/types";
 import { UserProfile } from "@/entities/user";
 
@@ -56,6 +56,13 @@ export async function resendVerificationAction(method: VerificationTokenMethod =
     method: "POST",
     body: JSON.stringify(payload),
   }), "Failed to resend verification");
+}
+
+export async function verifyUserAction(payload: VerifyUserRequest) {
+  return withSafeAction(async () => apiClient<ApiResponse<MessageResponse>>(`/users/verify`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  }), "Failed to verify user");
 }
 
 export async function validateOtpAction(payload: ValidateOTPRequest) {

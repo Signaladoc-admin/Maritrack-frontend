@@ -16,10 +16,12 @@ import z from "zod";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CountryStateInput } from "@/shared/ui/inputs/country-state-input";
+import { Country, State } from "country-state-city";
 import { InputGroup } from "@/shared/ui/input-group";
 import { useToast } from "@/shared/ui/toast";
 import { useUpdateProfile } from "@/entities/user/model/useUserProfile";
 import { useUpdateBusiness } from "@/entities/business/model/useBusiness";
+import { Business } from "@/entities/business/types";
 
 const BusinessProfileSchema = z.object({
   profilePicture: z.instanceof(File).nullable(),
@@ -105,7 +107,7 @@ function BusinessProfileFormSkeleton() {
   );
 }
 
-function BusinessProfileFormInner({ business }: { business: any }) {
+function BusinessProfileFormInner({ business }: { business: Business | null | undefined }) {
   const { mutateAsync: updateBusiness, isPending: isUpdatingBusinessDetails } = useUpdateBusiness();
   const { mutateAsync: updateProfileImage, isPending: isUpdatingProfileImage } = useUpdateProfile();
 
@@ -113,6 +115,8 @@ function BusinessProfileFormInner({ business }: { business: any }) {
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
   const [showSignOut, setShowSignOut] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
+
+  console.log(business?.country)
 
   const {
     register,
@@ -134,23 +138,40 @@ function BusinessProfileFormInner({ business }: { business: any }) {
 
   useEffect(() => {
     if (business) {
-      setValue("name", business.name || "");
-      setValue("email", business.email || "");
-      setValue("address", business.address || "");
-      setValue("state", business.state || "");
-      setValue("country", business.country || "");
+      setValue("name", business?.name || "");
+      setValue("email", business?.email || "");
+      setValue("address", business?.address || "");
+
+      // SearchableSelect matches options by ISO code (e.g. "NG", "LA").
+      // The API may return either an ISO code or a full name — resolve either way.
+      const allCountries = Country.getAllCountries();
+      const rawCountry = business?.country || "";
+      const countryIso =
+        allCountries.find((c) => c.isoCode === rawCountry)?.isoCode ||
+        allCountries.find((c) => c.name.toLowerCase() === rawCountry.toLowerCase())?.isoCode ||
+        rawCountry;
+
+      setValue("country", countryIso);
+
+      const rawState = business?.state || "";
+      const stateIso =
+        State.getStatesOfCountry(countryIso).find((s) => s.isoCode === rawState)?.isoCode ||
+        State.getStatesOfCountry(countryIso).find((s) => s.name.toLowerCase() === rawState.toLowerCase())?.isoCode ||
+        rawState;
+
+      setValue("state", stateIso);
     }
   }, [business]);
 
   const onSubmit = async (data: BusinessProfileFormValues) => {
     try {
-      // await updateBusiness({
-      //   id: business?.id!,
-      //   name: data.name,
-      //   address: data.address,
-      //   state: data.state,
-      //   country: data.country,
-      // });
+      await updateBusiness({
+        id: business?.id!,
+        name: data.name,
+        address: data.address,
+        state: data.state,
+        country: data.country,
+      });
       await updateProfileImage({
         profilePicture: data.profilePicture as File,
       });

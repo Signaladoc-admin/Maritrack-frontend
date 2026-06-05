@@ -66,7 +66,7 @@ export default function DeviceDetailsGeneralTabContent({
           <DeviceHardwareDetailsCard device={fullDeviceDetails} />
 
           {/* Right column: possessor, memory, battery in a single 3-col row */}
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
             <DevicePossesorDetailsCard device={fullDeviceDetails} />
             {memoryCard}
             {batteryCard}

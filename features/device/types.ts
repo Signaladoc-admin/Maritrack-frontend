@@ -178,22 +178,22 @@ interface RealTimeStats {
 }
 
 export interface DeviceHardwareDetails {
-        id: string,
-        osType: string,
-        deviceInitTime: number,
-        gcmId: string,
-        imeiNumber: string,
-        deviceId: string,
-        lastReportedTime: number,
-        createdTime: number,
-        realTimeStats: RealTimeStats,
-        serialNumber: string,
-        bluetoothMacAddr: string,
-        wifiMacAddr: string,
-        version: string,
-        manufacturer: string,
-        model: string
-    }
+    id: string,
+    osType: string,
+    deviceInitTime: number,
+    gcmId: string,
+    imeiNumber: string,
+    deviceId: string,
+    lastReportedTime: number,
+    createdTime: number,
+    realTimeStats: RealTimeStats,
+    serialNumber: string,
+    bluetoothMacAddr: string,
+    wifiMacAddr: string,
+    version: string,
+    manufacturer: string,
+    model: string
+}
 
 export interface MDMDeviceDetailsResponse {
     code: number,

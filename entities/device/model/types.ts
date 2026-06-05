@@ -64,6 +64,27 @@ export interface DeviceQueryOptions {
   deviceStatus?: DeviceStatus;
   flagged?: boolean;
 }
+interface CurrentUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  isEmailVerified: boolean;
+  isInvited: boolean;
+  role: string;
+  phone: string;
+  status: string;
+  isOnline: boolean;
+  imageUrl: string;
+  firstLogin: boolean;
+  lastLoginAt: string;
+  createdAt: string;
+  updatedAt: string;
+  deleted: boolean;
+  deletedAt: string;
+  mdmUserId: string;
+  zone: string | null;
+}
 
 export interface StaffDevice {
   id: string;
@@ -95,7 +116,7 @@ export interface StaffDevice {
   currentDepartmentId: string | null;
   currentLocationId: string | null;
   businessId: string | null;
-  currentUser?: User;
+  currentUser?: CurrentUser;
 }
 
 export interface DeviceWithUserDetails extends StaffDevice {

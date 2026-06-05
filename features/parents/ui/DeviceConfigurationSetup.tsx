@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Button } from "@/shared/ui/button";
 import { Header } from "@/shared/ui/layout/header";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
@@ -146,7 +146,7 @@ const formSchema = z
   });
 
 type FormValues = z.infer<typeof formSchema>;
-type AppRole = "PARENT" | "BUSINESS";
+export type AppRole = "PARENT" | "BUSINESS";
 
 export const devicesControlHeadings = {
   header: {
@@ -178,8 +178,16 @@ export const devicesControlHeadings = {
     description: "Choose what events you want to be notified about.",
   },
   parentalConfirmationAndConsent: {
-    title: "Parental Confirmation & Consent",
-    description: "Confirm your authority and approve monitoring.",
+    PARENT: {
+      title: "Parental Confirmation & Consent",
+      description: "Confirm your authority and approve monitoring.",
+      checkboxLabel: 'I confirm that I am the legal parent or guardian of the child(ren) added and I consent to monitoring their device activity.'
+    },
+    BUSINESS: {
+      title: "Admin Confirmation & Consent",
+      description: "Confirm your authority and approve monitoring.",
+      checkboxLabel: 'I confirm that I am the legal admin of the staff members added and I consent to monitoring their device activity.'
+    },
   },
 };
 
@@ -395,8 +403,8 @@ export default function DevicesConfigurationSetup({
             subtitle={devicesControlHeadings.alertsAndNotifications.description}
           />
           <SectionSkeleton
-            title={devicesControlHeadings.parentalConfirmationAndConsent.title}
-            subtitle={devicesControlHeadings.parentalConfirmationAndConsent.description}
+            title={devicesControlHeadings.parentalConfirmationAndConsent[user?.appRole?.toUpperCase() as AppRole]?.title}
+            subtitle={devicesControlHeadings.parentalConfirmationAndConsent[user?.appRole?.toUpperCase() as AppRole]?.description}
           />
         </div>
       </div>

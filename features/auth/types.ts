@@ -10,6 +10,11 @@ export interface ValidateOTPRequest {
     otp?: string
 }
 
+export interface VerifyUserRequest {
+    email: string
+    otp: string
+}
+
 export interface ValidateOTPResponse {
     accessToken: string;
     refreshToken: string;

@@ -127,7 +127,7 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
                 <tr>
                   {columns.map((column) => (
                     <th
-                      key={column.label}
+                      key={column.label ?? column.key}
                       scope="col"
                       className="px-6 py-3 text-left text-xs font-medium tracking-wider"
                     >
@@ -141,7 +141,7 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
               {Array.from({ length: 5 }).map((_, rowIdx) => (
                 <tr key={rowIdx}>
                   {columns.map((column) => (
-                    <td key={column.label} className="px-6 py-4">
+                    <td key={column.label ?? column.key} className="px-6 py-4">
                       <Skeleton className="h-4 w-full rounded" />
                     </td>
                   ))}
@@ -193,11 +193,10 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
                   )}
                   {columns.map((column) => (
                     <th
-                      key={column.label}
+                      key={column.label ?? column.key}
                       scope="col"
-                      className={`px-6 py-3 text-left text-xs font-medium tracking-wider ${
-                        column.className || ""
-                      }`}
+                      className={`px-6 py-3 text-left text-xs font-medium tracking-wider ${column.className || ""
+                        }`}
                       style={{ width: column.width }}
                     >
                       {column.label}
@@ -250,7 +249,7 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
                     )}
                     {columns.map((column, colIndex) => (
                       <td
-                        key={column.label}
+                        key={column.label ?? column.key}
                         className={cn(
                           "px-6 py-4 text-sm whitespace-nowrap",
                           column.className || "text-gray-500",
@@ -277,9 +276,8 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
                           >
                             Actions
                             <ChevronDownIcon
-                              className={`-mr-1 ml-2 h-5 w-5 transition-transform duration-200 ${
-                                openDropdownId === item.id ? "rotate-180" : ""
-                              }`}
+                              className={`-mr-1 ml-2 h-5 w-5 transition-transform duration-200 ${openDropdownId === item.id ? "rotate-180" : ""
+                                }`}
                             />
                           </button>
                           {openDropdownId === item.id && (
@@ -294,9 +292,8 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
                                         action.onClick(item);
                                         setOpenDropdownId(null);
                                       }}
-                                      className={`block w-full px-4 py-2 text-left text-sm hover:bg-gray-100 ${
-                                        action.className || "text-gray-700"
-                                      }`}
+                                      className={`block w-full px-4 py-2 text-left text-sm hover:bg-gray-100 ${action.className || "text-gray-700"
+                                        }`}
                                     >
                                       {action.label}
                                     </button>
@@ -343,7 +340,7 @@ const TableVariant = <T extends { id: string | number }>(props: TableProps<T>) =
             <tr>
               {columns.map((column) => (
                 <th
-                  key={column.label}
+                  key={column.label ?? column.key}
                   scope="col"
                   className="py-2 pr-6 text-left text-xs font-medium tracking-wider text-gray-500 first:pl-0"
                   style={{ width: column.width }}
@@ -366,7 +363,7 @@ const TableVariant = <T extends { id: string | number }>(props: TableProps<T>) =
               <tr key={item.id}>
                 {columns.map((column) => (
                   <td
-                    key={column.label}
+                    key={column.label ?? column.key}
                     className={
                       column.className ??
                       "py-4 pr-6 text-sm whitespace-nowrap text-[#6B7280] first:pl-0"

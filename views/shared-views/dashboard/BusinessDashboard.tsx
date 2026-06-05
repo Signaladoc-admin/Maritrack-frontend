@@ -68,21 +68,23 @@ const BusinessDashboard = () => {
           damagedAssets={damagedCount}
           isLoading={isLoading}
         />
-        <DeviceUtilizationWidget
+        {/* DeviceUtilizationWidget — avgSessionDuration, screenTimePerUser, sessionDurationChartData are simulated */}
+        {/* <DeviceUtilizationWidget
           dailyActiveDevices={deviceStats.active}
           avgSessionDuration={avgSessionDuration}
           screenTimePerUser={screenTimePerUser}
           activeUsersChartData={zipChart(newDevicesChart.x, newDevicesChart.y, "month", "users")}
           sessionDurationChartData={sessionDurationChartData}
           isLoading={isLoading}
-        />
-        <ComplianceSecurityWidget
+        /> */}
+        {/* ComplianceSecurityWidget — blockedAttemptsData, jailbreakData, violationIncidents are static mock data */}
+        {/* <ComplianceSecurityWidget
           securityPatchData={securityPatchData}
           blockedAttemptsData={blockedAttemptsData}
           violationIncidents={violationIncidents}
           jailbreakData={jailbreakData}
           isLoading={isLoading}
-        />
+        /> */}
         <ConnectivityLearningWidget
           preloadedContentValue={preloadedContentValue}
           offlineLearningValue={offlineLearningValue}
@@ -90,14 +92,15 @@ const BusinessDashboard = () => {
           offlineLearningData={zipChart(wifiChart.x, wifiChart.y, "month", "hours")}
           isLoading={isLoading}
         />
+        {/* batteryData omitted — backed by static mock data */}
         <AssetTrackingWidget
           devicesAvailabilityData={devicesAvailabilityData}
           deviceLocations={deviceLocations}
-          batteryData={batteryData}
           lostReports={lostReports}
           isLoading={isLoading}
         />
-        <BlacklistedWebsitesWidget websites={blacklistedWebsites} isLoading={isLoading} />
+        {/* BlacklistedWebsitesWidget — entirely static mock data */}
+        {/* <BlacklistedWebsitesWidget websites={blacklistedWebsites} isLoading={isLoading} /> */}
       </div>
     </DashboardFilterProvider>
   );

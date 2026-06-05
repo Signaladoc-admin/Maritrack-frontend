@@ -4,7 +4,7 @@ import { Button } from "@/shared/ui/button";
 import { DeviceWithUserDetails, StaffDevice } from "@/entities/device";
 
 export function getDevicesColumns(handleAssignDevice: (device: StaffDevice) => void) {
-  const devicesColumns: TableColumn<DeviceWithUserDetails>[] = [
+  const devicesColumns: TableColumn<StaffDevice>[] = [
     {
       key: "asset",
       label: "Asset",
@@ -21,10 +21,10 @@ export function getDevicesColumns(handleAssignDevice: (device: StaffDevice) => v
       key: "assignmentStatus",
       label: "Assignment",
       render: (item) =>
-        !!item.currentUserDetails ? (
+        !!item.currentUser ? (
           <div className="space-y-1 leading-tight">
-            <p className="font-semibold text-neutral-900">{`${item.currentUserDetails?.firstName} ${item.currentUserDetails?.lastName}`}</p>
-            <p className="text-neutral-500">{item.currentUserDetails?.email}</p>
+            <p className="font-semibold text-neutral-900">{`${item.currentUser?.firstName} ${item.currentUser?.lastName}`}</p>
+            <p className="text-neutral-500">{item.currentUser?.email}</p>
           </div>
         ) : (
           <Button

@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/shared/ui/Button/button"; // Ensure this path is correct
 import { formatCurrency, formatPaystackKoboAmount } from "@/shared/lib/utils";
 import { IPlan } from "@/features/payments/schema";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 // --- Types ---
 export interface PricingFeatureItem {
@@ -36,6 +37,15 @@ export function PricingCard({
     { text: "Monthly Reports", included: true },
     { text: "Multiple Devices", included: true },
   ];
+
+  const { user } = useAuth();
+
+  function formatPlanDescription(description: string) {
+    if (user?.appRole === "BUSINESS") {
+      return description.replace(/child|children|kids/g, "asset");
+    }
+    return description;
+  }
 
   return (
     <div
@@ -92,7 +102,7 @@ export function PricingCard({
             isPremium ? "text-slate-300" : "text-slate-500"
           )}
         >
-          {plan?.description}
+          {formatPlanDescription(plan?.description || "")}
         </p>
       </div>
 

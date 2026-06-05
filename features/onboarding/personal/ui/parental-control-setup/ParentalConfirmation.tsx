@@ -2,20 +2,22 @@ import { InputGroup } from "@/shared/ui/input-group";
 import { Controller, useFormContext } from "react-hook-form";
 import { CardWrapper } from "@/shared/ui/card-wrapper";
 import CardHeader from "@/shared/ui/card-header";
-import { devicesControlHeadings } from "@/features/parents/ui/DeviceConfigurationSetup";
+import { AppRole, devicesControlHeadings } from "@/features/parents/ui/DeviceConfigurationSetup";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 export default function ParentalConfirmation() {
   const {
     control,
     formState: { errors },
   } = useFormContext();
+  const { user } = useAuth()
 
   return (
     <CardWrapper variant="outline" className="space-y-10!">
       <div>
         <CardHeader
-          title={devicesControlHeadings.parentalConfirmationAndConsent.title}
-          description={devicesControlHeadings.parentalConfirmationAndConsent.description}
+          title={devicesControlHeadings.parentalConfirmationAndConsent[user?.appRole?.toUpperCase() as AppRole].title}
+          description={devicesControlHeadings.parentalConfirmationAndConsent[user?.appRole?.toUpperCase() as AppRole].description}
         />
 
         <div className="space-y-4">
@@ -26,7 +28,7 @@ export default function ParentalConfirmation() {
                 name="parentalConsent"
                 render={({ field }) => (
                   <InputGroup
-                    label="I confirm that I am the legal parent or guardian of the child(ren) added and I consent to monitoring their device activity."
+                    label={devicesControlHeadings.parentalConfirmationAndConsent[user?.appRole?.toUpperCase() as AppRole].checkboxLabel}
                     type="checkbox"
                     id="parentalConsent"
                     error={errors.parentalConsent?.message as string}

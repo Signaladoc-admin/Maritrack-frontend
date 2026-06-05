@@ -16,8 +16,6 @@ const General = () => {
     { enabled: !!deviceId }
   );
 
-  console.log("hardwareData", hardwareData);
-
   const { data: networkData, isPending: isNetworkPending } = useDeviceDetail(deviceId, "network", {
     enabled: !!deviceId,
   });
@@ -32,14 +30,14 @@ const General = () => {
 
   const top5Apps = Array.isArray(fetchedApps)
     ? fetchedApps.slice(0, 5).map((app: any) => ({
-        id: app.id,
-        name: app.appName || app.packageName,
-        totalTime: app.totalTime || `Size: ${app.installedAPKSize || 0}`,
-        icon: () => (
-          <div className="w-full text-center text-xs text-gray-400">{app.appName?.slice(0, 2)}</div>
-        ),
-        limits: app.limits || 0,
-      }))
+      id: app.id,
+      name: app.appName || app.packageName,
+      totalTime: app.totalTime || `Size: ${app.installedAPKSize || 0}`,
+      icon: () => (
+        <div className="w-full text-center text-xs text-gray-400">{app.appName?.slice(0, 2)}</div>
+      ),
+      limits: app.limits || 0,
+    }))
     : [];
 
   const batteryLevel = fetchedNetwork?.batteryLevel ?? 0;

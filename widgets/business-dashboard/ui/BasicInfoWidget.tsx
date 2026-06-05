@@ -22,17 +22,17 @@ function MetricStatCard({
   isLoading: boolean;
 }) {
   return (
-    <CardWrapper variant="outline">
-      <div className="flex items-start gap-4">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
-          <BarChart2 className="h-5 w-5" />
+    <CardWrapper variant="outline" padding="default">
+      <div className="flex items-start gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-500">
+          <BarChart2 className="h-5 w-5" strokeWidth={2.5} />
         </div>
-        <div className="flex flex-col gap-1">
-          <p className="text-sm font-medium text-[#667085]">{title}</p>
+        <div className="flex flex-col gap-0.5 min-w-0">
+          <p className="text-sm font-medium text-[#667085] leading-snug">{title}</p>
           {isLoading ? (
-            <Skeleton className="mt-1 h-7 w-24" />
+            <Skeleton className="mt-1 h-7 w-20" />
           ) : (
-            <h4 className="text-2xl font-bold text-slate-900">{value}</h4>
+            <h4 className="text-2xl font-bold text-slate-900 leading-tight">{value}</h4>
           )}
         </div>
       </div>
@@ -50,7 +50,7 @@ export function BasicInfoWidget({
   return (
     <div className="mb-8">
       <h2 className="text-primary mb-4 text-base font-semibold">Basic Information</h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <MetricStatCard
           title="Total assets added"
           value={totalAssets.toLocaleString()}

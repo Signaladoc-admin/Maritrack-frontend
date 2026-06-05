@@ -4,12 +4,15 @@ import { CardWrapper } from "@/shared/ui/card-wrapper";
 import CardHeader from "@/shared/ui/card-header";
 import SubHeading from "./SubHeading";
 import { devicesControlHeadings } from "@/features/parents/ui/DeviceConfigurationSetup";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 export default function AppManagement() {
   const {
     control,
     formState: { errors },
   } = useFormContext();
+  const { user } = useAuth()
+
 
   return (
     <CardWrapper variant="outline">
@@ -32,7 +35,7 @@ export default function AppManagement() {
                 wrapperClassName="divide-y divide-neutral-100"
                 options={[
                   {
-                    label: "Require parent approval before new apps are installed",
+                    label: `Require ${user?.appRole === 'PARENT' ? 'parent' : 'admin'} approval before new apps are installed`,
                     value: "REQUIRE_APPROVAL",
                     containerClassName: "py-3",
                     labelClassName: "cursor-pointer text-slate-700",

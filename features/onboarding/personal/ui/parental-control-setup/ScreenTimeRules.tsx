@@ -7,6 +7,7 @@ import DailyScreenTimeRadioInputs from "./DailyScreenTimeRadioInputs";
 import { TimePicker } from "@/shared/ui/time-picker";
 import { cn } from "@/shared/lib/utils";
 import { devicesControlHeadings } from "@/features/parents/ui/DeviceConfigurationSetup";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 export default function ScreenTimeRules() {
   const {
@@ -15,6 +16,8 @@ export default function ScreenTimeRules() {
     watch,
     formState: { errors },
   } = useFormContext();
+
+  const { user } = useAuth()
 
   return (
     <CardWrapper variant="outline">
@@ -69,7 +72,7 @@ export default function ScreenTimeRules() {
         </div>
 
         <div className="space-y-5">
-          <SubHeading title="School hours restriction" />
+          <SubHeading title={`${user?.appRole === 'PARENT' ? 'School' : 'Work'} hours restriction`} />
           <Controller
             control={control}
             name="schoolHoursRestriction"
@@ -86,7 +89,7 @@ export default function ScreenTimeRules() {
                   )}
                 />
                 <span className="text-base font-normal text-slate-700">
-                  Limit phone use during school hours
+                  Limit phone use during {user?.appRole === 'PARENT' ? 'school' : 'work'} hours
                 </span>
               </div>
             )}

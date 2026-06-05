@@ -33,12 +33,13 @@ export function DeviceUtilizationWidget({
 
   return (
     <div className="mb-8">
-      <h2 className="text-primary mb-4 text-base font-semibold">Device Utilization & Engagement</h2>
+      <h2 className="text-primary mb-4 text-base font-semibold">Device Utilization &amp; Engagement</h2>
 
+      {/* Top summary stat cards */}
       <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {metrics.map(({ title, value }) => (
-          <CardWrapper key={title} variant="outline">
-            <p className="text-sm font-medium text-[#667085]">{title}</p>
+          <CardWrapper key={title} variant="outline" padding="default">
+            <p className="text-xs font-medium text-[#667085]">{title}</p>
             {isLoading ? (
               <Skeleton className="mt-2 h-7 w-24" />
             ) : (
@@ -48,12 +49,14 @@ export function DeviceUtilizationWidget({
         ))}
       </div>
 
+      {/* Large area chart value cards */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <DashboardValueCard
           value={isLoading ? "—" : dailyActiveDevices.toLocaleString()}
           label="Daily active users"
           isLoading={isLoading}
           color="#4318ff"
+          chartBadge={`${dailyActiveDevices.toLocaleString()} Active devices`}
         >
           {activeUsersChartData.length > 0 ? (
             <DashboardAreaChart
@@ -72,6 +75,7 @@ export function DeviceUtilizationWidget({
           label="Average session duration"
           isLoading={isLoading}
           color="#e418ff"
+          chartBadge={`${avgSessionDuration} sessions`}
         >
           {sessionDurationChartData.length > 0 ? (
             <DashboardAreaChart

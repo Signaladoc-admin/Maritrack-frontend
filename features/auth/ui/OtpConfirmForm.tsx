@@ -11,10 +11,11 @@ import { useQueryState } from "nuqs";
 import { useEffect } from "react";
 import { OtpInputField } from "./OtpInputField";
 import { useRouter } from "next/navigation";
+import { useVerifyAccount } from "../model/useVerifyAccount";
 
 export default function OtpConfirmForm() {
   const router = useRouter();
-  const { validateOtp, isSubmitting: isVerifying } = useValidateOtp();
+  const { verifyAccount, isSubmitting: isVerifying } = useVerifyAccount();
   const { setToken, registrationType } = useNewUserStore();
   const [token] = useQueryState("token");
 
@@ -37,7 +38,7 @@ export default function OtpConfirmForm() {
     // key event doesn't carry over to the login form after navigation.
     (document.activeElement as HTMLElement)?.blur();
     try {
-      await validateOtp({ otp: data.otp });
+      await verifyAccount({ otp: data.otp, email: email || "" });
     } catch (err) {
       // Error handled by hook
     }
@@ -67,7 +68,7 @@ export default function OtpConfirmForm() {
           />
         )}
       />
-      
+
       <Button type="submit" className="w-full" disabled={isVerifying}>
         {isVerifying ? "Verifying..." : "Continue"}
       </Button>

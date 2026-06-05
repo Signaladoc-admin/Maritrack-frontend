@@ -2,6 +2,8 @@
 import { MDMDeviceDetailsResponse } from "../types";
 import { CardWrapper } from "@/shared/ui/card-wrapper";
 import { ReactNode } from "react";
+import { useAuth } from "@/shared/auth/AuthProvider";
+import { useBusinessZone } from "@/features/mdm-sync/model/useMdmSync";
 
 export default function DeviceHardwareDetailsCard({
   device,
@@ -10,20 +12,24 @@ export default function DeviceHardwareDetailsCard({
 }) {
   const { data: hardwareDetails, deviceDetails } = device || {};
   const { model, osType, imeiNumber, wifiMacAddr, serialNumber } = hardwareDetails || {};
+  const { macAddress } = deviceDetails || {}
+  const { user } = useAuth()
+
+  const { data: zoneRes } = useBusinessZone()
 
   return (
-    <CardWrapper className="h-full" padding="lg">
+    <CardWrapper className="h-full rounded-[32px] bg-[#F8F9FA]" padding="lg">
       <div className="space-y-8">
         <p className="text-sm font-medium text-slate-400">Device details</p>
-        <h3 className="text-primary text-xl font-semibold">{model}</h3>
+        <h3 className="text-primary text-2xl font-semibold">{model}</h3>
 
-        <div className="grid grid-cols-2 gap-6 md:grid-cols-3">
-          <DevicePropertyItem title={`${hardwareDetails?.osType} ID`} value={hardwareDetails?.id} />
+        <div className="grid sm:grid-cols-2 gap-6 md:grid-cols-3">
+          <DevicePropertyItem title={`${hardwareDetails?.osType} ID`} value={hardwareDetails?.deviceId} />
           <DevicePropertyItem title="IMEI number" value={imeiNumber} />
-          <DevicePropertyItem title="MAC Address" value={wifiMacAddr} />
-          <DevicePropertyItem title="Zone" value={serialNumber} />
-          <DevicePropertyItem title="Model & Manufacturer" value={serialNumber} />
-          <DevicePropertyItem title="OS Version" value={serialNumber} />
+          <DevicePropertyItem title="MAC Address" value={macAddress || wifiMacAddr} />
+          <DevicePropertyItem title="Zone" value={zoneRes?.business.address} />
+          <DevicePropertyItem title="Model & Manufacturer" value={`${hardwareDetails?.model || 'N/A'} / ${hardwareDetails?.manufacturer || 'N/A'}`} />
+          <DevicePropertyItem title="OS Version" value={osType} />
           <DevicePropertyItem
             title="Status"
             value={
@@ -45,8 +51,8 @@ export default function DeviceHardwareDetailsCard({
 function DevicePropertyItem({ title, value }: { title: string; value: string | ReactNode }) {
   return (
     <div className="space-y-3 font-medium">
-      <p className="text-xs text-slate-400">{title}</p>
-      <div className="break-all text-sm">{value}</div>
+      <p className="text-sm text-slate-400">{title}</p>
+      <div className="break-all">{value || "N/A"}</div>
     </div>
   );
 }

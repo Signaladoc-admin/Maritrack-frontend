@@ -24,7 +24,7 @@ export function ConnectivityLearningWidget({
 }: ConnectivityLearningWidgetProps) {
   return (
     <div className="mb-8">
-      <h2 className="text-primary mb-4 text-base font-semibold">Connectivity & Learning Access</h2>
+      <h2 className="text-primary mb-4 text-base font-semibold">Connectivity &amp; Learning Access</h2>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <DashboardValueCard
@@ -32,6 +32,7 @@ export function ConnectivityLearningWidget({
           label="Usage of preloaded content"
           isLoading={isLoading}
           color="#e418ff"
+          chartBadge={`Learning Videos (${preloadedContentValue})`}
         >
           {preloadedContentData.length > 0 ? (
             <DashboardLineChart data={preloadedContentData} dataKey="usage" xAxisKey="month" />
@@ -45,6 +46,7 @@ export function ConnectivityLearningWidget({
           label="Offline learning hours logged"
           isLoading={isLoading}
           color="#003366"
+          chartBadge={`${offlineLearningValue} logged`}
         >
           {offlineLearningData.length > 0 ? (
             <DashboardLineChart data={offlineLearningData} dataKey="hours" xAxisKey="month" />

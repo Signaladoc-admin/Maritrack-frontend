@@ -3,7 +3,6 @@ import { usePaymentHistory } from "../model/usePayments";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { getBillingsHistoryColumns } from "../columns";
-import { useState } from "react";
 
 export default function BillingHistoryTable() {
   const { user } = useAuth();
@@ -15,8 +14,6 @@ export default function BillingHistoryTable() {
 
   const transactions = paymentHistory?.data?.results || [];
   // const totalPages = paymentHistory?.totalPages || 1;
-
-  console.log("paymentHistory", paymentHistory)
 
   if (isLoading) {
     return (
@@ -38,8 +35,6 @@ export default function BillingHistoryTable() {
       </div>
     );
   }
-
-
 
   return (
     <div>
