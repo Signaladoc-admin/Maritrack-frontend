@@ -155,7 +155,7 @@ export async function blockAppAction({
     async () =>
       await apiClient(`/mdm-sync/${deviceId}/action`, {
         method: "POST",
-        body: JSON.stringify({ actionId: 401, message: { packageName } }),
+        body: JSON.stringify({ deviceIds: [deviceId], actionId: 27, message: packageName }),
       }),
     "Failed to block app"
   );
@@ -169,7 +169,7 @@ export async function unblockAppAction({
     async () =>
       await apiClient(`/mdm-sync/${deviceId}/action`, {
         method: "POST",
-        body: JSON.stringify({ actionId: 201, message: { packageName } }),
+        body: JSON.stringify({ deviceIds: [deviceId], actionId: 28, message: packageName }),
       }),
     "Failed to unblock app"
   );
