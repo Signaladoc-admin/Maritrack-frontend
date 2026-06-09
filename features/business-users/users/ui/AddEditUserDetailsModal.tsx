@@ -95,9 +95,11 @@ export default function AddEditUserDetailsModal({
     };
 
     try {
-      initialData
+      const res = initialData
         ? await updateStaffMember({ id: selectedId!, ...payload })
         : await createStaffMember(payload);
+
+      console.log(res);
 
       toast({
         type: "success",
@@ -162,7 +164,6 @@ export default function AddEditUserDetailsModal({
                 <SearchableSelect
                   placeholder="Select a role"
                   options={[
-                    { value: "ORGANIZATION_ADMIN", label: "Organization admin" },
                     { value: "DEVICE_MANAGER", label: "Device manager" },
                     { value: "DEPARTMENT_MANAGER", label: "Department manager" },
                   ]}

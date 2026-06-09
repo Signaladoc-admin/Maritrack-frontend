@@ -19,7 +19,10 @@ export default function BusinessPairingQR({
   onBack,
 }: BusinessPairingQRProps) {
   const { toast } = useToast();
-  const { qrCodeSrc, isLoading, isPending, isError, error } = useQrCode(staffMember.id);
+  const { qrCodeSrc, isLoading, isPending, isError, error } = useQrCode(staffMember.id!);
+
+  console.log("staffMember.id!", staffMember.id)
+  console.log('qrCodeSrc', qrCodeSrc)
 
   const isGenerating = isLoading || isPending;
 

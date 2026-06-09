@@ -11,7 +11,6 @@ import { useQrCode } from "@/features/mdm-sync/model/useQrCode";
 
 interface PairingQRStepProps {
   entityName?: string;
-  onboardingCode?: string;
   entityId?: string;
   onBack: () => void;
   onComplete: () => void;
@@ -21,7 +20,6 @@ interface PairingQRStepProps {
 export default function PairingQRStep({
   entityName,
   entityId,
-  onboardingCode,
   onBack,
   onComplete,
   onRollback,
@@ -35,10 +33,7 @@ export default function PairingQRStep({
     error,
   } = useQrCode(entityId!);
 
-  // const { zone } = useGetZone()
   const isLoading = isGenerating || isPending;
-
-  // const zoneId = zone?.id
 
   useEffect(() => {
     if (isError && error) {

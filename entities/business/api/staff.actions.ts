@@ -1,17 +1,24 @@
 import { BusinessRole } from "@/entities/user/model/user.schema";
 import { apiClient } from "@/shared/lib/api-client";
 import { withSafeAction } from "@/shared/lib/safe-action";
-import { BusinessStaff, StaffMemberFiltersRequest } from "../types";
-import { ApiResponse, PaginatedResponse } from "@/shared/api/types";
+import { BusinessStaff, StaffMemberFiltersRequest, StaffMembersPaginatedResponse } from "../types";
+import { ActionResult, ApiResponse, MessageResponse } from "@/shared/api/types";
 
 export async function getStaffMembersAction(options?: StaffMemberFiltersRequest) {
   return withSafeAction(async () => {
-    const res = await apiClient<PaginatedResponse<{
-      staff: BusinessStaff[]
-    }>>(`/staff`, {
+    const params = {
+      ...(options?.businessId && { businessId: options.businessId }),
+      ...(options?.search && { search: options.search }),
+      ...(options?.role && { role: options.role }),
+      ...(options?.status && { status: options.status }),
+      ...(options?.page && { page: options.page }),
+      ...(options?.limit && { limit: options.limit }),
+    };
+
+    const res = await apiClient<StaffMembersPaginatedResponse>(`/staff`, {
       method: "GET",
       noRedirect: true,
-      params: options as Record<string, string>,
+      params: params as Record<string, string>,
     });
     return res;
   }, "Failed to get staff members");
@@ -43,7 +50,7 @@ export async function createStaffMemberAction({
   role?: string;
   position?: string;
   departmentId: string;
-}) {
+}): Promise<ActionResult<ApiResponse<MessageResponse>>> {
   return withSafeAction(async () => {
     const res = await apiClient(`/staff`, {
       method: "POST",
@@ -54,7 +61,7 @@ export async function createStaffMemberAction({
       }),
       noRedirect: true,
     });
-    return res.data ?? res;
+    return res;
   }, "Failed to create staff member");
 }
 
@@ -78,7 +85,7 @@ export async function createStaffsBulkAction(
       }),
       noRedirect: true,
     });
-    return res.data ?? res;
+    return res;
   }, "Failed to create staff member");
 }
 
@@ -91,14 +98,14 @@ export async function updateStaffMemberAction(
     email: string;
     location: string;
   }
-) {
+): Promise<ActionResult<ApiResponse<MessageResponse>>> {
   return withSafeAction(async () => {
     const res = await apiClient(`/staff/${id}`, {
       method: "PATCH",
       body: JSON.stringify({ email, location }),
       noRedirect: true,
     });
-    return res.data ?? res;
+    return res;
   }, "Failed to update staff member");
 }
 

@@ -8,6 +8,7 @@ import {
   markDeviceAsReturnedAction,
 } from "../api/device.actions";
 import type { DeviceQueryOptions } from "./types";
+import { useGetStaffMember } from "@/entities/business/model/useStaffMembers";
 
 export type { DeviceQueryOptions };
 
@@ -28,17 +29,35 @@ export function useDevice(deviceId: string) {
   });
 }
 
-export function useMarkDeviceAsReturned(deviceId: string) {
+export function useMarkDeviceAsReturned(
+  deviceId: string,
+  flaggedByUserId: string | undefined,
+  options: { enabled?: boolean }
+) {
   const queryClient = useQueryClient();
   return useServerActionMutation(
-    (flagReason: string) => markDeviceAsReturnedAction(deviceId, flagReason),
+    (flagReason: string) => markDeviceAsReturnedAction(deviceId, flagReason, flaggedByUserId),
     {
+      ...options,
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: deviceKeys.list({}) });
         queryClient.invalidateQueries({ queryKey: deviceKeys.item(deviceId) });
+        // Device hardware/assignment details (drives the "returned" status shown on the device page)
+        queryClient.invalidateQueries({ queryKey: ["deviceDetail"] });
+        // Staff member lists/details embed device assignment info (e.g. AssociatedDevicesTable)
+        queryClient.invalidateQueries({ queryKey: ["staff-members"] });
+        // Zone device lists used on the dashboard
+        queryClient.invalidateQueries({ queryKey: ["mdm-sync", "zoneDevices"] });
       },
     }
   );
 }
 
 export { deviceKeys };
+
+export function useGetStaffMemberDevice(staffId: string) {
+  const { data: staffMember } = useGetStaffMember(staffId);
+  // console.log()
+
+  return staffMember?.device ? [staffMember.device] : [];
+}

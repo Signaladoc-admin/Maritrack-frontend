@@ -23,7 +23,7 @@ export function useUserProfile() {
   });
 }
 
-export function useUserById(id: string) {
+export function useUserById(id: string, options?: {enabled: boolean}) {
   return useQuery({
     queryKey: ["user-profile", id],
     queryFn: () => getUserByIdAction(id),

@@ -28,6 +28,7 @@ import { useSearchParams } from "next/navigation";
 import BusinessUserPairingQR from "@/features/business-users/users/ui/BusinessUserPairingQR";
 import { Dialog, DialogContent } from "@/shared/ui/Modal/dialog";
 import { useIsOrganizationAdmin } from "@/features/business-users/users/model/useIsOrganizationAdmin";
+import Pagination from "@/shared/ui/Table/Pagination";
 
 function ActionButtons({
   onOpenQrPairing,
@@ -38,8 +39,6 @@ function ActionButtons({
   onEdit: () => void;
   onDelete: () => void;
 }) {
-  // const { isOrganizationAdmin } = useIsOrganizationAdmin();
-
   return (
     <div className="flex items-center gap-3">
       <Button onClick={onEdit} variant="secondary" size="icon" className="rounded-full p-5">
@@ -56,8 +55,15 @@ function ActionButtons({
 
 export default function Users() {
   const [search, setSearch] = useQueryState("search", { defaultValue: "" });
+  const [currentPage, setCurrentPage] = useQueryState("currentPage", {
+    defaultValue: 1,
+    parse: (value) => Number(value),
+  });
+
   const [debouncedSearchTerm] = useDebounce(search, 1000);
   const [selectedTab, setSelectedTab] = useQueryState("tab", { defaultValue: "users" });
+  const [selectedTabTotalPages, setSelectedTabTotalPages] = useState(0);
+
   const [selectedUserSubTab, setSelectedUserSubTab] = useQueryState("subTab", {
     defaultValue: "user-details",
   });
@@ -116,6 +122,11 @@ export default function Users() {
     }
   };
 
+  function handleSearch(e: React.ChangeEvent<HTMLInputElement>) {
+    setSearch(e.target.value);
+    setCurrentPage(1);
+  }
+
   return (
     <div className="grid gap-4 md:grid-cols-[auto_1fr]">
       <CardWrapper className="bg-[#f7f7f7]">
@@ -132,12 +143,7 @@ export default function Users() {
             itemClassName="px-4"
           />
           <div className="flex items-center gap-2">
-            <Input
-              className="h-10!"
-              placeholder="Search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+            <Input className="h-10!" placeholder="Search" value={search} onChange={handleSearch} />
             <Button
               className="h-10 w-10 shrink-0 rounded-xl"
               onClick={() => {
@@ -148,9 +154,33 @@ export default function Users() {
               <PlusIcon color="white" className="size-5" />
             </Button>
           </div>
-          {selectedTab === "users" && <UsersList searchTerm={debouncedSearchTerm} />}
-          {selectedTab === "departments" && <DepartmentsList searchTerm={debouncedSearchTerm} />}
-          {selectedTab === "locations" && <LocationsList searchTerm={debouncedSearchTerm} />}
+          {selectedTab === "users" && (
+            <UsersList
+              searchTerm={debouncedSearchTerm}
+              currentPage={currentPage}
+              setSelectedTabTotalPages={setSelectedTabTotalPages}
+            />
+          )}
+          {selectedTab === "departments" && (
+            <DepartmentsList
+              searchTerm={debouncedSearchTerm}
+              currentPage={currentPage}
+              setSelectedTabTotalPages={setSelectedTabTotalPages}
+            />
+          )}
+          {selectedTab === "locations" && (
+            <LocationsList
+              searchTerm={debouncedSearchTerm}
+              currentPage={currentPage}
+              setSelectedTabTotalPages={setSelectedTabTotalPages}
+            />
+          )}
+          <Pagination
+            className="border-none p-0!"
+            currentPage={currentPage}
+            totalPages={selectedTabTotalPages}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </CardWrapper>
       <CardWrapper className={cn(selectedId ? "" : "hidden md:block")}>
@@ -163,7 +193,7 @@ export default function Users() {
                     className="w-fit bg-[#eee]"
                     tabs={[
                       { label: "User details", value: "user-details" },
-                      { label: "Associated devices", value: "associated-devices" },
+                      { label: "Associated device", value: "associated-device" },
                     ]}
                     activeTab={selectedUserSubTab}
                     onTabChange={setSelectedUserSubTab}
@@ -179,7 +209,7 @@ export default function Users() {
                   {selectedUserSubTab === "user-details" && (
                     <UserDetails selectedId={selectedId!} />
                   )}
-                  {selectedUserSubTab === "associated-devices" && (
+                  {selectedUserSubTab === "associated-device" && (
                     <AssociatedDevicesTable staffId={selectedId!} />
                   )}
                 </div>

@@ -121,7 +121,6 @@ export default function AddChildView() {
         <PairingQRStep
           entityId={pendingChild.id!}
           entityName={pendingChild.name || "Child"}
-          onboardingCode={pendingChild.onboardingCode}
           onBack={() => setPendingChild(null)}
           onComplete={() => router.push("/children")}
         />

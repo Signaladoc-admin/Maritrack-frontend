@@ -1,7 +1,8 @@
 import { TableColumn } from "@/shared/ui/Table/types";
-import { formatDate, formatID } from "@/shared/lib/utils";
+import { capitalizeFirstLetters, formatDate, formatID } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
-import { DeviceWithUserDetails, StaffDevice } from "@/entities/device";
+import { StaffDevice } from "@/entities/device";
+import { DeviceHardwareDetails } from "./types";
 
 export function getDevicesColumns(handleAssignDevice: (device: StaffDevice) => void) {
   const devicesColumns: TableColumn<StaffDevice>[] = [
@@ -13,7 +14,9 @@ export function getDevicesColumns(handleAssignDevice: (device: StaffDevice) => v
           <p className="font-semibold text-neutral-800">
             {[item.manufacturer, item.model].filter(Boolean).join(" ") || "N/A"}
           </p>
-          <p className="text-xs text-neutral-500">{formatID(item.serialNumber)}</p>
+          <p className="text-xs text-neutral-500">
+            {item?.serialNumber ? formatID(item?.serialNumber) : "N/A"}
+          </p>
         </div>
       ),
     },
@@ -21,12 +24,13 @@ export function getDevicesColumns(handleAssignDevice: (device: StaffDevice) => v
       key: "assignmentStatus",
       label: "Assignment",
       render: (item) =>
-        !!item.currentUser ? (
+        !!item.currentUser &&
+        (item.assignmentStatus === "ASSIGNED" || item.assignmentStatus === "REASSIGNED") ? (
           <div className="space-y-1 leading-tight">
             <p className="font-semibold text-neutral-900">{`${item.currentUser?.firstName} ${item.currentUser?.lastName}`}</p>
             <p className="text-neutral-500">{item.currentUser?.email}</p>
           </div>
-        ) : (
+        ) : item.assignmentStatus === "UNASSIGNED" ? (
           <Button
             type="button"
             variant="secondary"
@@ -39,6 +43,8 @@ export function getDevicesColumns(handleAssignDevice: (device: StaffDevice) => v
           >
             Assign
           </Button>
+        ) : (
+          <p>{capitalizeFirstLetters(item.assignmentStatus)}</p>
         ),
     },
     {
@@ -66,25 +72,29 @@ export function getDevicesColumns(handleAssignDevice: (device: StaffDevice) => v
   return devicesColumns;
 }
 export function getAssociatedDevicesColumns(
-  handleOpenReassignDeviceModal: (device: StaffDevice) => void
+  handleOpenReassignDeviceModal: (device: DeviceHardwareDetails & { mdmLastSyncAt: string }) => void
 ) {
-  const devicesColumns: TableColumn<StaffDevice>[] = [
+  const devicesColumns: TableColumn<DeviceHardwareDetails & { mdmLastSyncAt: string }>[] = [
     {
       key: "asset",
       label: "Asset",
       render: (item) => (
         <div className="space-y-1 leading-tight">
           <p className="font-semibold text-neutral-800">{item.model || "Model N/A"}</p>
-          <p className="text-xs text-neutral-500">{formatID(item.mdmDeviceId)}</p>
+          <p className="text-xs text-neutral-500">{item?.id ? formatID(item?.id) : "N/A"}</p>
         </div>
       ),
+    },
+    {
+      key: "imeiNumber",
+      label: "IMEI Number",
     },
     {
       key: "serialNumber",
       label: "Serial Number",
     },
     {
-      key: "macAddress",
+      key: "wifiMacAddr",
       label: "MAC Address",
     },
     {

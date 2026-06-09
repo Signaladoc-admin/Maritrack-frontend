@@ -11,7 +11,7 @@ export const updateDepartmentValues = CreateDepartmentValues.extend({});
 export type UpdateDepartmentValues = z.infer<typeof updateDepartmentValues>;
 
 export const assignDeviceToUserSchema = z.object({
-  staffId: z.string("Invalid staff ID"),
+  staffId: z.string().min(1, "Staff member not selected"),
 });
 
 export type AssignDeviceToUserValues = z.infer<typeof assignDeviceToUserSchema>;

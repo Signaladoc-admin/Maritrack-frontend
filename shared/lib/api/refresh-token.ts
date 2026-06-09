@@ -1,3 +1,6 @@
+import { RefreshTokenResponse } from "@/features/auth/types";
+import { ApiResponse } from "@/shared/api/types";
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
 
 export async function refreshAccessToken() {
@@ -25,11 +28,10 @@ export async function refreshAccessToken() {
     throw new Error("Token refresh failed");
   }
 
-  const data = await response.json();
+  const data = (await response.json()) as unknown as ApiResponse<RefreshTokenResponse>;
 
-  // Refresh response: { data: { access_token: "...", refresh_token: "..." }, accessToken: null }
-  const newAccessToken = data.data?.access_token;
-  const newRefreshToken = data.data?.refresh_token;
+  const newAccessToken = data?.data?.access_token;
+  const newRefreshToken = data?.data?.refresh_token;
 
   const cookieDefaults = {
     httpOnly: true,

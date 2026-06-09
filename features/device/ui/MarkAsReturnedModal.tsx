@@ -6,8 +6,12 @@ import { z } from "zod";
 import { Dialog, DialogContent, DialogTitle } from "@/shared/ui/dialog";
 import { Button } from "@/shared/ui/button";
 import { InputGroup } from "@/shared/ui/input-group";
-import { useMarkDeviceAsReturned } from "@/entities/device/model/useDevices";
+import { useDevices, useMarkDeviceAsReturned } from "@/entities/device/model/useDevices";
 import { useToast } from "@/shared/ui/toast";
+import { useDeviceDetail } from "../model/useDeviceDetail";
+import { Loader } from "@/shared/ui/loader";
+import { DeviceHardwareDetails, MDMDeviceDetailsResponse } from "../types";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 const schema = z.object({
   flagReason: z.string().min(1, "Please provide a reason for returning this asset"),
@@ -18,13 +22,24 @@ type FormValues = z.infer<typeof schema>;
 interface MarkAsReturnedModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  deviceId: string;
+  deviceResponse: MDMDeviceDetailsResponse;
 }
 
-export function MarkAsReturnedModal({ open, onOpenChange, deviceId }: MarkAsReturnedModalProps) {
+export function MarkAsReturnedModal({
+  open,
+  onOpenChange,
+  deviceResponse,
+}: MarkAsReturnedModalProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
 
-  const { mutateAsync: markAsReturned, isPending } = useMarkDeviceAsReturned(deviceId);
+  const deviceId = (deviceResponse?.deviceDetails?.id as string) || "";
+
+  const { mutateAsync: markAsReturned, isPending } = useMarkDeviceAsReturned(
+    deviceId,
+    user?.id,
+    { enabled: !!deviceId }
+  );
 
   const {
     register,

@@ -392,7 +392,7 @@ export function DashboardDonutChart({ data }: { data: DashboardDonutSlice[] }) {
               cy="50%"
               innerRadius={60}
               outerRadius={100}
-              paddingAngle={2}
+              paddingAngle={0}
               stroke="none"
               dataKey="value"
             >

@@ -4,7 +4,7 @@ import { useGetDepartment } from "@/features/business-users/departments/model/us
 import { Skeleton } from "@/shared/ui/skeleton";
 
 export default function DepartmentDetails({ departmentId }: { departmentId?: string }) {
-  const { data: department, isLoading } = useGetDepartment(departmentId!);
+  const { data: department, isLoading } = useGetDepartment(departmentId || "");
 
   if (isLoading) {
     return (
@@ -20,7 +20,7 @@ export default function DepartmentDetails({ departmentId }: { departmentId?: str
       <DisplayField
         orientation="horizontal"
         label="Department ID"
-        value={formatID(department?.id!, "DEPT")}
+        value={department?.id ? formatID(department?.id!, "DEPT") : ""}
         hoverTitle={department?.id!}
       />
       <DisplayField orientation="horizontal" label="Name" value={department?.name!} />

@@ -45,7 +45,7 @@ export interface Business extends BaseEntity {
   departments: Department[];
   devices: unknown[];
   staff: BusinessStaff[];
-  zone: BusinessZone
+  zone: BusinessZone;
 }
 
 /** Legacy alias kept for existing usages */
@@ -58,7 +58,6 @@ export interface PaginatedStaff {
   limit: number;
   totalPages: number;
 }
-
 
 export interface StaffMemberFiltersRequest extends QueryOptions {
   search?: string;
@@ -85,9 +84,21 @@ export interface StaffMembersPaginatedResponse {
   status: boolean;
   statusCode: number;
   message: string;
-  data: { staff: BusinessStaff[] };
+  data: {
+    limit: number;
+    page: number;
+    staff: BusinessStaff[];
+    total: number;
+    totalPages: number;
+  };
+}
+interface NewStaffMemberResult {
+  email: string;
+  staffId: string;
+  userId: string;
+  type: "created" | "updated";
+}
+export interface CreateMultipleStaffMembersResponse {
   total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+  results: NewStaffMemberResult[];
 }

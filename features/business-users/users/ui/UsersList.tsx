@@ -3,14 +3,32 @@ import EntityListItem from "../../shared/ui/EntityListItem";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { formatID } from "@/shared/lib/utils";
 import { Skeleton } from "@/shared/ui/skeleton";
+import { useEffect } from "react";
 
-export default function UsersList({ searchTerm }: { searchTerm: string }) {
+export default function UsersList({
+  searchTerm,
+  currentPage,
+  setSelectedTabTotalPages,
+}: {
+  searchTerm: string;
+  currentPage: number;
+  setSelectedTabTotalPages: (totalPages: number) => void;
+}) {
   const { user } = useAuth();
+
   const { data: usersData, isLoading } = useGetStaffMembers({
     businessId: user?.businessId!,
     search: searchTerm,
+    page: currentPage,
+    limit: 5,
   });
   const staffMembers = usersData?.data?.staff || [];
+
+  useEffect(() => {
+    if (usersData?.data?.totalPages !== undefined) {
+      setSelectedTabTotalPages(usersData.data.totalPages);
+    }
+  }, [usersData?.data?.totalPages, setSelectedTabTotalPages]);
 
   if (isLoading)
     return (

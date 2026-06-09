@@ -3,14 +3,7 @@
 import { BarChart2 } from "lucide-react";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { CardWrapper } from "@/shared/ui/card-wrapper";
-
-interface BasicInfoWidgetProps {
-  totalAssets?: number | string;
-  assignedAssets?: number | string;
-  unassignedAssets?: number | string;
-  damagedAssets?: number | string;
-  isLoading?: boolean;
-}
+import { useBasicInfoStats } from "@/features/dashboard/business/model/useBasicInfoStats";
 
 function MetricStatCard({
   title,
@@ -23,16 +16,16 @@ function MetricStatCard({
 }) {
   return (
     <CardWrapper variant="outline" padding="default">
-      <div className="flex items-start gap-3">
+      <div className="flex h-full items-start gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-500">
           <BarChart2 className="h-5 w-5" strokeWidth={2.5} />
         </div>
-        <div className="flex flex-col gap-0.5 min-w-0">
-          <p className="text-sm font-medium text-[#667085] leading-snug">{title}</p>
+        <div className="flex h-full min-w-0 flex-col justify-between gap-0.5">
+          <p className="text-sm leading-snug font-medium text-[#667085]">{title}</p>
           {isLoading ? (
             <Skeleton className="mt-1 h-7 w-20" />
           ) : (
-            <h4 className="text-2xl font-bold text-slate-900 leading-tight">{value}</h4>
+            <h4 className="text-2xl leading-tight font-bold text-slate-900">{value}</h4>
           )}
         </div>
       </div>
@@ -40,17 +33,14 @@ function MetricStatCard({
   );
 }
 
-export function BasicInfoWidget({
-  totalAssets = "—",
-  assignedAssets = "—",
-  unassignedAssets = "—",
-  damagedAssets = "—",
-  isLoading = false,
-}: BasicInfoWidgetProps) {
+export function BasicInfoWidget() {
+  const { totalAssets, assignedAssets, unassignedAssets, damagedAssets, isLoading } =
+    useBasicInfoStats();
+
   return (
     <div className="mb-8">
       <h2 className="text-primary mb-4 text-base font-semibold">Basic Information</h2>
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricStatCard
           title="Total assets added"
           value={totalAssets.toLocaleString()}

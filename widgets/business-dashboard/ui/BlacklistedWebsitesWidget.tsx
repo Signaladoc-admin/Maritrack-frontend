@@ -6,22 +6,11 @@ import {
   DashboardTableSkeleton,
   DashboardTitledCard,
 } from "@/shared/ui/dashboard/analytics-ui";
+import { useBlacklistedWebsites } from "@/features/dashboard/business/model/useBlacklistedWebsites";
 
-interface Website {
-  domain: string;
-  category: string;
-  attempts: number;
-}
+export function BlacklistedWebsitesWidget() {
+  const { websites, isLoading } = useBlacklistedWebsites();
 
-interface BlacklistedWebsitesWidgetProps {
-  websites?: Website[];
-  isLoading?: boolean;
-}
-
-export function BlacklistedWebsitesWidget({
-  websites = [],
-  isLoading = false,
-}: BlacklistedWebsitesWidgetProps) {
   return (
     <div className="mb-8">
       <h2 className="text-primary mb-4 text-base font-semibold">Blacklisted Website Categories</h2>

@@ -136,3 +136,8 @@ export function formatAppValue(value: string | undefined): string {
   }
   return value;
 }
+
+export function capitalizeFirstLetters(value: string): string {
+  if (!value) return "";
+  return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+}

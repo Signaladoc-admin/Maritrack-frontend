@@ -1,3 +1,5 @@
+import { Device, DeviceHardwareInfo, StaffDevice } from "@/entities/device";
+import { DeviceHardwareDetails } from "@/features/device/types";
 import Table from "@/shared/ui/Table/Table";
 import { useRouter } from "next/navigation";
 
@@ -23,12 +25,12 @@ export default function DevicesTable<T extends { id: string | number }>({
   const router = useRouter();
 
   function handleRowSelection(device: any) {
-    router.push(`/devices/${device?.mdmDeviceId}?tab=general`);
+    router.push(`/devices/${device?.mdmDeviceId || device?.device?.mdmDeviceId}?tab=general`);
   }
 
   return (
     <Table
-      data={data}
+      data={data as any}
       columns={columns}
       onItemClick={handleRowSelection}
       isPaginated={!!onPageChange}

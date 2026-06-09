@@ -1,7 +1,3 @@
-import { User } from "@/app/(in-app)/users/types";
-import { UserDetails } from "@/entities/user";
-import { BusinessStaff } from "@/entities/business/types";
-
 export interface DeviceHardwareInfo {
   cpuSpeed: number;
   release: string;
@@ -119,12 +115,8 @@ export interface StaffDevice {
   currentUser?: CurrentUser;
 }
 
-export interface DeviceWithUserDetails extends StaffDevice {
-  currentUserDetails?: UserDetails;
-}
-
 export interface PaginatedDevices {
-  devices: DeviceWithUserDetails[];
+  devices: StaffDevice[];
   total: number;
   page: number;
   limit: number;

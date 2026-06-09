@@ -73,7 +73,17 @@ export const InputGroup = React.forwardRef<HTMLInputElement, InputGroupProps>(
       (props.type === "checkbox" || props.type === "radio") && !props.options?.length;
 
     if (props.type === "textarea") {
-      const { type: _type, onValueChange, onCheckedChange, options, wrapperClassName, iconLeft, iconRight, ref: registerRef, ...textareaProps } = props as any;
+      const {
+        type: _type,
+        onValueChange,
+        onCheckedChange,
+        options,
+        wrapperClassName,
+        iconLeft,
+        iconRight,
+        ref: registerRef,
+        ...textareaProps
+      } = props as any;
       const mergedRef = (node: HTMLTextAreaElement | null) => {
         if (typeof registerRef === "function") registerRef(node);
         else if (registerRef) registerRef.current = node;
@@ -92,13 +102,14 @@ export const InputGroup = React.forwardRef<HTMLInputElement, InputGroupProps>(
             rows={4}
             {...textareaProps}
             ref={mergedRef}
-            onChange={onValueChange
-              ? (e: React.ChangeEvent<HTMLTextAreaElement>) => onValueChange(e.target.value)
-              : textareaProps.onChange
+            onChange={
+              onValueChange
+                ? (e: React.ChangeEvent<HTMLTextAreaElement>) => onValueChange(e.target.value)
+                : textareaProps.onChange
             }
             className={cn(
-              "ring-offset-background w-full resize-y rounded-xl border border-[#E5E7EB] bg-[#fafafa] px-4 py-3 text-base transition-colors focus-within:ring-[1.5px] focus-within:ring-[#1b3c73] focus-within:ring-offset-0 placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-              error && "border-destructive",
+              "ring-offset-background placeholder:text-muted-foreground w-full resize-y rounded-xl border border-[#E5E7EB] bg-[#fafafa] px-4 py-3 text-base transition-colors focus-within:ring-[1.5px] focus-within:ring-[#1b3c73] focus-within:ring-offset-0 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+              error && "border-destructive"
             )}
           />
           {error && <p className="text-destructive text-sm">{error}</p>}
@@ -129,7 +140,10 @@ export const InputGroup = React.forwardRef<HTMLInputElement, InputGroupProps>(
             id={inputId}
             ref={ref}
             label={label} // Pass label down to Input for horizontal rendering
-            className={error ? "border-destructive focus-visible:ring-destructive" : ""}
+            className={cn(
+              "mt-[3px]",
+              error ? "border-destructive focus-visible:ring-destructive" : ""
+            )}
             {...props}
           />
           {error && <p className="text-destructive text-sm">{error}</p>}

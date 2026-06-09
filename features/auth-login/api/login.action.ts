@@ -12,12 +12,11 @@ import { getUserByIdAction } from "@/entities/user/api/user.actions";
 import { requestTokenAction } from "@/features/auth/api/auth.actions";
 
 const COOKIE_OPTIONS = {
-
   httpOnly: true,
   sameSite: "lax" as const,
   path: "/",
   maxAge: 60 * 60 * 24 * 7, // 7 days
-}
+};
 
 export async function loginAction(credentials: LoginValues) {
   return withSafeAction(async () => {
@@ -32,10 +31,7 @@ export async function loginAction(credentials: LoginValues) {
     // 1. Check email verification first — no point checking onboarding for an unverified account
     const userDetails = await getUserByIdAction(user.id);
 
-    console.log(userDetails)
-
     const isEmailVerified = !!userDetails.success && !!userDetails.data.isEmailVerified;
-    // const isEmailVerified = true;
 
     if (!isEmailVerified) {
       // api-client.ts already wrote accessToken/refreshToken cookies from the login response.
@@ -49,15 +45,6 @@ export async function loginAction(credentials: LoginValues) {
 
     cookieStore.set("isEmailVerified", "true", COOKIE_OPTIONS);
 
-    // NUDGE: Remove userMeta temporary cookie when session restore gets unified on backend
-    cookieStore.set("userMeta", JSON.stringify({
-      businessId: user.businessId,
-      parentId: user.parentId,
-      zoneId: user.zoneId,
-      role: user.role,
-      businessRole: user.businessRole,
-    }), COOKIE_OPTIONS);
-
     // 2. Check onboarding status
     let isOnboarded: boolean;
 
@@ -70,6 +57,12 @@ export async function loginAction(credentials: LoginValues) {
     }
 
     cookieStore.set("isOnboarded", isOnboarded ? "true" : "false", COOKIE_OPTIONS);
+
+    // Persist zoneId in a dedicated cookie — the JWT stops carrying it after a token
+    // refresh (backend bug). This cookie is the stable source of truth until fixed.
+    if (user.zoneId) {
+      cookieStore.set("zoneId", user.zoneId, COOKIE_OPTIONS);
+    }
 
     return response;
   }, "Login failed. Please check your credentials and try again.");

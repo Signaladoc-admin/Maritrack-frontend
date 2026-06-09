@@ -15,6 +15,7 @@ import { useGetFullBusinessDetails } from "../model/useGetBusinessDetails";
 import { useQueryClient } from "@tanstack/react-query";
 import { useQueryState } from "nuqs";
 import VerifyPayment from "@/features/payments/ui/VerifyPayment";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 export default function OnboardingPage() {
   const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
@@ -28,8 +29,8 @@ export default function OnboardingPage() {
 
   const [freePlanChosen, setFreePlanChosen] = useState(false);
 
-  const { data: businessZones, isLoading: isLoadingZones } = useBusinessZones();
-  const zoneId = (businessZones as any)?.[0]?.id;
+  const { user } = useAuth();
+  const zoneId = user?.zoneId || "";
 
   const { data: subscriptionData, isLoading: isLoadingSubscription } =
     useActiveSubscription(zoneId);
@@ -37,7 +38,7 @@ export default function OnboardingPage() {
   const canProceed = hasPaid || freePlanChosen;
 
   // True until we know whether the user has already paid — prevents pricing step flicker
-  const isResolvingPaymentStatus = isLoadingZones || (!!zoneId && isLoadingSubscription);
+  const isResolvingPaymentStatus = !!zoneId && isLoadingSubscription;
 
   const [reference] = useQueryState("reference");
 
@@ -54,7 +55,7 @@ export default function OnboardingPage() {
   const handlePreviousStep = () => setStep((prev) => prev - 1);
   const handleSelectPlan = () => setFreePlanChosen(true);
 
-  if (reference) return <VerifyPayment reference={reference} />
+  if (reference) return <VerifyPayment reference={reference} />;
 
   return (
     <div>
@@ -69,7 +70,7 @@ export default function OnboardingPage() {
         </Button>
       </div>
       {isResolvingPaymentStatus ? null : !canProceed ? (
-        <PricingStep onBack={() => { }} onSuccess={handleSelectPlan} isShowingBackButton={false} />
+        <PricingStep onBack={() => {}} onSuccess={handleSelectPlan} isShowingBackButton={false} />
       ) : (
         <div className="mx-auto max-w-2xl py-5">
           {step === 1 && (
@@ -79,11 +80,7 @@ export default function OnboardingPage() {
               isLoadingBusinessProfile={isLoadingBusinessProfile}
             />
           )}
-          {step === 2 && (
-            <InviteTeamMembersForm
-              onBack={handlePreviousStep}
-            />
-          )}
+          {step === 2 && <InviteTeamMembersForm onBack={handlePreviousStep} />}
         </div>
       )}
 

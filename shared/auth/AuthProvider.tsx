@@ -9,6 +9,12 @@ import type { LoginResponse } from "@/features/auth-login/types";
 
 import { useNewUserStore } from "@/shared/stores/user.store";
 
+// The decoded access token JWT carries every field needed to identify the
+// active app role (PARENT vs BUSINESS) and is the single source of truth for
+// the authenticated user's identity. It is re-decoded whenever the token
+// changes (login, refresh, page reload), so it can never go stale the way a
+// separately-persisted copy could.
+
 type UserPayload = {
   iat: number;
   exp: number;
@@ -46,93 +52,90 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [isHydrated, setIsHydrated] = useState(false);
-  const [user, setUser] = useState<LoginResponse | null>(null);
-  // NUDGE: Remove userMeta temporary state when session restore gets unified on backend
-  const [userMeta, setUserMeta] = useState<{
-    businessId: string | null;
-    parentId: string | null;
-    zoneId: string | null;
-    role: "USER" | "ADMIN" | undefined;
-    businessRole: BusinessRole | null;
-  } | null>(null);
+  // Sourced from the zoneId cookie via /api/session or /api/refresh — the JWT stops
+  // carrying zoneId after a token refresh (backend bug). Remove this and restore
+  // userPayload.zoneId in activeUser once the backend fix is deployed.
+  const [cookieZoneId, setCookieZoneId] = useState<string | null>(null);
+  // True while we're restoring/validating the session on mount (via /api/session, falling
+  // back to /api/refresh). Gates the initial render so we don't flash unauthenticated UI.
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
 
-  const { data: userProfile } = useUserProfile()
+  const { data: userProfile, isLoading: isLoadingUserProfile } = useUserProfile();
+
+  // Gate the initial render on the profile fetch too — appRole-based view selection
+  // (e.g. BusinessDashboard vs ParentDashboard) reads `user`, and rendering before the
+  // profile resolves leaves a window where `user` is unsettled and the wrong view can
+  // briefly slip in.
+  const isUserLoading = isAuthLoading || isLoadingUserProfile;
 
   const userPayload = accessToken ? getTokenPayload(accessToken) : null;
-  // NUDGE: Remove userMeta temporary fallback when session restore gets unified on backend
-  const userRole = userMeta?.businessRole ?? userMeta?.role ?? userPayload?.businessRole ?? userPayload?.role;
-  const appRole = user?.businessId ? "BUSINESS" : "PARENT";
+  const appRole: "PARENT" | "BUSINESS" = userPayload?.businessId ? "BUSINESS" : "PARENT";
 
-
-  // NUDGE: Remove userMeta temporary reconstruction when session restore gets unified on backend
-  const activeUser = accessToken && userPayload ? {
-    id: userPayload.id,
-    role: userMeta?.role ?? userPayload.role ?? "USER",
-    businessRole: userMeta?.businessRole ?? userPayload.businessRole ?? null,
-    email: userPayload.email,
-    parentId: userMeta ? userMeta.parentId : userPayload.parentId,
-    businessId: userMeta ? userMeta.businessId : userPayload.businessId,
-    imageUrl: userPayload.imageUrl || null,
-    zoneId: userMeta ? userMeta.zoneId : userPayload.zoneId,
-    appRole: appRole,
-    firstName: userProfile?.firstName,
-    lastName: userProfile?.lastName,
-    date: user?.date ?? new Date().toISOString(),
-    isFirstLogin: user?.isFirstLogin ?? false,
-    access_token_expires_on: user?.access_token_expires_on ?? "",
-    refresh_token: user?.refresh_token ?? "",
-  } as AuthUserProfile : null;
+  const activeUser: AuthUserProfile | null = userPayload
+    ? {
+        id: userPayload.id,
+        email: userPayload.email,
+        role: userPayload.role ?? "USER",
+        businessRole: userPayload.businessRole,
+        parentId: userPayload.parentId,
+        businessId: userPayload.businessId,
+        // zoneId: userPayload.zoneId, // restore when backend JWT includes zoneId after refresh
+        zoneId: cookieZoneId,
+        imageUrl: userPayload.imageUrl,
+        appRole,
+        firstName: userProfile?.firstName,
+        lastName: userProfile?.lastName,
+      }
+    : null;
 
   const { login, isSubmitting, error: loginError, mutation } = useLogin();
 
   const logout = () => {
     setAccessToken(null);
-    setUserMeta(null);
-    setUser(null);
+    setCookieZoneId(null);
     useNewUserStore.getState().clearCredentials();
   };
 
   // On mount: restore token from cookie, or refresh if expired
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
 
     async function init() {
       try {
-        const sessionRes = await fetch("/api/session", { credentials: "include" });
-        if (cancelled) return;
+        const sessionRes = await fetch("/api/session", {
+          credentials: "include",
+          signal: controller.signal,
+        });
         if (sessionRes.ok) {
-          const { accessToken: cookieToken, userMeta: restoredMeta } = await sessionRes.json();
+          const { accessToken: cookieToken, zoneId: sessionZoneId } = await sessionRes.json();
           const payload = getTokenPayload(cookieToken);
           if (payload?.exp && payload.exp * 1000 > Date.now() + 60_000) {
             setAccessToken(cookieToken);
-            if (restoredMeta) {
-              setUserMeta(restoredMeta);
-            }
+            // Prefer the dedicated cookie; fall back to the JWT payload (present on
+            // fresh login tokens, dropped by the backend on subsequent refreshes).
+            setCookieZoneId(sessionZoneId ?? payload.zoneId ?? null);
             return;
           }
         }
 
-        if (cancelled) return;
-        const res = await fetch("/api/refresh", { method: "POST", credentials: "include" });
-        if (cancelled) return;
+        const res = await fetch("/api/refresh", {
+          method: "POST",
+          credentials: "include",
+          signal: controller.signal,
+        });
         if (!res.ok) throw new Error("Refresh failed");
-        const { accessToken: refreshedToken, userMeta: restoredMeta } = await res.json();
+        const { accessToken: refreshedToken, zoneId: refreshedZoneId } = await res.json();
         setAccessToken(refreshedToken);
-        if (restoredMeta) {
-          setUserMeta(restoredMeta);
-        }
+        setCookieZoneId((prev) => refreshedZoneId ?? prev);
       } catch {
-        if (!cancelled) logout();
+        if (!controller.signal.aborted) logout();
       } finally {
-        if (!cancelled) setIsHydrated(true);
+        if (!controller.signal.aborted) setIsAuthLoading(false);
       }
     }
 
     init();
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Schedule a silent refresh 1 minute before the token expires
@@ -149,35 +152,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const res = await fetch("/api/refresh", { method: "POST", credentials: "include" });
         if (!res.ok) throw new Error("Refresh failed");
-        const { accessToken: newToken, userMeta: restoredMeta } = await res.json();
+        const { accessToken: newToken, zoneId: refreshedZoneId } = await res.json();
         setAccessToken(newToken);
-        if (restoredMeta) {
-          setUserMeta(restoredMeta);
-        }
+        setCookieZoneId((prev) => refreshedZoneId ?? prev);
       } catch {
-        logout();
+        // Background refresh failed — do NOT logout. The current token is still valid
+        // for the remaining ~60 s. When it actually expires, apiClient's 401 handler
+        // will call refreshAccessToken() and redirect to /login if that also fails.
+        // Calling logout() here instantly wipes the session on any transient network
+        // error or token-rotation failure, which is too aggressive.
       }
     }, msUntilRefresh);
 
     return () => clearTimeout(timer);
   }, [accessToken]);
 
-  if (!isHydrated) {
+  if (isUserLoading) {
     return <PageLoader />;
   }
 
   async function handleLogin({ email, password }: { email: string; password: string }) {
     const { data, accessToken: newToken, message } = await login({ email, password });
-    if (newToken) setAccessToken(newToken);
-    if (data) {
-      setUserMeta({
-        businessId: data.businessId,
-        parentId: data.parentId,
-        zoneId: data.zoneId,
-        role: data.role,
-        businessRole: data.businessRole,
-      });
-      setUser(data);
+    if (newToken) {
+      setAccessToken(newToken);
+      // The initial login JWT always contains zoneId (only refreshed tokens drop it —
+      // backend bug). Set it immediately so the dashboard works without a page reload.
+      const payload = getTokenPayload(newToken);
+      if (payload?.zoneId) setCookieZoneId(payload.zoneId);
     }
     return { data, message };
   }

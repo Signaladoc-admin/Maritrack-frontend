@@ -2,8 +2,8 @@
 import { MDMDeviceDetailsResponse } from "../types";
 import { CardWrapper } from "@/shared/ui/card-wrapper";
 import { ReactNode } from "react";
-import { useAuth } from "@/shared/auth/AuthProvider";
 import { useBusinessZone } from "@/features/mdm-sync/model/useMdmSync";
+import { capitalizeFirstLetters } from "@/shared/lib/utils";
 
 export default function DeviceHardwareDetailsCard({
   device,
@@ -11,11 +11,10 @@ export default function DeviceHardwareDetailsCard({
   device: MDMDeviceDetailsResponse;
 }) {
   const { data: hardwareDetails, deviceDetails } = device || {};
-  const { model, osType, imeiNumber, wifiMacAddr, serialNumber } = hardwareDetails || {};
-  const { macAddress } = deviceDetails || {}
-  const { user } = useAuth()
+  const { model, osType, imeiNumber, wifiMacAddr } = hardwareDetails || {};
+  const { macAddress } = deviceDetails || {};
 
-  const { data: zoneRes } = useBusinessZone()
+  const { data: zoneRes } = useBusinessZone();
 
   return (
     <CardWrapper className="h-full rounded-[32px] bg-[#F8F9FA]" padding="lg">
@@ -23,12 +22,18 @@ export default function DeviceHardwareDetailsCard({
         <p className="text-sm font-medium text-slate-400">Device details</p>
         <h3 className="text-primary text-2xl font-semibold">{model}</h3>
 
-        <div className="grid sm:grid-cols-2 gap-6 md:grid-cols-3">
-          <DevicePropertyItem title={`${hardwareDetails?.osType} ID`} value={hardwareDetails?.deviceId} />
+        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+          <DevicePropertyItem
+            title={`${hardwareDetails?.osType} ID`}
+            value={hardwareDetails?.deviceId}
+          />
           <DevicePropertyItem title="IMEI number" value={imeiNumber} />
           <DevicePropertyItem title="MAC Address" value={macAddress || wifiMacAddr} />
           <DevicePropertyItem title="Zone" value={zoneRes?.business.address} />
-          <DevicePropertyItem title="Model & Manufacturer" value={`${hardwareDetails?.model || 'N/A'} / ${hardwareDetails?.manufacturer || 'N/A'}`} />
+          <DevicePropertyItem
+            title="Model & Manufacturer"
+            value={`${hardwareDetails?.model || "N/A"} / ${hardwareDetails?.manufacturer || "N/A"}`}
+          />
           <DevicePropertyItem title="OS Version" value={osType} />
           <DevicePropertyItem
             title="Status"
@@ -36,12 +41,16 @@ export default function DeviceHardwareDetailsCard({
               <Badge2
                 variant={deviceDetails?.deviceStatus === "ACTIVE" ? "success" : "destructive"}
                 content={
-                  deviceDetails?.deviceStatus[0].toUpperCase() +
-                  deviceDetails?.deviceStatus?.slice(1).toLowerCase()
+                  deviceDetails?.assignmentStatus === "RETURNED"
+                    ? capitalizeFirstLetters(deviceDetails?.assignmentStatus)
+                    : capitalizeFirstLetters(deviceDetails?.deviceStatus)
                 }
               />
             }
           />
+          {device?.deviceDetails?.assignmentStatus === "RETURNED" && (
+            <DevicePropertyItem title="Comment" value={device?.deviceDetails?.flagReason} />
+          )}
         </div>
       </div>
     </CardWrapper>

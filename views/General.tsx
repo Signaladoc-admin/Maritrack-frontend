@@ -3,8 +3,12 @@ import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 
 import { MetricCardSkeleton, InfoListCardSkeleton } from "@/features/device/ui/DeviceTabsSkeletons";
 import { Skeleton } from "@/shared/ui/skeleton";
-import DeviceDetailsGeneralTabContent from "@/features/dashboard/business/ui/DeviceDetailsGeneralTabContent";
 import { useAuth } from "@/shared/auth/AuthProvider";
+import { MetricCard } from "@/features/dashboard/business/ui/MetricCard";
+import DeviceHardwareDetailsCard from "@/features/device/ui/DeviceHardwareDetailsCard";
+import DevicePossesorDetailsCard from "@/features/device/ui/DevicePossesorDetailsCard";
+import { MapCard } from "@/features/general/ui/map-card";
+import { InfoListCard } from "@/shared/ui/AppListCard/AppListCard";
 
 const General = () => {
   const params = useParams<{ device: string }>();
@@ -30,14 +34,14 @@ const General = () => {
 
   const top5Apps = Array.isArray(fetchedApps)
     ? fetchedApps.slice(0, 5).map((app: any) => ({
-      id: app.id,
-      name: app.appName || app.packageName,
-      totalTime: app.totalTime || `Size: ${app.installedAPKSize || 0}`,
-      icon: () => (
-        <div className="w-full text-center text-xs text-gray-400">{app.appName?.slice(0, 2)}</div>
-      ),
-      limits: app.limits || 0,
-    }))
+        id: app.id,
+        name: app.appName || app.packageName,
+        totalTime: app.totalTime || `Size: ${app.installedAPKSize || 0}`,
+        icon: () => (
+          <div className="w-full text-center text-xs text-gray-400">{app.appName?.slice(0, 2)}</div>
+        ),
+        limits: app.limits || 0,
+      }))
     : [];
 
   const batteryLevel = fetchedNetwork?.batteryLevel ?? 0;
@@ -99,20 +103,59 @@ const General = () => {
     );
   }
 
-  return (
-    <DeviceDetailsGeneralTabContent
-      storageUsedGB={storageUsedGB}
-      totalStorageGB={totalStorageGB}
-      storageColor={storageColor}
-      storageFooter={storageFooter}
-      batteryLevel={batteryLevel}
-      batteryColor={batteryColor}
-      batteryFooter={batteryFooter}
-      top5Apps={top5Apps}
-      deviceId={deviceId}
-      freePercent={freePercent}
-      fullDeviceDetails={hardwareData}
+  const isBusinessUser = user?.appRole === "BUSINESS";
+
+  const memoryCard = (
+    <MetricCard
+      title="Memory"
+      value={`${storageUsedGB} GB of ${totalStorageGB} GB`}
+      chartColor={storageColor}
+      chartData={[20, 30, 40, 50, 60, 70, 100 - freePercent]}
+      footerText={storageFooter}
     />
+  );
+
+  const batteryCard = (
+    <MetricCard
+      title="Battery health"
+      value={`${batteryLevel}%`}
+      chartColor={batteryColor}
+      chartData={[100, 90, 80, 70, 65, 60, batteryLevel]}
+      footerText={batteryFooter}
+    />
+  );
+
+  return (
+    <div className="flex flex-col gap-6">
+      {isBusinessUser ? (
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(260px,360px),1fr]">
+          {/* Hardware card — stretches to match right column height */}
+          <DeviceHardwareDetailsCard device={hardwareData} />
+
+          {/* Right column: possessor, memory, battery in a single 3-col row */}
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
+            <DevicePossesorDetailsCard device={hardwareData} />
+            {memoryCard}
+            {batteryCard}
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          {memoryCard}
+          {batteryCard}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <InfoListCard
+          title="Top 5 apps"
+          actionText="View all"
+          onActionClick={() => console.log("View Apps")}
+          items={top5Apps}
+        />
+        <MapCard deviceId={deviceId} />
+      </div>
+    </div>
   );
 };
 

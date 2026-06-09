@@ -1,5 +1,7 @@
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { useGetStaffMembers } from "./useStaffMembers";
+import { getStaffMembersAction } from "../api/staff.actions";
 
 export function useAllTeamMembers(params?: { search: string }) {
   const { data: staffMembers } = useGetStaffMembers(params);
@@ -25,14 +27,37 @@ export function useOtherTeamMembers(params?: { search: string }) {
 
 export function useOtherStaffMembersExceptStaff({
   excludeUserId,
+  limit = 10,
   ...params
 }: {
   excludeUserId: string;
   search?: string;
+  limit?: number;
 }) {
-  const { data: staffMembersData, isLoading } = useGetStaffMembers(params);
-  const staffMembers = staffMembersData?.data?.staff || [];
-  const otherTeamMembers = staffMembers?.filter((member) => member?.user?.id !== excludeUserId);
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+    queryKey: ["staff-members", "infinite", "except-staff", params, limit],
+    queryFn: async ({ pageParam }) => {
+      const result = await getStaffMembersAction({ ...params, page: pageParam, limit });
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      return result.data;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage?.data ?? {};
+      return page && totalPages && page < totalPages ? page + 1 : undefined;
+    },
+  });
 
-  return { otherTeamMembers, isLoading };
+  const staffMembers = data?.pages.flatMap((page) => page?.data?.staff ?? []) ?? [];
+  const otherTeamMembers = staffMembers.filter((member) => member?.user?.id !== excludeUserId);
+
+  return {
+    otherTeamMembers,
+    isLoading,
+    fetchNextPage,
+    hasNextPage: !!hasNextPage,
+    isFetchingNextPage,
+  };
 }

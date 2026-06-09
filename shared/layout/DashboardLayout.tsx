@@ -8,7 +8,11 @@ import TopNavbar from "../ui/TopNavbar/TopNavbar";
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { user } = useAuth();
 
-  const Layout = user?.appRole === "PARENT" ? ParentLayout : BusinessLayout;
+  // AuthProvider only renders children once `user` is resolved, but guard here too —
+  // defaulting to either layout for an unsettled `user` would briefly show the wrong shell.
+  if (!user) return null;
+
+  const Layout = user.appRole === "PARENT" ? ParentLayout : BusinessLayout;
 
   return <Layout>{children}</Layout>;
 }
