@@ -188,6 +188,8 @@ interface DashboardValueCardProps {
   isLoading?: boolean;
   /** Accent colour used for the chart icon and passed to child charts via ThemeContext. */
   color?: string;
+  /** Optional floating pill label rendered over the chart area (e.g. "Learning Videos (20%)"). */
+  chartBadge?: string;
   /** The chart itself — DashboardAreaChart or DashboardLineChart. */
   children: React.ReactNode;
 }
@@ -204,6 +206,7 @@ export function DashboardValueCard({
   trendDirection,
   isLoading = false,
   color = "#6366F1",
+  chartBadge,
   children,
 }: DashboardValueCardProps) {
   return (
@@ -221,22 +224,33 @@ export function DashboardValueCard({
               <Skeleton className="h-[200px] w-full" />
             </div>
           ) : (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
               <div>
                 <h4 className="text-3xl font-bold text-slate-900">{value}</h4>
                 <p className="mt-1 text-sm font-medium text-[#667085]">{label}</p>
                 {trendValue && (
-                  <div className="mt-1 flex items-center gap-1 text-xs font-medium">
+                  <div className="mt-2 flex items-center gap-1 text-xs font-medium">
                     <span
                       className={trendDirection === "up" ? "text-emerald-500" : "text-rose-500"}
                     >
-                      {trendDirection === "up" ? "↑ " : "↓ "}
-                      {trendValue}
+                      {trendDirection === "up" ? "↑" : "↓"} {trendValue}
                     </span>
+                    <span className="text-[#667085]">since last month</span>
                   </div>
                 )}
               </div>
-              {children}
+              {/* Chart area — floating badge overlaid at top-left if provided */}
+              <div className="relative">
+                {chartBadge && (
+                  <div
+                    className="absolute left-3 top-3 z-10 rounded-full px-3 py-1 text-xs font-semibold text-white shadow-sm"
+                    style={{ backgroundColor: color }}
+                  >
+                    {chartBadge}
+                  </div>
+                )}
+                {children}
+              </div>
             </div>
           )}
         </div>
@@ -349,33 +363,35 @@ export function DashboardLineChart({
 /** Donut chart with a colour-coded legend on the left and the chart on the right. */
 export function DashboardDonutChart({ data }: { data: DashboardDonutSlice[] }) {
   if (data.every((d) => d.value === 0)) {
-    return <DashboardEmptyState height={180} />;
+    return <DashboardEmptyState height={220} />;
   }
 
   return (
-    <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-      <div className="flex w-full flex-col gap-3 sm:w-1/2">
+    <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
+      {/* Legend */}
+      <div className="flex w-full flex-col gap-4 sm:w-2/5">
         {data.map((item, i) => (
-          <div key={i} className="flex items-center gap-2">
+          <div key={i} className="flex items-center gap-2.5">
             <div
-              className="h-3.5 w-3.5 shrink-0 rounded-sm"
+              className="h-3.5 w-3.5 shrink-0 rounded-full"
               style={{ backgroundColor: item.color }}
             />
-            <span className="text-sm text-slate-700">
+            <span className="text-sm font-medium text-slate-700">
               {item.name} ({item.value}%)
             </span>
           </div>
         ))}
       </div>
-      <div className="flex h-[180px] w-full justify-center sm:w-1/2">
+      {/* Donut */}
+      <div className="flex h-[220px] w-full justify-center sm:w-3/5">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={data}
               cx="50%"
               cy="50%"
-              innerRadius={50}
-              outerRadius={80}
+              innerRadius={60}
+              outerRadius={100}
               paddingAngle={0}
               stroke="none"
               dataKey="value"

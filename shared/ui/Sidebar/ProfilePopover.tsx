@@ -3,21 +3,26 @@
 import Link from "next/link";
 import { User as UserIcon, LogOut, CreditCard as CardIcon } from "lucide-react";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
-import { logoutAction } from "@/features/auth/api/auth.actions";
+
 import { useRouter } from "next/navigation";
 import { Popover, PopoverContent, PopoverTrigger } from "../popover";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { ConfirmationModal } from "../Modal/Modals/ConfirmationModal";
+import { useToast } from "../toast";
+import { useLogout } from "@/features/auth/model/useLogout";
 
 export function ProfilePopover() {
   const { data: userProfile } = useUserProfile();
-  const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [isSignoutModalOpen, setIsSignoutModalOpen] = useState(false);
+  const { toast } = useToast();
+  const { mutateAsync: logout, isPending: isSigningOut } = useLogout();
 
   const handleSignOut = async () => {
-    await logoutAction();
-    router.push("/login");
+    await logout();
+    setIsSignoutModalOpen(false);
   };
 
   useEffect(() => {
@@ -62,7 +67,7 @@ export function ProfilePopover() {
             <span className="text-sm font-semibold">Plans</span>
           </Link>
           <button
-            onClick={handleSignOut}
+            onClick={() => setIsSignoutModalOpen(true)}
             className="flex items-center gap-3 rounded-xl p-3 text-[#FF736A] transition-colors hover:bg-[#FFF5F5]"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF5F5] text-[#FF736A]">
@@ -72,6 +77,17 @@ export function ProfilePopover() {
           </button>
         </div>
       </PopoverContent>
+
+      <ConfirmationModal
+        open={isSignoutModalOpen}
+        onOpenChange={setIsSignoutModalOpen}
+        title="Are you sure you want to sign out?"
+        confirmText="Sign out"
+        onConfirm={handleSignOut}
+        variant="destructive"
+        loading={isSigningOut}
+        loadingText="Signing out..."
+      />
     </Popover>
   );
 }

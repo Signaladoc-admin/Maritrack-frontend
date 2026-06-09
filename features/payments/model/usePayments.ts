@@ -13,6 +13,8 @@ import { useEffect } from "react";
 import { useToast } from "@/shared/ui/toast";
 import { useQueryState } from "nuqs";
 import { usePathname, useRouter } from "next/navigation";
+import { QueryOptions } from "@/shared/api/types";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 export const paymentKeys = {
   all: ["payments"] as const,
@@ -52,12 +54,14 @@ export function useVerifyPayment() {
   });
 }
 
-export function useActiveSubscription(zoneId: string | undefined) {
+export function useActiveSubscription(zoneId?: string | undefined) {
+  const { user } = useAuth()
+
   return useServerActionQuery(
-    paymentKeys.subscription(zoneId ?? ""),
+    paymentKeys.subscription(zoneId ?? user?.zoneId ?? ""),
     getActiveSubscriptionAction,
-    [zoneId ?? ""],
-    { enabled: !!zoneId }
+    [zoneId ?? user?.zoneId ?? ""],
+    { enabled: !!(zoneId || user?.zoneId)}
   );
 }
 
@@ -70,11 +74,11 @@ export function useAllSubscriptions(zoneId: string | undefined) {
   );
 }
 
-export function usePaymentHistory(zoneId: string | undefined) {
+export function usePaymentHistory(zoneId: string | undefined, options?: QueryOptions) {
   return useServerActionQuery(
     paymentKeys.paymentHistory(zoneId ?? ""),
     getPaymentHistoryAction,
     [zoneId ?? ""],
-    { enabled: !!zoneId }
+    { enabled: !!zoneId, ...options }
   );
 }

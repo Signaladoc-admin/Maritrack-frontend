@@ -195,7 +195,6 @@ export default function ChildrenProfiles({
       <PairingQRStep
         entityId={pendingChild?.id!}
         entityName={pendingChild?.name || "Child"}
-        onboardingCode={pendingChild?.onboardingCode}
         onBack={() => setCurrentView("list")}
         onComplete={handleFinishPairing}
         onRollback={handlePairingRollback}

@@ -23,16 +23,19 @@ export function useQrCode(
 ) {
   const { user } = useAuth();
 
-  const isParent = !!user?.id && user?.appRole === 'PARENT';
+  const isParent = user?.appRole === 'PARENT';
 
   const { data: child } = useChild(userTypeId, { enabled: isParent })
   const { data: staffMember } = useGetStaffMember(userTypeId, { enabled: !isParent })
+
+  console.log("staffMember", staffMember)
 
   const onboardingCode = isParent ? child?.onboardingCode : staffMember?.onboardingCode;
   const zoneId = user?.zoneId;
 
   const query = useServerActionQuery(
     mdmSyncKeys.qrcode(zoneId || "", onboardingCode || ""),
+
     getQrCodeAction,
     [zoneId as string, onboardingCode as string],
     {

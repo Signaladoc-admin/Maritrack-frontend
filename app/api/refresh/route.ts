@@ -8,12 +8,11 @@ export async function POST() {
     if (!accessToken) {
       return NextResponse.json({ error: "No refresh token" }, { status: 401 });
     }
-    const cookieStore = await cookies();
-    // NUDGE: Remove userMeta temporary cookie retrieval when session restore gets unified on backend
-    const userMetaStr = cookieStore.get("userMeta")?.value;
-    const userMeta = userMetaStr ? JSON.parse(userMetaStr) : null;
 
-    return NextResponse.json({ accessToken, userMeta });
+    const cookieStore = await cookies();
+    const zoneId = cookieStore.get("zoneId")?.value ?? null;
+
+    return NextResponse.json({ accessToken, zoneId });
   } catch {
     return NextResponse.json({ error: "Refresh failed" }, { status: 401 });
   }

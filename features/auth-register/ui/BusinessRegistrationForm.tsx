@@ -13,7 +13,7 @@ import { BusinessRole } from "@/entities/user/model/user.schema";
 import { useNewUserStore } from "@/shared/stores/user.store";
 
 export default function BusinessRegistrationForm() {
-  const { setEmail, setToken, businessDetails, setBusinessDetails, setRegistrationType } = useNewUserStore();
+  const { setEmail, businessDetails, setBusinessDetails, setRegistrationType } = useNewUserStore();
   const { registerBusiness, isSubmitting } = useRegisterBusiness();
   const router = useRouter();
 
@@ -61,7 +61,7 @@ export default function BusinessRegistrationForm() {
     setBusinessDetails(data);
 
     if (res.success) {
-      router.push("/confirm-email");
+      router.push("/business/confirm-email");
     }
   };
 

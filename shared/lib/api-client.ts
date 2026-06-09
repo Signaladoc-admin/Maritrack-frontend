@@ -111,8 +111,6 @@ export async function apiClient<T = any>(
           cookieStore.delete("refreshToken");
           cookieStore.delete("isEmailVerified");
           cookieStore.delete("isOnboarded");
-          cookieStore.delete("userMeta");
-
         }
         redirect("/login");
       }
@@ -130,7 +128,6 @@ export async function apiClient<T = any>(
         cookieStore.delete("refreshToken");
         cookieStore.delete("isEmailVerified");
         cookieStore.delete("isOnboarded");
-        cookieStore.delete("userMeta");
       }
       redirect("/login");
     }

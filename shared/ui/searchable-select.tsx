@@ -17,6 +17,10 @@ export interface SearchableSelectProps {
   renderOption?: (option: { label: string; value: string }, isSelected: boolean) => React.ReactNode;
   /** Show a loading spinner in the dropdown (use while fetching remote results). */
   isLoading?: boolean;
+  /** Called when the options list is scrolled near the bottom — use to fetch the next page. */
+  onEndReached?: () => void;
+  /** Show a small spinner at the bottom of the list while the next page is loading. */
+  isLoadingMore?: boolean;
   disabled?: boolean;
   className?: string;
   id?: string;
@@ -31,6 +35,8 @@ export function SearchableSelect({
   onSearch,
   renderOption,
   isLoading = false,
+  onEndReached,
+  isLoadingMore = false,
   disabled = false,
   className,
   id,
@@ -115,7 +121,11 @@ export function SearchableSelect({
           )}
         >
           <span className="w-full truncate text-left">
-            {selectedOption ? selectedOption.label : <span className="text-muted-foreground">{placeholder}</span>}
+            {selectedOption ? (
+              selectedOption.label
+            ) : (
+              <span className="text-muted-foreground">{placeholder}</span>
+            )}
           </span>
           <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
         </button>
@@ -145,6 +155,13 @@ export function SearchableSelect({
             e.stopPropagation();
             e.currentTarget.scrollTop += e.deltaY;
           }}
+          onScroll={(e) => {
+            if (!onEndReached) return;
+            const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+            if (scrollHeight - scrollTop - clientHeight < 32) {
+              onEndReached();
+            }
+          }}
         >
           {isLoading ? (
             <div className="flex items-center justify-center p-4">
@@ -153,25 +170,32 @@ export function SearchableSelect({
           ) : filteredOptions.length === 0 ? (
             <p className="p-2 text-center text-sm text-slate-500">No options found.</p>
           ) : (
-            filteredOptions.map((option, index) => {
-              const isSelected = value === option.value;
-              return (
-                <div
-                  key={option.value}
-                  className={cn(
-                    "relative flex w-full cursor-pointer items-center rounded-sm py-1.5 pr-2 pl-8 text-sm select-none",
-                    isSelected && "bg-slate-50 font-medium text-[#1b3c73]",
-                    highlightedIndex === index ? "bg-slate-100" : "hover:bg-slate-100"
-                  )}
-                  onClick={() => handleSelect(option.value)}
-                >
-                  <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-                    {isSelected && <Check className="h-4 w-4" />}
-                  </span>
-                  {renderOption ? renderOption(option, isSelected) : option.label}
+            <>
+              {filteredOptions.map((option, index) => {
+                const isSelected = value === option.value;
+                return (
+                  <div
+                    key={option.value}
+                    className={cn(
+                      "relative flex w-full cursor-pointer items-center rounded-sm py-1.5 pr-2 pl-8 text-sm select-none",
+                      isSelected && "bg-slate-50 font-medium text-[#1b3c73]",
+                      highlightedIndex === index ? "bg-slate-100" : "hover:bg-slate-100"
+                    )}
+                    onClick={() => handleSelect(option.value)}
+                  >
+                    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+                      {isSelected && <Check className="h-4 w-4" />}
+                    </span>
+                    {renderOption ? renderOption(option, isSelected) : option.label}
+                  </div>
+                );
+              })}
+              {isLoadingMore && (
+                <div className="flex items-center justify-center p-2">
+                  <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#1b3c73] border-t-transparent" />
                 </div>
-              );
-            })
+              )}
+            </>
           )}
         </div>
       </PopoverContent>

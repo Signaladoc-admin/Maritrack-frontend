@@ -12,7 +12,15 @@ export function useLogout() {
   const { user, logout } = useAuth();
 
   const logoutMutation = useMutation({
-    mutationFn: logoutAction,
+    mutationFn: async () => {
+      const res = await logoutAction();
+
+      if (!res.success) {
+        throw new Error(res.error);
+      }
+
+      return res;
+    },
     onSuccess: () => {
       logout();
       queryClient.clear();

@@ -16,13 +16,21 @@ import z from "zod";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CountryStateInput } from "@/shared/ui/inputs/country-state-input";
+import { Country, State } from "country-state-city";
 import { InputGroup } from "@/shared/ui/input-group";
 import { useToast } from "@/shared/ui/toast";
 import { useUpdateProfile } from "@/entities/user/model/useUserProfile";
 import { useUpdateBusiness } from "@/entities/business/model/useBusiness";
+import { Business } from "@/entities/business/types";
+import { useGetUserById } from "@/features/user-management/model/useUserManagement";
+import { useAuth } from "@/shared/auth/AuthProvider";
+import { UserProfile } from "@/entities/user";
+import ChangePasswordModal from "@/features/auth/ui/ChangePasswordForm";
 
 const BusinessProfileSchema = z.object({
-  profilePicture: z.instanceof(File).nullable(),
+  // Holds either the existing image URL (loaded from the user object's `imageUrl`)
+  // for preview, or a newly-selected File to be uploaded on submit.
+  profilePicture: z.union([z.instanceof(File), z.string()]).nullable(),
   name: z.string().min(1, "Business name is required"),
   email: z.string().email("Invalid email address"),
   address: z.string().min(1, "Business address is required"),
@@ -53,12 +61,17 @@ type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
 
 export default function BusinessProfileForm() {
   const { business, isLoadingBusiness, isLoadingBusinessProfile } = useGetFullBusinessDetails();
+  const { user } = useAuth();
 
-  if (isLoadingBusiness || isLoadingBusinessProfile) {
+  const { data: userInfo, isLoading: isLoadingUserInfo } = useGetUserById(user?.id!);
+
+  console.log("userInfo", userInfo);
+
+  if (isLoadingBusiness || isLoadingBusinessProfile || isLoadingUserInfo) {
     return <BusinessProfileFormSkeleton />;
   }
 
-  return <BusinessProfileFormInner business={business} />;
+  return <BusinessProfileFormInner business={business} userInfo={userInfo} />;
 }
 
 function BusinessProfileFormSkeleton() {
@@ -105,7 +118,13 @@ function BusinessProfileFormSkeleton() {
   );
 }
 
-function BusinessProfileFormInner({ business }: { business: any }) {
+function BusinessProfileFormInner({
+  business,
+  userInfo,
+}: {
+  business: Business | null | undefined;
+  userInfo: UserProfile | undefined;
+}) {
   const { mutateAsync: updateBusiness, isPending: isUpdatingBusinessDetails } = useUpdateBusiness();
   const { mutateAsync: updateProfileImage, isPending: isUpdatingProfileImage } = useUpdateProfile();
 
@@ -123,7 +142,7 @@ function BusinessProfileFormInner({ business }: { business: any }) {
   } = useForm<BusinessProfileFormValues>({
     resolver: zodResolver(BusinessProfileSchema),
     defaultValues: {
-      profilePicture: null,
+      profilePicture: userInfo?.imageUrl ?? null,
       name: "",
       email: "",
       address: "",
@@ -134,26 +153,55 @@ function BusinessProfileFormInner({ business }: { business: any }) {
 
   useEffect(() => {
     if (business) {
-      setValue("name", business.name || "");
-      setValue("email", business.email || "");
-      setValue("address", business.address || "");
-      setValue("state", business.state || "");
-      setValue("country", business.country || "");
+      setValue("name", business?.name || "");
+      setValue("email", business?.email || "");
+      setValue("address", business?.address || "");
+
+      // SearchableSelect matches options by ISO code (e.g. "NG", "LA").
+      // The API may return either an ISO code or a full name — resolve either way.
+      const allCountries = Country.getAllCountries();
+      const rawCountry = business?.country || "";
+      const countryIso =
+        allCountries.find((c) => c.isoCode === rawCountry)?.isoCode ||
+        allCountries.find((c) => c.name.toLowerCase() === rawCountry.toLowerCase())?.isoCode ||
+        rawCountry;
+
+      setValue("country", countryIso);
+
+      const rawState = business?.state || "";
+      const stateIso =
+        State.getStatesOfCountry(countryIso).find((s) => s.isoCode === rawState)?.isoCode ||
+        State.getStatesOfCountry(countryIso).find(
+          (s) => s.name.toLowerCase() === rawState.toLowerCase()
+        )?.isoCode ||
+        rawState;
+
+      setValue("state", stateIso);
     }
   }, [business]);
 
+  // Keep the preview in sync with the persisted `imageUrl` (e.g. after a
+  // successful upload refetches the user profile with the new image URL).
+  useEffect(() => {
+    setValue("profilePicture", userInfo?.imageUrl ?? null);
+  }, [userInfo?.imageUrl, setValue]);
+
   const onSubmit = async (data: BusinessProfileFormValues) => {
     try {
-      // await updateBusiness({
-      //   id: business?.id!,
-      //   name: data.name,
-      //   address: data.address,
-      //   state: data.state,
-      //   country: data.country,
-      // });
-      await updateProfileImage({
-        profilePicture: data.profilePicture as File,
+      await updateBusiness({
+        id: business?.id!,
+        name: data.name,
+        address: data.address,
+        state: data.state,
+        country: data.country,
       });
+
+      // Only re-upload when the user picked a new file — `profilePicture` holds
+      // the existing `imageUrl` string when no new image has been selected.
+      if (data.profilePicture instanceof File) {
+        await updateProfileImage({ profilePicture: data.profilePicture });
+      }
+
       toast({ title: "Business updated successfully", type: "success" });
     } catch (error: any) {
       toast({ title: error.message || "Failed to update business", type: "error" });
@@ -269,92 +317,5 @@ function BusinessProfileFormInner({ business }: { business: any }) {
 
       <ChangePasswordModal open={showChangePassword} onOpenChange={setShowChangePassword} />
     </div>
-  );
-}
-
-function ChangePasswordModal({
-  open,
-  onOpenChange,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}) {
-  const { changePassword, isSubmitting, error } = useChangePassword();
-
-  const {
-    register,
-    handleSubmit,
-    watch,
-    reset,
-    formState: { errors },
-  } = useForm<ChangePasswordFormValues>({
-    resolver: zodResolver(changePasswordSchema),
-  });
-
-  const passwordValue = watch("password", "");
-
-  const onSubmit = async (data: ChangePasswordFormValues) => {
-    try {
-      await changePassword({
-        oldPassword: data.oldPassword,
-        password: data.password,
-        confirmPassword: data.confirmPassword,
-      });
-      reset();
-      onOpenChange(false);
-    } catch {
-      // error shown inline via the error prop
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md gap-6">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-[#1B3C73]">
-            Change password
-          </DialogTitle>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
-          <InputGroup
-            label="Current password"
-            type="password"
-            placeholder="Enter current password"
-            error={errors.oldPassword?.message}
-            {...register("oldPassword")}
-          />
-
-          <InputGroup
-            label="New password"
-            type="password"
-            placeholder="Enter new password"
-            isPasswordValidationEnabled
-            error={errors.password?.message}
-            {...register("password")}
-          />
-
-          <InputGroup
-            label="Confirm new password"
-            type="password"
-            placeholder="Confirm new password"
-            isPasswordValidationEnabled
-            matchValue={passwordValue}
-            error={errors.confirmPassword?.message}
-            {...register("confirmPassword")}
-          />
-
-          {error && <p className="text-destructive text-sm">{error}</p>}
-
-          <Button
-            type="submit"
-            className="h-12 w-full rounded-xl bg-[#1B3C73] text-base font-semibold text-white hover:bg-[#1B3C73]/90"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? <Loader size="sm" className="[&_svg]:text-white" /> : "Save"}
-          </Button>
-        </form>
-      </DialogContent>
-    </Dialog>
   );
 }

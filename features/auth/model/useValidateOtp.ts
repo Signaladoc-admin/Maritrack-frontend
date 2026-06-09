@@ -26,12 +26,12 @@ export function useValidateOtp() {
       }
       return result.data;
     },
-    onSuccess: async () => {
+    onSuccess: async (res) => {
       queryClient.invalidateQueries({ queryKey: ["session"] });
       toast({
         type: "success",
         title: "Account Verified",
-        message: "Your account has been successfully verified!",
+        message: res.message || "Your account has been successfully verified!",
       });
 
       const { email, password, clearCredentials } = useNewUserStore.getState();

@@ -9,6 +9,7 @@ import { useGetStaffMembers } from "@/entities/business/model/useStaffMembers";
 import { BusinessStaff } from "@/entities/business/types";
 import { InputGroup } from "@/shared/ui/input-group";
 import { TriangleAlert } from "lucide-react";
+import { Skeleton } from "@/shared/ui/skeleton";
 import { useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { Button } from "@/shared/ui/button";
@@ -17,6 +18,10 @@ import {
   useOtherStaffMembersExceptStaff,
   useOtherTeamMembers,
 } from "@/entities/business/model/useTeamMembers";
+import { useAuth } from "@/shared/auth/AuthProvider";
+import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
+import { MDMDeviceDetailsResponse } from "@/features/device/types";
+import { useUserById } from "@/entities/user/model/useUserProfile";
 
 function StaffOptionContent({ staff }: { staff: BusinessStaff }) {
   const firstName = staff.user?.firstName ?? "";
@@ -46,29 +51,104 @@ function StaffOptionContent({ staff }: { staff: BusinessStaff }) {
   );
 }
 
+// Mirrors the "select staff" step layout: current device card, the
+// "Reassign to" connector, the staff selector (label + input), and the submit button.
+function ReassignDeviceModalSkeleton() {
+  return (
+    <div className="space-y-1">
+      {/* Current device card */}
+      <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="mt-2 h-3.5 w-44" />
+      </div>
+
+      {/* Connector */}
+      <div className="flex flex-col items-center gap-0.5 py-1">
+        <div className="h-6 w-px bg-slate-200" />
+        <span className="text-xs text-slate-400">Reassign to</span>
+        <div className="h-6 w-px bg-slate-200" />
+      </div>
+
+      {/* New staff selector */}
+      <div className="flex flex-col gap-1.5">
+        <Skeleton className="h-3.5 w-12" />
+        <Skeleton className="h-[50px] w-full rounded-xl" />
+      </div>
+
+      {/* Submit button */}
+      <Skeleton className="mt-4 h-12 w-full rounded-xl" />
+    </div>
+  );
+}
+
 export default function ReassignDeviceModal({
   open,
   onOpenChange,
   selectedDevice,
+  selectedDeviceMdmId,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedDevice: StaffDevice | null;
+  // Two ways to populate the modal:
+  // 1. Caller already has the staff member's device record (e.g. AssociatedDevicesTable
+  //    on the staff profile) — pass it directly via `selectedDevice`.
+  // 2. Caller only knows the device's MDM id (e.g. the device details page) — pass
+  //    `selectedDeviceMdmId` and the modal fetches the hardware + current owner itself.
+  selectedDevice?: StaffDevice | null;
+  selectedDeviceMdmId?: string;
 }) {
   const [step, setStep] = useState<"select-staff" | "confirm">("select-staff");
   const [selectedStaff, setSelectedStaff] = useState<BusinessStaff | null>(null);
 
+  const { data: hardwareData, isLoading: isHardwareLoading } = useDeviceDetail(
+    selectedDeviceMdmId!,
+    "hardware",
+    {
+      enabled: !!selectedDeviceMdmId && !selectedDevice,
+    }
+  );
+  const deviceResponse: MDMDeviceDetailsResponse = hardwareData;
+  const fetchedSelectedDevice = deviceResponse?.deviceDetails;
+
+  const actualSelectedDevice = selectedDevice ? selectedDevice : fetchedSelectedDevice;
+
+  const currentStaffUserId = actualSelectedDevice?.currentUserId;
+
+  const { data: currentStaffUserData, isLoading: isCurrentStaffUserLoading } = useUserById(
+    currentStaffUserId!,
+    {
+      enabled: !!currentStaffUserId && !selectedDevice,
+    }
+  );
+  let currentStaffUser;
+  if (currentStaffUserData?.success) {
+    currentStaffUser = currentStaffUserData?.data;
+  }
+
+  const firstName =
+    (selectedDevice ? selectedDevice?.currentUser?.firstName : currentStaffUser?.firstName) || "";
+  const lastName =
+    (selectedDevice ? selectedDevice?.currentUser?.lastName : currentStaffUser?.lastName) || "";
+  const fullName = `${firstName} ${lastName}`.trim() || currentStaffUser?.email || "N/A";
+
   const { toast } = useToast();
-  const { data: zonesData } = useBusinessZones();
-  const zoneId = zonesData?.[0]?.id;
+  const { user } = useAuth();
+  const zoneId = user?.zoneId || "";
 
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm] = useDebounce(searchTerm, 400);
 
-  const { otherTeamMembers, isLoading } = useOtherStaffMembersExceptStaff({
-    excludeUserId: selectedDevice?.currentUserId!,
-    search: debouncedSearchTerm,
-  });
+  const { otherTeamMembers, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useOtherStaffMembersExceptStaff({
+      excludeUserId: actualSelectedDevice?.currentUserId!,
+      search: debouncedSearchTerm,
+    });
+
+  function handleStaffListEndReached() {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }
 
   const staffMemberOptions = otherTeamMembers.map((s) => ({
     value: s.id,
@@ -95,23 +175,16 @@ export default function ReassignDeviceModal({
 
   function onSelectStaff(data: AssignDeviceToUserValues) {
     const staff = staffById.get(data.staffId);
-    if (!staff) {
-      toast({ type: "error", title: "Selected staff member not found" });
-      return;
-    }
-    setSelectedStaff(staff);
+
+    if (staff) setSelectedStaff(staff);
     setStep("confirm");
   }
 
   async function handleReassign() {
-    if (!selectedStaff || !selectedDevice?.mdmDeviceId || !zoneId) {
-      toast({ type: "error", title: "Missing required information" });
-      return;
-    }
     const res = await assignUserToDevice({
       request: {
-        deviceIds: [selectedDevice?.mdmDeviceId],
-        userId: selectedStaff.user?.id!,
+        deviceIds: [actualSelectedDevice?.mdmDeviceId],
+        userId: selectedStaff?.user?.id!,
         zoneId,
       },
     });
@@ -132,6 +205,14 @@ export default function ReassignDeviceModal({
 
   const isConfirmStep = step === "confirm";
 
+  if (isHardwareLoading || isCurrentStaffUserLoading) {
+    return (
+      <Modal isOpen={open} onClose={handleClose} title="Reassign Device">
+        <ReassignDeviceModalSkeleton />
+      </Modal>
+    );
+  }
+
   return (
     <Modal
       isOpen={open}
@@ -144,11 +225,17 @@ export default function ReassignDeviceModal({
         <form onSubmit={handleSubmit(onSelectStaff)} className="space-y-1">
           {/* Current device card */}
           <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-            <p className="font-semibold text-slate-800">{selectedDevice?.model ?? "Device"}</p>
+            <p className="mb-2 font-semibold text-slate-800">
+              {actualSelectedDevice?.model ?? "Device"}
+            </p>
 
             <p className="text-sm text-slate-500">
-              Owned by{" "}
-              {`${selectedDevice?.currentUser?.firstName} ${selectedDevice?.currentUser?.lastName}`}
+              Owned by <span className="font-medium text-slate-900">{fullName}</span>
+            </p>
+            <p className="text-muted-foreground text-xs">
+              {selectedDevice
+                ? selectedDevice?.currentUser?.email
+                : currentStaffUser?.email || "N/A"}
             </p>
           </div>
 
@@ -173,6 +260,8 @@ export default function ReassignDeviceModal({
                   isSearchable
                   onSearch={setSearchTerm}
                   isLoading={isLoading}
+                  onEndReached={handleStaffListEndReached}
+                  isLoadingMore={isFetchingNextPage}
                   renderOption={(option) => {
                     const staff = staffById.get(option.value);
                     return staff ? <StaffOptionContent staff={staff} /> : option.label;
@@ -182,12 +271,9 @@ export default function ReassignDeviceModal({
             )}
           />
 
-          <button
-            type="submit"
-            className="bg-primary mt-4 w-full rounded-xl py-3 font-semibold text-white transition-opacity hover:opacity-90"
-          >
+          <Button type="submit" className="mt-4 w-full">
             Reassign
-          </button>
+          </Button>
         </form>
       )}
 

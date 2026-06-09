@@ -6,48 +6,40 @@ import {
   DashboardLineChart,
   DashboardValueCard,
 } from "@/shared/ui/dashboard/analytics-ui";
+import { useNetworkAppUsage } from "@/features/dashboard/business/model/useConnectivityLearning";
 
-interface ConnectivityLearningWidgetProps {
-  preloadedContentValue?: string;
-  offlineLearningValue?: string;
-  preloadedContentData?: Record<string, string | number>[];
-  offlineLearningData?: Record<string, string | number>[];
-  isLoading?: boolean;
-}
+export function ConnectivityLearningWidget() {
+  const { avgWifiValue, avgScreenTimeValue, wifiChartData, screenTimeData, isLoading } =
+    useNetworkAppUsage();
 
-export function ConnectivityLearningWidget({
-  preloadedContentValue = "—",
-  offlineLearningValue = "—",
-  preloadedContentData = [],
-  offlineLearningData = [],
-  isLoading = false,
-}: ConnectivityLearningWidgetProps) {
   return (
     <div className="mb-8">
-      <h2 className="text-primary mb-4 text-base font-semibold">Connectivity & Learning Access</h2>
+      <h2 className="text-primary mb-4 text-base font-semibold">App Usage &amp; Connectivity</h2>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <DashboardValueCard
-          value={isLoading ? "—" : preloadedContentValue}
-          label="Usage of preloaded content"
+          value={isLoading ? "—" : avgWifiValue}
+          label="Avg WiFi data per device"
           isLoading={isLoading}
           color="#e418ff"
+          chartBadge="WiFi usage"
         >
-          {preloadedContentData.length > 0 ? (
-            <DashboardLineChart data={preloadedContentData} dataKey="usage" xAxisKey="month" />
+          {wifiChartData.some((d) => d.usage > 0) ? (
+            <DashboardLineChart data={wifiChartData} dataKey="usage" xAxisKey="day" />
           ) : (
             <DashboardEmptyState />
           )}
         </DashboardValueCard>
 
         <DashboardValueCard
-          value={isLoading ? "—" : offlineLearningValue}
-          label="Offline learning hours logged"
+          value={isLoading ? "—" : avgScreenTimeValue}
+          label="Avg screen time per device"
           isLoading={isLoading}
           color="#003366"
+          chartBadge="Screen time"
         >
-          {offlineLearningData.length > 0 ? (
-            <DashboardLineChart data={offlineLearningData} dataKey="hours" xAxisKey="month" />
+          {screenTimeData.some((d) => d.hours > 0) ? (
+            <DashboardLineChart data={screenTimeData} dataKey="hours" xAxisKey="day" />
           ) : (
             <DashboardEmptyState />
           )}

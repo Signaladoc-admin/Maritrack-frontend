@@ -1,12 +1,14 @@
-import { MetricCard } from "@/features/dashboard/business/ui/MetricCard";
-import { InfoListCard } from "@/shared/ui/AppListCard/AppListCard";
-import { MapCard } from "@/features/general/ui/map-card";
 import { useParams } from "next/navigation";
 import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
-import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
 
 import { MetricCardSkeleton, InfoListCardSkeleton } from "@/features/device/ui/DeviceTabsSkeletons";
 import { Skeleton } from "@/shared/ui/skeleton";
+import { useAuth } from "@/shared/auth/AuthProvider";
+import { MetricCard } from "@/features/dashboard/business/ui/MetricCard";
+import DeviceHardwareDetailsCard from "@/features/device/ui/DeviceHardwareDetailsCard";
+import DevicePossesorDetailsCard from "@/features/device/ui/DevicePossesorDetailsCard";
+import { MapCard } from "@/features/general/ui/map-card";
+import { InfoListCard } from "@/shared/ui/AppListCard/AppListCard";
 
 const General = () => {
   const params = useParams<{ device: string }>();
@@ -17,9 +19,11 @@ const General = () => {
     "hardware",
     { enabled: !!deviceId }
   );
+
   const { data: networkData, isPending: isNetworkPending } = useDeviceDetail(deviceId, "network", {
     enabled: !!deviceId,
   });
+
   const { data: appsData, isPending: isAppsPending } = useDeviceDetail(deviceId, "apps", {
     enabled: !!deviceId,
   });
@@ -68,43 +72,89 @@ const General = () => {
     storageFooter = "Storage space is ok";
   }
 
+  const { user } = useAuth();
+  const isBusiness = user?.appRole === "BUSINESS";
+
   if (isHardwarePending || isAppsPending || isNetworkPending) {
     return (
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-        <MetricCardSkeleton />
-        <MetricCardSkeleton />
-        <InfoListCardSkeleton />
-        <div className="col-span-2">
+      <div className="flex flex-col gap-6">
+        {isBusiness ? (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(260px,360px),1fr]">
+            <Skeleton className="h-[420px] rounded-[32px]" />
+            <div className="flex flex-col gap-6">
+              <Skeleton className="h-[120px] rounded-[32px]" />
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <MetricCardSkeleton />
+                <MetricCardSkeleton />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <MetricCardSkeleton />
+            <MetricCardSkeleton />
+          </div>
+        )}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <InfoListCardSkeleton />
           <Skeleton className="h-[400px] rounded-[32px]" />
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-2">
-      <MetricCard
-        title="Memory"
-        value={`${storageUsedGB} GB of ${totalStorageGB} GB`}
-        chartColor={storageColor}
-        chartData={[20, 30, 40, 50, 60, 70, 100 - freePercent]}
-        footerText={storageFooter}
-      />
-      <MetricCard
-        title="Battery health"
-        value={`${batteryLevel}%`}
-        chartColor={batteryColor}
-        chartData={[100, 90, 80, 70, 65, 60, batteryLevel]}
-        footerText={batteryFooter}
-      />
+  const isBusinessUser = user?.appRole === "BUSINESS";
 
-      <InfoListCard
-        title="Top 5 apps"
-        actionText="View all"
-        onActionClick={() => console.log("View Apps")}
-        items={top5Apps}
-      />
-      <MapCard deviceId={deviceId} />
+  const memoryCard = (
+    <MetricCard
+      title="Memory"
+      value={`${storageUsedGB} GB of ${totalStorageGB} GB`}
+      chartColor={storageColor}
+      chartData={[20, 30, 40, 50, 60, 70, 100 - freePercent]}
+      footerText={storageFooter}
+    />
+  );
+
+  const batteryCard = (
+    <MetricCard
+      title="Battery health"
+      value={`${batteryLevel}%`}
+      chartColor={batteryColor}
+      chartData={[100, 90, 80, 70, 65, 60, batteryLevel]}
+      footerText={batteryFooter}
+    />
+  );
+
+  return (
+    <div className="flex flex-col gap-6">
+      {isBusinessUser ? (
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(260px,360px),1fr]">
+          {/* Hardware card — stretches to match right column height */}
+          <DeviceHardwareDetailsCard device={hardwareData} />
+
+          {/* Right column: possessor, memory, battery in a single 3-col row */}
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
+            <DevicePossesorDetailsCard device={hardwareData} />
+            {memoryCard}
+            {batteryCard}
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          {memoryCard}
+          {batteryCard}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <InfoListCard
+          title="Top 5 apps"
+          actionText="View all"
+          onActionClick={() => console.log("View Apps")}
+          items={top5Apps}
+        />
+        <MapCard deviceId={deviceId} />
+      </div>
     </div>
   );
 };

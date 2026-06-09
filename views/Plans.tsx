@@ -76,6 +76,7 @@ export default function Plans() {
       ) : (
         <div className="space-y-4">
           <PlanCard
+            key={crypto.randomUUID()}
             price={formatCurrency(formatPaystackKoboAmount(activeSubscription.plan?.priceNGN) || 0)}
             name={activeSubscription.plan?.name || ""}
             billingCycle={activeSubscription.plan?.billingCycle || ""}

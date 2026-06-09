@@ -5,32 +5,16 @@ import { Skeleton } from "@/shared/ui/skeleton";
 import {
   DashboardAreaChart,
   DashboardDonutChart,
-  DashboardDonutSlice,
   DashboardEmptyState,
   DashboardTableSkeleton,
   DashboardTitledCard,
 } from "@/shared/ui/dashboard/analytics-ui";
+import { useComplianceSecurity } from "@/features/dashboard/business/model/useComplianceSecurity";
 
-interface ViolationIncident {
-  incident: string;
-  date: string;
-}
+export function ComplianceSecurityWidget() {
+  const { blockedAttemptsData, securityPatchData, violationIncidents, jailbreakData, isLoading } =
+    useComplianceSecurity();
 
-interface ComplianceSecurityWidgetProps {
-  blockedAttemptsData?: Record<string, string | number>[];
-  securityPatchData?: DashboardDonutSlice[];
-  violationIncidents?: ViolationIncident[];
-  jailbreakData?: Record<string, string | number>[];
-  isLoading?: boolean;
-}
-
-export function ComplianceSecurityWidget({
-  blockedAttemptsData = [],
-  securityPatchData = [],
-  violationIncidents = [],
-  jailbreakData = [],
-  isLoading = false,
-}: ComplianceSecurityWidgetProps) {
   return (
     <div className="mb-8">
       <h2 className="text-primary mb-4 text-base font-semibold">Compliance & Security</h2>

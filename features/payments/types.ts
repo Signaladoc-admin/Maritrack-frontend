@@ -1,3 +1,5 @@
+import { BaseEntity } from "@/shared/api/types";
+
 export interface Transaction {
   id: string;
   subscriptionId: string;
@@ -99,4 +101,43 @@ export interface InitializePaymentRequest {
 
 export interface InitializePaymentResponse {
   authorizationUrl: string;
+}
+
+export interface BillingRecord extends BaseEntity {
+  id: string,
+  subscriptionId: string,
+  planId: string,
+  zoneId: string,
+  paymentChannel: string,
+  status: string,
+  amountNGN: number,
+  currency: string,
+  paystackReference: string,
+  paystackTransferId: string,
+  telcoTransactionId: string,
+  telcoMsisdn: string,
+  metadata: {
+    planId: string,
+    userId: string,
+    zoneId: string,
+    planName: string,
+    userEmail: string,
+    deviceLimit: number,
+  },
+  paidAt: string | null,
+  invoiceNumber: string | null,
+  invoiceUrl: string | null,
+  plan: PaymentPlan
+}
+
+export interface BillingHistoryPaginatedResponse {
+  status: string;
+  message: string;
+  data: {
+    results: BillingRecord[];
+    total: number;
+    page: number;
+    limit: number;
+    // totalPages: number;
+  };
 }

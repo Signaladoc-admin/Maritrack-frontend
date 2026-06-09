@@ -37,7 +37,7 @@ export function QRCodeCard({
             <QrCode className="h-32 w-32 text-slate-300" />
           )}
         </div>
-        <p className="mt-4 max-w-[200px]">{description}</p>
+        <p className="mt-4 max-w-[200px] text-neutral-800">{description}</p>
       </div>
     </CardWrapper>
   );

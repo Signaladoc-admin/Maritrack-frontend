@@ -7,38 +7,46 @@ import {
   DashboardEmptyState,
   DashboardValueCard,
 } from "@/shared/ui/dashboard/analytics-ui";
+import { useDeviceUtilization } from "@/features/dashboard/business/model/useDeviceUtilization";
+import { useDeviceHealthSample } from "@/features/dashboard/business/model/useDeviceHealthSample";
 
-interface DeviceUtilizationWidgetProps {
-  dailyActiveDevices?: number;
-  avgSessionDuration?: string;
-  screenTimePerUser?: string;
-  activeUsersChartData?: Record<string, string | number>[];
-  sessionDurationChartData?: Record<string, string | number>[];
-  isLoading?: boolean;
-}
+export function DeviceUtilizationWidget() {
+  // MDM backend aggregate — daily active count + new-device trend chart
+  const {
+    dailyActiveDevices,
+    activeUsersChartData,
+    isLoading: isLoadingUtilization,
+  } = useDeviceUtilization();
 
-export function DeviceUtilizationWidget({
-  dailyActiveDevices = 0,
-  avgSessionDuration = "—",
-  screenTimePerUser = "—",
-  activeUsersChartData = [],
-  sessionDurationChartData = [],
-  isLoading = false,
-}: DeviceUtilizationWidgetProps) {
+  // Sampled hardware details — session duration (powerOnTime) + screen time
+  // (sum of foreground app usage). React Query deduplicates these queries if
+  // AssetTrackingWidget has already fetched the same zone devices.
+  const {
+    avgSessionDuration,
+    avgScreenTime,
+    batteryChartData,
+    isLoading: isLoadingHealth,
+  } = useDeviceHealthSample();
+
+  const isLoading = isLoadingUtilization || isLoadingHealth;
+
   const metrics = [
     { title: "Daily active devices", value: dailyActiveDevices.toLocaleString() },
-    { title: "Average session duration", value: avgSessionDuration },
-    { title: "Screen time per user", value: screenTimePerUser },
+    { title: "Avg session duration", value: avgSessionDuration },
+    { title: "Screen time per device", value: avgScreenTime },
   ];
 
   return (
     <div className="mb-8">
-      <h2 className="text-primary mb-4 text-base font-semibold">Device Utilization & Engagement</h2>
+      <h2 className="text-primary mb-4 text-base font-semibold">
+        Device Utilization &amp; Engagement
+      </h2>
 
+      {/* Summary stat cards */}
       <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {metrics.map(({ title, value }) => (
-          <CardWrapper key={title} variant="outline">
-            <p className="text-sm font-medium text-[#667085]">{title}</p>
+          <CardWrapper key={title} variant="outline" padding="default">
+            <p className="text-xs font-medium text-[#667085]">{title}</p>
             {isLoading ? (
               <Skeleton className="mt-2 h-7 w-24" />
             ) : (
@@ -48,12 +56,15 @@ export function DeviceUtilizationWidget({
         ))}
       </div>
 
+      {/* Value chart cards */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {/* Active devices over time (from MDM backend) */}
         <DashboardValueCard
-          value={isLoading ? "—" : dailyActiveDevices.toLocaleString()}
-          label="Daily active users"
-          isLoading={isLoading}
+          value={isLoadingUtilization ? "—" : dailyActiveDevices.toLocaleString()}
+          label="Daily active devices"
+          isLoading={isLoadingUtilization}
           color="#4318ff"
+          chartBadge={`${dailyActiveDevices.toLocaleString()} active`}
         >
           {activeUsersChartData.length > 0 ? (
             <DashboardAreaChart
@@ -67,18 +78,21 @@ export function DeviceUtilizationWidget({
           )}
         </DashboardValueCard>
 
+        {/* Avg session duration from sampled powerOnTime */}
         <DashboardValueCard
-          value={isLoading ? "—" : avgSessionDuration}
-          label="Average session duration"
-          isLoading={isLoading}
+          value={isLoadingHealth ? "—" : avgSessionDuration}
+          label="Avg session duration (sampled)"
+          isLoading={isLoadingHealth}
           color="#e418ff"
+          chartBadge={avgSessionDuration !== "—" ? `${avgSessionDuration} avg uptime` : undefined}
         >
-          {sessionDurationChartData.length > 0 ? (
+          {batteryChartData.length > 0 ? (
             <DashboardAreaChart
-              data={sessionDurationChartData}
-              dataKey="duration"
-              xAxisKey="month"
-              gradientId="devutil-session-duration"
+              data={batteryChartData}
+              dataKey="score"
+              xAxisKey="day"
+              gradientId="devutil-session-health"
+              initialColor="#e418ff"
             />
           ) : (
             <DashboardEmptyState />

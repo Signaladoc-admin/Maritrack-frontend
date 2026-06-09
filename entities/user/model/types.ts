@@ -1,7 +1,7 @@
 import { Parent } from "@/entities/parents/types";
 import { Zone } from "@/entities/zone/types";
-import { LoginResponse, UserTokenPayload } from "@/features/auth-login/types";
 import { BaseEntity } from "@/shared/api/types";
+import { BusinessRole } from "./user.schema";
 
 export interface UserInfo {
   id: string;
@@ -32,12 +32,18 @@ export interface UserProfile {
   zone: Omit<Zone, "businessId" | "parentId">
 }
 
-export interface AuthUserProfile extends LoginResponse {
-  firstName?: string | null | undefined;
-  lastName?: string | null | undefined;
-  isEmailVerified?: boolean | undefined;
-  phone?: string | null | undefined;
+export interface AuthUserProfile {
+  id: string;
+  email: string;
+  role: "USER" | "ADMIN";
+  businessRole: BusinessRole | null;
+  parentId: string | null;
+  businessId: string | null;
+  zoneId: string | null;
+  imageUrl: string | null;
   appRole: "PARENT" | "BUSINESS";
+  firstName?: string | null;
+  lastName?: string | null;
 }
 
 export interface UserDetails extends BaseEntity {

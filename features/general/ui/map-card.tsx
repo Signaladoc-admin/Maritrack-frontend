@@ -5,7 +5,9 @@ import dynamic from "next/dynamic";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/Card/Card";
 import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 
-const MapContainer = dynamic(() => import("react-leaflet").then((m) => m.MapContainer), { ssr: false });
+const MapContainer = dynamic(() => import("react-leaflet").then((m) => m.MapContainer), {
+  ssr: false,
+});
 const TileLayer = dynamic(() => import("react-leaflet").then((m) => m.TileLayer), { ssr: false });
 const Marker = dynamic(() => import("react-leaflet").then((m) => m.Marker), { ssr: false });
 const Popup = dynamic(() => import("react-leaflet").then((m) => m.Popup), { ssr: false });
@@ -26,7 +28,8 @@ export function MapCard({ deviceId }: { deviceId: string }) {
     import("leaflet").then((L) => {
       delete (L.Icon.Default.prototype as any)._getIconUrl;
       L.Icon.Default.mergeOptions({
-        iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+        iconRetinaUrl:
+          "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
         iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
         shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
       });
@@ -36,8 +39,12 @@ export function MapCard({ deviceId }: { deviceId: string }) {
   if (!isClient) return null;
 
   const location = hardwareData?.deviceDetails?.lastKnownLocation;
-  const lat = typeof location?.latitude === "number" && !isNaN(location.latitude) ? location.latitude : null;
-  const lng = typeof location?.longitude === "number" && !isNaN(location.longitude) ? location.longitude : null;
+  const lat =
+    typeof location?.latitude === "number" && !isNaN(location.latitude) ? location.latitude : null;
+  const lng =
+    typeof location?.longitude === "number" && !isNaN(location.longitude)
+      ? location.longitude
+      : null;
   const hasValidLocation = lat !== null && lng !== null && (lat !== 0 || lng !== 0);
 
   const center: [number, number] = hasValidLocation ? [lat!, lng!] : DEFAULT_CENTER;

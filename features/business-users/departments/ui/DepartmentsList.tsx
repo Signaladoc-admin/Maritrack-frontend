@@ -3,14 +3,31 @@ import { useAuth } from "@/shared/auth/AuthProvider";
 import { useGetDepartments } from "@/features/business-users/departments/model/useDepartments";
 import { Department } from "@/features/business-users/departments/types";
 import { Skeleton } from "@/shared/ui/skeleton";
+import { useEffect } from "react";
 
-export default function DepartmentsList({ searchTerm }: { searchTerm: string }) {
+export default function DepartmentsList({
+  searchTerm,
+  currentPage,
+  setSelectedTabTotalPages,
+}: {
+  searchTerm: string;
+  currentPage: number;
+  setSelectedTabTotalPages: (totalPages: number) => void;
+}) {
   const { user } = useAuth();
   const { data: departmentData, isLoading } = useGetDepartments({
     businessId: user?.businessId!,
     search: searchTerm,
+    page: currentPage,
+    limit: 5,
   });
   const departments = departmentData?.departments || [];
+
+  useEffect(() => {
+    if (departmentData?.totalPages !== undefined) {
+      setSelectedTabTotalPages(departmentData.totalPages);
+    }
+  }, [departmentData?.totalPages, setSelectedTabTotalPages]);
 
   if (isLoading)
     return (

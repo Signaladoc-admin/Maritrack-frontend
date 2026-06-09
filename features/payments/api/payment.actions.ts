@@ -3,7 +3,7 @@
 import { apiClient } from "@/shared/lib/api-client";
 import { withSafeAction } from "@/shared/lib/safe-action";
 import type { ActionResult, ApiResponse } from "@/shared/api/types";
-import { ActiveSubscription, InitializePaymentRequest, InitializePaymentResponse, PaymentPlan, Subscription, Transaction } from "../types";
+import { ActiveSubscription, BillingHistoryPaginatedResponse, BillingRecord, InitializePaymentRequest, InitializePaymentResponse, PaymentPlan, Subscription, Transaction } from "../types";
 
 export async function getPaymentPlansAction(): Promise<ActionResult<PaymentPlan[]>> {
   return withSafeAction(async () => {
@@ -60,11 +60,12 @@ export async function getAllSubscriptionsAction(zoneId: string): Promise<
 
 export async function getPaymentHistoryAction(
   zoneId: string
-): Promise<ActionResult<{ results: Transaction[]; total: number; page: number; limit: number }>> {
+): Promise<ActionResult<BillingHistoryPaginatedResponse>> {
   return withSafeAction(async () => {
     const response = await apiClient(`/payments/transactions/zone/${zoneId}`, {
       method: "GET",
     });
-    return response.data;
+
+    return response;
   }, "Failed to fetch payment history");
 }

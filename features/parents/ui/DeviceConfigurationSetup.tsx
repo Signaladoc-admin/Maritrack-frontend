@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Button } from "@/shared/ui/button";
 import { Header } from "@/shared/ui/layout/header";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
@@ -17,139 +17,167 @@ import {
 import { ParentalControlDto } from "@/entities/parental-controls/model/parental-controls.schema";
 
 import { LoaderModal } from "@/shared/ui/Modal/Modals/LoaderModal";
-import MonitoringPermissionsSetup from "../../onboarding/personal/ui/parental-control-setup/MonitoringPermissionsSetup";
-import ScreenTimeRules from "../../onboarding/personal/ui/parental-control-setup/ScreenTimeRules";
-import AppManagement from "../../onboarding/personal/ui/parental-control-setup/AppManagement";
-import AlertsAndNotifications from "../../onboarding/personal/ui/parental-control-setup/AlertsNotification";
-import ParentalConfirmation from "../../onboarding/personal/ui/parental-control-setup/ParentalConfirmation";
+import MonitoringPermissionsSetup from "../../onboarding/personal/ui/devices-control-setup/MonitoringPermissionsSetup";
+import ScreenTimeRules from "../../onboarding/personal/ui/devices-control-setup/ScreenTimeRules";
+import AppManagement from "../../onboarding/personal/ui/devices-control-setup/AppManagement";
+import AlertsAndNotifications from "../../onboarding/personal/ui/devices-control-setup/AlertsNotification";
 import { CardWrapper } from "@/shared/ui/card-wrapper";
 import CardHeader from "@/shared/ui/card-header";
+import { useAuth } from "@/shared/auth/AuthProvider";
+import DeviceConfirmation from "../../onboarding/personal/ui/devices-control-setup/DeviceConfirmation";
+import ChildTransparency from "@/features/onboarding/personal/ui/devices-control-setup/ChildTransparency";
 
-const formSchema = z
-  .object({
-    // Monitoring Permissions
-    monitorScreenTime: z.boolean(),
-    monitorAppUsage: z.boolean(),
-    monitorAppInstalls: z.boolean(),
-    monitorWebBrowsing: z.boolean(),
-    monitorLocation: z.boolean(),
-    monitorDeviceUsageHours: z.boolean(),
+export type AppRole = "PARENT" | "BUSINESS";
 
-    // Screen Time Rules
-    dailyScreenTimeLimit: z.string().min(1, "Daily screen time limit is required"),
-    downtimeStart: z.string().optional(),
-    downtimeEnd: z.string().optional(),
-    schoolHoursRestriction: z.boolean(),
+const getFormSchema = (appRole: AppRole) =>
+  z
+    .object({
+      // Monitoring Permissions
+      monitorScreenTime: z.boolean(),
+      monitorAppUsage: z.boolean(),
+      monitorAppInstalls: z.boolean(),
+      monitorWebBrowsing: z.boolean(),
+      monitorLocation: z.boolean(),
+      monitorDeviceUsageHours: z.boolean(),
 
-    // App Management
-    appInstallationApproval: z.string().min(1, "App installation approval is required"),
-    games: z.boolean(),
-    social_media: z.boolean(),
-    browsers: z.boolean(),
-    streaming: z.boolean(),
-    in_app_purchases: z.boolean(),
-    adult_restricted_content: z.boolean(),
+      // Screen Time Rules
+      dailyScreenTimeLimit: z.string().min(1, "Daily screen time limit is required"),
+      downtimeStart: z.string().optional(),
+      downtimeEnd: z.string().optional(),
+      schoolHoursRestriction: z.boolean(),
 
-    // Alerts & Notifications
-    notify_at_daily_time_limit_exceeded: z.boolean(),
-    notify_at_new_app_installation: z.boolean(),
-    notify_at_restricted_content_access: z.boolean(),
-    notify_at_device_inactivity: z.boolean(),
-    notify_at_location_boundary_crossing: z.boolean(),
+      // App Management
+      appInstallationApproval: z.string().min(1, "App installation approval is required"),
+      games: z.boolean(),
+      social_media: z.boolean(),
+      browsers: z.boolean(),
+      streaming: z.boolean(),
+      in_app_purchases: z.boolean(),
+      adult_restricted_content: z.boolean(),
 
-    // Notification Methods
-    is_push_notification_enabled: z.boolean(),
-    is_email_notification_enabled: z.boolean(),
-    is_in_app_notification_enabled: z.boolean(),
+      // Alerts & Notifications
+      notify_at_daily_time_limit_exceeded: z.boolean(),
+      notify_at_new_app_installation: z.boolean(),
+      notify_at_restricted_content_access: z.boolean(),
+      notify_at_device_inactivity: z.boolean(),
+      notify_at_location_boundary_crossing: z.boolean(),
 
-    // Parental Confirmation
-    parentalConsent: z.boolean().refine((val) => val === true, {
-      message: "You must confirm to proceed",
-    }),
-  })
-  .superRefine((data, ctx) => {
-    // 1. Monitoring Permissions group validation
-    const hasAtLeastOneMonitor =
-      data.monitorScreenTime ||
-      data.monitorAppUsage ||
-      data.monitorAppInstalls ||
-      data.monitorWebBrowsing ||
-      data.monitorLocation ||
-      data.monitorDeviceUsageHours;
+      // Notification Methods
+      is_push_notification_enabled: z.boolean(),
+      is_email_notification_enabled: z.boolean(),
+      is_in_app_notification_enabled: z.boolean(),
 
-    if (!hasAtLeastOneMonitor) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Please select at least one activity to monitor",
-        path: ["monitorScreenTime"],
-      });
-    }
+      // Child Transparency & Requests
+      inform_child_of_monitoring: z.boolean(),
+      allow_child_to_request_extra_screen_time: z.boolean(),
 
-    // 2. App Management Categories group validation
-    const hasAtLeastOneCategory =
-      data.games ||
-      data.social_media ||
-      data.browsers ||
-      data.streaming ||
-      data.in_app_purchases ||
-      data.adult_restricted_content;
+      // Parental Confirmation
+      parentalConsent: z.boolean(),
 
-    if (!hasAtLeastOneCategory) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Please select at least one category to restrict",
-        path: ["games"],
-      });
-    }
+      // Agent Transparency & Requests (for business devices setup)
+      inform_agents_of_monitoring: z.boolean(),
+      allow_agents_to_request_extra_screen_time: z.boolean(),
+    })
+    .superRefine((data, ctx) => {
+      // 1. Monitoring Permissions group validation
+      const hasAtLeastOneMonitor =
+        data.monitorScreenTime ||
+        data.monitorAppUsage ||
+        data.monitorAppInstalls ||
+        data.monitorWebBrowsing ||
+        data.monitorLocation ||
+        data.monitorDeviceUsageHours;
 
-    // 3. Screen Time Rules group validation
-    const hasAnyScreenRule = data.dailyScreenTimeLimit !== "NONE" || data.schoolHoursRestriction;
+      if (!hasAtLeastOneMonitor) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Please select at least one activity to monitor",
+          path: ["monitorScreenTime"],
+        });
+      }
 
-    if (!hasAnyScreenRule) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Please enable at least one screen time rule (Limits or Restrictions)",
-        path: ["schoolHoursRestriction"],
-      });
-    }
+      // 2. App Management Categories group validation
+      const hasAtLeastOneCategory =
+        data.games ||
+        data.social_media ||
+        data.browsers ||
+        data.streaming ||
+        data.in_app_purchases ||
+        data.adult_restricted_content;
 
-    // 4. Alerts & Notifications group validation
-    const hasAtLeastOneAlert =
-      data.notify_at_daily_time_limit_exceeded ||
-      data.notify_at_new_app_installation ||
-      data.notify_at_restricted_content_access ||
-      data.notify_at_device_inactivity ||
-      data.notify_at_location_boundary_crossing;
+      if (!hasAtLeastOneCategory) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Please select at least one category to restrict",
+          path: ["games"],
+        });
+      }
 
-    if (!hasAtLeastOneAlert) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Please select at least one event to be notified about",
-        path: ["notify_at_daily_time_limit_exceeded"],
-      });
-    }
+      // 3. Screen Time Rules group validation
+      const hasAnyScreenRule = data.dailyScreenTimeLimit !== "NONE" || data.schoolHoursRestriction;
 
-    // 4. Notification Methods group validation
-    const hasAtLeastOneNotifyMethod =
-      data.is_push_notification_enabled ||
-      data.is_email_notification_enabled ||
-      data.is_in_app_notification_enabled;
+      if (!hasAnyScreenRule) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Please enable at least one screen time rule (Limits or Restrictions)",
+          path: ["schoolHoursRestriction"],
+        });
+      }
 
-    if (!hasAtLeastOneNotifyMethod) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Please select at least one notification method",
-        path: ["is_push_notification_enabled"],
-      });
-    }
-  });
+      // 4. Alerts & Notifications group validation
+      const hasAtLeastOneAlert =
+        data.notify_at_daily_time_limit_exceeded ||
+        data.notify_at_new_app_installation ||
+        data.notify_at_restricted_content_access ||
+        data.notify_at_device_inactivity ||
+        data.notify_at_location_boundary_crossing;
 
-type FormValues = z.infer<typeof formSchema>;
+      if (!hasAtLeastOneAlert) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Please select at least one event to be notified about",
+          path: ["notify_at_daily_time_limit_exceeded"],
+        });
+      }
 
-export const parentalControlHeadings = {
-  title: "Parental Control & Consent Setup",
-  description:
-    "Set boundaries, permissions, and alerts for your child's device. These rules apply by default to all children and can be adjusted individually later.",
+      // 4. Notification Methods group validation
+      const hasAtLeastOneNotifyMethod =
+        data.is_push_notification_enabled ||
+        data.is_email_notification_enabled ||
+        data.is_in_app_notification_enabled;
+
+      if (!hasAtLeastOneNotifyMethod) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Please select at least one notification method",
+          path: ["is_push_notification_enabled"],
+        });
+      }
+
+      // 5. Parental Confirmation validation (only required for parent accounts)
+      if (appRole === "PARENT" && !data.parentalConsent) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "You must confirm to proceed",
+          path: ["parentalConsent"],
+        });
+      }
+    });
+
+type FormValues = z.infer<ReturnType<typeof getFormSchema>>;
+
+export const devicesControlHeadings = {
+  header: {
+    PARENT: {
+      title: "Parental Control & Consent Setup",
+      description:
+        "Set boundaries, permissions, and alerts for your child's device. These rules apply by default to all children and can be adjusted individually later.",
+    },
+    BUSINESS: {
+      title: "Device Control & Consent Setup",
+      description: "Set boundaries, permissions, and alerts for your agent’s device.",
+    },
+  },
 
   monitoringPermissions: {
     title: "Monitoring Permissions",
@@ -167,13 +195,27 @@ export const parentalControlHeadings = {
     title: "Alerts & Notifications",
     description: "Choose what events you want to be notified about.",
   },
-  parentalConfirmationAndConsent: {
-    title: "Parental Confirmation & Consent",
-    description: "Confirm your authority and approve monitoring.",
+  childTransparencyAndRequests: {
+    title: "Child Transparency & Requests",
+    description: "Build trust and encourage healthy digital habits.",
+    footerDescription:
+      "We recommend transparency to help children understand boundaries rather than feel monitored",
+  },
+  confirmationAndConsent: {
+    PARENT: {
+      title: "Parental Confirmation & Consent",
+      description: "Confirm your authority and approve monitoring.",
+    },
+    BUSINESS: {
+      title: "Agent Transparency & Requests",
+      description: "Build trust and encourage healthy digital habits.",
+      footerDescription:
+        "We recommend transparency to help agents understand boundaries rather than feel monitored.",
+    },
   },
 };
 
-export default function ParentalControlSetup({
+export default function DevicesConfigurationSetup({
   goToPrevStep,
   handleSubmit,
 }: {
@@ -186,7 +228,7 @@ export default function ParentalControlSetup({
   const { data: existingSettings, isLoading: isLoadingSettings } =
     useParentalControlByParentId(parentId);
   const { data: mySettingsRes, isLoading: isLoadingMe } = useParentalControlMe();
-  const mySettings = mySettingsRes?.data
+  const mySettings = mySettingsRes?.data;
 
   const pathname = usePathname();
 
@@ -195,8 +237,12 @@ export default function ParentalControlSetup({
   const { mutateAsync: createSettings, isPending: isCreating } = useCreateParentalControl();
   const { mutateAsync: updateSettings, isPending: isUpdating } = useUpdateParentalControl();
 
+  const { user } = useAuth();
+  const appRole = (user?.appRole?.toUpperCase() as AppRole) || "PARENT";
+  const isParent = appRole === "PARENT";
+
   const methods = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(getFormSchema(appRole)),
     defaultValues: {
       monitorScreenTime: false,
       monitorAppUsage: false,
@@ -223,7 +269,11 @@ export default function ParentalControlSetup({
       is_push_notification_enabled: false,
       is_email_notification_enabled: false,
       is_in_app_notification_enabled: false,
+      inform_child_of_monitoring: false,
+      allow_child_to_request_extra_screen_time: false,
       parentalConsent: false,
+      inform_agents_of_monitoring: false,
+      allow_agents_to_request_extra_screen_time: false,
     },
   });
 
@@ -271,10 +321,16 @@ export default function ParentalControlSetup({
         is_email_notification_enabled: methodsConfig === "EMAIL" || methodsConfig === "BOTH",
         is_in_app_notification_enabled: methodsConfig === "IN_APP" || methodsConfig === "BOTH",
 
+        inform_child_of_monitoring: isParent ? settings.informChildMonitoring : false,
+        allow_child_to_request_extra_screen_time: isParent ? settings.allowExtraScreenTime : false,
+
         parentalConsent: settings.parentalConsent,
+
+        inform_agents_of_monitoring: isParent ? false : settings.informChildMonitoring,
+        allow_agents_to_request_extra_screen_time: isParent ? false : settings.allowExtraScreenTime,
       });
     }
-  }, [mySettings, existingSettings, methods]);
+  }, [mySettings, existingSettings, methods, isParent]);
 
   const onSubmit = async (data: FormValues) => {
     const restrictedCategories: string[] = [];
@@ -330,9 +386,13 @@ export default function ParentalControlSetup({
       alertEvents,
       notificationMethod,
 
-      informChildMonitoring: true, // implicit or set your own rule
-      allowExtraScreenTime: false,
-      parentalConsent: data.parentalConsent,
+      informChildMonitoring: isParent
+        ? data.inform_child_of_monitoring
+        : data.inform_agents_of_monitoring,
+      allowExtraScreenTime: isParent
+        ? data.allow_child_to_request_extra_screen_time
+        : data.allow_agents_to_request_extra_screen_time,
+      parentalConsent: isParent ? data.parentalConsent : true,
     };
 
     try {
@@ -359,30 +419,42 @@ export default function ParentalControlSetup({
     return (
       <div className="animate-pulse">
         <Header
-          title={parentalControlHeadings.title}
-          subtitle={parentalControlHeadings.description}
+          title={devicesControlHeadings.header[user?.appRole?.toUpperCase() as AppRole]?.title}
+          subtitle={
+            devicesControlHeadings.header[user?.appRole?.toUpperCase() as AppRole]?.description
+          }
         />
 
         <div className="mt-10 space-y-6">
           <SectionSkeleton
-            title={parentalControlHeadings.monitoringPermissions.title}
-            subtitle={parentalControlHeadings.monitoringPermissions.description}
+            title={devicesControlHeadings.monitoringPermissions.title}
+            subtitle={devicesControlHeadings.monitoringPermissions.description}
           />
           <SectionSkeleton
-            title={parentalControlHeadings.screenTimeRules.title}
-            subtitle={parentalControlHeadings.screenTimeRules.description}
+            title={devicesControlHeadings.screenTimeRules.title}
+            subtitle={devicesControlHeadings.screenTimeRules.description}
           />
           <SectionSkeleton
-            title={parentalControlHeadings.appManagementPreferences.title}
-            subtitle={parentalControlHeadings.appManagementPreferences.description}
+            title={devicesControlHeadings.appManagementPreferences.title}
+            subtitle={devicesControlHeadings.appManagementPreferences.description}
           />
           <SectionSkeleton
-            title={parentalControlHeadings.alertsAndNotifications.title}
-            subtitle={parentalControlHeadings.alertsAndNotifications.description}
+            title={devicesControlHeadings.alertsAndNotifications.title}
+            subtitle={devicesControlHeadings.alertsAndNotifications.description}
           />
           <SectionSkeleton
-            title={parentalControlHeadings.parentalConfirmationAndConsent.title}
-            subtitle={parentalControlHeadings.parentalConfirmationAndConsent.description}
+            title={devicesControlHeadings.childTransparencyAndRequests.title}
+            subtitle={devicesControlHeadings.childTransparencyAndRequests.description}
+          />
+          <SectionSkeleton
+            title={
+              devicesControlHeadings.confirmationAndConsent[user?.appRole?.toUpperCase() as AppRole]
+                ?.title
+            }
+            subtitle={
+              devicesControlHeadings.confirmationAndConsent[user?.appRole?.toUpperCase() as AppRole]
+                ?.description
+            }
           />
         </div>
       </div>
@@ -392,8 +464,10 @@ export default function ParentalControlSetup({
   return (
     <div className="space-y-6">
       <Header
-        title={parentalControlHeadings.title}
-        subtitle={parentalControlHeadings.description}
+        title={devicesControlHeadings.header[user?.appRole?.toUpperCase() as AppRole]?.title}
+        subtitle={
+          devicesControlHeadings.header[user?.appRole?.toUpperCase() as AppRole]?.description
+        }
       />
 
       {isOnboardingPath && <LoaderModal open={isSubmitting} text="Setting up your account" />}
@@ -404,7 +478,8 @@ export default function ParentalControlSetup({
           <ScreenTimeRules />
           <AppManagement />
           <AlertsAndNotifications />
-          <ParentalConfirmation />
+          {user?.appRole === "PARENT" && <ChildTransparency />}
+          <DeviceConfirmation />
 
           <div className="flex gap-4">
             {goToPrevStep && (

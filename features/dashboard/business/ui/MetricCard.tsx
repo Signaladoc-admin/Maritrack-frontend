@@ -4,13 +4,15 @@ import React from "react";
 import { cn } from "@/shared/lib/utils";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
+export type ChartColor = "green" | "red" | "yellow" | "blue"
+
 interface MetricCardProps {
   title: string;
   value: string;
   trendValue?: string;
   trendType?: "positive" | "negative";
   chartData: number[]; // Simple array for mini bars
-  chartColor: "green" | "red" | "yellow" | "blue";
+  chartColor: ChartColor;
   footerText?: string;
   className?: string;
 }
@@ -42,7 +44,7 @@ export function MetricCard({
       <div className="flex items-start justify-between">
         <div className="space-y-4">
           <p className="text-sm font-medium text-slate-400">{title}</p>
-          <h2 className={cn("text-5xl font-bold tracking-tight", currentColorClass)}>{value}</h2>
+          <h2 className={cn("text-3xl sm:text-4xl font-bold tracking-tight", currentColorClass)}>{value}</h2>
         </div>
 
         {/* Mini Bar Chart */}

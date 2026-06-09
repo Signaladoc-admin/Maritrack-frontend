@@ -14,7 +14,7 @@ const cardWrapperVariants = cva("w-full rounded-2xl bg-card text-card-foreground
         "bg-[#F7F7F7] text-slate-50 dark:bg-slate-50 dark:text-slate-900 border-slate-900 dark:border-slate-50",
       destructive: "bg-red-500 text-white border-red-500",
       warning: "bg-[#f87171] text-white",
-      outline: "bg-transparent border-1 border-[#e5e7eb]",
+      outline: "bg-transparent border-1 border-[#efefef]",
       ghost: "border-none shadow-none bg-transparent",
     },
     padding: {
@@ -58,9 +58,9 @@ function CardWrapper({
   ...props
 }: CardWrapperProps) {
   return (
-    <div className={cn(cardWrapperVariants({ variant, padding, radius, className }))} {...props}>
+    <div className={cn(cardWrapperVariants({ variant, padding, radius, className }), "flex flex-col")} {...props}>
       {header && <div className="mb-4">{header}</div>}
-      <div>{children}</div>
+      <div className="flex-1 min-h-0 flex flex-col">{children}</div>
       {footer && <div className="mt-4">{footer}</div>}
     </div>
   );

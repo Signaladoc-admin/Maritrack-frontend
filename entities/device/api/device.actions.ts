@@ -28,15 +28,34 @@ export async function getDeviceAction(deviceId: string) {
   }, "Failed to fetch device");
 }
 
-export async function markDeviceAsReturnedAction(deviceId: string, flagReason: string) {
+export async function markDeviceAsReturnedAction(
+  deviceId: string,
+  flagReason: string,
+  flaggedByUserId?: string
+) {
   return withSafeAction(async () => {
     const res = await apiClient(`/devices/${deviceId}`, {
       method: "PATCH",
-      body: JSON.stringify({ assignmentStatus: "RETURNED", flagged: true, flagReason }),
+      body: JSON.stringify({
+        assignmentStatus: "RETURNED",
+        flagged: true,
+        flagReason,
+        flaggedByUserId: flaggedByUserId ?? null,
+        flaggedAt: new Date().toISOString(),
+      }),
+      headers: { "Content-Type": "application/json" },
+    });
+    return res.data ?? res;
+  }, "Failed to mark device as returned");
+}
+export async function exportDevicesAction() {
+  return withSafeAction(async () => {
+    const res = await apiClient(`/devices/export/devices`, {
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
     });
     return res.data ?? res;
-  }, "Failed to mark device as returned");
+  }, "Failed to export devices");
 }

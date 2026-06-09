@@ -66,11 +66,21 @@ export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: 
       const host = window.location.origin;
       const callbackUrl = isOnboarding ? `${host}/onboarding/${appRole === "PARENT" ? "personal" : "business"}` : `${host}/plans`;
 
+      console.log('selecting...')
+
+      console.log('planId', planId)
+      console.log('zoneId', zoneId)
+      console.log('callbackUrl', callbackUrl)
+
+      // console.log('response', response)
+
       const response = await initializePayment({
         planId,
         zoneId,
         callbackUrl,
       });
+
+
 
       if (response?.authorizationUrl) {
         // Redirect to paystack checkout window
