@@ -1,24 +1,29 @@
 /**
- * Geocoding utilities using OpenStreetMap Nominatim API.
- * NOTE: Nominatim requires a valid User-Agent and limits requests to 1 per second.
+ * Geocoding utilities using Mapbox API.
  */
 
-interface NominatimReverseResponse {
-  display_name: string;
-  address: {
-    road?: string;
-    suburb?: string;
-    city?: string;
-    state?: string;
-    postcode?: string;
-    country?: string;
+const MAPBOX_ACCESS_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "";
+
+interface MapboxFeature {
+  place_name: string;
+  center: [number, number]; // [lon, lat]
+}
+
+interface MapboxGeocodingResponse {
+  type: string;
+  features: MapboxFeature[];
+}
+
+interface MapboxV6Feature {
+  properties: {
+    full_address?: string;
+    name_preferred?: string;
+    place_formatted?: string;
   };
 }
 
-interface NominatimForwardResponse {
-  lat: string;
-  lon: string;
-  display_name: string;
+interface MapboxV6ReverseResponse {
+  features: MapboxV6Feature[];
 }
 
 /**
@@ -26,24 +31,28 @@ interface NominatimForwardResponse {
  */
 export async function getAddressFromCoords(lat: number, lon: number): Promise<string> {
   if (!lat || !lon) return "Unknown coordinates";
+  if (!MAPBOX_ACCESS_TOKEN) return "Mapbox token missing";
 
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`,
-      {
-        headers: {
-          // Nominatim requires a unique User-Agent to identify the application
-          "User-Agent": "Maritrack-Frontend/1.0",
-        },
-      }
+      `https://api.mapbox.com/search/geocode/v6/reverse?longitude=${lon}&latitude=${lat}&access_token=${MAPBOX_ACCESS_TOKEN}`
     );
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data: NominatimReverseResponse = await response.json();
-    return data.display_name || "Address not found";
+    const data: MapboxV6ReverseResponse = await response.json();
+
+    if (data.features && data.features.length > 0) {
+      const props = data.features[0].properties;
+      return (
+        props.full_address ||
+        [props.name_preferred, props.place_formatted].filter(Boolean).join(", ") ||
+        "Address not found"
+      );
+    }
+    return "Address not found";
   } catch (error) {
     console.error("Reverse geocoding error:", error);
     return "Error fetching address";
@@ -57,27 +66,23 @@ export async function getCoordsFromAddress(
   address: string
 ): Promise<{ lat: number; lon: number } | null> {
   if (!address) return null;
+  if (!MAPBOX_ACCESS_TOKEN) return null;
 
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`,
-      {
-        headers: {
-          "User-Agent": "Maritrack-Frontend/1.0",
-        },
-      }
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${MAPBOX_ACCESS_TOKEN}&limit=1`
     );
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data: NominatimForwardResponse[] = await response.json();
+    const data: MapboxGeocodingResponse = await response.json();
 
-    if (data && data.length > 0) {
+    if (data.features && data.features.length > 0) {
       return {
-        lat: parseFloat(data[0].lat),
-        lon: parseFloat(data[0].lon),
+        lat: data.features[0].center[1],
+        lon: data.features[0].center[0],
       };
     }
 
@@ -98,26 +103,22 @@ export interface LocationSuggestion {
  */
 export async function searchLocations(query: string): Promise<LocationSuggestion[]> {
   if (!query || query.length < 2) return [];
+  if (!MAPBOX_ACCESS_TOKEN) return [];
 
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`,
-      {
-        headers: {
-          "User-Agent": "Maritrack-Frontend/1.0",
-        },
-      }
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_ACCESS_TOKEN}&limit=5`
     );
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data: NominatimForwardResponse[] = await response.json();
-    return data.map((item) => ({
-      lat: parseFloat(item.lat),
-      lon: parseFloat(item.lon),
-      displayName: item.display_name,
+    const data: MapboxGeocodingResponse = await response.json();
+    return data.features.map((item) => ({
+      lat: item.center[1],
+      lon: item.center[0],
+      displayName: item.place_name,
     }));
   } catch (error) {
     console.error("Location search error:", error);
