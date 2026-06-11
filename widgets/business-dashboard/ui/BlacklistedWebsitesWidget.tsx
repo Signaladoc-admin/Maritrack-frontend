@@ -23,13 +23,13 @@ export function BlacklistedWebsitesWidget() {
             <thead>
               <tr className="border-b border-[#e5e7eb]">
                 <th className="w-1/3 pb-3 text-xs font-medium tracking-wide text-[#667085] uppercase">
-                  Website
+                  Domain
                 </th>
                 <th className="w-1/3 pb-3 text-xs font-medium tracking-wide text-[#667085] uppercase">
-                  Category
+                  Name
                 </th>
                 <th className="pb-3 text-xs font-medium tracking-wide text-[#667085] uppercase">
-                  Attempts
+                  Devices
                 </th>
               </tr>
             </thead>
@@ -37,8 +37,8 @@ export function BlacklistedWebsitesWidget() {
               {websites.map((w, idx) => (
                 <tr key={idx} className="border-b border-[#f3f4f6] last:border-0">
                   <td className="py-3 font-medium text-slate-900">{w.domain}</td>
-                  <td className="py-3 text-[#667085]">{w.category}</td>
-                  <td className="py-3 text-[#667085]">{w.attempts}</td>
+                  <td className="py-3 text-[#667085]">{w.name}</td>
+                  <td className="py-3 text-[#667085]">{w.devices}</td>
                 </tr>
               ))}
             </tbody>

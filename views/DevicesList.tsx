@@ -17,10 +17,15 @@ import { useQueryState } from "nuqs";
 import { useState } from "react";
 import { cn } from "@/shared/lib/utils";
 import DevicesTable from "@/features/business-users/users/ui/DevicesTable";
-import AssignDeviceModal from "@/features/business-users/users/ui/AssignDeviceModal";
 import { Input } from "@/shared/ui/input";
-import { DeviceAssignmentStatus, StaffDevice, useDevices } from "@/entities/device";
-
+import {
+  DeviceAssignmentStatus,
+  StaffDevice,
+  useDevices,
+  useExportDevices,
+} from "@/entities/device";
+import NewDeviceModal from "@/features/business-users/users/ui/NewDeviceModal";
+import { Loader } from "@/shared/ui/loader";
 
 export default function DevicesList() {
   const router = useRouter();
@@ -37,12 +42,26 @@ export default function DevicesList() {
     limit: 10,
     search: debouncedSearchQuery || undefined,
     assignmentStatus: selectedTab === "ALL" ? undefined : (selectedTab as DeviceAssignmentStatus),
-  })
-  const devices = devicesRes?.devices || []
-  const totalPages = devicesRes?.totalPages || 1
+  });
+  const devices = devicesRes?.devices || [];
+  const totalPages = devicesRes?.totalPages || 1;
 
   const [isShowingAssignDeviceModal, setIsShowingAssignDeviceModal] = useState(false);
   const [_, setSelectedDevice] = useState<StaffDevice | null>(null);
+
+  const { refetch: refetchExport, isFetching: exporting } = useExportDevices({ enabled: false });
+
+  async function handleExport() {
+    const result = await refetchExport();
+    const link = result.data?.data?.link;
+    if (!link) return;
+    const a = document.createElement("a");
+    a.href = link;
+    a.download = "";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
 
   function handlePageChange(page: number) {
     setPage(String(page));
@@ -94,7 +113,7 @@ export default function DevicesList() {
                   className={cn(
                     "flex items-center gap-2",
                     selectedFilter === "ALL" &&
-                    "bg-primary hover:bg-primary! text-white hover:text-white!"
+                      "bg-primary hover:bg-primary! text-white hover:text-white!"
                   )}
                 >
                   All
@@ -104,7 +123,7 @@ export default function DevicesList() {
                   className={cn(
                     "flex items-center gap-2",
                     selectedFilter === "ACTIVE" &&
-                    "bg-primary hover:bg-primary! text-white hover:text-white!"
+                      "bg-primary hover:bg-primary! text-white hover:text-white!"
                   )}
                 >
                   Active
@@ -114,7 +133,7 @@ export default function DevicesList() {
                   className={cn(
                     "flex items-center gap-2",
                     selectedFilter === "INACTIVE" &&
-                    "bg-primary hover:bg-primary! text-white hover:text-white!"
+                      "bg-primary hover:bg-primary! text-white hover:text-white!"
                   )}
                 >
                   Inactive
@@ -122,8 +141,14 @@ export default function DevicesList() {
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="secondary" size="icon" className="rounded-full">
-            <DownloadCloud />
+          <Button
+            onClick={handleExport}
+            variant="secondary"
+            size="icon"
+            className="rounded-full"
+            disabled={exporting}
+          >
+            {exporting ? <Loader /> : <DownloadCloud />}
           </Button>
         </div>
       </div>
@@ -137,11 +162,10 @@ export default function DevicesList() {
         isLoading={isDevicesPending}
       />
 
-      <AssignDeviceModal
+      <NewDeviceModal
         open={isShowingAssignDeviceModal}
         onOpenChange={setIsShowingAssignDeviceModal}
       />
     </div>
   );
 }
-

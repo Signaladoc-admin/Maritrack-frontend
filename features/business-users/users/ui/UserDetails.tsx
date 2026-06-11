@@ -58,9 +58,9 @@ export default function UserDetails({ selectedId }: { selectedId: string }) {
       <DisplayField
         orientation="vertical"
         label="Address"
-        value={getValue(staffMember?.user?.address)}
+        value={getValue(staffMember?.location)}
       />
-      <DisplayField orientation="vertical" label="City" value={getValue(staffMember?.user?.city)} />
+      {/* <DisplayField orientation="vertical" label="City" value={getValue(staffMember?.user?.city)} />
       <DisplayField
         orientation="vertical"
         label="State"
@@ -75,7 +75,7 @@ export default function UserDetails({ selectedId }: { selectedId: string }) {
         orientation="vertical"
         label="Country"
         value={getValue(staffMember?.user?.country)}
-      />
+      /> */}
     </div>
   );
 }

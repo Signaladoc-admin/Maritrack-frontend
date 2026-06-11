@@ -105,11 +105,18 @@ export const businessUserDetailsSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   department: z.string().min(1, "Department is required"),
-  businessRole: z.enum(BUSINESS_ROLES),
+  businessRole: z.enum([BUSINESS_ROLES[1], BUSINESS_ROLES[2]], {
+    error: (el: any) => ({
+      message: `Select a valid business role from ${el.values
+        .map((value: any) => value.replace("_", " "))
+        .map((value: any) => value.charAt(0).toUpperCase() + value.slice(1).toLowerCase())
+        .join(", ")}`,
+    }),
+  }),
   position: z.string().min(1, "Position is required"),
-  email: z.string(),
-  phone: z.string(),
-  address: z.string(),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().min(1, "Phone number is required"),
+  address: z.string().min(1, "Address is required"),
 });
 export type BusinessUserDetailsValues = z.infer<typeof businessUserDetailsSchema>;
 

@@ -11,11 +11,12 @@ export async function apiClient<T = any>(
   endpoint: string,
   options: RequestInit & {
     noRedirect?: boolean;
+    skipAuth?: boolean;
     params?: Record<string, string | number | boolean | undefined>;
   } = {}
 ): Promise<T> {
   const isServer = typeof window === "undefined";
-  const { noRedirect, params, ...fetchOptions } = options;
+  const { noRedirect, skipAuth, params, ...fetchOptions } = options;
   let url = `${API_BASE_URL}${endpoint}`;
 
   if (params) {
@@ -57,7 +58,7 @@ export async function apiClient<T = any>(
     headers["Content-Type"] = "application/json";
   }
 
-  if (accessToken) {
+  if (accessToken && !skipAuth) {
     headers["Authorization"] = `Bearer ${accessToken}`;
   }
 

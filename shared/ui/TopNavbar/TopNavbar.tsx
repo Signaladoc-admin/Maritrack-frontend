@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ProfilePopover } from "../Sidebar/ProfilePopover";
 import { cn } from "@/shared/lib/utils";
+import RefreshTokenTest from "@/components/ui/RefreshTokenTest";
 
 const businessNavLinks = [
   { label: "Dashboard", href: "/dashboard", icon: Gauge },

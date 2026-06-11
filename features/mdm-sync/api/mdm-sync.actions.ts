@@ -1,7 +1,7 @@
 "use server";
 
 import { apiClient } from "@/shared/lib/api-client";
-import type { ActionResult, ApiResponse } from "@/shared/api/types";
+import type { ActionResult, ApiResponse, MessageResponse } from "@/shared/api/types";
 import { withSafeAction } from "@/shared/lib/safe-action";
 import { AssignDeviceToUserDto } from "@/features/business-users/users/types";
 import type { Device } from "@/entities/device/model/types";
@@ -22,19 +22,17 @@ export async function createZoneAction(data?: CreateZoneDto): Promise<ActionResu
   );
 }
 
-export async function getQrCodeAction(
-  zoneId: string,
-  onboardingCode: string
-): Promise<ActionResult<string>> {
-  try {
-    const response = await apiClient(`/mdm-sync/zones/${zoneId}/qrcode/${onboardingCode}`, {
-      method: "GET",
-    });
-    // The qr code text is in response.data based on the instruction
-    return { success: true, data: response.data };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to get QR code" };
-  }
+export async function getQrCodeAction(zoneId: string, onboardingCode: string) {
+  return withSafeAction(
+    async () =>
+      await apiClient<{ status: true; statusCode: 200; message: string; data: string }>(
+        `/mdm-sync/zones/${zoneId}/qrcode/${onboardingCode}`,
+        {
+          method: "GET",
+        }
+      ),
+    "Failed to get QR code"
+  );
 }
 
 export async function getParentZonesAction() {
@@ -188,5 +186,36 @@ export async function unblockAppAction({
         body: JSON.stringify({ deviceIds: [deviceId], actionId: 28, message: packageName }),
       }),
     "Failed to unblock app"
+  );
+}
+
+// --- Domain blocking ---
+// Endpoint: POST /mdm-sync/{deviceId}/block-domain  { domains: string[] }
+
+export async function blockDomainAction(
+  deviceId: string,
+  domains: string[]
+): Promise<ActionResult<any>> {
+  return withSafeAction(
+    async () =>
+      await apiClient(`/mdm-sync/${deviceId}/block-domain`, {
+        method: "POST",
+        body: JSON.stringify({ domains }),
+      }),
+    "Failed to block domain"
+  );
+}
+
+export async function unblockDomainAction(
+  deviceId: string,
+  domains: string[]
+): Promise<ActionResult<any>> {
+  return withSafeAction(
+    async () =>
+      await apiClient(`/mdm-sync/${deviceId}/unblock-domain`, {
+        method: "POST",
+        body: JSON.stringify({ domains }),
+      }),
+    "Failed to unblock domain"
   );
 }

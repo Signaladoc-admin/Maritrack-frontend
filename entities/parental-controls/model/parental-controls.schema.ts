@@ -22,7 +22,7 @@ export const parentalControlSchema = z.object({
 
   informChildMonitoring: z.boolean().default(false),
   allowExtraScreenTime: z.boolean().default(false),
-  parentalConsent: z.boolean().default(false),
+  parentalConsent: z.boolean().optional(),
 });
 
 export type ParentalControlDto = z.infer<typeof parentalControlSchema>;

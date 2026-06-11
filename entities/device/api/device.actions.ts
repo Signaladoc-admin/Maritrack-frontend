@@ -2,7 +2,7 @@
 
 import { apiClient } from "@/shared/lib/api-client";
 import { withSafeAction } from "@/shared/lib/safe-action";
-import type { ActionResult } from "@/shared/api/types";
+import { ApiResponse, type ActionResult } from "@/shared/api/types";
 import type { DeviceQueryOptions, PaginatedDevices } from "../model/types";
 
 export async function getDevicesAction(
@@ -50,12 +50,12 @@ export async function markDeviceAsReturnedAction(
 }
 export async function exportDevicesAction() {
   return withSafeAction(async () => {
-    const res = await apiClient(`/devices/export/devices`, {
+    const res = await apiClient<ApiResponse<{ link: string }>>(`/devices/export/devices`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
     });
-    return res.data ?? res;
+    return res;
   }, "Failed to export devices");
 }

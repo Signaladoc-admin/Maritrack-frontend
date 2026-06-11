@@ -3,6 +3,7 @@ import { apiClient } from "@/shared/lib/api-client";
 import { withSafeAction } from "@/shared/lib/safe-action";
 import { BusinessStaff, StaffMemberFiltersRequest, StaffMembersPaginatedResponse } from "../types";
 import { ActionResult, ApiResponse, MessageResponse } from "@/shared/api/types";
+import { UpdateStaffMemberValues } from "@/features/onboarding/business/schema";
 
 export async function getStaffMembersAction(options?: StaffMemberFiltersRequest) {
   return withSafeAction(async () => {
@@ -91,18 +92,12 @@ export async function createStaffsBulkAction(
 
 export async function updateStaffMemberAction(
   id: string,
-  {
-    email,
-    location,
-  }: {
-    email: string;
-    location: string;
-  }
+  data: UpdateStaffMemberValues
 ): Promise<ActionResult<ApiResponse<MessageResponse>>> {
   return withSafeAction(async () => {
     const res = await apiClient(`/staff/${id}`, {
       method: "PATCH",
-      body: JSON.stringify({ email, location }),
+      body: JSON.stringify(data),
       noRedirect: true,
     });
     return res;

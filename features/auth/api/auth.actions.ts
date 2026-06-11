@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import { withSafeAction } from "@/shared/lib/safe-action";
 import {
   ForgotPasswordRequest,
+  RefreshTokenResponse,
   RequestTokenRequest,
   ResetPasswordRequest,
   ValidateOTPRequest,
@@ -136,11 +137,15 @@ export async function refreshAccessTokenAction() {
   const cookieStore = await cookies();
   const refreshToken = cookieStore.get("refreshToken")?.value;
 
+  console.log("***** REFRESH ACCESS TOKEN *****");
+  console.log(refreshToken);
+  console.log("***** END REFRESH ACCESS TOKEN *****");
+
   return withSafeAction(async () => {
-    return apiClient("/users/refreshToken", {
+    return apiClient<ApiResponse<RefreshTokenResponse>>("/users/refreshToken", {
       method: "POST",
-      body: JSON.stringify({ token: refreshToken }),
-      noRedirect: true,
+      skipAuth: true,
+      params: { token: refreshToken },
     });
   }, "Failed to refresh access token");
 }

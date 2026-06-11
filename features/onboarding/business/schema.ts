@@ -19,6 +19,10 @@ export const staffMemberSchema = z.object({
   phone: z.string().min(1, "Phone is required"),
 });
 export type StaffMemberValues = z.infer<typeof staffMemberSchema>;
+export type UpdateStaffMemberValues = Omit<
+  StaffMemberValues,
+  "email" | "firstName" | "lastName" | "phone"
+>;
 
 export const onboardingStaffMemberSchema = z.object({
   email: z.email("Invalid email"),

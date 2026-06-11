@@ -19,16 +19,14 @@ function toQrCodeSrc(data: string | null | undefined): string | null {
 }
 
 export function useQrCode(
-  userTypeId: string, // child id or staff member id
+  userTypeId: string // child id or staff member id
 ) {
   const { user } = useAuth();
 
-  const isParent = user?.appRole === 'PARENT';
+  const isParent = user?.appRole === "PARENT";
 
-  const { data: child } = useChild(userTypeId, { enabled: isParent })
-  const { data: staffMember } = useGetStaffMember(userTypeId, { enabled: !isParent })
-
-  console.log("staffMember", staffMember)
+  const { data: child } = useChild(userTypeId, { enabled: isParent });
+  const { data: staffMember } = useGetStaffMember(userTypeId, { enabled: !isParent });
 
   const onboardingCode = isParent ? child?.onboardingCode : staffMember?.onboardingCode;
   const zoneId = user?.zoneId;
@@ -47,7 +45,7 @@ export function useQrCode(
 
   return {
     ...query,
-    qrCodeSrc: toQrCodeSrc(query.data),
+    qrCodeSrc: toQrCodeSrc(query?.data?.data),
     isPending: !zoneId || !onboardingCode,
   };
 }
@@ -60,7 +58,7 @@ export function useChildQrCode({ childId }: { childId: string }) {
   const onboardingCode =
     children?.find((child: any) => child.id === childId)?.onboardingCode ?? null;
 
-  const activeZoneId = authUser?.zoneId || user?.zone?.id
+  const activeZoneId = authUser?.zoneId || user?.zone?.id;
 
   const query = useServerActionQuery(
     mdmSyncKeys.qrcode(activeZoneId || "", onboardingCode ?? ""),
@@ -73,5 +71,5 @@ export function useChildQrCode({ childId }: { childId: string }) {
     }
   );
 
-  return { ...query, qrCodeSrc: toQrCodeSrc(query.data) };
+  return { ...query, qrCodeSrc: toQrCodeSrc(query?.data?.data) };
 }
