@@ -13,14 +13,14 @@ import { useEffect } from "react";
 import { useToast } from "@/shared/ui/toast";
 import { useQueryState } from "nuqs";
 import { usePathname, useRouter } from "next/navigation";
-import { QueryOptions } from "@/shared/api/types";
 import { useAuth } from "@/shared/auth/AuthProvider";
 
 export const paymentKeys = {
   all: ["payments"] as const,
   plans: ["payments", "plans"] as const,
   subscription: (zoneId: string) => ["payments", "subscription", zoneId] as const,
-  paymentHistory: (zoneId: string) => ["payments", "paymentHistory", zoneId] as const,
+  paymentHistory: (zoneId: string, page: number) =>
+    ["payments", "paymentHistory", zoneId, page] as const,
 };
 
 export function usePaymentPlans() {
@@ -74,11 +74,15 @@ export function useAllSubscriptions(zoneId: string | undefined) {
   );
 }
 
-export function usePaymentHistory(zoneId: string | undefined, options?: QueryOptions) {
+export function usePaymentHistory(
+  zoneId: string | undefined,
+  options: { page?: number; limit?: number } = {}
+) {
+  const { page = 1, limit = 10 } = options;
   return useServerActionQuery(
-    paymentKeys.paymentHistory(zoneId ?? ""),
+    paymentKeys.paymentHistory(zoneId ?? "", page),
     getPaymentHistoryAction,
-    [zoneId ?? ""],
-    { enabled: !!zoneId, ...options }
+    [zoneId ?? "", page, limit],
+    { enabled: !!zoneId }
   );
 }

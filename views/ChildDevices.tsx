@@ -95,8 +95,9 @@ const ChildDevices = () => {
               isRow={false}
               onClick={() => router.push(`/devices/${device.mdmId}`)}
             />
-          ) : null}
-          {/* <EmptyDeviceCard onClick={() => setIsPairNewDeviceModalOpen(true)} /> */}
+          ) : (
+            <EmptyDeviceCard onClick={() => setIsPairNewDeviceModalOpen(true)} />
+          )}
         </div>
       </div>
 

@@ -25,8 +25,6 @@ export default function AssociatedDevicesTable({ staffId }: { staffId?: string }
     { enabled: !!mdmDeviceId }
   );
 
-  console.log("hardwareData", hardwareData);
-
   const hardwareDetails: MDMDeviceDetailsResponse = hardwareData;
   const device = {
     ...staffMember,

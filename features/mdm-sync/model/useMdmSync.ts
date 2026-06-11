@@ -16,8 +16,11 @@ import {
   blockAppAction,
   unblockAppAction,
   getAppLimitsAction,
+  getZoneAction,
 } from "../api/mdm-sync.actions";
 import { useToast } from "@/shared/ui/toast";
+import { useAuth } from "@/shared/auth/AuthProvider";
+import { AppRole } from "@/features/parents/ui/DeviceConfigurationSetup";
 
 export const mdmSyncKeys = {
   all: ["mdm-sync"] as const,
@@ -134,6 +137,18 @@ export function useZoneDevices(zoneId: string | undefined, options?: { enabled?:
       ...options,
       retry: 0,
       enabled: !!zoneId,
+    }
+  );
+}
+
+export function useZone(appRole: "PARENT" | "BUSINESS", options?: { enabled?: boolean }) {
+  return useServerActionQuery(
+    appRole === "PARENT" ? mdmSyncKeys.parentZone : mdmSyncKeys.businessZone,
+    () => getZoneAction(appRole as AppRole),
+    [],
+    {
+      ...options,
+      retry: 0,
     }
   );
 }

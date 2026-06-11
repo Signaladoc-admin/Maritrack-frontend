@@ -3,17 +3,18 @@ import { usePaymentHistory } from "../model/usePayments";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { getBillingsHistoryColumns } from "../columns";
+import { useState } from "react";
 
 export default function BillingHistoryTable() {
   const { user } = useAuth();
   const zoneId = user?.zoneId || "";
-  // const [page, setPage] = useState(1);
-  const { data: paymentHistory, isLoading } = usePaymentHistory(zoneId,
-    // { page }
-  );
+  const [page, setPage] = useState(1);
+  const limit = 10;
+  const { data: paymentHistory, isLoading } = usePaymentHistory(zoneId, { page, limit });
 
   const transactions = paymentHistory?.data?.results || [];
-  // const totalPages = paymentHistory?.totalPages || 1;
+  const totalCount = paymentHistory?.data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / limit));
 
   if (isLoading) {
     return (
@@ -44,9 +45,11 @@ export default function BillingHistoryTable() {
         hasHeaders={false}
         emptyMessage="You have no billing history yet."
         data={transactions}
-        columns={getBillingsHistoryColumns(() => { })}
-      // totalPages={totalPages}
-      // onPageChange={setPage}
+        columns={getBillingsHistoryColumns(() => {})}
+        currentPage={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        isPaginated
       />
     </div>
   );

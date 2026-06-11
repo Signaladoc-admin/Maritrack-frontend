@@ -5,8 +5,8 @@ import { Controller, useForm } from "react-hook-form";
 import { SearchableSelect } from "@/shared/ui/searchable-select";
 import { useToast } from "@/shared/ui/toast";
 import { assignDeviceToUserSchema, AssignDeviceToUserValues } from "../schema";
-import { useGetStaffMembers } from "@/entities/business/model/useStaffMembers";
 import { BusinessStaff } from "@/entities/business/types";
+import { useStaffMembersInfinite } from "@/entities/business/model/useTeamMembers";
 import { useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 import BusinessPairingQR from "@/entities/business/ui/PairingQRBusinessModal";
@@ -54,18 +54,22 @@ export default function NewDeviceModal({
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm] = useDebounce(searchTerm, 400);
 
-  const { data: staffMembersData, isLoading } = useGetStaffMembers({
-    search: debouncedSearchTerm,
-  });
+  const { staffMembers, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useStaffMembersInfinite({ search: debouncedSearchTerm });
 
-  const staffMembers: BusinessStaff[] = staffMembersData?.data?.staff ?? [];
-
-  const staffMemberOptions = staffMembers.map((s) => ({
+  const staffMemberOptions = (staffMembers as BusinessStaff[]).map((s) => ({
     value: s.id,
     label: `${s.user?.firstName ?? ""} ${s.user?.lastName ?? ""}`.trim() || s.user?.email || s.id,
   }));
 
-  const staffById = useMemo(() => new Map(staffMembers.map((s) => [s.id, s])), [staffMembers]);
+  const staffById = useMemo(
+    () => new Map((staffMembers as BusinessStaff[]).map((s) => [s.id, s])),
+    [staffMembers]
+  );
+
+  function handleStaffListEndReached() {
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+  }
 
   const { formState, handleSubmit, reset, control } = useForm<AssignDeviceToUserValues>({
     defaultValues: { staffId: "" },
@@ -100,7 +104,7 @@ export default function NewDeviceModal({
       isOpen={open}
       onClose={handleClose}
       title={isPairStep ? "" : "New Device"}
-      className={isPairStep ? "sm:max-w-3xl" : undefined}
+      className={isPairStep ? "h-auto rounded-4xl p-10 md:max-w-[1100px] lg:p-20" : undefined}
       {...(!isPairStep && {
         confirmText: "Next",
         onConfirm: handleSubmit(onSubmit),
@@ -121,6 +125,8 @@ export default function NewDeviceModal({
                   isSearchable
                   onSearch={setSearchTerm}
                   isLoading={isLoading}
+                  onEndReached={handleStaffListEndReached}
+                  isLoadingMore={isFetchingNextPage}
                   renderOption={(option) => {
                     const staff = staffById.get(option.value);
                     return staff ? <StaffOptionContent staff={staff} /> : option.label;

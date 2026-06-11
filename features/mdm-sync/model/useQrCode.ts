@@ -50,26 +50,26 @@ export function useQrCode(
   };
 }
 
-export function useChildQrCode({ childId }: { childId: string }) {
-  const { data: user } = useUserProfile();
-  const { user: authUser } = useAuth();
-  const { data: children } = useGetChildren();
+// export function useChildQrCode({ childId }: { childId: string }) {
+//   const { data: user } = useUserProfile();
+//   const { user: authUser } = useAuth();
+//   const { data: children } = useGetChildren();
 
-  const onboardingCode =
-    children?.find((child: any) => child.id === childId)?.onboardingCode ?? null;
+//   const onboardingCode =
+//     children?.find((child: any) => child.id === childId)?.onboardingCode ?? null;
 
-  const activeZoneId = authUser?.zoneId || user?.zone?.id;
+//   const activeZoneId = authUser?.zoneId || user?.zone?.id;
 
-  const query = useServerActionQuery(
-    mdmSyncKeys.qrcode(activeZoneId || "", onboardingCode ?? ""),
-    getQrCodeAction,
-    [activeZoneId as string, onboardingCode as string],
-    {
-      enabled: !!activeZoneId && !!onboardingCode,
-      staleTime: 1000 * 60 * 5,
-      retry: 1,
-    }
-  );
+//   const query = useServerActionQuery(
+//     mdmSyncKeys.qrcode(activeZoneId || "", onboardingCode ?? ""),
+//     getQrCodeAction,
+//     [activeZoneId as string, onboardingCode as string],
+//     {
+//       enabled: !!activeZoneId && !!onboardingCode,
+//       staleTime: 1000 * 60 * 5,
+//       retry: 1,
+//     }
+//   );
 
-  return { ...query, qrCodeSrc: toQrCodeSrc(query?.data?.data) };
-}
+//   return { ...query, qrCodeSrc: toQrCodeSrc(query?.data?.data) };
+// }

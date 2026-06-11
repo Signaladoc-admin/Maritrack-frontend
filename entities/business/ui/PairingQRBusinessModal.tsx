@@ -35,17 +35,15 @@ export default function BusinessPairingQR({
   }, [isError, error, toast, onBack]);
 
   return (
-    <div className="grid min-h-auto grid-cols-1 gap-6 sm:grid-cols-2 md:gap-x-14">
+    <div className="grid place-items-center gap-8 md:grid-cols-2 md:place-items-stretch md:gap-12">
       {/* Left — instructions */}
       <div className="flex flex-col justify-between gap-6 rounded-xl bg-[#f7f7f7] p-6 py-8">
         <div className="space-y-4">
           <div>
-            <h3 className="text-lg font-semibold text-[#1B3C73]">Pair new device</h3>
-            <p className="mt-1 text-sm text-slate-500">
-              Scan the QR code on the new device to connect it.
-            </p>
+            <h3 className="text-xl font-semibold text-[#1B3C73]">Pair new device</h3>
+            <p className="mt-6">Scan the QR code on the new device to connect it.</p>
           </div>
-          <ul className="list-inside list-disc space-y-2 pl-2 text-sm text-slate-600">
+          <ul className="list-inside list-disc space-y-2 pl-2 text-slate-600">
             <li>Open the app on the phone</li>
             <li>
               Tap <strong className="mx-0.5">Pair device</strong>
@@ -54,8 +52,8 @@ export default function BusinessPairingQR({
           </ul>
         </div>
 
-        <p className="flex items-start gap-1.5 text-xs text-slate-400">
-          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
+        <p className="mt-6 gap-1.5 text-center text-sm text-slate-500">
+          <ShieldCheck className="mr-1 inline h-4 w-4 shrink-0 text-green-500" />
           Pairing is secure and only works with your approval.
         </p>
       </div>

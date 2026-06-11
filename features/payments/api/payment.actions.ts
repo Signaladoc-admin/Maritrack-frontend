@@ -59,11 +59,14 @@ export async function getAllSubscriptionsAction(zoneId: string): Promise<
 }
 
 export async function getPaymentHistoryAction(
-  zoneId: string
+  zoneId: string,
+  page = 1,
+  limit = 10
 ): Promise<ActionResult<BillingHistoryPaginatedResponse>> {
   return withSafeAction(async () => {
     const response = await apiClient(`/payments/transactions/zone/${zoneId}`, {
       method: "GET",
+      params: { page, limit },
     });
 
     return response;

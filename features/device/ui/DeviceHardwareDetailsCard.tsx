@@ -24,7 +24,7 @@ export default function DeviceHardwareDetailsCard({
 
         <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
           <DevicePropertyItem
-            title={`${hardwareDetails?.osType} ID`}
+            title={`${hardwareDetails?.osType || ""} ID`}
             value={hardwareDetails?.deviceId}
           />
           <DevicePropertyItem title="IMEI number" value={imeiNumber} />
