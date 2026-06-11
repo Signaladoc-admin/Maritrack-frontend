@@ -286,8 +286,8 @@ export function DashboardAreaChart({
   const color = useContext(ThemeContext) || initialColor;
 
   return (
-    <div className="w-full" style={{ height: `${height}px` }}>
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="min-w-0 w-full" style={{ height: `${height}px` }}>
+      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
         <AreaChart data={data} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -335,8 +335,8 @@ export function DashboardLineChart({
   const color = useContext(ThemeContext);
 
   return (
-    <div className="w-full" style={{ height: `${height}px` }}>
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="min-w-0 w-full" style={{ height: `${height}px` }}>
+      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
         <LineChart data={data} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
           <XAxis
             dataKey={xAxisKey}
@@ -383,8 +383,8 @@ export function DashboardDonutChart({ data }: { data: DashboardDonutSlice[] }) {
         ))}
       </div>
       {/* Donut */}
-      <div className="flex h-[220px] w-full justify-center sm:w-3/5">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="flex min-w-0 h-[220px] w-full justify-center sm:w-3/5">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
           <PieChart>
             <Pie
               data={data}

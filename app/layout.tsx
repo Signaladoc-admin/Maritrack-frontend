@@ -40,8 +40,6 @@ export default function RootLayout({
             <NuqsAdapter>
               <main>{children}</main>
               <ZoneIdPreview />
-              {/* <Sidebar />
-            <main className="ml-[100px] flex-1">{children}</main> */}
             </NuqsAdapter>
           </Providers>
         </ToastProvider>

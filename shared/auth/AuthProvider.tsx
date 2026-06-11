@@ -9,11 +9,9 @@ import type { LoginResponse } from "@/features/auth-login/types";
 
 import { useNewUserStore } from "@/shared/stores/user.store";
 
-// The decoded access token JWT carries every field needed to identify the
-// active app role (PARENT vs BUSINESS) and is the single source of truth for
-// the authenticated user's identity. It is re-decoded whenever the token
-// changes (login, refresh, page reload), so it can never go stale the way a
-// separately-persisted copy could.
+// The decoded access token JWT is the single source of truth for the authenticated
+// user's identity. zoneId is now embedded in every token (including refreshed ones),
+// so it is read directly from the payload — no separate cookie state needed.
 
 type UserPayload = {
   iat: number;
@@ -52,10 +50,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  // Sourced from the zoneId cookie via /api/session or /api/refresh — the JWT stops
-  // carrying zoneId after a token refresh (backend bug). Remove this and restore
-  // userPayload.zoneId in activeUser once the backend fix is deployed.
-  const [cookieZoneId, setCookieZoneId] = useState<string | null>(null);
   // True while we're restoring/validating the session on mount (via /api/session, falling
   // back to /api/refresh). Gates the initial render so we don't flash unauthenticated UI.
   const [isAuthLoading, setIsAuthLoading] = useState(true);
@@ -79,8 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         businessRole: userPayload.businessRole,
         parentId: userPayload.parentId,
         businessId: userPayload.businessId,
-        // zoneId: userPayload.zoneId, // restore when backend JWT includes zoneId after refresh
-        zoneId: cookieZoneId,
+        zoneId: userPayload.zoneId,
         imageUrl: userPayload.imageUrl,
         appRole,
         firstName: userProfile?.firstName,
@@ -92,7 +85,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setAccessToken(null);
-    setCookieZoneId(null);
     useNewUserStore.getState().clearCredentials();
   };
 
@@ -107,13 +99,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           signal: controller.signal,
         });
         if (sessionRes.ok) {
-          const { accessToken: cookieToken, zoneId: sessionZoneId } = await sessionRes.json();
+          const { accessToken: cookieToken } = await sessionRes.json();
           const payload = getTokenPayload(cookieToken);
           if (payload?.exp && payload.exp * 1000 > Date.now() + 60_000) {
             setAccessToken(cookieToken);
-            // Prefer the dedicated cookie; fall back to the JWT payload (present on
-            // fresh login tokens, dropped by the backend on subsequent refreshes).
-            setCookieZoneId(sessionZoneId ?? payload.zoneId ?? null);
             return;
           }
         }
@@ -124,9 +113,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           signal: controller.signal,
         });
         if (!res.ok) throw new Error("Refresh failed");
-        const { accessToken: refreshedToken, zoneId: refreshedZoneId } = await res.json();
+        const { accessToken: refreshedToken } = await res.json();
         setAccessToken(refreshedToken);
-        setCookieZoneId((prev) => refreshedZoneId ?? prev);
       } catch {
         if (!controller.signal.aborted) logout();
       } finally {
@@ -152,15 +140,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const res = await fetch("/api/refresh", { method: "POST", credentials: "include" });
         if (!res.ok) throw new Error("Refresh failed");
-        const { accessToken: newToken, zoneId: refreshedZoneId } = await res.json();
+        const { accessToken: newToken } = await res.json();
         setAccessToken(newToken);
-        setCookieZoneId((prev) => refreshedZoneId ?? prev);
       } catch {
         // Background refresh failed — do NOT logout. The current token is still valid
         // for the remaining ~60 s. When it actually expires, apiClient's 401 handler
         // will call refreshAccessToken() and redirect to /login if that also fails.
-        // Calling logout() here instantly wipes the session on any transient network
-        // error or token-rotation failure, which is too aggressive.
       }
     }, msUntilRefresh);
 
@@ -175,10 +160,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, accessToken: newToken, message } = await login({ email, password });
     if (newToken) {
       setAccessToken(newToken);
-      // The initial login JWT always contains zoneId (only refreshed tokens drop it —
-      // backend bug). Set it immediately so the dashboard works without a page reload.
-      const payload = getTokenPayload(newToken);
-      if (payload?.zoneId) setCookieZoneId(payload.zoneId);
     }
     return { data, message };
   }

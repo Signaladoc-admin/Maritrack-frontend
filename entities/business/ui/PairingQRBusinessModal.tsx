@@ -21,9 +21,6 @@ export default function BusinessPairingQR({
   const { toast } = useToast();
   const { qrCodeSrc, isLoading, isPending, isError, error } = useQrCode(staffMember.id!);
 
-  console.log("staffMember.id!", staffMember.id)
-  console.log('qrCodeSrc', qrCodeSrc)
-
   const isGenerating = isLoading || isPending;
 
   useEffect(() => {
@@ -38,7 +35,7 @@ export default function BusinessPairingQR({
   }, [isError, error, toast, onBack]);
 
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:gap-x-14">
+    <div className="grid min-h-auto grid-cols-1 gap-6 sm:grid-cols-2 md:gap-x-14">
       {/* Left — instructions */}
       <div className="flex flex-col justify-between gap-6 rounded-xl bg-[#f7f7f7] p-6 py-8">
         <div className="space-y-4">

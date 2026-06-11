@@ -73,10 +73,6 @@ const getFormSchema = (appRole: AppRole) =>
 
       // Parental Confirmation
       parentalConsent: z.boolean(),
-
-      // Agent Transparency & Requests (for business devices setup)
-      inform_agents_of_monitoring: z.boolean(),
-      allow_agents_to_request_extra_screen_time: z.boolean(),
     })
     .superRefine((data, ctx) => {
       // 1. Monitoring Permissions group validation
@@ -196,10 +192,18 @@ export const devicesControlHeadings = {
     description: "Choose what events you want to be notified about.",
   },
   childTransparencyAndRequests: {
-    title: "Child Transparency & Requests",
-    description: "Build trust and encourage healthy digital habits.",
-    footerDescription:
-      "We recommend transparency to help children understand boundaries rather than feel monitored",
+    PARENT: {
+      title: "Child Transparency & Requests",
+      description: "Build trust and encourage healthy digital habits.",
+      footerDescription:
+        "We recommend transparency to help children understand boundaries rather than feel monitored",
+    },
+    BUSINESS: {
+      title: "Agent Transparency & Requests",
+      description: "Build trust and encourage healthy digital habits.",
+      footerDescription:
+        "We recommend transparency to help agents understand boundaries rather than feel monitored.",
+    },
   },
   confirmationAndConsent: {
     PARENT: {
@@ -272,8 +276,6 @@ export default function DevicesConfigurationSetup({
       inform_child_of_monitoring: false,
       allow_child_to_request_extra_screen_time: false,
       parentalConsent: false,
-      inform_agents_of_monitoring: false,
-      allow_agents_to_request_extra_screen_time: false,
     },
   });
 
@@ -321,13 +323,10 @@ export default function DevicesConfigurationSetup({
         is_email_notification_enabled: methodsConfig === "EMAIL" || methodsConfig === "BOTH",
         is_in_app_notification_enabled: methodsConfig === "IN_APP" || methodsConfig === "BOTH",
 
-        inform_child_of_monitoring: isParent ? settings.informChildMonitoring : false,
-        allow_child_to_request_extra_screen_time: isParent ? settings.allowExtraScreenTime : false,
+        inform_child_of_monitoring: settings.informChildMonitoring,
+        allow_child_to_request_extra_screen_time: settings.allowExtraScreenTime,
 
-        parentalConsent: settings.parentalConsent,
-
-        inform_agents_of_monitoring: isParent ? false : settings.informChildMonitoring,
-        allow_agents_to_request_extra_screen_time: isParent ? false : settings.allowExtraScreenTime,
+        parentalConsent: settings.parentalConsent ?? false,
       });
     }
   }, [mySettings, existingSettings, methods, isParent]);
@@ -386,14 +385,12 @@ export default function DevicesConfigurationSetup({
       alertEvents,
       notificationMethod,
 
-      informChildMonitoring: isParent
-        ? data.inform_child_of_monitoring
-        : data.inform_agents_of_monitoring,
-      allowExtraScreenTime: isParent
-        ? data.allow_child_to_request_extra_screen_time
-        : data.allow_agents_to_request_extra_screen_time,
-      parentalConsent: isParent ? data.parentalConsent : true,
+      informChildMonitoring: data.inform_child_of_monitoring,
+      allowExtraScreenTime: data.allow_child_to_request_extra_screen_time,
+      ...(isParent && { parentalConsent: data.parentalConsent }),
     };
+
+    console.log("payload", payload);
 
     try {
       const currentSettingsId = existingSettings?.id || mySettings?.id;
@@ -443,8 +440,16 @@ export default function DevicesConfigurationSetup({
             subtitle={devicesControlHeadings.alertsAndNotifications.description}
           />
           <SectionSkeleton
-            title={devicesControlHeadings.childTransparencyAndRequests.title}
-            subtitle={devicesControlHeadings.childTransparencyAndRequests.description}
+            title={
+              devicesControlHeadings.childTransparencyAndRequests[
+                user?.appRole?.toUpperCase() as "PARENT" | "BUSINESS"
+              ].title
+            }
+            subtitle={
+              devicesControlHeadings.childTransparencyAndRequests[
+                user?.appRole?.toUpperCase() as "PARENT" | "BUSINESS"
+              ].description
+            }
           />
           <SectionSkeleton
             title={
@@ -478,7 +483,7 @@ export default function DevicesConfigurationSetup({
           <ScreenTimeRules />
           <AppManagement />
           <AlertsAndNotifications />
-          {user?.appRole === "PARENT" && <ChildTransparency />}
+          <ChildTransparency />
           <DeviceConfirmation />
 
           <div className="flex gap-4">

@@ -4,8 +4,7 @@ import { Controller, useForm } from "react-hook-form";
 import { SearchableSelect } from "@/shared/ui/searchable-select";
 import { useToast } from "@/shared/ui/toast";
 import { assignDeviceToUserSchema, AssignDeviceToUserValues } from "../schema";
-import { useAssignUserToDevice, useBusinessZones } from "@/features/mdm-sync/model/useMdmSync";
-import { useGetStaffMembers } from "@/entities/business/model/useStaffMembers";
+import { useAssignUserToDevice } from "@/features/mdm-sync/model/useMdmSync";
 import { BusinessStaff } from "@/entities/business/types";
 import { InputGroup } from "@/shared/ui/input-group";
 import { TriangleAlert } from "lucide-react";
@@ -14,10 +13,7 @@ import { useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { Button } from "@/shared/ui/button";
 import { StaffDevice } from "@/entities/device";
-import {
-  useOtherStaffMembersExceptStaff,
-  useOtherTeamMembers,
-} from "@/entities/business/model/useTeamMembers";
+import { useOtherStaffMembersExceptStaff } from "@/entities/business/model/useTeamMembers";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 import { MDMDeviceDetailsResponse } from "@/features/device/types";

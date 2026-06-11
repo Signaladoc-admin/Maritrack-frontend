@@ -10,6 +10,7 @@ import { DeviceUtilizationWidget } from "@/widgets/business-dashboard/ui/DeviceU
 import { ConnectivityLearningWidget } from "@/widgets/business-dashboard/ui/ConnectivityLearningWidget";
 import { ComplianceSecurityWidget } from "@/widgets/business-dashboard/ui/ComplianceSecurityWidget";
 import { AssetTrackingWidget } from "@/widgets/business-dashboard/ui/AssetTrackingWidget";
+import { BlacklistedWebsitesWidget } from "@/widgets/business-dashboard/ui/BlacklistedWebsitesWidget";
 
 const BusinessDashboard = () => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
@@ -29,8 +30,7 @@ const BusinessDashboard = () => {
         <ComplianceSecurityWidget />
         <ConnectivityLearningWidget />
         <AssetTrackingWidget />
-        {/* BlacklistedWebsitesWidget — entirely static mock data */}
-        {/* <BlacklistedWebsitesWidget /> */}
+        <BlacklistedWebsitesWidget />
       </div>
     </DashboardFilterProvider>
   );

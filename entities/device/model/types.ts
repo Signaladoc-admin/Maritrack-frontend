@@ -1,3 +1,6 @@
+import { Child } from "@/features/child-profile/model/types";
+import { BaseEntity } from "@/shared/api/types";
+
 export interface DeviceHardwareInfo {
   cpuSpeed: number;
   release: string;
@@ -113,6 +116,8 @@ export interface StaffDevice {
   currentLocationId: string | null;
   businessId: string | null;
   currentUser?: CurrentUser;
+  BlockedDomains: BlockedDomain[];
+  child?: Omit<Child, "parent" | "device" | "parentLinks"> | null;
 }
 
 export interface PaginatedDevices {
@@ -136,4 +141,11 @@ export interface DeviceAsset {
   lastSynced?: string;
   dateReturned?: string;
   isUnassigned?: boolean;
+}
+
+export interface BlockedDomain extends BaseEntity {
+  id: string;
+  domain: string;
+  name: string;
+  deviceId: string;
 }

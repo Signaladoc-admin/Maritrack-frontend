@@ -38,7 +38,7 @@ export default function AddEditUserDetailsModal({
   //   address: "123 Road",
   // };
 
-  const { register, formState, handleSubmit, control, setValue } =
+  const { register, formState, handleSubmit, control, setValue, reset } =
     useForm<BusinessUserDetailsValues>({
       defaultValues: {
         firstName: "",
@@ -75,12 +75,12 @@ export default function AddEditUserDetailsModal({
     setValue("firstName", initialData?.user?.firstName!);
     setValue("lastName", initialData?.user?.lastName!);
     setValue("department", initialData?.staffDepartmentId!);
-    setValue("businessRole", initialData?.user?.businessRole!);
+    setValue("businessRole", initialData?.businessRole! as any);
     setValue("position", initialData?.position!);
     setValue("email", initialData?.user?.email!);
     setValue("phone", initialData?.user?.phone!);
     setValue("address", initialData?.location!);
-  }, [initialData, setValue]);
+  }, [initialData, setValue, open]);
 
   async function onSubmit(data: BusinessUserDetailsValues) {
     const payload = {
@@ -95,8 +95,18 @@ export default function AddEditUserDetailsModal({
     };
 
     try {
+      const updatePayload = { ...payload };
+      // @ts-ignore
+      delete updatePayload.email;
+      // @ts-ignore
+      delete updatePayload.firstName;
+      // @ts-ignore
+      delete updatePayload.lastName;
+      // @ts-ignore
+      delete updatePayload.phone;
+
       const res = initialData
-        ? await updateStaffMember({ id: selectedId!, ...payload })
+        ? await updateStaffMember({ id: selectedId!, ...updatePayload })
         : await createStaffMember(payload);
 
       console.log(res);
@@ -115,12 +125,17 @@ export default function AddEditUserDetailsModal({
     }
   }
 
+  function handleClose() {
+    reset();
+    onOpenChange(false);
+  }
+
   const isSubmitting = isCreatingStaffMember || isLoadingStaffMember || isUpdatingStaffMember;
 
   return (
     <Modal
       isOpen={open}
-      onClose={() => onOpenChange(false)}
+      onClose={handleClose}
       title={`${initialData ? "Edit" : "Add"} User Details`}
       onConfirm={handleSubmit(onSubmit)}
     >
@@ -132,6 +147,7 @@ export default function AddEditUserDetailsModal({
               {...register("firstName")}
               placeholder="14"
               label="First name"
+              disabled
               error={formState.errors.firstName?.message}
             />
             <InputGroup
@@ -139,6 +155,7 @@ export default function AddEditUserDetailsModal({
               {...register("lastName")}
               placeholder="14"
               label="Last name"
+              disabled
               error={formState.errors.lastName?.message}
             />
           </div>
@@ -191,14 +208,14 @@ export default function AddEditUserDetailsModal({
           <InputGroup
             className=""
             {...register("phone")}
-            placeholder="14"
+            placeholder="142838920283"
             label="Phone"
             error={formState.errors.phone?.message}
           />
           <InputGroup
             className=""
             {...register("address")}
-            placeholder="14"
+            placeholder="123, abc Street, Lagos"
             label="Address"
             error={formState.errors.address?.message}
           />

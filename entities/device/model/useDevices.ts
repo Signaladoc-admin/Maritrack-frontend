@@ -3,6 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerActionMutation, useServerActionQuery } from "@/shared/api/server-action-hooks";
 import {
+  exportDevicesAction,
   getDeviceAction,
   getDevicesAction,
   markDeviceAsReturnedAction,
@@ -60,4 +61,11 @@ export function useGetStaffMemberDevice(staffId: string) {
   // console.log()
 
   return staffMember?.device ? [staffMember.device] : [];
+}
+
+export function useExportDevices(options: { enabled?: boolean } = {}) {
+  return useServerActionQuery(["export-devices"], exportDevicesAction, [], {
+    retry: false,
+    enabled: options.enabled,
+  });
 }

@@ -1,9 +1,12 @@
 import { User } from "@/app/(in-app)/users/types";
-import { BusinessRoleEnum } from "../user/model/user.schema";
+import { BusinessRoleEnum, RoleValues } from "../user/model/user.schema";
 import { StaffDevice } from "../device";
 import { BaseEntity, QueryOptions } from "@/shared/api/types";
 import { Department } from "../department/types";
 import { BusinessZone } from "@/features/mdm-sync/types";
+import { UserProfile } from "../user";
+import { Zone } from "../zone/types";
+import { UserRole } from "@/features/user-management/model/types";
 
 export interface BusinessProfileData extends BaseEntity {
   id: string;
@@ -13,22 +16,65 @@ export interface BusinessProfileData extends BaseEntity {
   business: Business;
 }
 
-export interface BusinessStaff {
+// export interface BusinessStaff {
+//   id: string;
+//   userId: string;
+//   businessId: string;
+//   location: string | null;
+//   position: string | null;
+//   staffDepartmentId: string | null;
+//   onboardingCode: string | null;
+//   businessRole: BusinessRoleEnum;
+//   createdAt: string;
+//   updatedAt: string;
+//   deleted: boolean;
+//   deletedAt: string | null;
+//   user?: User;
+//   business?: Business;
+//   device?: StaffDevice;
+// }
+
+interface StaffBusiness extends BaseEntity {
+  id: string;
+  email: string;
+  name: string;
+  address: string;
+  state: string;
+  country: string;
+  estimatedDevices: number;
+  profileId: string;
+  organizationSize: string;
+}
+
+interface StaffUserProfile extends BaseEntity {
+  id: string;
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  isEmailVerified: boolean;
+  isInvited: boolean;
+  role: UserRole;
+  phone: string | null;
+  status: string;
+  imageUrl: string | null;
+  firstLogin: boolean;
+  mdmUserId: null;
+  zone: Zone;
+}
+
+export interface BusinessStaff extends BaseEntity {
   id: string;
   userId: string;
-  businessId: string;
-  location: string | null;
-  position: string | null;
+  user: StaffUserProfile;
   staffDepartmentId: string | null;
-  onboardingCode: string | null;
+  businessId: string;
+  business: Business;
   businessRole: BusinessRoleEnum;
-  createdAt: string;
-  updatedAt: string;
-  deleted: boolean;
-  deletedAt: string | null;
-  user?: User;
-  business?: Business;
-  device?: StaffDevice;
+  location: string;
+  position: string;
+  onboardingCode: string;
+  device: StaffDevice | null;
 }
 
 export interface Business extends BaseEntity {

@@ -29,10 +29,9 @@ export default function AddChildView() {
 
   const [pendingChild, setPendingChild] = useState<IChildProfile | null>(null);
 
-  const zoneId = user?.zone.id;
+  const zoneId = user?.zone?.id;
 
-  const { data: activeSubscriptionRes, status: subscriptionStatus } =
-    useActiveSubscription(zoneId);
+  const { data: activeSubscriptionRes, status: subscriptionStatus } = useActiveSubscription(zoneId);
 
   const [isLoadingSubscription, setIsLoadingSubscription] = useState(true);
 
@@ -46,7 +45,11 @@ export default function AddChildView() {
 
   useEffect(() => {
     if (!activeSubscriptionRes?.data?.active && !isLoadingSubscription) {
-      toast({ title: "No active subscription", message: "You need an active subscription to add a child.", type: "error" });
+      toast({
+        title: "No active subscription",
+        message: "You need an active subscription to add a child.",
+        type: "error",
+      });
     }
   }, [isLoadingSubscription, activeSubscriptionRes]);
 
@@ -96,23 +99,23 @@ export default function AddChildView() {
   };
 
   if (isLoadingSubscription) {
-    return (
-      <LoaderText
-        text="Checking subscription status..."
-      />
-    )
+    return <LoaderText text="Checking subscription status..." />;
   }
 
   if (!activeSubscriptionRes?.data?.active) {
     return (
       <>
-        <div className="flex flex-col gap-4 justify-center items-center min-h-[70vh]">
+        <div className="flex min-h-[70vh] flex-col items-center justify-center gap-4">
           <h3 className="text-xl font-bold">No active subscription</h3>
-          <p className="text-muted-foreground text-center">You need an active subscription to add a child.</p>
-          <Button href="/plans/subscribe" className="mt-4">Upgrade</Button>
+          <p className="text-muted-foreground text-center">
+            You need an active subscription to add a child.
+          </p>
+          <Button href="/plans/subscribe" className="mt-4">
+            Upgrade
+          </Button>
         </div>
       </>
-    )
+    );
   }
 
   if (pendingChild) {
