@@ -13,6 +13,7 @@ import { ParentAppsSection } from "@/features/parents/ui/Dashboard/ParentAppsSec
 import { ParentDashboardSkeleton } from "@/features/parents/ui/Dashboard/ParentDashboardSkeleton";
 
 import { useParentChildren } from "@/entities/children/model/useChildren";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 export default function ParentDashboard() {
   const [currentDate, setCurrentDate] = useState<Date | undefined>(undefined);
@@ -39,6 +40,8 @@ export default function ParentDashboard() {
     enabled: !!deviceId,
   });
 
+  const { user } = useAuth();
+
   useEffect(() => {
     setCurrentDate(new Date());
   }, []);
@@ -53,7 +56,9 @@ export default function ParentDashboard() {
       {/* Header */}
       <header className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-[#1B3C73]">Hello Janet</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-[#1B3C73]">
+            Hello {user?.firstName}
+          </h1>
           <p className="text-sm font-medium text-slate-400">
             {currentDate && formatDate(currentDate, "MMMM dd, yyyy")}
           </p>
@@ -75,10 +80,7 @@ export default function ParentDashboard() {
           isLoadingChild={isLoadingChild && !!selectedChildId && selectedChildId !== "all"}
         />
 
-        <ParentAppsSection
-          appsData={appsData}
-          isPending={isAppsPending && !!deviceId}
-        />
+        <ParentAppsSection appsData={appsData} isPending={isAppsPending && !!deviceId} />
       </div>
     </div>
   );

@@ -324,7 +324,17 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
   );
 };
 const TableVariant = <T extends { id: string | number }>(props: TableProps<T>) => {
-  const { data, columns, emptyMessage, hasHeaders = true } = props;
+  const {
+    data,
+    columns,
+    emptyMessage,
+    hasHeaders = true,
+    isPaginated = false,
+    currentPage = 1,
+    totalPages = 1,
+    onPageChange,
+    paginationClassName,
+  } = props;
 
   const renderCell = (column: TableColumn<T>, item: T, index: number) => {
     if (column.render) return column.render(item, index);
@@ -333,51 +343,62 @@ const TableVariant = <T extends { id: string | number }>(props: TableProps<T>) =
   };
 
   return (
-    <div className="w-full overflow-x-auto">
-      <table className="min-w-full border-t border-b border-y-[#e5e7eb]">
-        {hasHeaders && (
-          <thead>
-            <tr>
-              {columns.map((column) => (
-                <th
-                  key={column.label ?? column.key}
-                  scope="col"
-                  className="py-2 pr-6 text-left text-xs font-medium tracking-wider text-gray-500 first:pl-0"
-                  style={{ width: column.width }}
-                >
-                  {column.label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-        )}
-        <tbody className="divide-y divide-[#e5e7eb]">
-          {!data?.length ? (
-            <tr>
-              <td colSpan={columns.length} className="py-4 text-center text-sm text-gray-500">
-                {emptyMessage}
-              </td>
-            </tr>
-          ) : (
-            data.map((item, index) => (
-              <tr key={item.id}>
+    <div>
+      <div className="w-full overflow-x-auto">
+        <table className="min-w-full border-t border-b border-y-[#e5e7eb]">
+          {hasHeaders && (
+            <thead>
+              <tr>
                 {columns.map((column) => (
-                  <td
+                  <th
                     key={column.label ?? column.key}
-                    className={
-                      column.className ??
-                      "py-4 pr-6 text-sm whitespace-nowrap text-[#6B7280] first:pl-0"
-                    }
+                    scope="col"
+                    className="py-2 pr-6 text-left text-xs font-medium tracking-wider text-gray-500 first:pl-0"
                     style={{ width: column.width }}
                   >
-                    {renderCell(column, item, index)}
-                  </td>
+                    {column.label}
+                  </th>
                 ))}
               </tr>
-            ))
+            </thead>
           )}
-        </tbody>
-      </table>
+          <tbody className="divide-y divide-[#e5e7eb]">
+            {!data?.length ? (
+              <tr>
+                <td colSpan={columns.length} className="py-4 text-center text-sm text-gray-500">
+                  {emptyMessage}
+                </td>
+              </tr>
+            ) : (
+              data.map((item, index) => (
+                <tr key={item.id}>
+                  {columns.map((column) => (
+                    <td
+                      key={column.label ?? column.key}
+                      className={
+                        column.className ??
+                        "py-4 pr-6 text-sm whitespace-nowrap text-[#6B7280] first:pl-0"
+                      }
+                      style={{ width: column.width }}
+                    >
+                      {renderCell(column, item, index)}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {isPaginated && onPageChange && (
+        <Pagination
+          className={cn("bg-transparent border-x-0 border-b-0 rounded-none px-0", paginationClassName)}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+        />
+      )}
     </div>
   );
 };

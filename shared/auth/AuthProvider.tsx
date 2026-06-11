@@ -8,6 +8,7 @@ import { AuthUserProfile } from "@/entities/user";
 import type { LoginResponse } from "@/features/auth-login/types";
 
 import { useNewUserStore } from "@/shared/stores/user.store";
+import { useZone } from "@/features/mdm-sync/model/useMdmSync";
 
 // The decoded access token JWT is the single source of truth for the authenticated
 // user's identity. zoneId is now embedded in every token (including refreshed ones),
@@ -60,10 +61,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // (e.g. BusinessDashboard vs ParentDashboard) reads `user`, and rendering before the
   // profile resolves leaves a window where `user` is unsettled and the wrong view can
   // briefly slip in.
-  const isUserLoading = isAuthLoading || isLoadingUserProfile;
 
   const userPayload = accessToken ? getTokenPayload(accessToken) : null;
   const appRole: "PARENT" | "BUSINESS" = userPayload?.businessId ? "BUSINESS" : "PARENT";
+
+  const { data: fetchedZone, isLoading: isZoneLoading } = useZone(appRole, {
+    enabled: !userPayload?.zoneId && !!accessToken,
+  });
+
+  const isUserLoading = isAuthLoading || isLoadingUserProfile || isZoneLoading;
 
   const activeUser: AuthUserProfile | null = userPayload
     ? {
@@ -73,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         businessRole: userPayload.businessRole,
         parentId: userPayload.parentId,
         businessId: userPayload.businessId,
-        zoneId: userPayload.zoneId,
+        zoneId: userPayload.zoneId || fetchedZone?.data?.[0]?.id || "",
         imageUrl: userPayload.imageUrl,
         appRole,
         firstName: userProfile?.firstName,

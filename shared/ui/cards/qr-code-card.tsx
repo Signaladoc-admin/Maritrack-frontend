@@ -21,7 +21,7 @@ export function QRCodeCard({
     <CardWrapper
       variant="warning"
       className={cn(
-        "flex w-full max-w-[500px] flex-col justify-center p-8 text-center shadow-2xl transition-transform hover:scale-[1.02] sm:aspect-square",
+        "flex flex-col justify-center p-8 text-center shadow-2xl transition-transform hover:scale-[1.02]",
         className
       )}
     >
@@ -32,12 +32,16 @@ export function QRCodeCard({
           ) : isError ? (
             <div className="text-destructive text-sm font-medium">Failed to load QR</div>
           ) : src ? (
-            <img src={src} alt="Pairing QR Code" className="h-auto w-full object-contain" />
+            <img
+              src={src}
+              alt="Pairing QR Code"
+              className="h-auto w-full max-w-[300px] min-w-[265px] object-contain lg:max-w-[350px] lg:min-w-[350px]"
+            />
           ) : (
             <QrCode className="h-32 w-32 text-slate-300" />
           )}
         </div>
-        <p className="mt-4 max-w-[200px] text-neutral-800">{description}</p>
+        <p className="mt-4 max-w-[200px]">{description}</p>
       </div>
     </CardWrapper>
   );

@@ -20,6 +20,7 @@ import DevicesTable from "@/features/business-users/users/ui/DevicesTable";
 import { Input } from "@/shared/ui/input";
 import {
   DeviceAssignmentStatus,
+  DeviceStatus,
   StaffDevice,
   useDevices,
   useExportDevices,
@@ -28,10 +29,11 @@ import NewDeviceModal from "@/features/business-users/users/ui/NewDeviceModal";
 import { Loader } from "@/shared/ui/loader";
 
 export default function DevicesList() {
-  const router = useRouter();
   const [searchQuery, setSearchQuery] = useQueryState("search", { defaultValue: "" });
   const [selectedTab, setSelectedTab] = useQueryState("assignmentStatus", { defaultValue: "ALL" });
-  const [selectedFilter, setSelectedFilter] = useQueryState("filter", { defaultValue: "ALL" });
+  const [selectedFilter, setSelectedFilter] = useQueryState("deviceStatus", {
+    defaultValue: "",
+  });
   const [page, setPage] = useQueryState("page", { defaultValue: "1" });
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
 
@@ -42,6 +44,7 @@ export default function DevicesList() {
     limit: 10,
     search: debouncedSearchQuery || undefined,
     assignmentStatus: selectedTab === "ALL" ? undefined : (selectedTab as DeviceAssignmentStatus),
+    deviceStatus: selectedFilter === "" ? undefined : (selectedFilter as DeviceStatus),
   });
   const devices = devicesRes?.devices || [];
   const totalPages = devicesRes?.totalPages || 1;
@@ -101,18 +104,30 @@ export default function DevicesList() {
           />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="icon" className="rounded-full">
-                <ListFilter />
-              </Button>
+              <div className="relative">
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className={cn(
+                    "rounded-full transition-colors",
+                    selectedFilter !== "" && "bg-primary/10 text-primary hover:bg-primary/15"
+                  )}
+                >
+                  <ListFilter />
+                </Button>
+                {selectedFilter !== "" && (
+                  <span className="bg-primary ring-background pointer-events-none absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full ring-2" />
+                )}
+              </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-40 p-2">
               <p className="mb-4 px-2 text-sm font-semibold">Filter By:</p>
               <div className="space-y-1">
                 <DropdownMenuItem
-                  onClick={() => setSelectedFilter("ALL")}
+                  onClick={() => setSelectedFilter("")}
                   className={cn(
                     "flex items-center gap-2",
-                    selectedFilter === "ALL" &&
+                    selectedFilter === "" &&
                       "bg-primary hover:bg-primary! text-white hover:text-white!"
                   )}
                 >

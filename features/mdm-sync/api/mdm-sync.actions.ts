@@ -6,6 +6,7 @@ import { withSafeAction } from "@/shared/lib/safe-action";
 import { AssignDeviceToUserDto } from "@/features/business-users/users/types";
 import type { Device } from "@/entities/device/model/types";
 import { BusinessZone, ParentZone } from "../types";
+import { AppRole } from "@/features/parents/ui/DeviceConfigurationSetup";
 
 export interface CreateZoneDto {
   name?: string;
@@ -101,6 +102,29 @@ export async function getZoneDevicesAction(zoneId: string): Promise<ActionResult
     });
     return response?.data?.data ?? [];
   }, "Failed to fetch zone devices");
+}
+
+export async function getZoneAction(appRole: AppRole) {
+  return withSafeAction(async () => {
+    let response;
+
+    if (appRole === "PARENT") {
+      response = await apiClient<ApiResponse<ParentZone[]>>(
+        `/mdm-sync/zones/${appRole.toLowerCase()}`,
+        {
+          method: "GET",
+        }
+      );
+    } else {
+      response = await apiClient<ApiResponse<BusinessZone[]>>(
+        `/mdm-sync/zones/${appRole.toLowerCase()}`,
+        {
+          method: "GET",
+        }
+      );
+    }
+    return response;
+  }, "Failed to fetch zone");
 }
 
 export interface AppLimitDayDetail {

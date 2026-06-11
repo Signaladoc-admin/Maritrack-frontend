@@ -90,6 +90,8 @@ export default function Users() {
     setSelectedId("");
     setSelectedUserSubTab("user-details");
     setIsAddEditModalOpen(false);
+    setSearch("");
+    setCurrentPage(1);
   }
 
   const handleDeleteTabItem = async () => {
