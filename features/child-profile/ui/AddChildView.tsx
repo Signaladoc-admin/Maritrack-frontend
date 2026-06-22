@@ -3,35 +3,30 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import CreateChildProfileForm from "@/features/onboarding/personal/ui/CreateChildProfileForm";
-import { useUserProfile } from "@/entities/user/model/useUserProfile";
 import { useParentStore } from "@/shared/stores/user.store";
 import { useCreateChild } from "@/entities/children/model/useChildren";
-import { getProfileAction } from "@/entities/user/api/user.actions";
-import { createZoneAction } from "@/features/mdm-sync/api/mdm-sync.actions";
-import { mdmSyncKeys } from "@/features/mdm-sync/model/useMdmSync";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/shared/ui/toast";
 import { IChildProfile } from "@/features/onboarding/personal/types";
-import PairingQRStep from "@/features/onboarding/personal/ui/PairingQRStep";
 import { useActiveSubscription } from "@/features/payments/model/usePayments";
 import LoaderText from "@/shared/ui/LoaderText";
 import { Button } from "@/shared/ui/button";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 export default function AddChildView() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { data: user } = useUserProfile();
+  const { user } = useAuth();
   const storedParentId = useParentStore((state) => state.parentId);
   const activeParentId = user?.parentId || storedParentId;
+  const zoneId = user?.zoneId;
   const { toast } = useToast();
 
   const { mutateAsync: createChild, isPending: isCreatingChild } = useCreateChild();
 
-  const [pendingChild, setPendingChild] = useState<IChildProfile | null>(null);
-
-  const zoneId = user?.zone?.id;
-
-  const { data: activeSubscriptionRes, status: subscriptionStatus } = useActiveSubscription(zoneId);
+  const { data: activeSubscriptionRes, status: subscriptionStatus } = useActiveSubscription(
+    zoneId as string
+  );
 
   const [isLoadingSubscription, setIsLoadingSubscription] = useState(true);
 
@@ -65,29 +60,13 @@ export default function AddChildView() {
         age: Number(data.age),
         gender: data.gender as any,
         parentId: activeParentId,
+        profilePicture: data.profilePicture as File,
       });
 
       if (res) {
-        const onboardingCode = res.onboardingCode || res.data?.onboardingCode;
-        const newChildInfo = {
-          ...data,
-          ...res,
-          id: res.id || res.data?.id,
-          onboardingCode,
-        };
-
-        // Ensure zone exists
-        let activeZoneId = user?.zone.id;
-        if (!activeZoneId) {
-          await createZoneAction();
-          const updatedProfile = await getProfileAction();
-          activeZoneId = (updatedProfile as any).zone.id;
-          queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-        }
-
-        queryClient.invalidateQueries({ queryKey: mdmSyncKeys.parentZones });
+        queryClient.invalidateQueries({ queryKey: ["children", "parent"] });
         toast({ title: "Success", message: "Child profile created", type: "success" });
-        setPendingChild(newChildInfo as any);
+        router.push("/children");
       }
     } catch (e: any) {
       toast({
@@ -115,19 +94,6 @@ export default function AddChildView() {
           </Button>
         </div>
       </>
-    );
-  }
-
-  if (pendingChild) {
-    return (
-      <div className="max-w-2xl">
-        <PairingQRStep
-          entityId={pendingChild.id!}
-          entityName={pendingChild.name || "Child"}
-          onBack={() => setPendingChild(null)}
-          onComplete={() => router.push("/children")}
-        />
-      </div>
     );
   }
 

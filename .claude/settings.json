@@ -15,6 +15,10 @@
       "Bash(npx eslint *)",
       "Bash(md5 features/business-users/users/ui/ReassignDeviceModal.tsx)",
       "Bash(git fetch *)"
+    ],
+    "additionalDirectories": [
+      "/Users/gracethompson/.claude/projects/-Users-gracethompson-Documents-femis-stuff-web-devpt-Maritrack-frontend/memory",
+      "/Users/gracethompson/.claude/projects/-Users-gracethompson-Documents-femis-stuff-Web-Devpt-Maritrack-frontend/memory"
     ]
   }
 }

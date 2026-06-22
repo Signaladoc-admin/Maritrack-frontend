@@ -13,9 +13,8 @@ import { FilledUserIcon } from "@/shared/ui/icons";
 import { Controller, useForm } from "react-hook-form";
 import { FileUpload } from "@/shared/ui/image-upload";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { childProfileSchema } from "@/features/onboarding/personal/schema";
+import { updateChildProfileSchema } from "@/features/onboarding/personal/schema";
 import { z } from "zod";
-import { IChildProfile } from "@/features/onboarding/personal/types";
 import { InputGroup } from "@/shared/ui/input-group";
 import { useUpdateChild } from "../model/useGetChildrenProfile";
 
@@ -23,24 +22,27 @@ export function AddEditChildModal({ open, onOpenChange, initialData }: AddEditCh
   const { mutateAsync: updateChild, isPending } = useUpdateChild(initialData?.id || "");
 
   const { handleSubmit, register, control, formState } = useForm<
-    z.infer<typeof childProfileSchema>
+    z.infer<typeof updateChildProfileSchema>
   >({
-    resolver: zodResolver(childProfileSchema) as any,
+    resolver: zodResolver(updateChildProfileSchema) as any,
     defaultValues: {
       name: initialData?.name || "",
       age: (initialData?.age as any) || "",
       gender: initialData?.gender as any,
-      profileImage: initialData?.profileImage || undefined,
+      profilePicture: initialData?.profilePicture || undefined,
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof childProfileSchema>) => {
+  const onSubmit = async (data: z.infer<typeof updateChildProfileSchema>) => {
     if (!initialData?.id) return;
+
+    console.log(data);
+
     await updateChild({
       name: data.name,
       age: Number(data.age),
       gender: data.gender,
-      profilePicture: data.profileImage,
+      profilePicture: data.profilePicture as File,
     });
     onOpenChange(false);
   };
@@ -60,7 +62,7 @@ export function AddEditChildModal({ open, onOpenChange, initialData }: AddEditCh
           {/* Avatar Placeholder */}
           <Controller
             control={control}
-            name="profileImage"
+            name="profilePicture"
             render={({ field }) => (
               <div className="space-y-2">
                 <FileUpload
@@ -71,12 +73,20 @@ export function AddEditChildModal({ open, onOpenChange, initialData }: AddEditCh
                   previewClassName="h-full w-full rounded-full object-cover"
                 >
                   <div className="bg-muted flex h-full w-full items-center justify-center rounded-full border-gray-300 transition-colors hover:bg-gray-200">
-                    <FilledUserIcon className="h-8 w-8 text-[#1b3c73]" />
+                    {initialData?.imageUrl ? (
+                      <img
+                        src={initialData?.imageUrl}
+                        alt="child profile image"
+                        className="h-full w-full rounded-full object-cover"
+                      />
+                    ) : (
+                      <FilledUserIcon className="h-8 w-8 text-[#1b3c73]" />
+                    )}
                   </div>
                 </FileUpload>
-                {formState.errors.profileImage && (
+                {formState.errors.profilePicture && (
                   <p className="text-destructive text-sm">
-                    {String(formState.errors.profileImage.message)}
+                    {String(formState.errors.profilePicture.message)}
                   </p>
                 )}
               </div>

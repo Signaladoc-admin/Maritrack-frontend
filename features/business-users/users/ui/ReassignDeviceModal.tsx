@@ -4,7 +4,6 @@ import { Controller, useForm } from "react-hook-form";
 import { SearchableSelect } from "@/shared/ui/searchable-select";
 import { useToast } from "@/shared/ui/toast";
 import { assignDeviceToUserSchema, AssignDeviceToUserValues } from "../schema";
-import { useAssignUserToDevice } from "@/features/mdm-sync/model/useMdmSync";
 import { BusinessStaff } from "@/entities/business/types";
 import { InputGroup } from "@/shared/ui/input-group";
 import { TriangleAlert } from "lucide-react";
@@ -18,6 +17,9 @@ import { useAuth } from "@/shared/auth/AuthProvider";
 import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 import { MDMDeviceDetailsResponse } from "@/features/device/types";
 import { useUserById } from "@/entities/user/model/useUserProfile";
+import { useReassignDevice } from "@/features/business-users/users/model/useReassignDevice";
+import { useCreateDeviceAssignment } from "@/entities/device/model/useDeviceAssignments";
+import { useGetDeviceAssignmentId } from "@/features/mdm-sync/model/useMdmSync";
 
 function StaffOptionContent({ staff }: { staff: BusinessStaff }) {
   const firstName = staff.user?.firstName ?? "";
@@ -82,6 +84,7 @@ export default function ReassignDeviceModal({
   onOpenChange,
   selectedDevice,
   selectedDeviceMdmId,
+  type = "REASSIGN",
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -92,6 +95,7 @@ export default function ReassignDeviceModal({
   //    `selectedDeviceMdmId` and the modal fetches the hardware + current owner itself.
   selectedDevice?: StaffDevice | null;
   selectedDeviceMdmId?: string;
+  type?: "ASSIGN" | "REASSIGN";
 }) {
   const [step, setStep] = useState<"select-staff" | "confirm">("select-staff");
   const [selectedStaff, setSelectedStaff] = useState<BusinessStaff | null>(null);
@@ -128,8 +132,6 @@ export default function ReassignDeviceModal({
   const fullName = `${firstName} ${lastName}`.trim() || currentStaffUser?.email || "N/A";
 
   const { toast } = useToast();
-  const { user } = useAuth();
-  const zoneId = user?.zoneId || "";
 
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm] = useDebounce(searchTerm, 400);
@@ -160,7 +162,20 @@ export default function ReassignDeviceModal({
     resolver: zodResolver(assignDeviceToUserSchema),
   });
 
-  const { mutateAsync: assignUserToDevice, isPending: isReassigning } = useAssignUserToDevice();
+  const { data: deviceAssignmentId, isLoading: isLoadingDeviceAssignment } =
+    useGetDeviceAssignmentId({
+      deviceId: selectedDevice?.id!,
+      userId: selectedDevice?.currentUserId!,
+    });
+
+  // console.log("assignment id", deviceAssignmentId);
+  // console.log("deviceId", selectedDevice?.id!);
+  // console.log("userId", selectedDevice?.currentUserId!);
+
+  const { mutateAsync: reassignDevice, isPending: isReassigning } = useReassignDevice();
+  const { mutateAsync: createDeviceAssignment, isPending: isAssigning } =
+    useCreateDeviceAssignment();
+  const isPending = isReassigning || isAssigning || isLoadingDeviceAssignment;
 
   function handleClose() {
     reset();
@@ -177,20 +192,33 @@ export default function ReassignDeviceModal({
   }
 
   async function handleReassign() {
-    const res = await assignUserToDevice({
-      request: {
-        deviceIds: [actualSelectedDevice?.mdmDeviceId],
-        userId: selectedStaff?.user?.id!,
-        zoneId,
-      },
-    });
-
-    if (!res.success) {
-      toast({ type: "error", title: res.message || "Failed to reassign device" });
+    const userIdToAssign = selectedStaff?.user?.id || selectedStaff?.userId;
+    try {
+      if (type === "ASSIGN") {
+        await createDeviceAssignment({
+          userId: userIdToAssign as string,
+          deviceId: actualSelectedDevice?.id as string,
+        });
+      } else {
+        await reassignDevice({
+          deviceAssignmentId:
+            (selectedDevice?.deviceAssignmentId as string) || (deviceAssignmentId as string),
+          userId: userIdToAssign as string,
+          deviceId: actualSelectedDevice?.id as string,
+        });
+      }
+    } catch (error: any) {
+      toast({
+        type: "error",
+        title: error?.message || `Failed to ${type === "ASSIGN" ? "assign" : "reassign"} device`,
+      });
       return;
     }
 
-    toast({ type: "success", title: "Device reassigned successfully" });
+    toast({
+      type: "success",
+      title: `Device ${type === "ASSIGN" ? "assigned" : "reassigned"} successfully`,
+    });
     handleClose();
   }
 
@@ -201,9 +229,11 @@ export default function ReassignDeviceModal({
 
   const isConfirmStep = step === "confirm";
 
+  const modalTitle = type === "REASSIGN" ? "Reassign Device" : "Assign Device";
+
   if (isHardwareLoading || isCurrentStaffUserLoading) {
     return (
-      <Modal isOpen={open} onClose={handleClose} title="Reassign Device">
+      <Modal isOpen={open} onClose={handleClose} title={modalTitle}>
         <ReassignDeviceModalSkeleton />
       </Modal>
     );
@@ -213,34 +243,37 @@ export default function ReassignDeviceModal({
     <Modal
       isOpen={open}
       onClose={handleClose}
-      title={isConfirmStep ? undefined : "Reassign Device"}
+      title={isConfirmStep ? undefined : modalTitle}
       confirmClassName={isConfirmStep ? "bg-[#1B3C73]" : undefined}
     >
       {/* Step 1 — select new staff */}
       {step === "select-staff" && (
         <form onSubmit={handleSubmit(onSelectStaff)} className="space-y-1">
           {/* Current device card */}
-          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-            <p className="mb-2 font-semibold text-slate-800">
-              {actualSelectedDevice?.model ?? "Device"}
-            </p>
+          {type === "REASSIGN" && (
+            <>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <p className="mb-2 font-semibold text-slate-800">
+                  {actualSelectedDevice?.model ?? "Device"}
+                </p>
 
-            <p className="text-sm text-slate-500">
-              Owned by <span className="font-medium text-slate-900">{fullName}</span>
-            </p>
-            <p className="text-muted-foreground text-xs">
-              {selectedDevice
-                ? selectedDevice?.currentUser?.email
-                : currentStaffUser?.email || "N/A"}
-            </p>
-          </div>
-
-          {/* Connector */}
-          <div className="flex flex-col items-center gap-0.5 py-1 text-slate-400">
-            <div className="h-6 w-px bg-slate-200" />
-            <span className="text-xs">Reassign to</span>
-            <div className="h-6 w-px bg-slate-200" />
-          </div>
+                <p className="text-sm text-slate-500">
+                  Owned by <span className="font-medium text-slate-900">{fullName}</span>
+                </p>
+                <p className="text-muted-foreground text-xs">
+                  {selectedDevice
+                    ? selectedDevice?.currentUser?.email
+                    : currentStaffUser?.email || "N/A"}
+                </p>
+              </div>
+              {/* Connector */}
+              <div className="flex flex-col items-center gap-0.5 py-1 text-slate-400">
+                <div className="h-6 w-px bg-slate-200" />
+                <span className="text-xs">Reassign to</span>
+                <div className="h-6 w-px bg-slate-200" />
+              </div>
+            </>
+          )}
 
           {/* New staff selector */}
           <Controller
@@ -268,7 +301,7 @@ export default function ReassignDeviceModal({
           />
 
           <Button type="submit" className="mt-4 w-full">
-            Reassign
+            {modalTitle}
           </Button>
         </form>
       )}
@@ -279,7 +312,7 @@ export default function ReassignDeviceModal({
           <TriangleAlert className="text-primary h-10 w-10" />
           <div className="space-y-2">
             <p className="text-primary text-xl font-medium">
-              Are you sure you want to reassign this device?
+              Are you sure you want to {type.toLowerCase()} this device?
             </p>
             <p className="text-sm text-slate-500">
               This device will now be in the possession of{" "}
@@ -297,10 +330,12 @@ export default function ReassignDeviceModal({
             </Button>
             <Button
               onClick={handleReassign}
-              disabled={isReassigning}
+              disabled={isPending}
               className="flex-1 rounded-xl bg-[#1B3C73] px-6 py-2.5 font-semibold text-white shadow-sm transition-colors hover:bg-[#16305c] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isReassigning ? "Reassigning..." : "Reassign"}
+              {isPending
+                ? `${modalTitle === "Assign Device" ? "Assigning Device" : "Reassigning Device"}...`
+                : modalTitle}
             </Button>
           </div>
         </div>

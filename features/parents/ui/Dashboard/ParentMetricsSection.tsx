@@ -51,22 +51,24 @@ export function ParentMetricsSection({ hardwareData, isPending }: ParentMetricsS
   const batteryColor: "green" | "red" = batteryLevel >= 20 ? "green" : "red";
   const batteryFooter = batteryLevel >= 20 ? "Battery level is good" : "Battery level is low";
 
+  // Generate ascending signal-bar heights scaled to the actual metric percentage
+  const generateSignalBars = (percent: number) =>
+    [1, 2, 3, 4, 5, 6, 7].map((i) => Math.round((i / 7) * percent));
+
   return (
     <div className="grid gap-6 md:grid-cols-2">
       <MetricCard
         title="Memory"
         value={`${storageUsedGB} GB of ${totalStorageGB} GB`}
         chartColor={storageColor}
-        chartData={[20, 30, 40, 50, 60, 70, 100 - freePercent]} // User said "chart data will be replaced by storage left", wait.
-        // Actually prompt said "chart data will be replaced by storage left".
-        // Storage left is freePercent.
+        chartData={generateSignalBars(freePercent)}
         footerText={storageFooter}
       />
       <MetricCard
         title="Battery health"
         value={`${batteryLevel}%`}
         chartColor={batteryColor}
-        chartData={[100, 90, 80, 70, 65, 60, batteryLevel]}
+        chartData={generateSignalBars(batteryLevel)}
         footerText={batteryFooter}
       />
     </div>

@@ -3,7 +3,7 @@ import React from "react";
 import { cn } from "../lib/utils";
 
 const badgeVariants = cva(
-  "flex items-center text-sm font-semibold rounded-full gap-1 p-1.5 pr-2.5 w-fit",
+  "flex items-center text-sm font-semibold rounded-full gap-1 p-1 pr-2.5 w-fit",
   {
     variants: {
       variant: {
@@ -20,16 +20,19 @@ const badgeVariants = cva(
 export default function Badge2({
   content,
   variant,
+  className,
 }: {
   content: string | React.ReactNode;
   variant?: "primary" | "secondary" | "destructive" | "outline" | "success";
+  className?: string;
 }) {
   return (
     <div
       className={cn(
         badgeVariants({
           variant: variant,
-        })
+        }),
+        className
       )}
     >
       <svg

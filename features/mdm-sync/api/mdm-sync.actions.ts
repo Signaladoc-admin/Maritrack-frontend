@@ -1,11 +1,18 @@
 "use server";
 
 import { apiClient } from "@/shared/lib/api-client";
-import type { ActionResult, ApiResponse, MessageResponse } from "@/shared/api/types";
+import type { ActionResult, ApiResponse } from "@/shared/api/types";
 import { withSafeAction } from "@/shared/lib/safe-action";
 import { AssignDeviceToUserDto } from "@/features/business-users/users/types";
 import type { Device } from "@/entities/device/model/types";
-import { BusinessZone, ParentZone } from "../types";
+import {
+  BusinessZone,
+  GeofencesRequest,
+  ParentZone,
+  Restrictions,
+  RestrictionsRequest,
+  SetRestrictionsResponse,
+} from "../types";
 import { AppRole } from "@/features/parents/ui/DeviceConfigurationSetup";
 
 export interface CreateZoneDto {
@@ -80,19 +87,6 @@ export async function getBusinessZoneAction() {
     });
     return response.data?.[0] ?? null;
   }, "Failed to fetch business zone");
-}
-
-export async function assignUserToDeviceAction(
-  data: AssignDeviceToUserDto
-): Promise<ActionResult<any>> {
-  return withSafeAction(
-    async () =>
-      await apiClient("/mdm-sync/assign-user-to-device", {
-        method: "POST",
-        body: JSON.stringify(data),
-      }),
-    "Failed to assign device to user"
-  );
 }
 
 export async function getZoneDevicesAction(zoneId: string): Promise<ActionResult<Device[]>> {
@@ -242,4 +236,92 @@ export async function unblockDomainAction(
       }),
     "Failed to unblock domain"
   );
+}
+
+export async function getRestrictionsAction(mdmDeviceId: string) {
+  return withSafeAction(
+    async () =>
+      await apiClient<ApiResponse<Restrictions>>(`/mdm-sync/${mdmDeviceId}/restrictions`, {
+        method: "GET",
+      }),
+    "Failed to get restrictions"
+  );
+}
+
+export async function setRestrictionsAction({
+  mdmDeviceId,
+  newRestrictions,
+}: {
+  mdmDeviceId: string;
+  newRestrictions: RestrictionsRequest;
+}) {
+  const currentRestrictionsRes = await getRestrictionsAction(mdmDeviceId);
+
+  const currentDomains = currentRestrictionsRes.success
+    ? (currentRestrictionsRes.data?.data?.domains ?? [])
+    : [];
+  const currentGeofences = currentRestrictionsRes.success
+    ? (currentRestrictionsRes.data?.data?.geofences ?? [])
+    : [];
+
+  console.log("currentRestrictionsRes", currentRestrictionsRes);
+
+  const allDomainStrings = [
+    ...currentDomains.map((d) => d.domain),
+    ...(newRestrictions.domains ?? []),
+  ];
+  const domains: string[] = [...new Set(allDomainStrings)];
+
+  const allGeofences: GeofencesRequest[] = [
+    ...currentGeofences.map(({ lat, lng, radius }) => ({ lat, lng, radius })),
+    ...(newRestrictions.geofences ?? []),
+  ];
+  const geofences: GeofencesRequest[] = allGeofences.filter(
+    (g, index, self) =>
+      index === self.findIndex((o) => o.lat === g.lat && o.lng === g.lng && o.radius === g.radius)
+  );
+
+  return withSafeAction(
+    async () =>
+      await apiClient<ApiResponse<SetRestrictionsResponse>>(
+        `/mdm-sync/${mdmDeviceId}/restrictions`,
+        {
+          method: "PUT",
+          body: JSON.stringify({ domains, geofences }),
+        }
+      ),
+    currentDomains.length > 0 || currentGeofences.length > 0
+      ? "Failed to update restrictions"
+      : "Failed to set restrictions"
+  );
+}
+
+export interface ReverseGeocodeInput {
+  lat: number;
+  lng: number;
+}
+
+export async function reverseGeocodeAction(
+  locations: ReverseGeocodeInput[]
+): Promise<ActionResult<string[]>> {
+  return withSafeAction(async () => {
+    const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "";
+
+    const names = await Promise.all(
+      locations.map(async ({ lat, lng }) => {
+        try {
+          const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?types=place,locality,neighborhood,address&limit=1&access_token=${accessToken}`;
+          const res = await fetch(url);
+          if (!res.ok) throw new Error("Mapbox reverse geocoding failed");
+          const json = await res.json();
+          const feature = json.features?.[0];
+          return (feature?.place_name as string) ?? `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        } catch {
+          return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        }
+      })
+    );
+
+    return names;
+  }, "Failed to reverse geocode locations");
 }

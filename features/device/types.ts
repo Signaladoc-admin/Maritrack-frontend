@@ -1,4 +1,7 @@
-interface DeviceDetails {
+import { UserDetails } from "@/entities/user";
+import { BaseEntity } from "@/shared/api/types";
+
+export interface DeviceDetails extends BaseEntity {
   id: string;
   serialNumber: string;
   imei: number;
@@ -22,6 +25,7 @@ interface DeviceDetails {
   deleted: boolean;
   deletedAt: string | null;
   currentUserId: string | null;
+  currentUser: UserDetails;
   childId: string | null;
   model: string | null;
   operatingSystem: string | null;

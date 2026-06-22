@@ -25,6 +25,8 @@ export function AssetTrackingWidget() {
   const { batteryChartData, devicesAvailabilityData, lostReports, deviceLocations, isLoading } =
     useAssetTracking();
 
+  console.log(deviceLocations);
+
   const hasBatteryData = batteryChartData.some((d) => d.score > 0);
 
   return (
@@ -103,7 +105,11 @@ export function AssetTrackingWidget() {
         </DashboardTitledCard>
 
         <DashboardTitledCard title="Device Locations">
-          <MapComponent locations={deviceLocations} />
+          {isLoading ? (
+            <Skeleton className="h-[250px] w-full rounded-xl" />
+          ) : (
+            <MapComponent locations={deviceLocations} />
+          )}
         </DashboardTitledCard>
       </div>
     </div>

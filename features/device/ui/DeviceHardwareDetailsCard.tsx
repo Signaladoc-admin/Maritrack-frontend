@@ -39,11 +39,20 @@ export default function DeviceHardwareDetailsCard({
             title="Status"
             value={
               <Badge2
-                variant={deviceDetails?.deviceStatus === "ACTIVE" ? "success" : "destructive"}
+                variant={
+                  deviceDetails?.assignmentStatus === "RETURNED" ||
+                  deviceDetails?.deviceStatus === "INACTIVE"
+                    ? "destructive"
+                    : deviceDetails?.deviceStatus === "ACTIVE"
+                      ? "success"
+                      : "primary"
+                }
                 content={
                   deviceDetails?.assignmentStatus === "RETURNED"
                     ? capitalizeFirstLetters(deviceDetails?.assignmentStatus)
-                    : capitalizeFirstLetters(deviceDetails?.deviceStatus)
+                    : deviceDetails?.deviceStatus === "INACTIVE"
+                      ? capitalizeFirstLetters("Inactive")
+                      : capitalizeFirstLetters(deviceDetails?.deviceStatus)
                 }
               />
             }

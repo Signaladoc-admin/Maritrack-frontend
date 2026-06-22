@@ -54,6 +54,7 @@ export default function AssociatedDevicesTable({ staffId }: { staffId?: string }
         open={isShowingReassignDeviceModal}
         onOpenChange={setIsShowingReassignDeviceModal}
         selectedDevice={selectedDevice}
+        type="REASSIGN"
       />
     </>
   );

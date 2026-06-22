@@ -29,6 +29,7 @@ export interface PaginatedResponse<T> {
 }
 
 export interface BaseEntity {
+  id: string;
   createdAt: string;
   updatedAt: string;
   deleted: boolean;
@@ -38,11 +39,11 @@ export interface BaseEntity {
 export type QueryResult<T> =
   | { status: "success"; data: T; error: never; isLoading: false }
   | { status: "error"; data: null; error: string; isLoading: false }
-  | { status: "loading"; data: null; error: string | null; isLoading: true }
+  | { status: "loading"; data: null; error: string | null; isLoading: true };
 
 export interface MessageResponse {
-  message: string
+  message: string;
 }
 export interface CreatedItemResponse {
-  id: string
+  id: string;
 }

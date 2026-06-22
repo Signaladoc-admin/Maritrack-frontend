@@ -27,6 +27,10 @@ import {
 } from "@/entities/device";
 import NewDeviceModal from "@/features/business-users/users/ui/NewDeviceModal";
 import { Loader } from "@/shared/ui/loader";
+import { useAuth } from "@/shared/auth/AuthProvider";
+import { useToast } from "@/shared/ui/toast";
+import { BusinessRole } from "@/entities/user/model/user.schema";
+import ReassignDeviceModal from "@/features/business-users/users/ui/ReassignDeviceModal";
 
 export default function DevicesList() {
   const [searchQuery, setSearchQuery] = useQueryState("search", { defaultValue: "" });
@@ -49,10 +53,15 @@ export default function DevicesList() {
   const devices = devicesRes?.devices || [];
   const totalPages = devicesRes?.totalPages || 1;
 
+  const [isShowingNewDeviceModal, setIsShowingNewDeviceModal] = useState(false);
+
   const [isShowingAssignDeviceModal, setIsShowingAssignDeviceModal] = useState(false);
-  const [_, setSelectedDevice] = useState<StaffDevice | null>(null);
+  const [selectedDevice, setSelectedDevice] = useState<StaffDevice | null>(null);
 
   const { refetch: refetchExport, isFetching: exporting } = useExportDevices({ enabled: false });
+
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   async function handleExport() {
     const result = await refetchExport();
@@ -75,11 +84,23 @@ export default function DevicesList() {
     setSelectedDevice(device);
   }
 
+  function handleNewDevice() {
+    setIsShowingNewDeviceModal(true);
+  }
+
+  function handleShowToast(message: string) {
+    toast({
+      title: "Device Assignment",
+      message,
+      type: "error",
+    });
+  }
+
   return (
     <div className="mx-auto max-w-6xl space-y-7">
       <div className="flex items-center justify-between gap-10">
         <Header title="Devices" subtitle="Manage your devices" className="mb-0!" />
-        <Button size="sm" onClick={() => setIsShowingAssignDeviceModal(true)}>
+        <Button size="sm" onClick={handleNewDevice}>
           <Plus size={16} />
           New device
         </Button>
@@ -170,7 +191,11 @@ export default function DevicesList() {
 
       <DevicesTable
         data={devices}
-        columns={getDevicesColumns(handleAssignDevice)}
+        columns={getDevicesColumns(
+          handleAssignDevice,
+          user?.businessRole as BusinessRole,
+          handleShowToast
+        )}
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
@@ -179,7 +204,17 @@ export default function DevicesList() {
 
       <NewDeviceModal
         open={isShowingAssignDeviceModal}
+        onOpenChange={(open) => {
+          setIsShowingAssignDeviceModal(open);
+          if (!open) setSelectedDevice(null);
+        }}
+      />
+
+      <ReassignDeviceModal
+        open={isShowingAssignDeviceModal}
         onOpenChange={setIsShowingAssignDeviceModal}
+        selectedDevice={selectedDevice!}
+        type="ASSIGN"
       />
     </div>
   );
