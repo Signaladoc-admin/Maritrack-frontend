@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { CurrentLocationCard } from "./CurrentLocationCard";
-import { LocationHistoryCard } from "./LocationHistoryCard";
 import { MapCard } from "@/features/general/ui/map-card";
-import GeofencingCard, { GeofencingLocation } from "@/shared/ui/GeofencingCard/GeofencingCard";
+import GeofencingCard, {
+  FormattedGeofenceLocation,
+} from "@/shared/ui/GeofencingCard/GeofencingCard";
 import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 
 const historyItems = [
@@ -15,22 +16,23 @@ const historyItems = [
   { id: "5", name: "Yaba", duration: "1h 55mins", date: "May 5, 2026" },
 ];
 
-const geofencingLocations: GeofencingLocation[] = [
-  { id: "1", name: "Oshodi, Lagos", radius: "2km" },
-  { id: "2", name: "Maryland, Lagos", radius: "1km" },
-  { id: "3", name: "Ikeja, Lagos", radius: "3km" },
-];
-
 import { GeofencingModal } from "@/shared/ui/Modal/Modals/GeofencingModal";
+import { useGetRestrictions } from "@/features/mdm-sync/model/useMdmSync";
 
 export function LocationView({ deviceId }: { deviceId: string }) {
   const [isGeofencingModalOpen, setIsGeofencingModalOpen] = useState(false);
+  const [initialLocations, setInitialLocations] = useState<FormattedGeofenceLocation[]>([]);
 
   const { data: hardwareData } = useDeviceDetail(deviceId, "hardware", {
     enabled: !!deviceId,
   });
 
   const location = hardwareData?.deviceDetails?.lastKnownLocation;
+  const { data } = useGetRestrictions(deviceId);
+
+  console.log("location", location);
+
+  const geoFencingLocations = data?.data?.geofences || [];
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -40,8 +42,11 @@ export function LocationView({ deviceId }: { deviceId: string }) {
           <CurrentLocationCard lat={location?.latitude} lon={location?.longitude} />
           {/* <LocationHistoryCard items={historyItems} onSeeMore={() => console.log("See more")} /> */}
           <GeofencingCard
-            isActive={false}
-            onSetGeofencing={() => setIsGeofencingModalOpen(true)}
+            locations={geoFencingLocations}
+            onSetGeofencing={(locs) => {
+              setInitialLocations(locs);
+              setIsGeofencingModalOpen(true);
+            }}
           />
         </div>
 
@@ -52,6 +57,7 @@ export function LocationView({ deviceId }: { deviceId: string }) {
       <GeofencingModal
         open={isGeofencingModalOpen}
         onOpenChange={setIsGeofencingModalOpen}
+        initialLocations={initialLocations}
       />
     </div>
   );

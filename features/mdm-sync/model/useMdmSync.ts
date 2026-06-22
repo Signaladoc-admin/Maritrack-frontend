@@ -8,7 +8,6 @@ import {
   getQrCodeAction,
   getParentZonesAction,
   getBusinessZonesAction,
-  assignUserToDeviceAction,
   getZoneDevicesAction,
   getParentZoneAction,
   getBusinessZoneAction,
@@ -17,10 +16,15 @@ import {
   unblockAppAction,
   getAppLimitsAction,
   getZoneAction,
+  getRestrictionsAction,
+  setRestrictionsAction,
+  reverseGeocodeAction,
+  ReverseGeocodeInput,
 } from "../api/mdm-sync.actions";
 import { useToast } from "@/shared/ui/toast";
-import { useAuth } from "@/shared/auth/AuthProvider";
 import { AppRole } from "@/features/parents/ui/DeviceConfigurationSetup";
+import { getDeviceAssignmentIdAction } from "@/entities/device/api/device-assignment.actions";
+import { QueryOptions } from "@/shared/api/types";
 
 export const mdmSyncKeys = {
   all: ["mdm-sync"] as const,
@@ -33,6 +37,8 @@ export const mdmSyncKeys = {
   qrcode: (zoneId: string, onboardingCode: string) =>
     ["mdm-sync", "qrcode", zoneId, onboardingCode] as const,
   appLimits: (deviceId: string) => ["mdm-sync", "appLimits", deviceId] as const,
+  restrictions: (deviceId: string) => ["mdm-sync", "restrictions", deviceId] as const,
+  deviceAssignmentId: (deviceId: string) => ["mdm-sync", "deviceAssignmentId", deviceId] as const,
 };
 
 export function useCreateZone() {
@@ -105,25 +111,6 @@ export function useBusinessZone(options?: { enabled?: boolean }) {
   return useServerActionQuery(mdmSyncKeys.businessZone, getBusinessZoneAction, [], {
     ...options,
     retry: 0,
-  });
-}
-
-export function useAssignUserToDevice() {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-
-  return useServerActionMutation(assignUserToDeviceAction, {
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: mdmSyncKeys.businessZones });
-      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        message: error.message || "Failed to assign user to device",
-        type: "error",
-      });
-    },
   });
 }
 
@@ -229,4 +216,72 @@ export function useUnblockApp() {
       });
     },
   });
+}
+
+export function useGetRestrictions(deviceId: string | undefined, options?: { enabled?: boolean }) {
+  return useServerActionQuery(
+    mdmSyncKeys.restrictions(deviceId || ""),
+    getRestrictionsAction,
+    [deviceId as string],
+    {
+      ...options,
+      retry: 0,
+      enabled: !!deviceId && options?.enabled !== false,
+    }
+  );
+}
+
+export function useSetRestrictions() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  return useServerActionMutation(setRestrictionsAction, {
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: mdmSyncKeys.restrictions(variables.mdmDeviceId) });
+      toast({
+        title: "Success",
+        message: "Restrictions set successfully",
+        type: "success",
+      });
+    },
+    onError: (error) => {
+      console.log(error);
+      toast({
+        title: "Error",
+        message: error.message || "Failed to set restrictions",
+        type: "error",
+      });
+    },
+  });
+}
+
+export function useReverseGeocode(
+  locations: ReverseGeocodeInput[],
+  options?: { enabled?: boolean }
+) {
+  const key = locations.map((l) => `${l.lat},${l.lng}`).join("|");
+  return useServerActionQuery(["reverse-geocode", key], reverseGeocodeAction, [locations], {
+    ...options,
+    enabled: locations.length > 0 && options?.enabled !== false,
+    staleTime: 1000 * 60 * 10, // 10 min — place names don't change
+  });
+}
+
+export function useGetDeviceAssignmentId(
+  options?: {
+    enabled?: boolean;
+    deviceId: string | undefined;
+    userId: string | undefined;
+  } & QueryOptions
+) {
+  return useServerActionQuery(
+    mdmSyncKeys.deviceAssignmentId(options?.deviceId || ""),
+    getDeviceAssignmentIdAction,
+    [options?.deviceId as string, options?.userId as string],
+    {
+      ...options,
+      retry: 0,
+      enabled: !!options?.deviceId && options?.enabled !== false,
+    }
+  );
 }

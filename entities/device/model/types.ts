@@ -1,5 +1,6 @@
 import { Child } from "@/features/child-profile/model/types";
-import { BaseEntity } from "@/shared/api/types";
+import { DeviceDetails } from "@/features/device/types";
+import { BaseEntity, QueryOptions } from "@/shared/api/types";
 
 export interface DeviceHardwareInfo {
   cpuSpeed: number;
@@ -118,6 +119,7 @@ export interface StaffDevice {
   currentUser?: CurrentUser;
   BlockedDomains: BlockedDomain[];
   child?: Omit<Child, "parent" | "device" | "parentLinks"> | null;
+  deviceAssignmentId: string | null;
 }
 
 export interface PaginatedDevices {
@@ -148,4 +150,60 @@ export interface BlockedDomain extends BaseEntity {
   domain: string;
   name: string;
   deviceId: string;
+}
+
+interface User extends BaseEntity {
+  email: string;
+  firstName: string;
+  lastName: string;
+  isEmailVerified: boolean;
+  isInvited: boolean;
+  role: string;
+  phone: string;
+  status: string;
+  isOnline: boolean;
+  imageUrl: string | null;
+  firstLogin: boolean;
+  lastLoginAt: string | null;
+  mdmUserId: string | null;
+  zone: string | null;
+}
+
+export interface DeviceAssignment extends BaseEntity {
+  deviceId: string;
+  userId: string;
+  businessId: string;
+  departmentId: string | null;
+  locationId: string | null;
+  assignedAt: string;
+  unassignedAt: string | null;
+  unassignmentReason: string | null;
+  unassignmentComment: string | null;
+  assignedByMdm: boolean;
+  device: Device;
+  user: User;
+  location: any | null;
+  department: any | null;
+}
+
+export interface CreateDeviceAssignmentRequest {
+  deviceId: string;
+  userId?: string;
+  departmentId?: string;
+  locationId?: string;
+}
+
+export interface GetAllDeviceAssignmentsRequestQuery extends QueryOptions {
+  deviceId?: string;
+  userId?: string;
+  departmentId?: string;
+  locationId?: string;
+  assignmentStatus?: DeviceAssignmentStatus;
+  deviceStatus?: DeviceStatus;
+  assignedByMdm?: boolean;
+}
+
+export interface UnassignDeviceRequest {
+  unassignmentReason: string;
+  unassignmentComment: string;
 }

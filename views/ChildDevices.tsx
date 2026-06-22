@@ -9,7 +9,8 @@ import { AddEditChildModal } from "@/features/child-profile/ui/ChildDetailsModal
 import { H3, P } from "@/shared/ui/typography";
 import { Edit2Icon, Trash2Icon } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRecentChildren } from "@/shared/hooks/useRecentChildren";
 import { DeleteChildModal } from "@/features/child-profile/ui/ChildDeleteModal";
 import { IChildProfile } from "@/features/onboarding/personal/types";
 import { useGetChild, useDeleteChild } from "@/features/child-profile/model/useGetChildrenProfile";
@@ -29,6 +30,11 @@ const ChildDevices = () => {
   const params = useParams<{ child: string }>();
   const child = params?.child;
   const router = useRouter();
+  const { push: pushRecentChild } = useRecentChildren();
+
+  useEffect(() => {
+    if (child) pushRecentChild(child);
+  }, [child]);
 
   const { data: childData, isLoading } = useGetChild(child as string);
   const { mutateAsync: deleteChild, isPending: isDeleting } = useDeleteChild();

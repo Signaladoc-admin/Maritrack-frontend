@@ -34,7 +34,7 @@ export default function CreateChildProfileForm({
     resolver: zodResolver(childProfileSchema) as any,
     defaultValues: {
       name: initialData?.name || "",
-      age: (initialData?.age as any) || '',
+      age: (initialData?.age as any) || "",
       gender: (initialData?.gender as any) || "",
     },
   });
@@ -43,7 +43,7 @@ export default function CreateChildProfileForm({
     const formattedData: IChildProfile = {
       ...data,
       id: initialData?.id,
-      image: data.profileImage ? URL.createObjectURL(data.profileImage) : initialData?.image,
+      image: data.profilePicture ? URL.createObjectURL(data.profilePicture) : initialData?.image,
     };
     onAddChild(formattedData);
   };
@@ -55,17 +55,27 @@ export default function CreateChildProfileForm({
       </Button>
       <Header title="Create your child's profile" subtitle="Set up a child account" />
       <form className="space-y-7" onSubmit={form.handleSubmit(onSubmit)}>
-        <FileUpload
-          value={form.watch("profileImage")}
-          onChange={(file) => form.setValue("profileImage", file as File)}
-          accept="image/*"
-          className="h-24 w-24 rounded-full"
-          previewClassName="h-full w-full rounded-full object-cover"
-        >
-          <div className="bg-muted flex h-full w-full items-center justify-center rounded-full border-gray-300 transition-colors hover:bg-gray-200">
-            <FilledUserIcon className="h-12 w-12 text-[#1b3c73]" />
-          </div>
-        </FileUpload>
+        <div className="flex flex-col gap-1.5">
+          <FileUpload
+            value={form.watch("profilePicture")}
+            onChange={(file) => {
+              form.setValue("profilePicture", file as File);
+              form.trigger("profilePicture");
+            }}
+            accept="image/*"
+            className="h-24 w-24 rounded-full"
+            previewClassName="h-full w-full rounded-full object-cover"
+          >
+            <div className="bg-muted flex h-full w-full items-center justify-center rounded-full border-gray-300 transition-colors hover:bg-gray-200">
+              <FilledUserIcon className="h-12 w-12 text-[#1b3c73]" />
+            </div>
+          </FileUpload>
+          {form.formState.errors.profilePicture && (
+            <p className="text-sm text-red-500">
+              {form.formState.errors.profilePicture.message as string}
+            </p>
+          )}
+        </div>
         <InputGroup
           label="Child name"
           placeholder="Enter name"

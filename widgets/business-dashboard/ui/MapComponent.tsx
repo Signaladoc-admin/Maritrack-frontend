@@ -25,8 +25,10 @@ interface MapComponentProps {
   locations?: DeviceLocation[];
 }
 
-// Only active when there are 2+ markers — adjusts the viewport to fit all pins.
-// useMap() reads the react-leaflet context provided by the parent MapContainer.
+// Adjusts the viewport whenever positions change — handles the single-marker
+// case with setView and the multi-marker case with fitBounds.
+// MapContainer.center is only used for initialization, so this is the only
+// way to keep the viewport in sync after async data arrives.
 function FitBounds({
   positionKey,
   positions,
@@ -37,7 +39,11 @@ function FitBounds({
   const map = useMap();
 
   React.useEffect(() => {
-    if (positions.length <= 1) return;
+    if (positions.length === 0) return;
+    if (positions.length === 1) {
+      map.setView(positions[0], 13);
+      return;
+    }
     import("leaflet").then((L) => {
       map.fitBounds(L.latLngBounds(positions), { padding: [30, 30] });
     });
@@ -98,7 +104,7 @@ export default function MapComponent({ locations = [] }: MapComponentProps) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {positions.length > 1 && <FitBounds positionKey={positionKey} positions={positions} />}
+        <FitBounds positionKey={positionKey} positions={positions} />
 
         {validLocations.length > 0 ? (
           validLocations.map((loc) => (

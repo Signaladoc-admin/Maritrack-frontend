@@ -27,8 +27,10 @@ export function DeviceUsageCard({
 }: DeviceUsageCardProps) {
   const isActive = status === "active";
 
-  const accentColor = isActive ? "#0EDD9F" : "#FF736A";
-  const accentTextClass = isActive ? "text-[#0EDD9F]" : "text-[#FF736A]";
+  /** Battery-level-based accent: red when low (≤20%), green otherwise */
+  const isLowBattery = percentage <= 20;
+  const accentColor = isLowBattery ? "#FF736A" : "#0EDD9F";
+  const accentTextClass = isLowBattery ? "text-[#FF736A]" : "text-[#0EDD9F]";
 
   // --- SVG Geometry for Curved Bar ---
   const radius = 40;
@@ -57,7 +59,7 @@ export function DeviceUsageCard({
       <div
         className={cn(
           "relative z-10 flex shrink-0 justify-center overflow-hidden",
-          isRow ? "-bottom-2 h-[150px] w-[180px] px-2" : "-bottom-[5rem] h-[300px] w-full"
+          isRow ? "-bottom-[5.5rem] h-[190px] w-[180px] px-2" : "-bottom-[5rem] h-[300px] w-full"
         )}
       >
         {/* The Phone Frame */}
@@ -71,7 +73,7 @@ export function DeviceUsageCard({
           <div className="absolute -top-[1px] left-1/2 z-20 h-3 w-10 -translate-x-1/2 rounded-b-lg border-x-[3px] border-b-[3px] border-[#1B3C73] bg-[#081223]" />
 
           {/* Screen Content */}
-          <div className="flex h-full w-full flex-col items-center justify-start pt-8">
+          <div className="flex h-full w-full flex-col items-center justify-center">
             <div className="relative h-[60px] w-full px-2">
               <svg
                 className="h-full w-full overflow-visible"
@@ -92,14 +94,14 @@ export function DeviceUsageCard({
                   strokeWidth={strokeWidth}
                   strokeDasharray={arcLength}
                   strokeDashoffset={strokeDashoffset}
-                  strokeLinecap="round"
+                  strokeLinecap="butt"
                   className="transition-all duration-700 ease-out"
                 />
               </svg>
             </div>
 
             {/* Battery & Percentage */}
-            <div className="mt-4 flex flex-col items-center">
+            <div className={cn(isRow ? "-mt-5" : "mt-4", "flex flex-col items-center")}>
               <BatteryFullIcon
                 className={cn(isRow ? "h-5 w-5" : "h-10 w-10", accentTextClass)}
                 fill={isActive ? "currentColor" : "none"}

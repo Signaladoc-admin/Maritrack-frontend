@@ -1,7 +1,7 @@
 export interface IChildProfile {
   id?: string;
   name: string;
-  profileImage?: File | null | undefined;
+  profilePicture?: File;
   age: number;
   gender: "MALE" | "FEMALE";
   image?: string;

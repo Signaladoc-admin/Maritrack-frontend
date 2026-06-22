@@ -3,8 +3,15 @@ import { capitalizeFirstLetters, formatDate, formatID } from "@/shared/lib/utils
 import { Button } from "@/shared/ui/button";
 import { StaffDevice } from "@/entities/device";
 import { DeviceHardwareDetails } from "./types";
+import Badge2 from "@/shared/ui/Badge2";
+import { BusinessRole } from "@/entities/user/model/user.schema";
+import { cn } from "@/lib/utils";
 
-export function getDevicesColumns(handleAssignDevice: (device: StaffDevice) => void) {
+export function getDevicesColumns(
+  handleAssignDevice: (device: StaffDevice) => void,
+  businessRole: BusinessRole,
+  onShowToast: (message: string) => void
+) {
   const devicesColumns: TableColumn<StaffDevice>[] = [
     {
       key: "asset",
@@ -24,28 +31,48 @@ export function getDevicesColumns(handleAssignDevice: (device: StaffDevice) => v
       key: "assignmentStatus",
       label: "Assignment",
       render: (item) =>
-        !!item.currentUser &&
-        (item.assignmentStatus === "ASSIGNED" || item.assignmentStatus === "REASSIGNED") ? (
-          <div className="space-y-1 leading-tight">
+        !!item.currentUser && item.assignmentStatus !== "UNASSIGNED" ? (
+          // && (item.assignmentStatus === "ASSIGNED" || item.assignmentStatus === "REASSIGNED")
+          <div className="space-y-1.5 leading-tight">
             <p className="font-semibold text-neutral-900">{`${item.currentUser?.firstName} ${item.currentUser?.lastName}`}</p>
             <p className="text-neutral-500">{item.currentUser?.email}</p>
+            {item?.assignmentStatus === "RETURNED" && (
+              <Badge2
+                content={capitalizeFirstLetters(item.assignmentStatus)}
+                variant="destructive"
+                className="text-xs!"
+              />
+            )}
           </div>
-        ) : item.assignmentStatus === "UNASSIGNED" ? (
+        ) : (
+          // item.assignmentStatus === "UNASSIGNED" ?
           <Button
             type="button"
             variant="secondary"
             size="sm"
-            className="rounded-full"
+            className={cn(
+              "rounded-full",
+              businessRole === "DEPARTMENT_MANAGER" && "cursor-not-allowed opacity-70"
+            )}
             onClick={(e) => {
               e.stopPropagation();
+
+              if (businessRole === "DEPARTMENT_MANAGER") {
+                onShowToast("Device assignment is for Device Manager and Organization Admin only.");
+                return;
+              }
               handleAssignDevice(item);
             }}
           >
-            Assign
+            Unassigned
           </Button>
-        ) : (
-          <p>{capitalizeFirstLetters(item.assignmentStatus)}</p>
         ),
+      // : (
+      //   <span>N/A</span>
+      // ),
+      // ) : (
+      //   <p>{capitalizeFirstLetters(item.assignmentStatus)}</p>
+      // ),
     },
     {
       key: "imei",

@@ -16,7 +16,9 @@ export const parentOnboardingProfileSchema = z.object({
 });
 
 export const childProfileSchema = z.object({
-  profileImage: z.instanceof(File).optional(),
+  profilePicture: z
+    .instanceof(File, { message: "Please upload a profile photo" })
+    .refine((f) => f.size > 0, { message: "Please upload a profile photo" }),
   name: z.string().min(1, "Enter your child's name"),
   age: z.coerce.number().min(1, "Enter your child's age"),
   gender: z.enum(genderValues, {
@@ -24,4 +26,9 @@ export const childProfileSchema = z.object({
       message: "Select a gender",
     }),
   }),
+});
+
+/** Same as childProfileSchema but profilePicture is optional — used when editing an existing child. */
+export const updateChildProfileSchema = childProfileSchema.extend({
+  profilePicture: z.instanceof(File).optional(),
 });

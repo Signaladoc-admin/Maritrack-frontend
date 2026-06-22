@@ -103,6 +103,10 @@ const General = () => {
     );
   }
 
+  // Generate ascending signal-bar heights scaled to the actual metric percentage
+  const generateSignalBars = (percent: number) =>
+    [1, 2, 3, 4, 5, 6, 7].map((i) => Math.round((i / 7) * percent));
+
   const isBusinessUser = user?.appRole === "BUSINESS";
 
   const memoryCard = (
@@ -110,7 +114,7 @@ const General = () => {
       title="Memory"
       value={`${storageUsedGB} GB of ${totalStorageGB} GB`}
       chartColor={storageColor}
-      chartData={[20, 30, 40, 50, 60, 70, 100 - freePercent]}
+      chartData={generateSignalBars(freePercent)}
       footerText={storageFooter}
     />
   );
@@ -120,7 +124,7 @@ const General = () => {
       title="Battery health"
       value={`${batteryLevel}%`}
       chartColor={batteryColor}
-      chartData={[100, 90, 80, 70, 65, 60, batteryLevel]}
+      chartData={generateSignalBars(batteryLevel)}
       footerText={batteryFooter}
     />
   );
