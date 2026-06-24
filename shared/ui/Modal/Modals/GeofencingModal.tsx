@@ -15,9 +15,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSearchBoxCore, useSearchSession } from "@mapbox/search-js-react";
 import { cn } from "@/shared/lib/utils";
-import { useSetRestrictions } from "@/features/mdm-sync/model/useMdmSync";
+import { useSetRestrictions } from "@/features/mdm-sync/model/useRestrictions";
 import { useParams } from "next/navigation";
 import { GeofenceLocation, GeofencesRequest } from "@/features/mdm-sync/types";
+import { useAuth } from "@/shared/auth/AuthProvider";
+import { useGetBusiness } from "@/entities/business/model/useBusiness";
+import { useParentChildren } from "@/entities/children/model/useChildren";
 
 // ---------------------------------------------------------------------------
 // Schema & Types
@@ -168,6 +171,22 @@ const LocationFormCard = React.forwardRef<{ submit: () => void }, LocationFormCa
                 <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
               </div>
             )}
+
+            {/* Suggestions dropdown */}
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute top-full left-0 z-50 mt-1 max-h-52 w-full overflow-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+                {suggestions.map((s, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-slate-50 focus:bg-slate-50 focus:outline-none"
+                    onMouseDown={() => handleSelectSuggestion(s)}
+                  >
+                    {s.full_address || `${s.name}${s.place_formatted ? `, ${s.place_formatted}` : ""}`}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {errors.locationName && (
@@ -175,22 +194,6 @@ const LocationFormCard = React.forwardRef<{ submit: () => void }, LocationFormCa
           )}
           {errors.lat && !errors.locationName && (
             <p className="text-xs text-red-500">Please select a valid location from the list</p>
-          )}
-
-          {/* Suggestions dropdown */}
-          {showSuggestions && suggestions.length > 0 && (
-            <div className="absolute z-50 mt-1 max-h-52 w-[calc(100%-32px)] overflow-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
-              {suggestions.map((s, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-slate-50 focus:bg-slate-50 focus:outline-none"
-                  onMouseDown={() => handleSelectSuggestion(s)}
-                >
-                  {s.full_address || `${s.name}${s.place_formatted ? `, ${s.place_formatted}` : ""}`}
-                </button>
-              ))}
-            </div>
           )}
         </div>
 
@@ -310,6 +313,20 @@ export function GeofencingModal({
 }) {
   const params = useParams();
   const mdmDeviceId = params.device as string;
+  const { user } = useAuth();
+  const isBusinessUser = user?.appRole === "BUSINESS";
+
+  const { data: business } = useGetBusiness(user?.businessId ?? "", {
+    enabled: isBusinessUser && !!user?.businessId,
+  });
+  const { data: childrenRes } = useParentChildren({ enabled: !isBusinessUser });
+  const children = childrenRes?.success ? childrenRes.data : [];
+  const matchedChild = children?.find((c) => c.device?.mdmDeviceId === mdmDeviceId);
+
+  const organizationName = isBusinessUser
+    ? business?.name
+    : matchedChild?.name;
+
   const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "";
 
   /** All committed entries */
@@ -499,7 +516,7 @@ export function GeofencingModal({
 
     const res = await setRestrictions({
       mdmDeviceId,
-      newRestrictions: { geofences },
+      restrictions: { geofences, organizationName },
     });
 
     if (res) {

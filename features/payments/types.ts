@@ -130,6 +130,10 @@ export interface BillingRecord extends BaseEntity {
   plan: PaymentPlan
 }
 
+export interface ExportSubscriptionsResponse {
+  link: string;
+}
+
 export interface BillingHistoryPaginatedResponse {
   status: string;
   message: string;

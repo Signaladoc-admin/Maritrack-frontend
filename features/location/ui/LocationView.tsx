@@ -17,7 +17,7 @@ const historyItems = [
 ];
 
 import { GeofencingModal } from "@/shared/ui/Modal/Modals/GeofencingModal";
-import { useGetRestrictions } from "@/features/mdm-sync/model/useMdmSync";
+import { useGetRestrictions } from "@/features/mdm-sync/model/useRestrictions";
 
 export function LocationView({ deviceId }: { deviceId: string }) {
   const [isGeofencingModalOpen, setIsGeofencingModalOpen] = useState(false);

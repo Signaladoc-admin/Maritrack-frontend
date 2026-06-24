@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { useZoneDevices } from "@/features/mdm-sync/model/useMdmSync";
-import { getRestrictionsAction } from "@/features/mdm-sync/api/mdm-sync.actions";
+import { getRestrictionsAction } from "@/features/mdm-sync/api/restrictions.actions";
 import type { Restrictions } from "@/features/mdm-sync/types";
 import type { ApiResponse } from "@/shared/api/types";
 

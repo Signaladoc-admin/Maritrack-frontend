@@ -5,7 +5,7 @@ import { Card, CardContent, CardTitle } from "../Card/Card";
 import { Loader2 } from "lucide-react";
 import { Button } from "../Button/button";
 import { GeofenceLocation } from "@/features/mdm-sync/types";
-import { useReverseGeocode } from "@/features/mdm-sync/model/useMdmSync";
+import { useReverseGeocode } from "@/features/mdm-sync/model/useRestrictions";
 
 export type FormattedGeofenceLocation = GeofenceLocation & { name: string };
 

@@ -3,7 +3,7 @@
 import { apiClient } from "@/shared/lib/api-client";
 import { withSafeAction } from "@/shared/lib/safe-action";
 import type { ActionResult, ApiResponse } from "@/shared/api/types";
-import { ActiveSubscription, BillingHistoryPaginatedResponse, BillingRecord, InitializePaymentRequest, InitializePaymentResponse, PaymentPlan, Subscription, Transaction } from "../types";
+import { ActiveSubscription, BillingHistoryPaginatedResponse, ExportSubscriptionsResponse, InitializePaymentRequest, InitializePaymentResponse, PaymentPlan, Subscription } from "../types";
 
 export async function getPaymentPlansAction(): Promise<ActionResult<PaymentPlan[]>> {
   return withSafeAction(async () => {
@@ -71,4 +71,14 @@ export async function getPaymentHistoryAction(
 
     return response;
   }, "Failed to fetch payment history");
+}
+
+export async function exportSubscriptionsAction(): Promise<ActionResult<ExportSubscriptionsResponse>> {
+  return withSafeAction(async () => {
+    const response = await apiClient<ApiResponse<ExportSubscriptionsResponse>>(
+      "/payments/export/subscriptions",
+      { method: "GET" }
+    );
+    return response.data;
+  }, "Failed to export subscriptions");
 }

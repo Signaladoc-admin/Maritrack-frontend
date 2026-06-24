@@ -8,8 +8,9 @@ import {
   getActiveSubscriptionAction,
   getPaymentHistoryAction,
   getAllSubscriptionsAction,
+  exportSubscriptionsAction,
 } from "../api/payment.actions";
-import { useEffect } from "react";
+import { useCallback, useState } from "react";
 import { useToast } from "@/shared/ui/toast";
 import { useQueryState } from "nuqs";
 import { usePathname, useRouter } from "next/navigation";
@@ -85,4 +86,37 @@ export function usePaymentHistory(
     [zoneId ?? "", page, limit],
     { enabled: !!zoneId }
   );
+}
+
+export function useExportSubscriptions() {
+  const { toast } = useToast();
+  const [isExporting, setIsExporting] = useState(false);
+
+  const exportSubscriptions = useCallback(async () => {
+    setIsExporting(true);
+    try {
+      const result = await exportSubscriptionsAction();
+
+      if (!result.success || !result.data) {
+        toast({
+          title: "Error",
+          message: result.error ?? "Failed to export subscriptions",
+          type: "error",
+        });
+        return;
+      }
+
+      window.open(result.data.link, "_blank");
+    } catch {
+      toast({
+        title: "Error",
+        message: "Failed to export subscriptions",
+        type: "error",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  }, [toast]);
+
+  return { exportSubscriptions, isExporting };
 }
