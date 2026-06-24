@@ -15,7 +15,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSearchBoxCore, useSearchSession } from "@mapbox/search-js-react";
 import { cn } from "@/shared/lib/utils";
-import { useSetRestrictions } from "@/features/mdm-sync/model/useMdmSync";
+import { useSetRestrictions } from "@/features/mdm-sync/model/useRestrictions";
 import { useParams } from "next/navigation";
 import { GeofenceLocation, GeofencesRequest } from "@/features/mdm-sync/types";
 
@@ -499,7 +499,7 @@ export function GeofencingModal({
 
     const res = await setRestrictions({
       mdmDeviceId,
-      newRestrictions: { geofences },
+      restrictions: { geofences },
     });
 
     if (res) {

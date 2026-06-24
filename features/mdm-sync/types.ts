@@ -39,6 +39,7 @@ export interface Restrictions {
 export interface RestrictionsRequest {
   domains?: string[];
   geofences?: GeofencesRequest[];
+  organizationName?: string;
 }
 
 export interface GeofencesRequest {
