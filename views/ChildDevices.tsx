@@ -99,7 +99,7 @@ const ChildDevices = () => {
               percentage={batteryLevel}
               device={device.model || device.mdmId}
               isRow={false}
-              onClick={() => router.push(`/devices/${device.mdmId}`)}
+              onClick={() => router.push(`/devices/${device.mdmId}?childId=${typedChild?.id}`)}
             />
           ) : (
             <EmptyDeviceCard onClick={() => setIsPairNewDeviceModalOpen(true)} />

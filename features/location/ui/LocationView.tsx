@@ -17,7 +17,10 @@ const historyItems = [
 ];
 
 import { GeofencingModal } from "@/shared/ui/Modal/Modals/GeofencingModal";
-import { useGetRestrictions } from "@/features/mdm-sync/model/useRestrictions";
+import { useGetBusiness } from "@/entities/business/model/useBusiness";
+import { useChild } from "@/entities/children/model/useChildren";
+import { useAuth } from "@/shared/auth/AuthProvider";
+import { useQueryState } from "nuqs";
 
 export function LocationView({ deviceId }: { deviceId: string }) {
   const [isGeofencingModalOpen, setIsGeofencingModalOpen] = useState(false);
@@ -28,11 +31,17 @@ export function LocationView({ deviceId }: { deviceId: string }) {
   });
 
   const location = hardwareData?.deviceDetails?.lastKnownLocation;
-  const { data } = useGetRestrictions(deviceId);
 
-  console.log("location", location);
+  // organizationName: business name for business accounts, child's name for parent accounts.
+  const { user } = useAuth();
+  const businessId = user?.businessId ?? "";
+  const [childId] = useQueryState("childId", { defaultValue: "" });
 
-  const geoFencingLocations = data?.data?.geofences || [];
+  const { data: business } = useGetBusiness(businessId, { enabled: !!businessId });
+  const { data: child } = useChild(childId, { enabled: !!childId });
+  const organizationName = business?.name ?? child?.name ?? "";
+
+  const geoFencingLocations = hardwareData?.data?.geofences || [];
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -58,6 +67,7 @@ export function LocationView({ deviceId }: { deviceId: string }) {
         open={isGeofencingModalOpen}
         onOpenChange={setIsGeofencingModalOpen}
         initialLocations={initialLocations}
+        organizationName={organizationName}
       />
     </div>
   );

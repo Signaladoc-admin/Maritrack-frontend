@@ -18,7 +18,10 @@ import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 import { MDMDeviceDetailsResponse } from "@/features/device/types";
 import { useUserById } from "@/entities/user/model/useUserProfile";
 import { useReassignDevice } from "@/features/business-users/users/model/useReassignDevice";
-import { useCreateDeviceAssignment } from "@/entities/device/model/useDeviceAssignments";
+import {
+  useCreateDeviceAssignment,
+  useUnassignDeviceFromUser,
+} from "@/entities/device/model/useDeviceAssignments";
 import { useGetDeviceAssignmentId } from "@/features/mdm-sync/model/useMdmSync";
 
 function StaffOptionContent({ staff }: { staff: BusinessStaff }) {
@@ -85,6 +88,7 @@ export default function ReassignDeviceModal({
   selectedDevice,
   selectedDeviceMdmId,
   type = "REASSIGN",
+  refetch,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -96,6 +100,7 @@ export default function ReassignDeviceModal({
   selectedDevice?: StaffDevice | null;
   selectedDeviceMdmId?: string;
   type?: "ASSIGN" | "REASSIGN";
+  refetch?: () => void;
 }) {
   const [step, setStep] = useState<"select-staff" | "confirm">("select-staff");
   const [selectedStaff, setSelectedStaff] = useState<BusinessStaff | null>(null);
@@ -162,20 +167,12 @@ export default function ReassignDeviceModal({
     resolver: zodResolver(assignDeviceToUserSchema),
   });
 
-  const { data: deviceAssignmentId, isLoading: isLoadingDeviceAssignment } =
-    useGetDeviceAssignmentId({
-      deviceId: selectedDevice?.id!,
-      userId: selectedDevice?.currentUserId!,
-    });
-
-  // console.log("assignment id", deviceAssignmentId);
-  // console.log("deviceId", selectedDevice?.id!);
-  // console.log("userId", selectedDevice?.currentUserId!);
-
   const { mutateAsync: reassignDevice, isPending: isReassigning } = useReassignDevice();
   const { mutateAsync: createDeviceAssignment, isPending: isAssigning } =
     useCreateDeviceAssignment();
-  const isPending = isReassigning || isAssigning || isLoadingDeviceAssignment;
+  const { mutateAsync: unassignDeviceFromUser, isPending: isUnassigning } =
+    useUnassignDeviceFromUser();
+  const isPending = isReassigning || isAssigning || isUnassigning;
 
   function handleClose() {
     reset();
@@ -191,6 +188,8 @@ export default function ReassignDeviceModal({
     setStep("confirm");
   }
 
+  console.log("selectedDevice", selectedDevice);
+
   async function handleReassign() {
     const userIdToAssign = selectedStaff?.user?.id || selectedStaff?.userId;
     try {
@@ -200,13 +199,19 @@ export default function ReassignDeviceModal({
           deviceId: actualSelectedDevice?.id as string,
         });
       } else {
-        await reassignDevice({
-          deviceAssignmentId:
-            (selectedDevice?.deviceAssignmentId as string) || (deviceAssignmentId as string),
-          userId: userIdToAssign as string,
-          deviceId: actualSelectedDevice?.id as string,
+        const res = await unassignDeviceFromUser({
+          deviceAssignmentId: selectedDevice?.deviceAssignmentId as string,
         });
+        console.log(res);
+        // return console.log(selectedDevice);
+        // await reassignDevice({
+        //   deviceAssignmentId: selectedDevice?.deviceAssignmentId as string,
+        //   userId: userIdToAssign as string,
+        //   deviceId: actualSelectedDevice?.id as string,
+        // });
       }
+
+      refetch?.();
     } catch (error: any) {
       toast({
         type: "error",
