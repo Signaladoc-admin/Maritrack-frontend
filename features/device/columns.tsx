@@ -32,7 +32,6 @@ export function getDevicesColumns(
       label: "Assignment",
       render: (item) =>
         !!item.currentUser && item.assignmentStatus !== "UNASSIGNED" ? (
-          // && (item.assignmentStatus === "ASSIGNED" || item.assignmentStatus === "REASSIGNED")
           <div className="space-y-1.5 leading-tight">
             <p className="font-semibold text-neutral-900">{`${item.currentUser?.firstName} ${item.currentUser?.lastName}`}</p>
             <p className="text-neutral-500">{item.currentUser?.email}</p>
@@ -45,7 +44,6 @@ export function getDevicesColumns(
             )}
           </div>
         ) : (
-          // item.assignmentStatus === "UNASSIGNED" ?
           <Button
             type="button"
             variant="secondary"
@@ -67,12 +65,6 @@ export function getDevicesColumns(
             Unassigned
           </Button>
         ),
-      // : (
-      //   <span>N/A</span>
-      // ),
-      // ) : (
-      //   <p>{capitalizeFirstLetters(item.assignmentStatus)}</p>
-      // ),
     },
     {
       key: "imei",

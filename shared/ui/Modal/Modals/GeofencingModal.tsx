@@ -303,10 +303,13 @@ export function GeofencingModal({
   open,
   onOpenChange,
   initialLocations = [],
+  organizationName,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialLocations?: Array<GeofenceLocation & { name: string }>;
+  /** Business name for business accounts, child's name for parent accounts. */
+  organizationName: string;
 }) {
   const params = useParams();
   const mdmDeviceId = params.device as string;
@@ -499,6 +502,7 @@ export function GeofencingModal({
 
     const res = await setRestrictions({
       mdmDeviceId,
+      organizationName,
       newRestrictions: { geofences },
     });
 

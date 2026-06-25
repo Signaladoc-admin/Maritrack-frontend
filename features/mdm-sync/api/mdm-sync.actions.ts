@@ -250,36 +250,24 @@ export async function getRestrictionsAction(mdmDeviceId: string) {
 
 export async function setRestrictionsAction({
   mdmDeviceId,
+  organizationName,
   newRestrictions,
 }: {
   mdmDeviceId: string;
+  organizationName: string;
   newRestrictions: RestrictionsRequest;
 }) {
-  const currentRestrictionsRes = await getRestrictionsAction(mdmDeviceId);
+  // Replace semantics: the caller passes the full final list for whichever field
+  // it is updating. Only the provided field(s) are sent so the other is left
+  // untouched; organizationName is always required.
+  const body: {
+    organizationName: string;
+    domains?: string[];
+    geofences?: GeofencesRequest[];
+  } = { organizationName };
 
-  const currentDomains = currentRestrictionsRes.success
-    ? (currentRestrictionsRes.data?.data?.domains ?? [])
-    : [];
-  const currentGeofences = currentRestrictionsRes.success
-    ? (currentRestrictionsRes.data?.data?.geofences ?? [])
-    : [];
-
-  console.log("currentRestrictionsRes", currentRestrictionsRes);
-
-  const allDomainStrings = [
-    ...currentDomains.map((d) => d.domain),
-    ...(newRestrictions.domains ?? []),
-  ];
-  const domains: string[] = [...new Set(allDomainStrings)];
-
-  const allGeofences: GeofencesRequest[] = [
-    ...currentGeofences.map(({ lat, lng, radius }) => ({ lat, lng, radius })),
-    ...(newRestrictions.geofences ?? []),
-  ];
-  const geofences: GeofencesRequest[] = allGeofences.filter(
-    (g, index, self) =>
-      index === self.findIndex((o) => o.lat === g.lat && o.lng === g.lng && o.radius === g.radius)
-  );
+  if (newRestrictions.domains !== undefined) body.domains = newRestrictions.domains;
+  if (newRestrictions.geofences !== undefined) body.geofences = newRestrictions.geofences;
 
   return withSafeAction(
     async () =>
@@ -287,12 +275,10 @@ export async function setRestrictionsAction({
         `/mdm-sync/${mdmDeviceId}/restrictions`,
         {
           method: "PUT",
-          body: JSON.stringify({ domains, geofences }),
+          body: JSON.stringify(body),
         }
       ),
-    currentDomains.length > 0 || currentGeofences.length > 0
-      ? "Failed to update restrictions"
-      : "Failed to set restrictions"
+    "Failed to update restrictions"
   );
 }
 
