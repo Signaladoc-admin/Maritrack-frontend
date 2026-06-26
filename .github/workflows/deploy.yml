@@ -113,10 +113,21 @@ jobs:
           "${SSH[@]}" "$REMOTE" "INSTALL_PATH='$INSTALL_PATH' RELEASE_ID='$RELEASE_ID' bash -s" <<'EOF'
             set -euo pipefail
 
+            # Load NVM (Node Version Manager) if installed
+            export NVM_DIR="$HOME/.nvm"
+            if [ -s "$NVM_DIR/nvm.sh" ]; then
+              set +e
+              . "$NVM_DIR/nvm.sh"
+              set -e
+            fi
+
+            # Append common binary directories to PATH
+            export PATH="$PATH:/usr/local/bin:$HOME/.npm-global/bin:$HOME/.local/bin"
+
             RELEASE_DIR="${INSTALL_PATH}/releases/${RELEASE_ID}"
 
             if ! command -v pm2 >/dev/null 2>&1; then
-              echo "pm2 is not installed on the server" >&2
+              echo "Error: pm2 is not found in PATH ($PATH) on the server." >&2
               exit 1
             fi
 
