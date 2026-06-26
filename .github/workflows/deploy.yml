@@ -146,6 +146,17 @@ jobs:
 
             if ! command -v pm2 >/dev/null 2>&1; then
               echo "Error: pm2 is not found in PATH ($PATH) on the server." >&2
+              echo "=== DIAGNOSTIC INFORMATION ===" >&2
+              if command -v node >/dev/null 2>&1; then
+                echo "node found at: $(command -v node)" >&2
+                echo "node version: $(node -v)" >&2
+                echo "npm global root: $(npm root -g 2>/dev/null || true)" >&2
+                echo "npm global prefix: $(npm config get prefix 2>/dev/null || true)" >&2
+              else
+                echo "node is NOT found in PATH." >&2
+              fi
+              echo "Searching for pm2 and node binaries inside user home directory..." >&2
+              find "$HOME" \( -name "pm2" -o -name "node" \) -type f -perm -u+x 2>/dev/null || true
               exit 1
             fi
 
