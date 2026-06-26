@@ -113,7 +113,7 @@ jobs:
           "${SSH[@]}" "$REMOTE" "INSTALL_PATH='$INSTALL_PATH' RELEASE_ID='$RELEASE_ID' bash -s" <<'EOF'
             set -euo pipefail
 
-            # Load NVM (Node Version Manager) if installed
+            # 1. Load NVM (Node Version Manager) if installed
             export NVM_DIR="$HOME/.nvm"
             if [ -s "$NVM_DIR/nvm.sh" ]; then
               set +e
@@ -121,8 +121,26 @@ jobs:
               set -e
             fi
 
-            # Append common binary directories to PATH
-            export PATH="$PATH:/usr/local/bin:$HOME/.npm-global/bin:$HOME/.local/bin"
+            # 2. Append common binary directories (including /snap/bin) to PATH
+            export PATH="$PATH:/usr/local/bin:/snap/bin:$HOME/.npm-global/bin:$HOME/.local/bin"
+
+            # 3. Dynamically search for PM2 in common installation directories
+            for candidate in \
+              /snap/bin/pm2 \
+              /usr/bin/pm2 \
+              /usr/local/bin/pm2 \
+              "$HOME"/.nvm/versions/node/*/bin/pm2 \
+              "$HOME"/.fnm/aliases/default/bin/pm2 \
+              "$HOME"/.fnm/bin/pm2 \
+              "$HOME"/.npm-global/bin/pm2 \
+              "$HOME"/.config/yarn/global/node_modules/.bin/pm2 \
+              "$HOME"/.yarn/bin/pm2
+            do
+              if [ -x "$candidate" ]; then
+                export PATH="$(dirname "$candidate"):$PATH"
+                break
+              fi
+            done
 
             RELEASE_DIR="${INSTALL_PATH}/releases/${RELEASE_ID}"
 
