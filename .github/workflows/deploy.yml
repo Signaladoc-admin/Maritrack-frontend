@@ -155,8 +155,16 @@ jobs:
               else
                 echo "node is NOT found in PATH." >&2
               fi
-              echo "Searching for pm2 and node binaries inside user home directory..." >&2
-              find "$HOME" \( -name "pm2" -o -name "node" \) -type f -perm -u+x 2>/dev/null || true
+              echo "=== SYSTEM DIAGNOSTICS ===" >&2
+              echo "Current User: $(whoami)" >&2
+              echo "Current Directory: $(pwd)" >&2
+              echo "Home Directory: $HOME" >&2
+              echo "--- Home Directory Contents ---" >&2
+              ls -la "$HOME" >&2
+              echo "--- Running Node/PM2 Processes ---" >&2
+              ps aux | grep -E "node|pm2" | grep -v grep || echo "No running node/pm2 processes found." >&2
+              echo "--- Searching Home Directory (No Permission Filter) ---" >&2
+              find "$HOME" \( -name "pm2" -o -name "node" \) 2>/dev/null || true
               exit 1
             fi
 
