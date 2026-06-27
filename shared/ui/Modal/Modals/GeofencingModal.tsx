@@ -17,10 +17,11 @@ import { useSearchBoxCore, useSearchSession } from "@mapbox/search-js-react";
 import { cn } from "@/shared/lib/utils";
 import { useSetRestrictions } from "@/features/mdm-sync/model/useRestrictions";
 import { useParams } from "next/navigation";
+import { useQueryState } from "nuqs";
 import { GeofenceLocation, GeofencesRequest } from "@/features/mdm-sync/types";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { useGetBusiness } from "@/entities/business/model/useBusiness";
-import { useParentChildren } from "@/entities/children/model/useChildren";
+import { useChild } from "@/entities/children/model/useChildren";
 
 // ---------------------------------------------------------------------------
 // Schema & Types
@@ -134,7 +135,12 @@ const LocationFormCard = React.forwardRef<{ submit: () => void }, LocationFormCa
     };
 
     return (
-      <div className={cn("relative space-y-5", !hideHeader && "rounded-xl border border-slate-100 bg-slate-50 p-4")}>
+      <div
+        className={cn(
+          "relative space-y-5",
+          !hideHeader && "rounded-xl border border-slate-100 bg-slate-50 p-4"
+        )}
+      >
         {/* Header — only shown for standalone cards (not embedded in accordion) */}
         {!hideHeader && (
           <div className="flex items-center justify-between">
@@ -182,7 +188,8 @@ const LocationFormCard = React.forwardRef<{ submit: () => void }, LocationFormCa
                     className="w-full px-4 py-2 text-left text-sm hover:bg-slate-50 focus:bg-slate-50 focus:outline-none"
                     onMouseDown={() => handleSelectSuggestion(s)}
                   >
-                    {s.full_address || `${s.name}${s.place_formatted ? `, ${s.place_formatted}` : ""}`}
+                    {s.full_address ||
+                      `${s.name}${s.place_formatted ? `, ${s.place_formatted}` : ""}`}
                   </button>
                 ))}
               </div>
@@ -275,7 +282,7 @@ const LocationDataItem = React.forwardRef<{ submit: () => void }, LocationDataIt
 
         {/* Inline form — only rendered when expanded */}
         {isExpanded && (
-          <div className="relative border-t border-slate-100 px-4 pb-4 pt-4">
+          <div className="relative border-t border-slate-100 px-4 pt-4 pb-4">
             <LocationFormCard
               key={entry.id}
               ref={ref}
@@ -320,13 +327,13 @@ export function GeofencingModal({
   const { data: business } = useGetBusiness(user?.businessId ?? "", {
     enabled: isBusinessUser && !!user?.businessId,
   });
-  const { data: childrenRes } = useParentChildren({ enabled: !isBusinessUser });
-  const children = childrenRes?.success ? childrenRes.data : [];
-  const matchedChild = children?.find((c) => c.device?.mdmDeviceId === mdmDeviceId);
+  // Parent accounts: the child whose device this is, identified by the `childId`
+  // query param carried over from the child's device card. Fetched directly by id
+  // rather than fetching all children and finding by mdmDeviceId.
+  const [childId] = useQueryState("childId", { defaultValue: "" });
+  const { data: child } = useChild(childId, { enabled: !isBusinessUser && !!childId });
 
-  const organizationName = isBusinessUser
-    ? business?.name
-    : matchedChild?.name;
+  const organizationName = isBusinessUser ? business?.name : child?.name;
 
   const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "";
 
@@ -428,7 +435,13 @@ export function GeofencingModal({
     setLocations((prev) =>
       prev.map((loc) =>
         loc.id === id
-          ? { id, locationName: data.locationName, lat: data.lat, lon: data.lon, radius: data.radius }
+          ? {
+              id,
+              locationName: data.locationName,
+              lat: data.lat,
+              lon: data.lon,
+              radius: data.radius,
+            }
           : loc
       )
     );
@@ -517,12 +530,7 @@ export function GeofencingModal({
 
     const res = await setRestrictions({
       mdmDeviceId,
-<<<<<<< HEAD
       restrictions: { geofences, organizationName },
-=======
-      organizationName,
-      newRestrictions: { geofences },
->>>>>>> feat/device-assignment
     });
 
     if (res) {
@@ -537,7 +545,6 @@ export function GeofencingModal({
   const hasAnythingToSave = locations.length > 0 || isAddingNew;
   /** True when the user deleted all locations that were pre-populated from the server */
   const isClearMode = hadInitialLocations.current && locations.length === 0 && !isAddingNew;
-
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>

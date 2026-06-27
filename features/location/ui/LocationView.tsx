@@ -67,7 +67,6 @@ export function LocationView({ deviceId }: { deviceId: string }) {
         open={isGeofencingModalOpen}
         onOpenChange={setIsGeofencingModalOpen}
         initialLocations={initialLocations}
-        organizationName={organizationName}
       />
     </div>
   );

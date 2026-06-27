@@ -22,9 +22,11 @@ import {
   DeviceAssignmentStatus,
   DeviceStatus,
   StaffDevice,
+  deviceKeys,
   useDevices,
   useExportDevices,
 } from "@/entities/device";
+import { useQueryClient } from "@tanstack/react-query";
 import NewDeviceModal from "@/features/business-users/users/ui/NewDeviceModal";
 import { Loader } from "@/shared/ui/loader";
 import { useAuth } from "@/shared/auth/AuthProvider";
@@ -62,6 +64,18 @@ export default function DevicesList() {
 
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  async function handleDeviceAssigned() {
+    // Invalidate + refetch the just-assigned device and the devices list so the
+    // new assignment status shows immediately.
+    await Promise.all([
+      selectedDevice?.id
+        ? queryClient.invalidateQueries({ queryKey: deviceKeys.item(selectedDevice.id) })
+        : Promise.resolve(),
+      queryClient.invalidateQueries({ queryKey: deviceKeys.list({}) }),
+    ]);
+  }
 
   async function handleExport() {
     const result = await refetchExport();
@@ -215,6 +229,7 @@ export default function DevicesList() {
         onOpenChange={setIsShowingAssignDeviceModal}
         selectedDevice={selectedDevice!}
         type="ASSIGN"
+        refetch={handleDeviceAssigned}
       />
     </div>
   );

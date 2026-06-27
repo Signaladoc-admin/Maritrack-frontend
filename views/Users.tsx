@@ -158,21 +158,21 @@ export default function Users() {
           </div>
           {selectedTab === "users" && (
             <UsersList
-              searchTerm={debouncedSearchTerm}
+              searchTerm={debouncedSearchTerm.trim()}
               currentPage={currentPage}
               setSelectedTabTotalPages={setSelectedTabTotalPages}
             />
           )}
           {selectedTab === "departments" && (
             <DepartmentsList
-              searchTerm={debouncedSearchTerm}
+              searchTerm={debouncedSearchTerm.trim()}
               currentPage={currentPage}
               setSelectedTabTotalPages={setSelectedTabTotalPages}
             />
           )}
           {selectedTab === "locations" && (
             <LocationsList
-              searchTerm={debouncedSearchTerm}
+              searchTerm={debouncedSearchTerm.trim()}
               currentPage={currentPage}
               setSelectedTabTotalPages={setSelectedTabTotalPages}
             />

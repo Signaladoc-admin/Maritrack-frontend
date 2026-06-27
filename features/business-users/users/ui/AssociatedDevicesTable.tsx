@@ -30,11 +30,6 @@ export default function AssociatedDevicesTable({ staffId }: { staffId?: string }
   } = useDeviceDetail(mdmDeviceId, "hardware", { enabled: !!mdmDeviceId });
 
   const hardwareDetails: MDMDeviceDetailsResponse = hardwareData;
-  const device = {
-    ...staffMember,
-    ...hardwareDetails?.data,
-    mdmLastSyncAt: hardwareDetails?.deviceDetails?.mdmLastSyncAt,
-  };
 
   const [isShowingReassignDeviceModal, setIsShowingReassignDeviceModal] = useState(false);
   // The modal needs the device *record* (currentUserId, currentUser, mdmDeviceId,
@@ -42,16 +37,25 @@ export default function AssociatedDevicesTable({ staffId }: { staffId?: string }
   // not the hardware-details row built for display in the table below.
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
 
-  const { data: deviceData } = useDevice(selectedDeviceId as string);
+  const { data: deviceData, refetch: refetchDevice } = useDevice(selectedDeviceId as string);
+
+  const device = {
+    ...hardwareDetails?.data,
+    deviceDetails: deviceData,
+    mdmLastSyncAt: hardwareDetails?.deviceDetails?.mdmLastSyncAt,
+  };
 
   function handleOpenReassignDeviceModal() {
     setIsShowingReassignDeviceModal(true);
     setSelectedDeviceId(staffMember?.device?.id ?? null);
   }
 
-  function handleRefetch() {
-    refetchStaffMember();
-    refetchDeviceDetail();
+  async function handleRefetch() {
+    // Await all so the table re-renders with the now-deviceless staff member
+    // before the modal closes — i.e. the device visibly disappears immediately.
+    // refetchDevice also refreshes the device's deviceAssignmentId so a retry
+    // after a failed unassignment uses the current id, not a stale one.
+    await Promise.all([refetchStaffMember(), refetchDeviceDetail(), refetchDevice()]);
   }
 
   return (
