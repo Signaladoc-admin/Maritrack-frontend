@@ -1,113 +1,274 @@
-name: Deploy Maritrack Frontend
+name: Build + Deploy dev
 
 on:
-  push:
-    branches:
-      - dev/dev
-  workflow_dispatch:
+    push:
+        branches: ["dev/dev"]
 
 concurrency:
-  group: maritrack-deploy-${{ github.ref }}
-  cancel-in-progress: false
+    group: deploy-${{ github.ref }}
+    cancel-in-progress: false
+
+env:
+    IMAGE_BASE: ghcr.io/signaladoc-team/maritrackfrontend/optitrack-frontend
+    SERVICE_NAME: optitrack-frontend
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    # ───────────────────────────── BUILD & PUSH ─────────────────────────────
+    build:
+        runs-on: ubuntu-latest
+        environment: dev
+        permissions:
+            contents: read
+            packages: write
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: npm
-          cache-dependency-path: package-lock.json
+        outputs:
+            image_digest: ${{ steps.bp.outputs.digest }}
 
-      - name: Install dependencies
-        run: npm ci
+        steps:
+            - uses: actions/checkout@v4
 
-      # - name: Lint
-      #   run: npm run lint
+            - name: Docker login → GitHub Container Registry
+              uses: docker/login-action@v3
+              with:
+                  registry: ghcr.io
+                  # username: ${{ github.actor }}
+                  # password: ${{ secrets.GITHUB_TOKEN }}
+                  username: ${{ secrets.GHCR_USERNAME }}
+                  password: ${{ secrets.GHCR_PULL_TOKEN }}
 
-      # - name: Test
-      #   run: npm test
+            - name: Set up Docker Buildx (BuildKit)
+              uses: docker/setup-buildx-action@v3
+              with:
+                  driver: docker-container
+                  install: true
+                  buildkitd-flags: --debug
 
-      # NEXT_PUBLIC_* is read at `next build` from .env.production.local (same source as deploy/.env).
-      - name: Build application
+            - name: Docker meta (tags + labels)
+              id: meta
+              uses: docker/metadata-action@v5
+              with:
+                  images: ${{ env.IMAGE_BASE }}
+                  tags: |
+                      type=raw,value=main
+                      type=sha
+                  labels: |
+                      org.opencontainers.image.source=${{ github.repository }}
+
+            - name: Build & Push
+              id: bp
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  push: true
+                  platforms: linux/amd64
+                  tags: ${{ steps.meta.outputs.tags }}
+                  labels: ${{ steps.meta.outputs.labels }}
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
+
+            - name: Write image digest to workflow summary
+              run: |
+                  echo "### Built image digest" >> "$GITHUB_STEP_SUMMARY"
+                  echo "" >> "$GITHUB_STEP_SUMMARY"
+                  echo "\`${{ env.IMAGE_BASE }}@${{ steps.bp.outputs.digest }}\`" >> "$GITHUB_STEP_SUMMARY"
+                  echo "" >> "$GITHUB_STEP_SUMMARY"
+                  echo "Copy the digest value and use it when you run the **Web Deploy (prod)** workflow." >> "$GITHUB_STEP_SUMMARY"
+
+    # ──────────────────────────── DEPLOY → DEV ─────────────────────────────
+    deploy-dev:
+        needs: build
+        runs-on: ubuntu-latest
+        environment: dev
+        permissions:
+            contents: read
+            packages: read
+
         env:
-          VPS_DOTENV: ${{ secrets.VPS_DOTENV }}
-          NODE_ENV: production
-        run: |
-          set -euo pipefail
-          if [ -z "${VPS_DOTENV}" ]; then
-            echo "VPS_DOTENV secret is empty. It must include NEXT_PUBLIC_API_URL (and other keys)."
-            exit 1
-          fi
-          printf '%s\n' "$VPS_DOTENV" > .env.production.local
-          if ! grep -Eq '^[[:space:]]*(export[[:space:]]+)?NEXT_PUBLIC_API_URL=.+' .env.production.local; then
-            echo "VPS_DOTENV must define a non-empty NEXT_PUBLIC_API_URL=... line for the client bundle."
-            exit 1
-          fi
-          npm run build
+            REGISTRY: ghcr.io
 
-      - name: Prepare standalone release
-        env:
-          VPS_DOTENV: ${{ secrets.VPS_DOTENV }}
-        run: |
-          set -euo pipefail
-          rm -rf deploy
-          mkdir -p deploy/.next
-          cp -R .next/standalone/. deploy/
-          cp -R .next/static deploy/.next/static
-          cp -R public deploy/public
-          cp ecosystem.config.cjs deploy/ecosystem.config.cjs
-          printf '%s\n' "$VPS_DOTENV" > deploy/.env
+        steps:
+            - name: Create per-app digest override
+              run: |
+                  {
+                    echo "services:"
+                    echo "  ${{env.SERVICE_NAME}}:"
+                    echo "    image: ${{ env.IMAGE_BASE }}@${{ needs.build.outputs.image_digest }}"
+                    echo "  ${{env.SERVICE_NAME}}-migrate:"
+                    echo "    image: ${{ env.IMAGE_BASE }}@${{ needs.build.outputs.image_digest }}"
+                  } > docker-compose.${{env.SERVICE_NAME}}.override.yml
+                  cat docker-compose.${{env.SERVICE_NAME}}.override.yml
 
-      - name: Deploy release
-        env:
-          RSA_SECRET: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          SSH_PORT: ${{ secrets.VPS_SSH_PORT }}
-          INSTALL_PATH: ${{ secrets.INSTALL_PATH }}
-        run: |
-          set -euo pipefail
+            - name: Copy override to server
+              uses: appleboy/scp-action@v0.1.7
+              with:
+                  host: ${{ secrets.SSH_HOST_VPS }}
+                  username: ${{ secrets.SSH_USER_VPS }}
+                  key: ${{ secrets.SSH_KEY_VPS }}
+                  source: "docker-compose.${{env.SERVICE_NAME}}.override.yml"
+                  target: /home/dockeradmin/flentra/frontend/.deploy
+                  overwrite: true
 
-          : "${RSA_SECRET:?RSA_SECRET secret is required}"
-          : "${SSH_KNOWN_HOSTS:?SSH_KNOWN_HOSTS secret is required}"
-          : "${VPS_HOST:?VPS_HOST secret is required}"
-          : "${VPS_USER:?VPS_USER secret is required}"
-          : "${SSH_PORT:?SSH_PORT secret is required}"
-          : "${INSTALL_PATH:?INSTALL_PATH secret is required}"
+            - name: Deploy ${{env.SERVICE_NAME}}
+              uses: appleboy/ssh-action@v1.0.3
+              with:
+                  host: ${{ secrets.SSH_HOST_VPS }}
+                  username: ${{ secrets.SSH_USER_VPS }}
+                  key: ${{ secrets.SSH_KEY_VPS }}
+                  # fingerprint: ${{ secrets.SSH_FINGERPRINT }}  # enable once set
+                  script: |
+                      set -euo pipefail
 
-          mkdir -p ~/.ssh
-          printf '%s\n' "$RSA_SECRET" > ~/.ssh/deploy_key
-          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/deploy_key
-          chmod 644 ~/.ssh/known_hosts
+                      # Log in to GHCR on the host
+                      echo '${{ secrets.GHCR_PULL_TOKEN }}' | docker login -u '${{ github.actor }}' --password-stdin "${{ env.REGISTRY }}"
 
-          SSH=(ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes)
-          REMOTE="${VPS_USER}@${VPS_HOST}"
-          RELEASE_ID="${GITHUB_SHA::12}"
-          RELEASE_DIR="${INSTALL_PATH}/releases/${RELEASE_ID}"
+                      # Use infra + app + per-app override (pin by digest)
+                      docker compose \
+                        --env-file /home/dockeradmin/flentra/frontend/apps/${{env.SERVICE_NAME}}.env \
+                        -f /home/dockeradmin/flentra/frontend/compose/docker-compose.${{env.SERVICE_NAME}}.yml \
+                        -f /home/dockeradmin/flentra/frontend/.deploy/docker-compose.${{env.SERVICE_NAME}}.override.yml \
+                        pull ${{env.SERVICE_NAME}}
 
-          "${SSH[@]}" "$REMOTE" "mkdir -p '$INSTALL_PATH/releases' '$RELEASE_DIR'"
-          rsync -az --delete -e "${SSH[*]}" deploy/ "${REMOTE}:${RELEASE_DIR}/"
-          "${SSH[@]}" "$REMOTE" "INSTALL_PATH='$INSTALL_PATH' RELEASE_ID='$RELEASE_ID' bash -s" <<'EOF'
-            set -euo pipefail
+                      docker compose \
+                        --env-file /home/dockeradmin/flentra/frontend/apps/${{env.SERVICE_NAME}}.env \
+                        -f /home/dockeradmin/flentra/frontend/compose/docker-compose.${{env.SERVICE_NAME}}.yml \
+                        -f /home/dockeradmin/flentra/frontend/.deploy/docker-compose.${{env.SERVICE_NAME}}.override.yml \
+                        up -d --wait --wait-timeout 180 ${{env.SERVICE_NAME}}
 
-            RELEASE_DIR="${INSTALL_PATH}/releases/${RELEASE_ID}"
+                      docker image prune -f
 
-            if ! command -v pm2 >/dev/null 2>&1; then
-              echo "pm2 is not installed on the server" >&2
-              exit 1
-            fi
 
-            ln -sfn "$RELEASE_DIR" "${INSTALL_PATH}/current"
-            cd "${INSTALL_PATH}/current"
-            pm2 startOrReload ecosystem.config.cjs --update-env
 
-            find "${INSTALL_PATH}/releases" -mindepth 1 -maxdepth 1 -type d | sort -r | tail -n +6 | xargs -r rm -rf
-          EOF
+
+
+
+
+# name: Deploy Maritrack Frontend
+
+# on:
+#   push:
+#     branches:
+#       - dev/dev
+#   workflow_dispatch:
+
+# concurrency:
+#   group: maritrack-deploy-${{ github.ref }}
+#   cancel-in-progress: false
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       - name: Set up Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: "20"
+#           cache: npm
+#           cache-dependency-path: package-lock.json
+
+#       - name: Install dependencies
+#         run: npm ci
+
+#       # - name: Lint
+#       #   run: npm run lint
+
+#       # - name: Test
+#       #   run: npm test
+
+#       - name: Cache Next.js build
+#         uses: actions/cache@v4
+#         with:
+#           path: |
+#             ${{ github.workspace }}/.next/cache
+#           # Generate a new cache key whenever packages or source files change
+#           key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ github.sha }}
+#           restore-keys: |
+#             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+
+#       # NEXT_PUBLIC_* is read at `next build` from .env.production.local (same source as deploy/.env).
+#       - name: Build application
+#         env:
+#           VPS_DOTENV: ${{ secrets.VPS_DOTENV }}
+#           NODE_ENV: production
+#         run: |
+#           set -euo pipefail
+#           if [ -z "${VPS_DOTENV}" ]; then
+#             echo "VPS_DOTENV secret is empty. It must include NEXT_PUBLIC_API_URL (and other keys)."
+#             exit 1
+#           fi
+#           printf '%s\n' "$VPS_DOTENV" > .env.production.local
+#           if ! grep -Eq '^[[:space:]]*(export[[:space:]]+)?NEXT_PUBLIC_API_URL=.+' .env.production.local; then
+#             echo "VPS_DOTENV must define a non-empty NEXT_PUBLIC_API_URL=... line for the client bundle."
+#             exit 1
+#           fi
+#           npm run build
+
+#       - name: Prepare standalone release
+#         env:
+#           VPS_DOTENV: ${{ secrets.VPS_DOTENV }}
+#         run: |
+#           set -euo pipefail
+#           rm -rf deploy
+#           mkdir -p deploy/.next
+#           cp -R .next/standalone/. deploy/
+#           cp -R .next/static deploy/.next/static
+#           cp -R public deploy/public
+#           cp ecosystem.config.cjs deploy/ecosystem.config.cjs
+#           printf '%s\n' "$VPS_DOTENV" > deploy/.env
+
+#       - name: Deploy release
+#         env:
+#           RSA_SECRET: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+#           SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+#           VPS_HOST: ${{ secrets.VPS_HOST }}
+#           VPS_USER: ${{ secrets.VPS_USER }}
+#           SSH_PORT: ${{ secrets.VPS_SSH_PORT }}
+#           INSTALL_PATH: ${{ secrets.INSTALL_PATH }}
+#         run: |
+#           set -euo pipefail
+
+#           : "${RSA_SECRET:?RSA_SECRET secret is required}"
+#           : "${VPS_HOST:?VPS_HOST secret is required}"
+#           : "${VPS_USER:?VPS_USER secret is required}"
+#           : "${SSH_PORT:?SSH_PORT secret is required}"
+#           : "${INSTALL_PATH:?INSTALL_PATH secret is required}"
+
+#           mkdir -p ~/.ssh
+#           printf '%s\n' "$RSA_SECRET" > ~/.ssh/deploy_key
+#           chmod 600 ~/.ssh/deploy_key
+
+#           if [ -n "${SSH_KNOWN_HOSTS}" ]; then
+#             printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+#           fi
+          
+#           # Dynamically scan and append host keys (e.g. ED25519) to prevent verification failures
+#           ssh-keyscan -p "$SSH_PORT" "$VPS_HOST" >> ~/.ssh/known_hosts
+#           chmod 644 ~/.ssh/known_hosts
+
+#           SSH=(ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes)
+#           REMOTE="${VPS_USER}@${VPS_HOST}"
+#           RELEASE_ID="${GITHUB_SHA::12}"
+#           RELEASE_DIR="${INSTALL_PATH}/releases/${RELEASE_ID}"
+
+#           "${SSH[@]}" "$REMOTE" "mkdir -p '$INSTALL_PATH/releases' '$RELEASE_DIR'"
+#           rsync -az --delete -e "${SSH[*]}" deploy/ "${REMOTE}:${RELEASE_DIR}/"
+#           "${SSH[@]}" "$REMOTE" "INSTALL_PATH='$INSTALL_PATH' RELEASE_ID='$RELEASE_ID' bash -s" <<'EOF'
+#             set -euo pipefail
+
+#             RELEASE_DIR="${INSTALL_PATH}/releases/${RELEASE_ID}"
+
+#             # PM2 is installed under root on this server.
+#             # Requires: echo "dockeradmin ALL=(root) NOPASSWD: /usr/local/bin/pm2" | sudo tee /etc/sudoers.d/dockeradmin-pm2
+#             if ! sudo pm2 startOrReload "${RELEASE_DIR}/ecosystem.config.cjs" --update-env; then
+#               echo "Error: 'sudo pm2' failed. Ensure the sudoers rule for dockeradmin is configured on the server:" >&2
+#               echo "  echo \"dockeradmin ALL=(root) NOPASSWD: /usr/local/bin/pm2\" | sudo tee /etc/sudoers.d/dockeradmin-pm2" >&2
+#               exit 1
+#             fi
+
+#             ln -sfn "$RELEASE_DIR" "${INSTALL_PATH}/current"
+
+#             find "${INSTALL_PATH}/releases" -mindepth 1 -maxdepth 1 -type d | sort -r | tail -n +6 | xargs -r rm -rf
+#           EOF
+
