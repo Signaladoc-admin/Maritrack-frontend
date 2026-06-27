@@ -37,7 +37,7 @@ export default function AssociatedDevicesTable({ staffId }: { staffId?: string }
   // not the hardware-details row built for display in the table below.
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
 
-  const { data: deviceData, refetch: refetchDevice } = useDevice(selectedDeviceId as string);
+  const { data: deviceData } = useDevice(selectedDeviceId as string);
 
   const device = {
     ...hardwareDetails?.data,
@@ -51,11 +51,9 @@ export default function AssociatedDevicesTable({ staffId }: { staffId?: string }
   }
 
   async function handleRefetch() {
-    // Await all so the table re-renders with the now-deviceless staff member
+    // Await both so the table re-renders with the now-deviceless staff member
     // before the modal closes — i.e. the device visibly disappears immediately.
-    // refetchDevice also refreshes the device's deviceAssignmentId so a retry
-    // after a failed unassignment uses the current id, not a stale one.
-    await Promise.all([refetchStaffMember(), refetchDeviceDetail(), refetchDevice()]);
+    await Promise.all([refetchStaffMember(), refetchDeviceDetail()]);
   }
 
   return (

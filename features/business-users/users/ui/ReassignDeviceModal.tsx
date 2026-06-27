@@ -11,7 +11,7 @@ import { Skeleton } from "@/shared/ui/skeleton";
 import { useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { Button } from "@/shared/ui/button";
-import { StaffDevice, useDevice } from "@/entities/device";
+import { StaffDevice } from "@/entities/device";
 import { useOtherStaffMembersExceptStaff } from "@/entities/business/model/useTeamMembers";
 import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 import { MDMDeviceDetailsResponse } from "@/features/device/types";
@@ -129,16 +129,6 @@ export default function ReassignDeviceModal({
 
   const actualSelectedDevice = selectedDevice ? selectedDevice : fetchedSelectedDevice;
 
-  // Live single-device record (/devices/{id}). The backend rotates a device's
-  // deviceAssignmentId whenever an unassign attempt fails, so the prop can go
-  // stale between retries. We refetch this on every failure and always source
-  // the assignment id from the freshest copy. Shares the React Query cache with
-  // the parent's useDevice (same key), so refetching here updates both.
-  const deviceId = (selectedDevice?.id ?? fetchedSelectedDevice?.id) || "";
-  const { data: liveDevice, refetch: refetchSingleDevice } = useDevice(deviceId);
-  const currentDeviceAssignmentId =
-    liveDevice?.deviceAssignmentId ?? selectedDevice?.deviceAssignmentId ?? "";
-
   const currentStaffUserId = actualSelectedDevice?.currentUserId;
 
   const { data: currentStaffUserData, isLoading: isCurrentStaffUserLoading } = useUserById(
@@ -219,7 +209,7 @@ export default function ReassignDeviceModal({
       } else {
         // Reassign = unassign the current owner + create the new assignment, in one step.
         await reassignDevice({
-          deviceAssignmentId: currentDeviceAssignmentId as string,
+          deviceAssignmentId: selectedDevice?.deviceAssignmentId as string,
           userId: userIdToAssign as string,
           deviceId: actualSelectedDevice?.id as string,
         });
@@ -229,22 +219,13 @@ export default function ReassignDeviceModal({
         type: "success",
         title: `Device ${type === "ASSIGN" ? "assigned" : "reassigned"} successfully`,
       });
+      await refetch?.();
       handleClose();
     } catch (error: any) {
-      const baseMessage =
-        error?.message || `Failed to ${type === "ASSIGN" ? "assign" : "reassign"} device`;
-      // Only nudge to retry when the backend message doesn't already say so
-      // (e.g. "try again", "retry", "please try again").
-      const alreadySuggestsRetry = /\b(?:try again|retry)\b/i.test(baseMessage);
       toast({
         type: "error",
-        title: alreadySuggestsRetry ? baseMessage : `${baseMessage}. Please retry again`,
+        title: error?.message || `Failed to ${type === "ASSIGN" ? "assign" : "reassign"} device`,
       });
-    } finally {
-      // Always refetch the single device first so a rotated deviceAssignmentId is
-      // picked up for the next retry, then run the caller's refetch (table/list).
-      await refetchSingleDevice();
-      await refetch?.();
     }
   }
 

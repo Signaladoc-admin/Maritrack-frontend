@@ -216,13 +216,7 @@ export default function DevicesList() {
         isLoading={isDevicesPending}
       />
 
-      <NewDeviceModal
-        open={isShowingAssignDeviceModal}
-        onOpenChange={(open) => {
-          setIsShowingAssignDeviceModal(open);
-          if (!open) setSelectedDevice(null);
-        }}
-      />
+      <NewDeviceModal open={isShowingNewDeviceModal} onOpenChange={setIsShowingNewDeviceModal} />
 
       <ReassignDeviceModal
         open={isShowingAssignDeviceModal}
