@@ -3,7 +3,7 @@
 import { apiClient } from "@/shared/lib/api-client";
 import { withSafeAction } from "@/shared/lib/safe-action";
 import { ApiResponse, type ActionResult } from "@/shared/api/types";
-import type { DeviceQueryOptions, PaginatedDevices } from "../model/types";
+import type { DeviceQueryOptions, PaginatedDevices, StaffDevice } from "../model/types";
 
 export async function getDevicesAction(
   options?: DeviceQueryOptions
@@ -20,7 +20,7 @@ export async function getDevicesAction(
 
 export async function getDeviceAction(deviceId: string) {
   return withSafeAction(async () => {
-    const res = await apiClient(`/devices/${deviceId}`, {
+    const res = await apiClient<ApiResponse<StaffDevice>>(`/devices/${deviceId}`, {
       method: "GET",
       noRedirect: true,
     });

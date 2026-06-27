@@ -35,7 +35,7 @@ export default function DeviceHardwareDetailsCard({
             value={`${hardwareDetails?.model || "N/A"} / ${hardwareDetails?.manufacturer || "N/A"}`}
           />
           <DevicePropertyItem title="OS Version" value={osType} />
-          <DevicePropertyItem
+          {/* <DevicePropertyItem
             title="Status"
             value={
               <Badge2
@@ -56,7 +56,7 @@ export default function DeviceHardwareDetailsCard({
                 }
               />
             }
-          />
+          /> */}
           {device?.deviceDetails?.assignmentStatus === "RETURNED" && (
             <DevicePropertyItem title="Comment" value={device?.deviceDetails?.flagReason} />
           )}

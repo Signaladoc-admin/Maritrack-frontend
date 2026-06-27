@@ -198,4 +198,3 @@ export async function unblockAppAction({
     "Failed to unblock app"
   );
 }
-

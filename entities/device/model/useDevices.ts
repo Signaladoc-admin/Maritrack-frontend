@@ -21,6 +21,7 @@ const deviceKeys = {
 export function useDevices(options: DeviceQueryOptions = {}) {
   return useServerActionQuery(deviceKeys.list(options), getDevicesAction, [options], {
     retry: false,
+    refetchOnWindowFocus: true,
   });
 }
 

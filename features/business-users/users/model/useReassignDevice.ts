@@ -15,24 +15,24 @@ export interface ReassignDeviceRequest extends CreateDeviceAssignmentRequest {
 /**
  * Feature-level hook that composes unassign + create into a single "reassign" mutation.
  *
- * Step 1: Unassigns the current user from the device.
- * Step 2: Creates a new assignment for the new user.
+ * Step 1: Unassign the current user from the device.
+ * Step 2: Create a new assignment for the new user.
  *
- * On failure at either step the mutation throws — callers should use
- * try/catch around `mutateAsync`. The thrown error message indicates which step failed.
+ * On failure at either step the mutation throws — callers should use try/catch
+ * around `mutateAsync`. The thrown error message indicates which step failed.
  */
 export function useReassignDevice() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ deviceAssignmentId, ...createData }: ReassignDeviceRequest) => {
-      // Step 1 — unassign the current user
+      // Step 1 — unassign the current user.
       const unassignRes = await unassignDeviceFromUserAction(deviceAssignmentId);
       if (!unassignRes.success) {
         throw new Error(unassignRes.error || "Failed to unassign device");
       }
 
-      // Step 2 — create the new assignment
+      // Step 2 — create the new assignment.
       const createRes = await createDeviceAssignmentAction(createData);
       if (!createRes.success) {
         throw new Error(createRes.error || "Failed to assign device to new user");
@@ -41,7 +41,16 @@ export function useReassignDevice() {
       return createRes.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["device-assignments", "list"] });
+      queryClient.invalidateQueries({ queryKey: ["device-assignments"] });
+      // The devices list/item embed the current owner, so they must refresh too —
+      // otherwise views like DevicesList keep showing the previous user.
+      queryClient.invalidateQueries({ queryKey: ["devices"] });
+      // Device hardware/assignment details page.
+      queryClient.invalidateQueries({ queryKey: ["deviceDetail"] });
+      // Staff member lists/details embed device assignment info (AssociatedDevicesTable).
+      queryClient.invalidateQueries({ queryKey: ["staff-members"] });
+      // Zone device lists used on the dashboard.
+      queryClient.invalidateQueries({ queryKey: ["mdm-sync", "zoneDevices"] });
     },
   });
 }

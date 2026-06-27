@@ -1,4 +1,4 @@
-import { ApiResponse, MessageResponse } from "@/shared/api/types";
+import { ApiResponse, CreatedItemResponse, MessageResponse } from "@/shared/api/types";
 import { apiClient } from "@/shared/lib/api-client";
 import { withSafeAction } from "@/shared/lib/safe-action";
 import {
@@ -10,7 +10,7 @@ import {
 
 export async function createDeviceAssignmentAction(data: CreateDeviceAssignmentRequest) {
   return withSafeAction(async () => {
-    const res = await apiClient<ApiResponse<MessageResponse>>("/device-assignments", {
+    const res = await apiClient<ApiResponse<CreatedItemResponse>>("/device-assignments", {
       method: "POST",
       body: JSON.stringify(data),
     });

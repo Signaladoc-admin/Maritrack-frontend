@@ -13,13 +13,11 @@ import { useDebounce } from "use-debounce";
 import { Button } from "@/shared/ui/button";
 import { StaffDevice } from "@/entities/device";
 import { useOtherStaffMembersExceptStaff } from "@/entities/business/model/useTeamMembers";
-import { useAuth } from "@/shared/auth/AuthProvider";
 import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 import { MDMDeviceDetailsResponse } from "@/features/device/types";
 import { useUserById } from "@/entities/user/model/useUserProfile";
 import { useReassignDevice } from "@/features/business-users/users/model/useReassignDevice";
 import { useCreateDeviceAssignment } from "@/entities/device/model/useDeviceAssignments";
-import { useGetDeviceAssignmentId } from "@/features/mdm-sync/model/useMdmSync";
 
 function StaffOptionContent({ staff }: { staff: BusinessStaff }) {
   const firstName = staff.user?.firstName ?? "";
@@ -79,12 +77,30 @@ function ReassignDeviceModalSkeleton() {
   );
 }
 
+// Mirrors the "Assign Device" layout: just the staff selector (label + input)
+// and the submit button — no current-device card or "Reassign to" connector.
+function AssignDeviceModalSkeleton() {
+  return (
+    <div className="space-y-1">
+      {/* Staff selector */}
+      <div className="flex flex-col gap-1.5">
+        <Skeleton className="h-3.5 w-12" />
+        <Skeleton className="h-[50px] w-full rounded-xl" />
+      </div>
+
+      {/* Submit button */}
+      <Skeleton className="mt-4 h-12 w-full rounded-xl" />
+    </div>
+  );
+}
+
 export default function ReassignDeviceModal({
   open,
   onOpenChange,
   selectedDevice,
   selectedDeviceMdmId,
   type = "REASSIGN",
+  refetch,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -96,6 +112,7 @@ export default function ReassignDeviceModal({
   selectedDevice?: StaffDevice | null;
   selectedDeviceMdmId?: string;
   type?: "ASSIGN" | "REASSIGN";
+  refetch?: () => void | Promise<unknown>;
 }) {
   const [step, setStep] = useState<"select-staff" | "confirm">("select-staff");
   const [selectedStaff, setSelectedStaff] = useState<BusinessStaff | null>(null);
@@ -162,20 +179,10 @@ export default function ReassignDeviceModal({
     resolver: zodResolver(assignDeviceToUserSchema),
   });
 
-  const { data: deviceAssignmentId, isLoading: isLoadingDeviceAssignment } =
-    useGetDeviceAssignmentId({
-      deviceId: selectedDevice?.id!,
-      userId: selectedDevice?.currentUserId!,
-    });
-
-  // console.log("assignment id", deviceAssignmentId);
-  // console.log("deviceId", selectedDevice?.id!);
-  // console.log("userId", selectedDevice?.currentUserId!);
-
   const { mutateAsync: reassignDevice, isPending: isReassigning } = useReassignDevice();
   const { mutateAsync: createDeviceAssignment, isPending: isAssigning } =
     useCreateDeviceAssignment();
-  const isPending = isReassigning || isAssigning || isLoadingDeviceAssignment;
+  const isPending = isReassigning || isAssigning;
 
   function handleClose() {
     reset();
@@ -200,26 +207,26 @@ export default function ReassignDeviceModal({
           deviceId: actualSelectedDevice?.id as string,
         });
       } else {
+        // Reassign = unassign the current owner + create the new assignment, in one step.
         await reassignDevice({
-          deviceAssignmentId:
-            (selectedDevice?.deviceAssignmentId as string) || (deviceAssignmentId as string),
+          deviceAssignmentId: selectedDevice?.deviceAssignmentId as string,
           userId: userIdToAssign as string,
           deviceId: actualSelectedDevice?.id as string,
         });
       }
+
+      toast({
+        type: "success",
+        title: `Device ${type === "ASSIGN" ? "assigned" : "reassigned"} successfully`,
+      });
+      await refetch?.();
+      handleClose();
     } catch (error: any) {
       toast({
         type: "error",
         title: error?.message || `Failed to ${type === "ASSIGN" ? "assign" : "reassign"} device`,
       });
-      return;
     }
-
-    toast({
-      type: "success",
-      title: `Device ${type === "ASSIGN" ? "assigned" : "reassigned"} successfully`,
-    });
-    handleClose();
   }
 
   const newOwnerName = selectedStaff
@@ -234,7 +241,7 @@ export default function ReassignDeviceModal({
   if (isHardwareLoading || isCurrentStaffUserLoading) {
     return (
       <Modal isOpen={open} onClose={handleClose} title={modalTitle}>
-        <ReassignDeviceModalSkeleton />
+        {type === "ASSIGN" ? <AssignDeviceModalSkeleton /> : <ReassignDeviceModalSkeleton />}
       </Modal>
     );
   }
