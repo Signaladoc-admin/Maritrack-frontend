@@ -209,7 +209,9 @@ export default function ReassignDeviceModal({
       } else {
         // Reassign = unassign the current owner + create the new assignment, in one step.
         await reassignDevice({
-          deviceAssignmentId: selectedDevice?.deviceAssignmentId as string,
+          deviceAssignmentId:
+            (selectedDevice?.currentDeviceAssignmentId as string) ||
+            (selectedDevice?.currentDeviceAssignment.id as string),
           userId: userIdToAssign as string,
           deviceId: actualSelectedDevice?.id as string,
         });
