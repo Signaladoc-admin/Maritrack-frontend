@@ -119,7 +119,8 @@ export interface StaffDevice {
   currentUser?: CurrentUser;
   BlockedDomains: BlockedDomain[];
   child?: Omit<Child, "parent" | "device" | "parentLinks"> | null;
-  deviceAssignmentId: string | null;
+  currentDeviceAssignmentId: string | null;
+  currentDeviceAssignment: CurrentDeviceAssignment;
 }
 
 export interface PaginatedDevices {
@@ -184,6 +185,19 @@ export interface DeviceAssignment extends BaseEntity {
   user: User;
   location: any | null;
   department: any | null;
+}
+
+interface CurrentDeviceAssignment extends BaseEntity {
+  deviceId: string;
+  userId: string;
+  businessId: string;
+  departmentId: string | null;
+  locationId: string | null;
+  assignedAt: string;
+  unassignedAt: string | null;
+  unassignmentReason: string | null;
+  unassignmentComment: string | null;
+  assignedByMdm: boolean;
 }
 
 export interface CreateDeviceAssignmentRequest {
