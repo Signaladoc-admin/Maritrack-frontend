@@ -46,13 +46,14 @@ interface PricingStepProps {
 export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: PricingStepProps) {
   const { data: plans, isLoading: isLoadingPlans } = usePaymentPlans();
 
-  const { mutateAsync: initializePayment, isPending: isInitializingPayment } = useInitializePayment();
+  const { mutateAsync: initializePayment, isPending: isInitializingPayment } =
+    useInitializePayment();
   const { user } = useAuth();
   const appRole = user?.appRole;
 
-  const zoneId = user?.zoneId || ''
+  const zoneId = user?.zoneId || "";
 
-  const pathname = usePathname()
+  const pathname = usePathname();
   const isOnboarding = pathname.includes("onboarding");
 
   const { toast } = useToast();
@@ -64,15 +65,9 @@ export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: 
   const handleSelectPremiumPlan = async (planId: string) => {
     try {
       const host = window.location.origin;
-      const callbackUrl = isOnboarding ? `${host}/onboarding/${appRole === "PARENT" ? "personal" : "business"}` : `${host}/plans`;
-
-      console.log('selecting...')
-
-      console.log('planId', planId)
-      console.log('zoneId', zoneId)
-      console.log('callbackUrl', callbackUrl)
-
-      // console.log('response', response)
+      const callbackUrl = isOnboarding
+        ? `${host}/onboarding/${appRole === "PARENT" ? "personal" : "business"}`
+        : `${host}/plans`;
 
       const response = await initializePayment({
         planId,
@@ -80,14 +75,11 @@ export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: 
         callbackUrl,
       });
 
-
-
       if (response?.authorizationUrl) {
         // Redirect to paystack checkout window
         window.location.href = response.authorizationUrl;
       } else {
         toast({ title: "Error", message: "Could not generate checkout session", type: "error" });
-
       }
     } catch (e: any) {
       toast({ title: "Error", message: e.message || "Checkout failed", type: "error" });
@@ -132,7 +124,7 @@ export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: 
           src="/bg-texture.png"
           alt=""
           fill
-          className="select-none object-cover object-center opacity-60"
+          className="object-cover object-center opacity-60 select-none"
           priority={false}
         />
       </div>
@@ -143,8 +135,8 @@ export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: 
       )}
 
       <div className="space-y-16">
-        <div className="space-y-4 text-center max-w-xl mx-auto">
-          <h1 className="text-3xl md:text-[2.35rem] font-extrabold tracking-tight text-slate-900">
+        <div className="mx-auto max-w-xl space-y-4 text-center">
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-[2.35rem]">
             Start today, with free or <br /> premium plan, you choose
           </h1>
           <p className="text-muted-foreground text-lg">
@@ -152,7 +144,7 @@ export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: 
             without any problem.
           </p>
         </div>
-        <div className="grid justify-center gap-8 md:grid-cols-2 mx-auto max-w-4xl">
+        <div className="mx-auto grid max-w-4xl justify-center gap-8 md:grid-cols-2">
           {isLoadingPlans ? (
             <>
               <PricingCardSkeleton />

@@ -2,11 +2,11 @@
 import ChildrenProfiles from "@/features/onboarding/personal/ui/ChildrenProfiles";
 import { setOnboardedAction } from "@/features/onboarding/api/onboarding.actions";
 import { MultiStepForm } from "@/shared/ui/multi-step-form";
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { PageLoader } from "@/shared/ui/loader";
 import { useRouter } from "next/navigation";
 import { useQueryState, parseAsInteger } from "nuqs";
-import { useVerifyPayment } from "@/features/payments/model/usePayments";
+import VerifyPayment from "@/features/payments/ui/VerifyPayment";
 import { Button } from "@/shared/ui/button";
 import { useLogout } from "@/features/auth/model/useLogout";
 import { cn } from "@/shared/lib/utils";
@@ -21,17 +21,7 @@ function OnboardingContent() {
 
   const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
 
-  const [reference, setReference] = useQueryState("reference");
-  const { mutateAsync: verifyPayment } = useVerifyPayment();
-
-  useEffect(() => {
-    if (reference) {
-      verifyPayment(reference).finally(() => {
-        setReference(null);
-        setCurrentStep(0);
-      });
-    }
-  }, [reference, verifyPayment, setReference, setCurrentStep]);
+  const [reference] = useQueryState("reference");
 
   const nextStep = () => setCurrentStep((p) => Math.min((p ?? 0) + 1, 1));
   const prevStep = () => setCurrentStep((p) => Math.max((p ?? 0) - 1, 0));
@@ -72,6 +62,11 @@ function OnboardingContent() {
       ),
     },
   ];
+
+  // While a Paystack reference is present, show the shared (guarded) verification screen.
+  // It fires verification exactly once per reference and clears the URL params on success —
+  // avoiding the duplicate "Payment verified" toasts the old inline effect produced.
+  if (reference) return <VerifyPayment reference={reference} />;
 
   return (
     <div className={cn("relative", isFullWidth ? "p-0" : "p-8 lg:p-14")}>

@@ -43,7 +43,7 @@ export default function CreateChildProfileForm({
     const formattedData: IChildProfile = {
       ...data,
       id: initialData?.id,
-      image: data.profilePicture ? URL.createObjectURL(data.profilePicture) : initialData?.image,
+      profilePicture: data.profilePicture || undefined,
     };
     onAddChild(formattedData);
   };
@@ -66,9 +66,17 @@ export default function CreateChildProfileForm({
             className="h-24 w-24 rounded-full"
             previewClassName="h-full w-full rounded-full object-cover"
           >
-            <div className="bg-muted flex h-full w-full items-center justify-center rounded-full border-gray-300 transition-colors hover:bg-gray-200">
-              <FilledUserIcon className="h-12 w-12 text-[#1b3c73]" />
-            </div>
+            {initialData?.imageUrl ? (
+              <img
+                src={initialData.imageUrl}
+                alt={initialData.name}
+                className="h-full w-full rounded-full object-cover"
+              />
+            ) : (
+              <div className="bg-muted flex h-full w-full items-center justify-center rounded-full border-gray-300 transition-colors hover:bg-gray-200">
+                <FilledUserIcon className="h-12 w-12 text-[#1b3c73]" />
+              </div>
+            )}
           </FileUpload>
           {form.formState.errors.profilePicture && (
             <p className="text-sm text-red-500">

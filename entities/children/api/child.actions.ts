@@ -38,9 +38,17 @@ export async function getChildByIdAction(id: string): Promise<Child> {
 }
 
 export async function updateChildAction(id: string, data: UpdateChildDto): Promise<ChildProfile> {
+  // Use FormData so an updated profile picture (a File) can be uploaded. Only append
+  // the fields that are present so the PATCH stays partial.
+  const formData = new FormData();
+  if (data.name !== undefined) formData.append("name", data.name);
+  if (data.age !== undefined) formData.append("age", String(data.age));
+  if (data.gender !== undefined) formData.append("gender", data.gender);
+  if (data.profilePicture instanceof File) formData.append("profilePicture", data.profilePicture);
+
   const response = await apiClient(`/children/${id}`, {
     method: "PATCH",
-    body: JSON.stringify(data),
+    body: formData,
   });
   return response.data;
 }
