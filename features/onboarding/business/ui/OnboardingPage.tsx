@@ -9,7 +9,7 @@ import { useLogout } from "@/features/auth/model/useLogout";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
 import { createBusinessZoneAction } from "@/features/mdm-sync/api/mdm-sync.actions";
 import { useBusinessZones } from "@/features/mdm-sync/model/useMdmSync";
-import { useActiveSubscription, useVerifyPayment } from "@/features/payments/model/usePayments";
+import { useActiveSubscription } from "@/features/payments/model/usePayments";
 import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
 import { useGetFullBusinessDetails } from "../model/useGetBusinessDetails";
 import { useQueryClient } from "@tanstack/react-query";

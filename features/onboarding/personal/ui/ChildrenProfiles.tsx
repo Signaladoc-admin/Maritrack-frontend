@@ -37,7 +37,6 @@ export default function ChildrenProfiles({
   const { data: children, isLoading: isFetchingChildren } = useParentChildren({
     enabled: !!activeParentId,
   });
-  console.log("children", children);
 
   const childProfiles: IChildProfile[] = (children?.data || []).map((child) => ({
     ...child,
@@ -212,9 +211,11 @@ export default function ChildrenProfiles({
         <Header title="Create your children's profile" subtitle="Create your children's accounts" />
       </div>
       <div>
-        <div className="space-y-4">
+        <div className="mb-2 space-y-4">
           {isInitialLoading ? (
             <ChildProfileCardSkeleton />
+          ) : childProfiles.length === 0 ? (
+            <NewChildProfileButton onClick={() => handleOpenForm()} />
           ) : (
             childProfiles.map((childProfile, index) => (
               <ChildProfileCard
@@ -226,9 +227,7 @@ export default function ChildrenProfiles({
             ))
           )}
         </div>
-        {!isInitialLoading && childProfiles.length === 0 && (
-          <NewChildProfileButton onClick={() => handleOpenForm()} />
-        )}
+
         <div className="flex gap-4 pt-4">
           <Button
             disabled={!childProfiles.length}

@@ -20,18 +20,18 @@ interface ChildProfileCardProps {
 
 export function ChildProfileCardSkeleton() {
   return (
-    <div className="bg-primary relative overflow-hidden rounded-2xl px-6 py-8">
+    <div className="relative overflow-hidden rounded-2xl border border-slate-100 bg-white px-6 py-8">
       <div className="relative z-10 flex items-center justify-between gap-4">
         <div className="flex items-center gap-5">
-          <Skeleton className="h-14 w-14 shrink-0 rounded-full bg-white/20" />
+          <Skeleton className="h-14 w-14 shrink-0 rounded-full" />
           <div className="space-y-2">
-            <Skeleton className="h-5 w-28 bg-white/20" />
-            <Skeleton className="h-4 w-20 bg-white/20" />
+            <Skeleton className="h-5 w-28" />
+            <Skeleton className="h-4 w-20" />
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <Skeleton className="h-12 w-12 rounded-full bg-white/20" />
-          <Skeleton className="h-10 w-10 rounded-full bg-white/20" />
+          <Skeleton className="h-12 w-12 rounded-full" />
+          <Skeleton className="h-10 w-10 rounded-full" />
         </div>
       </div>
     </div>
