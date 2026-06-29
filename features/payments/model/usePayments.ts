@@ -15,6 +15,7 @@ import { useToast } from "@/shared/ui/toast";
 import { useQueryState } from "nuqs";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/shared/auth/AuthProvider";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const paymentKeys = {
   all: ["payments"] as const,
@@ -36,9 +37,14 @@ export function useVerifyPayment() {
   const { toast } = useToast();
   const router = useRouter();
   const pathname = usePathname();
+  const queryClient = useQueryClient();
 
   return useServerActionMutation(verifyPaymentAction, {
     onSuccess: (res) => {
+      // Refresh the active-subscription status so gates like `hasPaid` flip immediately
+      // (no manual page refresh). Prefix match invalidates the query for every zoneId,
+      // so this works for both business and parent flows that reuse this hook.
+      queryClient.invalidateQueries({ queryKey: ["payments", "subscription"] });
       toast({ title: "Success", message: res?.message || "Payment verified successfully", type: "success" });
       // Clear all query / search params from the URL
       router.replace(pathname, { scroll: false });

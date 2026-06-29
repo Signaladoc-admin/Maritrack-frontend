@@ -9,7 +9,6 @@ import {
   RefreshTokenResponse,
   RequestTokenRequest,
   ResetPasswordRequest,
-  ValidateOTPRequest,
   ValidateOTPResponse,
   VerificationTokenMethod,
   VerifyUserRequest,
@@ -100,21 +99,6 @@ export async function verifyUserAction(payload: VerifyUserRequest) {
   );
 }
 
-export async function validateOtpAction(payload: ValidateOTPRequest) {
-  return withSafeAction(async () => {
-    const res = await apiClient<ApiResponse<ValidateOTPResponse>>("/users/validate-otp", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
-
-    // NUDGE: Remove justVerified temporary bypass once isEmailVerified is correctly handled on backend
-    const cookieStore = await cookies();
-    cookieStore.set("justVerified", "true", { maxAge: 60, path: "/" });
-
-    return res;
-  }, "Failed to validate OTP");
-}
-
 export async function logoutAction() {
   return withSafeAction(async () => {
     const cookieStore = await cookies();
@@ -136,10 +120,6 @@ export async function logoutAction() {
 export async function refreshAccessTokenAction() {
   const cookieStore = await cookies();
   const refreshToken = cookieStore.get("refreshToken")?.value;
-
-  console.log("***** REFRESH ACCESS TOKEN *****");
-  console.log(refreshToken);
-  console.log("***** END REFRESH ACCESS TOKEN *****");
 
   return withSafeAction(async () => {
     return apiClient<ApiResponse<RefreshTokenResponse>>("/users/refreshToken", {

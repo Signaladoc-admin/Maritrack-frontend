@@ -35,6 +35,9 @@ export default function OnboardingPage() {
   const { data: subscriptionData, isLoading: isLoadingSubscription } =
     useActiveSubscription(zoneId);
   const hasPaid = !!subscriptionData?.data?.active;
+
+  console.log("has paid", hasPaid);
+
   const canProceed = hasPaid || freePlanChosen;
 
   // True until we know whether the user has already paid — prevents pricing step flicker

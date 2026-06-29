@@ -17,7 +17,8 @@
       "Bash(git fetch *)",
       "Bash(git cherry-pick *)",
       "Bash(git ls-remote *)",
-      "Bash(git merge *)"
+      "Bash(git merge *)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('top:', list\\(d.keys\\(\\)\\)\\); print\\('data:', list\\(d.get\\('data',{}\\).keys\\(\\)\\) if isinstance\\(d.get\\('data'\\),dict\\) else type\\(d.get\\('data'\\)\\)\\)\")"
     ],
     "additionalDirectories": [
       "/Users/gracethompson/.claude/projects/-Users-gracethompson-Documents-femis-stuff-web-devpt-Maritrack-frontend/memory",
