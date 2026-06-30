@@ -17,6 +17,12 @@ import {
   RefreshCw,
   Settings2,
   Users,
+  Activity,
+  ChartColumn,
+  Clock3,
+  MapPinned,
+  QrCode,
+  Radar,
 } from "lucide-react";
 
 export const heroTrustBadges = [
@@ -116,34 +122,49 @@ export const businessFeatures = [
 
 export const parentFeatures = [
   {
-    icon: Lock,
-    title: "Safe & Secure",
-    desc: "Protect your child from harmful content with built-in controls and privacy-first monitoring.",
+    icon: Activity,
+    title: "Real-Time Device Monitoring",
+    desc: "Gain complete visibility into device usage with real-time insights into screen activity, app usage, browsing behavior, and overall device activity.",
   },
   {
-    icon: MapPin,
-    title: "Location Awareness",
-    desc: "Stay informed with live location tracking and movement history for added peace of mind.",
+    icon: MapPinned,
+    title: "Live Location Tracking",
+    desc: "Track the real-time location of children or managed devices, monitor movement patterns, and access location history for enhanced safety and accountability.",
   },
   {
-    icon: Bell,
-    title: "Instant Alerts",
-    desc: "Get notified in real-time about unusual activity, excessive usage, or restricted content access.",
+    icon: Radar,
+    title: "Smart Geofencing",
+    desc: "Create virtual boundaries around important locations and receive instant notifications whenever a device enters or exits designated areas.",
   },
   {
-    icon: BarChart2,
-    title: "Healthy Screen Habits",
-    desc: "Encourage balanced phone use with insights into daily screen time and app activity patterns.",
+    icon: Clock3,
+    title: "Screen Time Management",
+    desc: "Encourage healthy digital habits by setting daily screen time limits, scheduling device usage, and instantly pausing devices when needed.",
   },
   {
     icon: Smartphone,
-    title: "All Devices Covered",
-    desc: "Monitor activity across Android, iOS, and tablets from one easy-to-use dashboard.",
+    title: "App Monitoring & Control",
+    desc: "Monitor installed applications, block unwanted apps, set usage limits, and create schedules to ensure appropriate device usage.",
   },
   {
-    icon: TrendingUp,
-    title: "Behavior Insights",
-    desc: "Understand your child's digital habits with simple reports that highlight trends and changes.",
+    icon: ChartColumn,
+    title: "Activity Reports & Insights",
+    desc: "Access detailed reports on device usage, screen time, browsing activity, and behavioral trends to make informed decisions.",
+  },
+  {
+    icon: Users,
+    title: "Multi-Child & Multi-Device Management",
+    desc: "Manage multiple children and devices from a single dashboard, seamlessly switching between profiles and applying controls across all connected devices.",
+  },
+  {
+    icon: QrCode,
+    title: "Secure QR Device Pairing",
+    desc: "Pair child or managed devices quickly and securely using QR-based enrollment, eliminating the need for complex setup processes.",
+  },
+  {
+    icon: Bell,
+    title: "Smart Notifications & Alerts",
+    desc: "Receive real-time, customizable notifications for device activity, location changes, policy violations, and other important events.",
   },
 ];
 export const footerLinks = [
