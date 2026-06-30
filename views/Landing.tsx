@@ -10,10 +10,9 @@ import EnterpriseSection from "@/features/landing/ui/EnterpriseSection";
 import CtaSection from "@/features/landing/ui/CtaSection";
 import LandingFooter from "@/features/landing/ui/LandingFooter";
 
-
 export default function Landing() {
   return (
-    <div className="min-h-screen overflow-hidden text-white bg-[#0A0E1A]">
+    <div className="min-h-screen overflow-hidden bg-[#0A0E1A] text-white">
       <LandingHeader />
       <HeroSection />
       <StatsSection />
