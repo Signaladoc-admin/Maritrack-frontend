@@ -3,7 +3,7 @@
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/shared/ui/Button/button"; // Ensure this path is correct
-import { formatCurrency } from "@/shared/lib/utils";
+import { formatCurrency, formatPaystackKoboAmount } from "@/shared/lib/utils";
 import { IPlan } from "@/features/payments/schema";
 import { useAuth } from "@/shared/auth/AuthProvider";
 
@@ -30,15 +30,16 @@ export function PricingCard({
   className,
 }: PricingCardProps) {
   // `priceNGN` is the post-discount amount the user actually pays (the "current" price),
-  // already in standard Naira. When a discount applies, the original/slashed price is
-  // derived by reversing it: original = current / (1 - discount/100)
+  // in kobo. When a discount applies, the original/slashed price is derived by reversing
+  // it: original = current / (1 - discount/100) — unit-agnostic, so it stays in kobo.
+  // Both are converted to Naira for display via formatPaystackKoboAmount.
   const currentPrice = plan?.priceNGN ?? 0;
   const discount = plan?.discountPercentage ?? 0;
   const hasDiscount = discount > 0;
   const originalPrice = hasDiscount ? currentPrice / (1 - discount / 100) : currentPrice;
 
-  const formattedPrice = formatCurrency(currentPrice);
-  const formattedOriginalPrice = formatCurrency(originalPrice);
+  const formattedPrice = formatCurrency(formatPaystackKoboAmount(currentPrice));
+  const formattedOriginalPrice = formatCurrency(formatPaystackKoboAmount(originalPrice));
 
   // Card heading: the device-tier portion of the plan name (e.g. "1 Device — Annual"
   // -> "1 Device"); the billing cycle already shows next to the price.
@@ -114,10 +115,8 @@ export function PricingCard({
         <div className="flex flex-wrap items-baseline gap-1">
           <span
             className={cn(
-              "font-extrabold tracking-tight text-5xl",
-              formattedPrice.length >= 10
-                ? "text-3xl lg:text-4xl"
-                : "text-4xl lg:text-5xl"
+              "text-5xl font-extrabold tracking-tight",
+              formattedPrice.length >= 10 ? "text-3xl lg:text-4xl" : "text-4xl lg:text-5xl"
             )}
           >
             {formattedPrice}
@@ -128,7 +127,9 @@ export function PricingCard({
               isPremium ? "text-slate-300" : "text-slate-400"
             )}
           >
-            {plan?.billingCycle ? plan?.billingCycle[0].toUpperCase() + plan?.billingCycle.slice(1) : ""}
+            {plan?.billingCycle
+              ? plan?.billingCycle[0].toUpperCase() + plan?.billingCycle.slice(1)
+              : ""}
           </span>
         </div>
 
