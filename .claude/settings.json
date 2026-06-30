@@ -18,7 +18,10 @@
       "Bash(git cherry-pick *)",
       "Bash(git ls-remote *)",
       "Bash(git merge *)",
-      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('top:', list\\(d.keys\\(\\)\\)\\); print\\('data:', list\\(d.get\\('data',{}\\).keys\\(\\)\\) if isinstance\\(d.get\\('data'\\),dict\\) else type\\(d.get\\('data'\\)\\)\\)\")"
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('top:', list\\(d.keys\\(\\)\\)\\); print\\('data:', list\\(d.get\\('data',{}\\).keys\\(\\)\\) if isinstance\\(d.get\\('data'\\),dict\\) else type\\(d.get\\('data'\\)\\)\\)\")",
+      "Bash(tee /private/tmp/claude-501/-Users-gracethompson-Documents-femis-stuff-web-devpt-Maritrack-frontend/1518a8b0-df63-42b1-a5a6-c68146e6e106/scratchpad/tsc.txt)",
+      "Bash(sed -n '/export async function createBusinessProfileAction/,/^}$/p' entities/business/api/business.actions.ts)",
+      "Bash(sed -n '/export async function updateBusinessProfileAction/,/^}$/p' entities/business/api/business.actions.ts)"
     ],
     "additionalDirectories": [
       "/Users/gracethompson/.claude/projects/-Users-gracethompson-Documents-femis-stuff-web-devpt-Maritrack-frontend/memory",
