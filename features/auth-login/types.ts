@@ -7,6 +7,9 @@ export interface LoginResponse extends BaseEntity {
   refresh_token: string;
   date: string;
   isFirstLogin: boolean;
+  // Sourced from /users/{id} (UserDetails.isInvited) and attached to the login response
+  // server-side so the client can route first-login invited staff to /change-password.
+  isInvited?: boolean;
   role: "USER" | "ADMIN";
   businessRole: BusinessRole | null;
   email: string;

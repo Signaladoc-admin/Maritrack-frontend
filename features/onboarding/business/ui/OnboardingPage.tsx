@@ -24,6 +24,8 @@ export default function OnboardingPage() {
 
   const { businessProfile, isLoadingBusinessProfile } = useGetFullBusinessDetails();
 
+  console.log("profile", businessProfile);
+
   const { data: userProfile } = useUserProfile();
   const queryClient = useQueryClient();
 
@@ -35,8 +37,6 @@ export default function OnboardingPage() {
   const { data: subscriptionData, isLoading: isLoadingSubscription } =
     useActiveSubscription(zoneId);
   const hasPaid = !!subscriptionData?.data?.active;
-
-  console.log("has paid", hasPaid);
 
   const canProceed = hasPaid || freePlanChosen;
 

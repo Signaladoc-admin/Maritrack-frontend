@@ -6,10 +6,14 @@ import {
 } from "../api/business.actions";
 
 import { createResourceHooks, type ResourceActions } from "@/shared/api/createResourceHooks";
-import type { BusinessProfileDto } from "../schema";
+import type { BusinessProfileDto, UpdateBusinessProfileDto } from "../schema";
 import { BusinessProfile } from "../types";
 
-const businessActions: ResourceActions<BusinessProfile, BusinessProfileDto> = {
+const businessActions: ResourceActions<
+  BusinessProfile,
+  BusinessProfileDto,
+  UpdateBusinessProfileDto
+> = {
   getAll: async (options?: any) => {
     try {
       const data = await getBusinessProfileAction(options);
@@ -29,7 +33,7 @@ const businessActions: ResourceActions<BusinessProfile, BusinessProfileDto> = {
       return { success: false, error: error.message };
     }
   },
-  update: async (id: string, data: BusinessProfileDto) => {
+  update: async (id: string, data: UpdateBusinessProfileDto) => {
     try {
       const result = await updateBusinessProfileAction({ id, ...data });
       return { success: true, data: result };
@@ -53,4 +57,7 @@ export const {
   useCreate: useCreateBusinessProfile,
   useUpdate: useUpdateBusinessProfile,
   useDelete: useDeleteBusinessProfile,
-} = createResourceHooks<BusinessProfile, BusinessProfileDto>("business-profiles", businessActions);
+} = createResourceHooks<BusinessProfile, BusinessProfileDto, UpdateBusinessProfileDto>(
+  "business-profiles",
+  businessActions
+);

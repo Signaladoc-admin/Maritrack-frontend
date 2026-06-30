@@ -64,7 +64,8 @@ export async function loginAction(credentials: LoginValues) {
       const business = businessRes.success
         ? (businessRes.data?.data as { profile?: { id?: string } } | null)
         : null;
-      isOnboarded = !!business?.profile?.id;
+      isOnboarded = false;
+      // !!business?.profile?.id;
     } else {
       const pcSettingsRes = await getParentalControlMeAction();
       // A completed parent has a persisted parental-control record (with an id).

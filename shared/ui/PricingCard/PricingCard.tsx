@@ -3,7 +3,7 @@
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/shared/ui/Button/button"; // Ensure this path is correct
-import { formatCurrency, formatPaystackKoboAmount } from "@/shared/lib/utils";
+import { formatCurrency } from "@/shared/lib/utils";
 import { IPlan } from "@/features/payments/schema";
 import { useAuth } from "@/shared/auth/AuthProvider";
 
@@ -29,7 +29,20 @@ export function PricingCard({
   onButtonClick,
   className,
 }: PricingCardProps) {
-  const formattedPrice = formatCurrency(plan?.priceNGN ? Number(formatPaystackKoboAmount(plan?.priceNGN)) : 0)
+  // `priceNGN` is the post-discount amount the user actually pays (the "current" price),
+  // already in standard Naira. When a discount applies, the original/slashed price is
+  // derived by reversing it: original = current / (1 - discount/100)
+  const currentPrice = plan?.priceNGN ?? 0;
+  const discount = plan?.discountPercentage ?? 0;
+  const hasDiscount = discount > 0;
+  const originalPrice = hasDiscount ? currentPrice / (1 - discount / 100) : currentPrice;
+
+  const formattedPrice = formatCurrency(currentPrice);
+  const formattedOriginalPrice = formatCurrency(originalPrice);
+
+  // Card heading: the device-tier portion of the plan name (e.g. "1 Device — Annual"
+  // -> "1 Device"); the billing cycle already shows next to the price.
+  const title = plan?.name?.split("—")[0]?.trim() || plan?.name || "";
 
   const features = [
     { text: plan?.name.split("—")[0], included: true },
@@ -72,8 +85,31 @@ export function PricingCard({
             isPremium ? "text-slate-200" : "text-[#1B3C73]"
           )}
         >
-          {isPremium ? "Premium Plan" : "FREE PLAN"}
+          {title}
         </h3>
+
+        {hasDiscount && (
+          <div className="flex items-center gap-2">
+            <span
+              className={cn(
+                "text-lg font-semibold line-through",
+                isPremium
+                  ? "text-slate-400 decoration-slate-400"
+                  : "text-slate-400 decoration-slate-300"
+              )}
+            >
+              {formattedOriginalPrice}
+            </span>
+            <span
+              className={cn(
+                "rounded-full px-2 py-0.5 text-xs font-bold",
+                isPremium ? "bg-white/15 text-white" : "bg-[#1B3C73]/10 text-[#1B3C73]"
+              )}
+            >
+              Save {discount}%
+            </span>
+          </div>
+        )}
 
         <div className="flex flex-wrap items-baseline gap-1">
           <span
