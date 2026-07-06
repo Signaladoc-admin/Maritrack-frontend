@@ -10,12 +10,14 @@ import Modal from "../../modal";
 export function PairDeviceModal({
   open,
   onOpenChange,
+  childId,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  childId?: string;
 }) {
   const params = useParams<{ child: string }>();
-  const child = params?.child;
+  const child = childId || params?.child;
 
   const { qrCodeSrc, isLoading: isGenerating, isError } = useQrCode(child as string);
 

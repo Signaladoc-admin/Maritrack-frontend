@@ -4,6 +4,7 @@ export const TABS = [
   { label: "App control", value: "app-control" },
   { label: "Location", value: "location" },
   { label: "Configuration", value: "configuration" },
+  { label: "Actions", value: "actions" },
 ];
 
 // Recipient for "request a custom plan" enquiries (e.g. business users needing more

@@ -16,6 +16,9 @@ import {
   unblockAppAction,
   getAppLimitsAction,
   getZoneAction,
+  lockDeviceAction,
+  unlockDeviceAction,
+  wipeDeviceAction,
 } from "../api/mdm-sync.actions";
 import { useToast } from "@/shared/ui/toast";
 import { AppRole } from "@/features/parents/ui/DeviceConfigurationSetup";
@@ -230,4 +233,71 @@ export function useGetDeviceAssignmentId(
       enabled: !!options?.deviceId && options?.enabled !== false,
     }
   );
+}
+
+export function useLockDevice() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  return useServerActionMutation(lockDeviceAction, {
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["deviceDetail"] });
+      toast({
+        title: "Success",
+        message: "Device locked successfully",
+        type: "success",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        message: error.message || "Failed to lock device",
+        type: "error",
+      });
+    },
+  });
+}
+
+export function useUnlockDevice() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  return useServerActionMutation(unlockDeviceAction, {
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["deviceDetail"] });
+      toast({
+        title: "Success",
+        message: "Device unlocked successfully",
+        type: "success",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        message: error.message || "Failed to unlock device",
+        type: "error",
+      });
+    },
+  });
+}
+
+export function useWipeDevice() {
+  const { toast } = useToast();
+
+  return useServerActionMutation(wipeDeviceAction, {
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        message: "Wipe command sent successfully",
+        type: "success",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        message: error.message || "Failed to wipe device",
+        type: "error",
+      });
+    },
+  });
 }

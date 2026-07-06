@@ -42,9 +42,11 @@ export function MetricCard({
   return (
     <div className={cn("space-y-4 rounded-[32px] bg-[#F8F9FA] p-8", className)}>
       <div className="flex items-start justify-between">
-        <div className="space-y-4">
-          <p className="text-sm font-medium text-slate-400">{title}</p>
-          <h2 className={cn("text-3xl sm:text-4xl font-bold tracking-tight", currentColorClass)}>{value}</h2>
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-slate-500">{title}</p>
+          <h2 className="text-[32px] sm:text-[40px] font-bold tracking-tight text-[#1B3C73]">
+            {value}
+          </h2>
         </div>
 
         {/* Mini Bar Chart */}
@@ -87,8 +89,11 @@ export function MetricCard({
       )}
 
       {footerText && (
-        <div className="pt-2">
-          <p className={cn("text-sm font-semibold", currentColorClass)}>{footerText}</p>
+        <div className="flex items-center gap-2 pt-2">
+          <span className={cn("text-[10px]", chartColor === "green" ? "text-[#22C55E]" : chartColor === "red" ? "text-[#EF4444]" : "text-[#EAB308]")}>
+            {chartColor === "green" ? "▲" : chartColor === "red" ? "▼" : "■"}
+          </span>
+          <p className="text-sm font-medium text-slate-500">{footerText}</p>
         </div>
       )}
     </div>

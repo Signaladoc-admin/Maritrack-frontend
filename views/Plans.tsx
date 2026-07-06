@@ -9,9 +9,10 @@ import { useAuth } from "@/shared/auth/AuthProvider";
 import { formatCurrency, formatPaystackKoboAmount } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Header } from "@/shared/ui/layout/header";
-import { Skeleton } from "@/shared/ui/skeleton";
 import { useRouter } from "next/navigation";
 import { useQueryState } from "nuqs";
+import { ArrowLeft } from "lucide-react";
+import { Skeleton } from "@/shared/ui/skeleton";
 
 // Mirrors PlanCard exactly: same rounded-xl, px-6 py-5, inline border styles
 function PlanCardSkeleton() {
@@ -60,40 +61,52 @@ export default function Plans() {
   if (reference) return <VerifyPayment reference={reference} />;
 
   return (
-    <div className="mx-auto max-w-3xl space-y-10">
-      <Header title="Your Plans" subtitle="Manage your subscription and billing history" />
+    <div className="w-full">
+      <div className="mb-8 flex items-center justify-start">
+        <button 
+          onClick={() => router.push("/dashboard")} 
+          className="flex items-center text-sm font-medium text-slate-500 transition-colors hover:text-slate-700"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to dashboard
+        </button>
+      </div>
 
-      {isResolving ? (
-        <div className="space-y-4">
-          <PlanCardSkeleton />
-          <PlanCardSkeleton />
-        </div>
-      ) : !activeSubscription ? (
-        <div className="mx-auto flex w-fit flex-col gap-4">
-          <p className="text-muted-foreground text-center">No active subscription found</p>
-          <Button onClick={handleUpgrade}>Upgrade</Button>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <PlanCard
-            key={crypto.randomUUID()}
-            price={formatCurrency(formatPaystackKoboAmount(activeSubscription.plan?.priceNGN) || 0)}
-            name={activeSubscription.plan?.name || ""}
-            billingCycle={activeSubscription.plan?.billingCycle || ""}
-            isCurrent={activeSubscriptionRes?.data?.active}
-          />
-          {otherSubscriptions.map((subscription: Subscription) => (
+      <div className="mx-auto max-w-3xl space-y-10 pt-2">
+        <Header title="Your Plans" subtitle="Manage your subscription and billing history" />
+
+        {isResolving ? (
+          <div className="space-y-4">
+            <PlanCardSkeleton />
+            <PlanCardSkeleton />
+          </div>
+        ) : !activeSubscription ? (
+          <div className="mx-auto flex w-fit flex-col gap-4">
+            <p className="text-center text-muted-foreground">No active subscription found</p>
+            <Button onClick={handleUpgrade}>Upgrade</Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
             <PlanCard
-              key={subscription.id}
-              price={formatCurrency(formatPaystackKoboAmount(subscription.plan?.priceNGN) || 0)}
-              name={subscription.plan?.name || ""}
-              billingCycle={subscription.plan?.billingCycle || ""}
+              key={crypto.randomUUID()}
+              price={formatCurrency(formatPaystackKoboAmount(activeSubscription.plan?.priceNGN) || 0)}
+              name={activeSubscription.plan?.name || ""}
+              billingCycle={activeSubscription.plan?.billingCycle || ""}
+              isCurrent={activeSubscriptionRes?.data?.active}
             />
-          ))}
-        </div>
-      )}
+            {otherSubscriptions.map((subscription: Subscription) => (
+              <PlanCard
+                key={subscription.id}
+                price={formatCurrency(formatPaystackKoboAmount(subscription.plan?.priceNGN) || 0)}
+                name={subscription.plan?.name || ""}
+                billingCycle={subscription.plan?.billingCycle || ""}
+              />
+            ))}
+          </div>
+        )}
 
-      <BillingHistoryTable />
+        <BillingHistoryTable />
+      </div>
     </div>
   );
 }

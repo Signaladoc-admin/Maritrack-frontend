@@ -23,6 +23,7 @@ import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 import { MDMDeviceDetailsResponse } from "@/features/device/types";
 import ReassignDeviceModal from "@/features/business-users/users/ui/ReassignDeviceModal";
 import { DeviceHeaderSkeleton } from "./DeviceHeaderSkeleton";
+import DeviceActions from "./DeviceActions";
 
 const Device = () => {
   const router = useRouter();
@@ -165,6 +166,7 @@ const Device = () => {
           <DevicesConfigurationSetup />
         </div>
       )}
+      {activeTab === "actions" && <DeviceActions />}
     </div>
   );
 };
