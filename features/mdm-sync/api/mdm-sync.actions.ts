@@ -198,3 +198,46 @@ export async function unblockAppAction({
     "Failed to unblock app"
   );
 }
+
+export interface DeviceActionVariables {
+  deviceId: string;
+}
+
+export async function lockDeviceAction({
+  deviceId,
+}: DeviceActionVariables): Promise<ActionResult<any>> {
+  return withSafeAction(
+    async () =>
+      await apiClient(`/mdm-sync/${deviceId}/action`, {
+        method: "POST",
+        body: JSON.stringify({ deviceIds: [deviceId], actionId: 401, message: "NA" }),
+      }),
+    "Failed to lock device"
+  );
+}
+
+export async function unlockDeviceAction({
+  deviceId,
+}: DeviceActionVariables): Promise<ActionResult<any>> {
+  return withSafeAction(
+    async () =>
+      await apiClient(`/mdm-sync/${deviceId}/action`, {
+        method: "POST",
+        body: JSON.stringify({ deviceIds: [deviceId], actionId: 201, message: "NA" }),
+      }),
+    "Failed to unlock device"
+  );
+}
+
+export async function wipeDeviceAction({
+  deviceId,
+}: DeviceActionVariables): Promise<ActionResult<any>> {
+  return withSafeAction(
+    async () =>
+      await apiClient(`/mdm-sync/${deviceId}/action`, {
+        method: "POST",
+        body: JSON.stringify({ deviceIds: [deviceId], actionId: 8, message: "NA" }),
+      }),
+    "Failed to wipe device"
+  );
+}

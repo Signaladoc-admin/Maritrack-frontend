@@ -43,9 +43,9 @@ export function ProfilePopover() {
         </button>
       </PopoverTrigger>
       <PopoverContent
-        side="right"
+        side="bottom"
         align="end"
-        className="z-99999 ml-4 w-56 rounded-[24px] border-none p-4"
+        className="z-99999 mt-2 w-56 rounded-[24px] border-none p-4"
       >
         <div className="flex flex-col gap-1">
           <Link

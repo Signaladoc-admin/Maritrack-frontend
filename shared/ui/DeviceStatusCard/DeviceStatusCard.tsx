@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { BatteryCharging, BatteryFullIcon, Plus, Zap } from "lucide-react";
+import { FaApple } from "react-icons/fa";
 import { cn } from "@/shared/lib/utils";
 
 export type DeviceUsageStatus = "active" | "locked";
@@ -41,18 +42,23 @@ export function DeviceUsageCard({
   return (
     <div
       className={cn(
-        "relative flex cursor-pointer overflow-hidden rounded-[24px] border border-[#1B3C73] bg-[#081223] p-6 transition-colors hover:bg-[#0a172d] lg:p-8",
+        "relative flex cursor-pointer overflow-hidden rounded-[32px] border-none bg-[#0B1528] p-6 transition-colors hover:bg-[#0a172d] lg:p-8",
         isRow ? "w-full flex-row items-center justify-between gap-4" : "flex-col",
         className
       )}
       onClick={onClick}
     >
       {/* --- Left Side: Text Info --- */}
-      <div className="z-10 flex h-full flex-col justify-start gap-2">
-        <h3 className="text-[18px] font-bold tracking-wide text-white lg:text-[20px]">
+      <div className={cn("z-10 flex flex-col gap-1", isRow ? "h-full justify-start text-left" : "mt-2 justify-start text-center")}>
+        {!isRow && (
+          <div className="mb-2 flex justify-center text-[#8198BF]">
+            <FaApple className="h-6 w-6" />
+          </div>
+        )}
+        <h3 className="text-[18px] font-bold tracking-wide text-white lg:text-[22px]">
           {deviceName}
         </h3>
-        <span className="text-[14px] font-medium text-[#8198BF] lg:text-[15px]">{device}</span>
+        <span className="text-[14px] font-medium text-[#8198BF] lg:text-[16px]">{device}</span>
       </div>
 
       {/* --- Right Side: Half Phone Display --- */}

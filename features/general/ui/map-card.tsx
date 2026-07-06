@@ -50,12 +50,12 @@ export function MapCard({ deviceId }: { deviceId: string }) {
   const center: [number, number] = hasValidLocation ? [lat!, lng!] : DEFAULT_CENTER;
 
   return (
-    <Card className="h-full w-full overflow-hidden">
+    <Card className="flex h-full w-full flex-col overflow-hidden">
       <CardHeader>
         <CardTitle>Location History</CardTitle>
       </CardHeader>
-      <CardContent className="p-6!">
-        <div className="h-[400px] w-full">
+      <CardContent className="flex flex-1 flex-col p-6!">
+        <div className="w-full flex-1 min-h-[400px]">
           {!isHardwarePending && (
             <MapContainer
               center={center}

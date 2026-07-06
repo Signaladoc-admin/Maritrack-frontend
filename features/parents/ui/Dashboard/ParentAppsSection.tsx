@@ -19,9 +19,8 @@ export function ParentAppsSection({ appsData, isPending }: ParentAppsSectionProp
 
   return (
     <InfoListCard
-      title="Most used apps"
-      actionText="View all"
-      onActionClick={() => console.log("View Apps")}
+      title="Top 5 Apps"
+      className="rounded-[32px] border-none bg-[#F8F9FA] p-4 shadow-none"
       items={
         fetchedApps.length > 0
           ? fetchedApps.map((app: any) => ({
