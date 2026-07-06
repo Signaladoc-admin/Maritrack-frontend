@@ -66,7 +66,7 @@ const WebHistory = () => {
               <InfoListCard
                 title="Browsing History"
                 actionText="View history"
-                onActionClick={() => console.log("View History")}
+                onActionClick={() => {}}
                 items={websites}
               />
             </div>

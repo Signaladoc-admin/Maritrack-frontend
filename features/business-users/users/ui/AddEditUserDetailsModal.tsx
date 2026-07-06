@@ -105,7 +105,6 @@ export default function AddEditUserDetailsModal({
       });
       onOpenChange(false);
     } catch (error: any) {
-      console.log("ERROR", error);
       toast({
         type: "error",
         title: error?.message || "Failed to create user",

@@ -25,8 +25,6 @@ export function AssetTrackingWidget() {
   const { batteryChartData, devicesAvailabilityData, lostReports, deviceLocations, isLoading } =
     useAssetTracking();
 
-  console.log(deviceLocations);
-
   const hasBatteryData = batteryChartData.some((d) => d.score > 0);
 
   return (

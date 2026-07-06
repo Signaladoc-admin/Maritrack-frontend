@@ -51,8 +51,6 @@ export default function AddTeamMemberForm({
   const { ref: registerEmailRef, ...emailProps } = register("email");
   const [isLoadingEmailExists, setIsLoadingEmailExists] = useState(false);
 
-  console.log(errors);
-
   async function onSubmit(data: OnboardingStaffMemberValues) {
     // Check if email already added
     if (teamMembers.some((m) => m.email === data.email)) {

@@ -45,7 +45,6 @@ export function useSetRestrictions() {
       });
     },
     onError: (error) => {
-      console.log(error);
       toast({
         title: "Error",
         message: error.message || "Failed to set restrictions",

@@ -49,7 +49,6 @@ export function LocationView({ deviceId }: { deviceId: string }) {
         {/* Left Column */}
         <div className="flex flex-col gap-6">
           <CurrentLocationCard lat={location?.latitude} lon={location?.longitude} />
-          {/* <LocationHistoryCard items={historyItems} onSeeMore={() => console.log("See more")} /> */}
           <GeofencingCard
             locations={geoFencingLocations}
             onSetGeofencing={(locs) => {

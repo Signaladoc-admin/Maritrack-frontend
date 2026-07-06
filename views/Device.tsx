@@ -141,7 +141,7 @@ const Device = () => {
         title="Are you sure you want to delete this device?"
         description="Deleting this device cannot be reverted. Are you sure?"
         confirmText="Delete"
-        onConfirm={() => console.log("Deleted")}
+        onConfirm={() => {}}
         variant="destructive"
       />
 

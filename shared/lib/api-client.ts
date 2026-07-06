@@ -62,14 +62,6 @@ export async function apiClient<T = any>(
     headers["Authorization"] = `Bearer ${accessToken}`;
   }
 
-  console.log(`\n================ API REQUEST ================`);
-  console.log(`[URL]: ${url}`);
-  console.log(`[METHOD]: ${fetchOptions.method || "GET"}`);
-  console.log(`[HEADERS]:`, JSON.stringify(headers, null, 2));
-  if (fetchOptions.body) {
-    console.log(`[BODY]:`, fetchOptions.body);
-  }
-  console.log(`=============================================\n`);
   let response: Response;
   try {
     response = await fetch(url, {
@@ -88,7 +80,6 @@ export async function apiClient<T = any>(
     }
     throw error;
   }
-  console.log(`[apiClient] Response status for ${url}: ${response.status}`);
 
   if (
     response.status === 401 &&

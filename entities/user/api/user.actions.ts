@@ -50,7 +50,6 @@ export async function updateProfileAction(data: UpdateProfileDto): Promise<ApiRe
     method: "PATCH",
     body: formData,
   });
-  console.log(response)
   return response.data;
 }
 

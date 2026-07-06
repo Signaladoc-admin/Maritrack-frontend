@@ -65,8 +65,6 @@ export default function BusinessProfileForm() {
 
   const { data: userInfo, isLoading: isLoadingUserInfo } = useGetUserById(user?.id!);
 
-  console.log("userInfo", userInfo);
-
   if (isLoadingBusiness || isLoadingBusinessProfile || isLoadingUserInfo) {
     return <BusinessProfileFormSkeleton />;
   }

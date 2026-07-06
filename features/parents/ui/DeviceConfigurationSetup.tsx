@@ -390,8 +390,6 @@ export default function DevicesConfigurationSetup({
       ...(isParent && { parentalConsent: data.parentalConsent }),
     };
 
-    console.log("payload", payload);
-
     try {
       const currentSettingsId = existingSettings?.id || mySettings?.id;
       if (currentSettingsId) {
