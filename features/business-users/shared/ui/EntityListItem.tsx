@@ -34,7 +34,9 @@ function EntityListItem({
       </div>
       <div>
         <p className="font-medium">{title}</p>
-        <p className="text-muted-foreground text-sm">{subtitle}</p>
+        <p className="text-muted-foreground text-sm" title={subtitle}>
+          {subtitle}
+        </p>
         {description && <p className="text-muted-foreground text-sm">{description}</p>}
       </div>
     </div>

@@ -78,8 +78,6 @@ export async function createBusinessProfileAction({
   ...data
 }: {
   profile: string;
-  departments?: string[];
-  locations?: string[];
 }): Promise<any> {
   return withSafeAction(async () => {
     const res = await apiClient(`/business-profiles`, {
@@ -96,9 +94,7 @@ export async function updateBusinessProfileAction({
   ...data
 }: {
   id: string;
-  profile: string;
-  departments?: string[];
-  locations?: string[];
+  profile?: string;
 }): Promise<any> {
   return withSafeAction(async () => {
     const res = await apiClient(`/business-profiles/${id}`, {

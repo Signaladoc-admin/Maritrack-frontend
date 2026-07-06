@@ -31,11 +31,12 @@ export default function ChildrenProfiles({
 }) {
   const queryClient = useQueryClient();
 
-  const { user } = useAuth()
-  const activeParentId = user?.parentId || '';
+  const { user } = useAuth();
+  const activeParentId = user?.parentId || "";
 
-  const { data: children, isLoading: isFetchingChildren } = useParentChildren({ enabled: !!activeParentId })
-  console.log('children', children)
+  const { data: children, isLoading: isFetchingChildren } = useParentChildren({
+    enabled: !!activeParentId,
+  });
 
   const childProfiles: IChildProfile[] = (children?.data || []).map((child) => ({
     ...child,
@@ -43,13 +44,13 @@ export default function ChildrenProfiles({
     imageUrl: child.imageUrl || undefined,
   }));
 
-  const zoneId = user?.zoneId || '';
+  const zoneId = user?.zoneId || "";
 
   const { data: subscriptionData } = useActiveSubscription(zoneId);
   const hasPaid = subscriptionData?.data.active ?? false;
 
-  const [planChosen, setPlanChosen] = useState(false);
-  const canProceed = hasPaid || planChosen;
+  const [basicPlanChosen, setBasicPlanChosen] = useState(false);
+  const canProceed = hasPaid || basicPlanChosen;
 
   const { mutateAsync: createChild, isPending: isCreatingChild } = useCreateChild();
   const { mutateAsync: updateChild, isPending: isUpdatingChild } = useUpdateChild();
@@ -62,7 +63,7 @@ export default function ChildrenProfiles({
     onViewChange?.(currentView);
   }, [currentView, onViewChange]);
 
-  const isInitialLoading = !!activeParentId && isFetchingChildren
+  const isInitialLoading = !!activeParentId && isFetchingChildren;
 
   const [selectedChildProfile, setSelectedChildProfile] = useState<IChildProfile | null>(null);
   const [pendingChild, setPendingChild] = useState<IChildProfile | null>(null);
@@ -85,6 +86,7 @@ export default function ChildrenProfiles({
         age: Number(data.age),
         gender: data.gender as any,
         parentId: activeParentId,
+        profilePicture: data.profilePicture,
       });
 
       if (res) {
@@ -121,6 +123,7 @@ export default function ChildrenProfiles({
           name: data.name,
           age: Number(data.age),
           gender: data.gender as any,
+          profilePicture: data.profilePicture,
         } as any);
       }
       queryClient.invalidateQueries({ queryKey: ["children", "parent"] });
@@ -178,7 +181,7 @@ export default function ChildrenProfiles({
       <PricingStep
         onBack={() => setCurrentView("list")}
         onSuccess={() => {
-          setPlanChosen(true);
+          setBasicPlanChosen(true);
           setCurrentView(pendingChild ? "qr" : "list");
           toast({
             title: "Plan Selected",
@@ -208,9 +211,11 @@ export default function ChildrenProfiles({
         <Header title="Create your children's profile" subtitle="Create your children's accounts" />
       </div>
       <div>
-        <div className="space-y-4">
+        <div className="mb-2 space-y-4">
           {isInitialLoading ? (
             <ChildProfileCardSkeleton />
+          ) : childProfiles.length === 0 ? (
+            <NewChildProfileButton onClick={() => handleOpenForm()} />
           ) : (
             childProfiles.map((childProfile, index) => (
               <ChildProfileCard
@@ -222,9 +227,7 @@ export default function ChildrenProfiles({
             ))
           )}
         </div>
-        {!isInitialLoading && childProfiles.length === 0 && (
-          <NewChildProfileButton onClick={() => handleOpenForm()} />
-        )}
+
         <div className="flex gap-4 pt-4">
           <Button
             disabled={!childProfiles.length}

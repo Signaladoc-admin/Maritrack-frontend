@@ -31,8 +31,8 @@ function PlanCardSkeleton() {
 }
 
 export default function Plans() {
-  const { user } = useAuth()
-  const zoneId = user?.zoneId || '';
+  const { user } = useAuth();
+  const zoneId = user?.zoneId || "";
 
   const { data: activeSubscriptionRes, isLoading: isLoadingSubscription } =
     useActiveSubscription(zoneId);
@@ -46,9 +46,9 @@ export default function Plans() {
     ? allSubscriptions.filter((s: Subscription) => s.id !== activeSubscription?.id)
     : [];
 
+  console.log("other subscriptions", otherSubscriptions);
   // Stay in skeleton until zones resolve AND (if a zone exists) subscription resolves
-  const isResolving =
-    zoneId && (isLoadingSubscription || isLoadingAllSubscriptions);
+  const isResolving = zoneId && (isLoadingSubscription || isLoadingAllSubscriptions);
 
   const [reference] = useQueryState("reference");
 
@@ -58,7 +58,7 @@ export default function Plans() {
     router.push("/plans/subscribe");
   };
 
-  if (reference) return <VerifyPayment reference={reference} />
+  if (reference) return <VerifyPayment reference={reference} />;
 
   return (
     <div className="w-full">

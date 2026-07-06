@@ -28,16 +28,6 @@ export default function AddEditUserDetailsModal({
   onOpenChange: (open: boolean) => void;
   selectedId: string | null;
 }) {
-  // const initialValues = {
-  //   firstName: "Obafemiii",
-  //   lastName: "Olorede",
-  //   department: "925149bf-810e-4594-93b8-49191485ae7d",
-  //   businessRole: BUSINESS_ROLES[0],
-  //   email: "obafemilared@gmail.com",
-  //   phone: "080909121",
-  //   address: "123 Road",
-  // };
-
   const { register, formState, handleSubmit, control, setValue, reset } =
     useForm<BusinessUserDetailsValues>({
       defaultValues: {
@@ -109,8 +99,6 @@ export default function AddEditUserDetailsModal({
         ? await updateStaffMember({ id: selectedId!, ...updatePayload })
         : await createStaffMember(payload);
 
-      console.log(res);
-
       toast({
         type: "success",
         title: `User ${initialData ? "updated" : "created"} successfully`,
@@ -145,17 +133,17 @@ export default function AddEditUserDetailsModal({
             <InputGroup
               className=""
               {...register("firstName")}
-              placeholder="14"
+              placeholder="John"
               label="First name"
-              disabled
+              disabled={!!initialData}
               error={formState.errors.firstName?.message}
             />
             <InputGroup
               className=""
               {...register("lastName")}
-              placeholder="14"
+              placeholder="Doe"
               label="Last name"
-              disabled
+              disabled={!!initialData}
               error={formState.errors.lastName?.message}
             />
           </div>
@@ -222,7 +210,7 @@ export default function AddEditUserDetailsModal({
         </div>
 
         <Button type="submit" disabled={isSubmitting} className="bg-primary w-full">
-          {isSubmitting ? "Creating..." : initialData ? "Update Profile" : "Add Profile"}
+          {isSubmitting ? "Creating..." : initialData ? "Update user" : "Add user"}
         </Button>
       </form>
     </Modal>

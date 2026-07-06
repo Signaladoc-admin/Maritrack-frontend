@@ -54,7 +54,13 @@ export default function LoginForm() {
       clearCredentials();
       if (user?.parentId) setParentId(user.parentId);
 
-      router.push("/dashboard");
+      // First-login invited staff are on a default password — send them to change it first.
+      // They can still skip via "Sign out"; on their next login `isFirstLogin` is false.
+      if (user?.isFirstLogin && user?.isInvited) {
+        router.push("/change-password");
+      } else {
+        router.push("/dashboard");
+      }
     } catch (err: any) {
       // Toast is already shown by useLogin's onError.
       // For unverified email specifically, redirect to the confirm-email page.

@@ -5,10 +5,10 @@ import { PricingCard } from "@/shared/ui/PricingCard/PricingCard";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
-import { usePaymentPlans, useInitializePayment } from "@/features/payments/model/usePayments";
+import { usePricingPlans, useInitializePayment } from "@/features/payments/model/usePayments";
 import { useToast } from "@/shared/ui/toast";
 import { useAuth } from "@/shared/auth/AuthProvider";
-import { formatPaystackKoboAmount } from "@/shared/lib/utils";
+import { SUPPORT_EMAIL } from "@/shared/lib/constants";
 import { usePathname } from "next/navigation";
 
 function PricingCardSkeleton({ isPremium }: { isPremium?: boolean }) {
@@ -44,18 +44,36 @@ interface PricingStepProps {
 }
 
 export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: PricingStepProps) {
-  const { data: plans, isLoading: isLoadingPlans } = usePaymentPlans();
+  const { premiumPlans, bestChoiceId, isLoading: isLoadingPlans } = usePricingPlans();
 
-  const { mutateAsync: initializePayment, isPending: isInitializingPayment } = useInitializePayment();
+  const { mutateAsync: initializePayment, isPending: isInitializingPayment } =
+    useInitializePayment();
   const { user } = useAuth();
   const appRole = user?.appRole;
 
-  const zoneId = user?.zoneId || ''
+  const zoneId = user?.zoneId || "";
 
-  const pathname = usePathname()
+  const pathname = usePathname();
   const isOnboarding = pathname.includes("onboarding");
 
   const { toast } = useToast();
+
+  const isBusiness = appRole === "BUSINESS";
+
+  // Business users who need to monitor more devices than the largest published tier
+  // (200) can request a custom plan over email instead of self-serve checkout.
+  const handleRequestCustomPlan = () => {
+    const subject = "Custom plan request — more than 200 devices";
+    const body =
+      "Hi Flentra team,\n\n" +
+      "We'd like to monitor more than 200 devices and would like to discuss a custom plan.\n\n" +
+      "Number of devices needed: \n" +
+      "Company name: \n\n" +
+      "Thanks.";
+    window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
+  };
 
   const handleSelectBasicPlan = () => {
     onSuccess();
@@ -64,15 +82,9 @@ export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: 
   const handleSelectPremiumPlan = async (planId: string) => {
     try {
       const host = window.location.origin;
-      const callbackUrl = isOnboarding ? `${host}/onboarding/${appRole === "PARENT" ? "personal" : "business"}` : `${host}/plans`;
-
-      console.log('selecting...')
-
-      console.log('planId', planId)
-      console.log('zoneId', zoneId)
-      console.log('callbackUrl', callbackUrl)
-
-      // console.log('response', response)
+      const callbackUrl = isOnboarding
+        ? `${host}/onboarding/${appRole === "PARENT" ? "personal" : "business"}`
+        : `${host}/plans`;
 
       const response = await initializePayment({
         planId,
@@ -80,26 +92,16 @@ export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: 
         callbackUrl,
       });
 
-
-
       if (response?.authorizationUrl) {
         // Redirect to paystack checkout window
         window.location.href = response.authorizationUrl;
       } else {
         toast({ title: "Error", message: "Could not generate checkout session", type: "error" });
-
       }
     } catch (e: any) {
       toast({ title: "Error", message: e.message || "Checkout failed", type: "error" });
     }
   };
-
-  const features = [
-    { text: "Customer Support", included: true },
-    { text: "Free User Account", included: true },
-    { text: "Monthly Reports", included: false },
-    { text: "Multiple Devices", included: false },
-  ];
 
   if (isInitializingPayment) {
     return (
@@ -110,21 +112,6 @@ export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: 
     );
   }
 
-  // Use the last plan in the array for the premium card
-  const premiumPlanData = Array.isArray(plans) && plans.length > 0 ? plans[plans.length - 1] : null;
-  const premiumPrice = premiumPlanData ? formatPaystackKoboAmount(premiumPlanData.priceNGN) : 49;
-  const premiumTitle = premiumPlanData ? premiumPlanData.name.toUpperCase() : "PREMIUM PLAN";
-  const premiumDesc = premiumPlanData
-    ? premiumPlanData.description
-    : "On even feet time have an no at. Relation so in confined smallest children unpacked delicate. Why sir end believe.";
-
-  const premiumFeatures = [
-    { text: premiumPlanData?.name.toUpperCase().split("—")[0]!, included: true },
-    { text: "Customer Support", included: true },
-    { text: "Monthly Reports", included: true },
-    { text: "Multiple Devices Supported", included: true },
-  ];
-
   return (
     <div className="relative space-y-10">
       <div className="pointer-events-none absolute top-0 bottom-0 left-1/2 w-screen -translate-x-1/2">
@@ -132,7 +119,7 @@ export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: 
           src="/bg-texture.png"
           alt=""
           fill
-          className="select-none object-cover object-center opacity-60"
+          className="object-cover object-center opacity-60 select-none"
           priority={false}
         />
       </div>
@@ -143,8 +130,8 @@ export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: 
       )}
 
       <div className="space-y-16">
-        <div className="space-y-4 text-center max-w-xl mx-auto">
-          <h1 className="text-3xl md:text-[2.35rem] font-extrabold tracking-tight text-slate-900">
+        <div className="mx-auto max-w-xl space-y-4 text-center">
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-[2.35rem]">
             Start today, with free or <br /> premium plan, you choose
           </h1>
           <p className="text-muted-foreground text-lg">
@@ -152,36 +139,69 @@ export default function PricingStep({ onBack, onSuccess, isShowingBackButton }: 
             without any problem.
           </p>
         </div>
-        <div className="grid justify-center gap-8 md:grid-cols-2 mx-auto max-w-4xl">
+        <div className="mx-auto flex max-w-6xl flex-wrap justify-center gap-8">
           {isLoadingPlans ? (
             <>
-              <PricingCardSkeleton />
-              <PricingCardSkeleton isPremium />
+              <div className="w-full max-w-[360px]">
+                <PricingCardSkeleton />
+              </div>
+              <div className="w-full max-w-[360px]">
+                <PricingCardSkeleton isPremium />
+              </div>
+              <div className="w-full max-w-[360px]">
+                <PricingCardSkeleton />
+              </div>
             </>
           ) : (
             <>
-              <PricingCard
-                plan={{
-                  id: "basic",
-                  name: "Basic Plan",
-                  billingCycle: "Per month",
-                  deviceLimit: 1,
-                  priceNGN: 0,
-                  description: "Get started with our free plan and enjoy basic features.",
-                }}
-                buttonText="Get Basic"
-                onButtonClick={handleSelectBasicPlan}
-              />
-              <PricingCard
-                plan={plans?.at(-1)!}
-                key={plans?.at(-1)!.id}
-                isPremium
-                buttonText="Get the premium"
-                onButtonClick={() => handleSelectPremiumPlan(plans?.at(-1)!.id!)}
-              />
+              <div className="w-full max-w-[360px]">
+                <PricingCard
+                  plan={{
+                    id: "basic",
+                    name: "Basic Plan",
+                    billingCycle: "Per month",
+                    deviceLimit: 1,
+                    priceNGN: 0,
+                    description: "Get started with our free plan and enjoy basic features.",
+                  }}
+                  buttonText="Get Basic"
+                  onButtonClick={handleSelectBasicPlan}
+                />
+              </div>
+              {premiumPlans.map((plan) => {
+                const isBestChoice = plan.id === bestChoiceId;
+                return (
+                  <div key={plan.id} className="w-full max-w-[360px]">
+                    <PricingCard
+                      plan={plan}
+                      isPremium={isBestChoice}
+                      buttonText={isBestChoice ? "Get the premium" : "Choose plan"}
+                      onButtonClick={() => handleSelectPremiumPlan(plan.id)}
+                    />
+                  </div>
+                );
+              })}
             </>
           )}
         </div>
+
+        {isBusiness && !isLoadingPlans && (
+          <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 rounded-2xl border border-slate-200 bg-white/70 px-6 py-8 text-center sm:flex-row sm:justify-between sm:text-left">
+            <div className="space-y-1">
+              <h3 className="text-lg font-bold text-slate-900">Need more than 200 devices?</h3>
+              <p className="text-muted-foreground text-sm">
+                Tell us how many devices you manage and we&apos;ll tailor a plan for your
+                organisation.
+              </p>
+            </div>
+            <Button
+              onClick={handleRequestCustomPlan}
+              className="h-12 shrink-0 rounded-full bg-[#1B3C73] px-8 text-base font-bold text-white hover:bg-[#16315e]"
+            >
+              Request a custom plan
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

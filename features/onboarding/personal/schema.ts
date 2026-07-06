@@ -18,7 +18,8 @@ export const parentOnboardingProfileSchema = z.object({
 export const childProfileSchema = z.object({
   profilePicture: z
     .instanceof(File, { message: "Please upload a profile photo" })
-    .refine((f) => f.size > 0, { message: "Please upload a profile photo" }),
+    .refine((f) => f.size > 0, { message: "Please upload a profile photo" })
+    .optional(),
   name: z.string().min(1, "Enter your child's name"),
   age: z.coerce.number().min(1, "Enter your child's age"),
   gender: z.enum(genderValues, {

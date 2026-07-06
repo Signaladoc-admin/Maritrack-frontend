@@ -34,7 +34,13 @@ export default function InviteTeamMembersForm({
     })
   );
 
-  const allTeamMembers = [...formattedExistingTeamMembers, ...newTeamMembers];
+  // On submit, creating the staff invalidates & refetches the staff-members list, so the
+  // just-created members land in `formattedExistingTeamMembers` while still living in the
+  // local `newTeamMembers` state — rendering each one twice. Dedupe by email (email is the
+  // unique identifier for a member) and let the server-persisted copy, which comes first, win.
+  const allTeamMembers = [...formattedExistingTeamMembers, ...newTeamMembers].filter(
+    (member, index, list) => list.findIndex((m) => m.email === member.email) === index
+  );
 
   const router = useRouter();
   const { toast } = useToast();
@@ -100,9 +106,9 @@ export default function InviteTeamMembersForm({
       <hr />
 
       <div className="space-y-3">
-        {allTeamMembers.map((member, index) => (
+        {allTeamMembers.map((member) => (
           <TeamMemberCard
-            key={index}
+            key={member.email}
             teamMember={member}
             onRemoveTeamMember={handleRemoveTeamMember}
           />

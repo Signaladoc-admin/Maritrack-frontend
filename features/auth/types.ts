@@ -6,12 +6,6 @@ export interface RequestTokenRequest {
   email: string;
 }
 
-export interface ValidateOTPRequest {
-  email: string;
-  token?: string;
-  otp?: string;
-}
-
 export interface VerifyUserRequest {
   email: string;
   otp: string;

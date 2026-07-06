@@ -19,7 +19,6 @@ export default function OtpConfirmForm() {
   const [token] = useQueryState("token");
 
   const { email, password } = useNewUserStore.getState();
-  console.log(email, password)
 
   useEffect(() => {
     if (token) setToken(token);

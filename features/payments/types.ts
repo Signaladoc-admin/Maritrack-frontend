@@ -46,12 +46,18 @@ export interface Transaction {
   };
 }
 
+export type BillingCycle = "MONTHLY" | "ANNUAL";
+
+// B2C plans target the PARENT side of the app, B2B targets the BUSINESS side.
+export type PlanAudience = "B2C" | "B2B";
+
 export interface PaymentPlan {
   id: string;
   name: string;
   slug: string;
-  billingCycle: string;
+  billingCycle: BillingCycle;
   deviceLimit: number;
+  // Post-discount amount the user pays, in standard Naira (NOT kobo).
   priceNGN: number;
   paystackPlanCode: string | null;
   telcoPlanId: string | null;
@@ -61,6 +67,10 @@ export interface PaymentPlan {
   updatedAt: string;
   deleted: boolean;
   deletedAt: string | null;
+  // Percent already baked into `priceNGN`. 0 means no discount. Only the ANNUAL
+  // plans carry a discount.
+  discountPercentage: number;
+  type: PlanAudience;
 }
 
 export interface Subscription {
