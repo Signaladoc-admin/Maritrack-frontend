@@ -36,8 +36,6 @@ export function AddEditChildModal({ open, onOpenChange, initialData }: AddEditCh
   const onSubmit = async (data: z.infer<typeof updateChildProfileSchema>) => {
     if (!initialData?.id) return;
 
-    console.log(data);
-
     await updateChild({
       name: data.name,
       age: Number(data.age),

@@ -154,7 +154,7 @@ const General = () => {
         <InfoListCard
           title="Top 5 apps"
           actionText="View all"
-          onActionClick={() => console.log("View Apps")}
+          onActionClick={() => {}}
           items={top5Apps}
         />
         <MapCard deviceId={deviceId} />

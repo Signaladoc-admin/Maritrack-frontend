@@ -17,7 +17,6 @@ export default function RefreshTokenTest() {
     try {
       setIsLoading(true);
       const res = await refreshAccessTokenAction();
-      console.log("res", res);
 
       if (res?.success) {
         setResponse(res);

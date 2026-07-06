@@ -24,8 +24,6 @@ export default function OnboardingPage() {
 
   const { businessProfile, isLoadingBusinessProfile } = useGetFullBusinessDetails();
 
-  console.log("profile", businessProfile);
-
   const { data: userProfile } = useUserProfile();
   const queryClient = useQueryClient();
 

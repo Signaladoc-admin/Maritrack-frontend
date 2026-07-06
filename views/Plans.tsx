@@ -45,8 +45,7 @@ export default function Plans() {
   const otherSubscriptions = Array.isArray(allSubscriptions)
     ? allSubscriptions.filter((s: Subscription) => s.id !== activeSubscription?.id)
     : [];
-
-  console.log("other subscriptions", otherSubscriptions);
+    
   // Stay in skeleton until zones resolve AND (if a zone exists) subscription resolves
   const isResolving = zoneId && (isLoadingSubscription || isLoadingAllSubscriptions);
 

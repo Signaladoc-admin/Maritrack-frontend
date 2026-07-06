@@ -59,7 +59,6 @@ export { deviceKeys };
 
 export function useGetStaffMemberDevice(staffId: string) {
   const { data: staffMember } = useGetStaffMember(staffId);
-  // console.log()
 
   return staffMember?.device ? [staffMember.device] : [];
 }
