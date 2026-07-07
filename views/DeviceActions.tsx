@@ -26,7 +26,7 @@ const DeviceActions = () => {
   const [showWipeConfirm, setShowWipeConfirm] = useState(false);
 
   const deviceResponse: MDMDeviceDetailsResponse = hardwareData;
-  const isLocked = deviceResponse?.deviceDetails?.deviceStatus === "INACTIVE";
+  const isLocked = deviceResponse?.deviceDetails?.deviceStatus === "LOCKED";
 
   const handleToggleLock = () => {
     if (isLocked) {
