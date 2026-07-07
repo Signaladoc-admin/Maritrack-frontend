@@ -21,7 +21,7 @@ const businessActions: ResourceActions<
   StaffMembersPaginatedResponse
 > = {
   getAll: async (options?: QueryOptions) => await getStaffMembersAction(options),
-  getById: async (id: string) => await getStaffMemberAction(id),
+  getById: async (id: string | null) => await getStaffMemberAction(id),
   create: async (data: StaffMemberDto) => await createStaffMemberAction(data),
   createMultiple: async (data: StaffMemberDto[]) => await createStaffsBulkAction(data),
   update: async (id: string, data: UpdateStaffMemberDto) => await updateStaffMemberAction(id, data),

@@ -30,6 +30,7 @@ export interface UserProfile {
   parentId: string | null,
   parent: Parent,
   zone: Omit<Zone, "businessId" | "parentId">
+  email: string
 }
 
 export interface AuthUserProfile {

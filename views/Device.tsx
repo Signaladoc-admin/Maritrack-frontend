@@ -55,8 +55,6 @@ const Device = () => {
 
   const isMobile = useIsMobile();
 
-  // if (isLoadingHardwareData) return <div>Loading...</div>;
-
   return (
     <div>
       {isLoadingHardwareData ? (
