@@ -24,7 +24,7 @@ export async function getStaffMembersAction(options?: StaffMemberFiltersRequest)
     return res;
   }, "Failed to get staff members");
 }
-export async function getStaffMemberAction(id: string) {
+export async function getStaffMemberAction(id: string | null) {
   return withSafeAction(async () => {
     const res = await apiClient<ApiResponse<BusinessStaff>>(`/staff/${id}`, {
       method: "GET",

@@ -19,7 +19,7 @@ export function createResourceHooks<T, CreateDto = any, UpdateDto = any, ListT =
   const keys = {
     all: [resourceName, "list"] as const,
     details: [resourceName, "detail"] as const,
-    detail: (id: string) => [resourceName, "detail", id] as const,
+    detail: (id: string | null | undefined) => [resourceName, "detail", id] as const,
   };
 
   return {
@@ -33,10 +33,10 @@ export function createResourceHooks<T, CreateDto = any, UpdateDto = any, ListT =
     },
 
     useGetById: (
-      id: string,
+      id: string | null | undefined,
       queryOptions?: Omit<UseQueryOptions<T, Error, T, readonly any[]>, "queryKey" | "queryFn">
     ) => {
-      return useServerActionQuery([...keys.detail(id)], actions.getById, [id], {
+      return useServerActionQuery([...keys.detail(id)], actions.getById, [id as string], {
         enabled: !!id,
         ...queryOptions,
       });
