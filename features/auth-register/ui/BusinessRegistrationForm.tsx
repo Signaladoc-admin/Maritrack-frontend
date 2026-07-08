@@ -2,48 +2,147 @@
 
 import { Button } from "@/shared/ui/button";
 import { InputGroup } from "@/shared/ui/input-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
+import { useRegisterBusiness } from "../model/useRegisterBusiness";
+import { useRouter } from "next/navigation";
+import { businessRegistrationFormSchema, BusinessRegistrationFormValues } from "../schema";
+import { CountryStateInput } from "@/shared/ui/inputs/country-state-input";
+import HaveAnAccount from "@/features/auth/ui/HaveAnAccount";
+import { BusinessRole } from "@/entities/user/model/user.schema";
+import { useNewUserStore } from "@/shared/stores/user.store";
 
 export default function BusinessRegistrationForm() {
+  const { setEmail, businessDetails, setBusinessDetails, setRegistrationType } = useNewUserStore();
+  const { registerBusiness, isSubmitting } = useRegisterBusiness();
+  const router = useRouter();
+
+  const {
+    control,
+    setValue,
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<BusinessRegistrationFormValues>({
+    resolver: zodResolver(businessRegistrationFormSchema),
+    defaultValues: {
+      businessName: businessDetails?.businessName || "",
+      businessEmail: "",
+      estimatedDevices: businessDetails?.estimatedDevices || "",
+      organizationSize: businessDetails?.organizationSize || undefined,
+      address: businessDetails?.address || "",
+      country: businessDetails?.country || "",
+      state: businessDetails?.state || "",
+      password: businessDetails?.password || "",
+      confirmPassword: businessDetails?.confirmPassword || "",
+    },
+    mode: "onTouched",
+  });
+
+  const onSubmit = async (data: BusinessRegistrationFormValues) => {
+    // it uses normal req body
+    const payload = {
+      name: data.businessName,
+      firstName: data.businessName,
+      lastName: data.businessName,
+      email: data.businessEmail,
+      organizationSize: data.organizationSize,
+      adminBusinessRole: "ORGANIZATION_ADMIN" as BusinessRole,
+      estimatedDevices: Number(data.estimatedDevices),
+      address: data.address,
+      country: data.country,
+      state: data.state,
+      password: data.password,
+    };
+    const res = await registerBusiness(payload);
+
+    setEmail(data.businessEmail);
+    setRegistrationType("business");
+    setBusinessDetails(data);
+
+    if (res.success) {
+      router.push("/business/confirm-email");
+    }
+  };
+
   return (
-    <form className="space-y-7">
-      <InputGroup label="Business name" type="text" placeholder="Business name here" />
-      <InputGroup label="Business email" type="email" placeholder="Email here" />
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-7">
+      <InputGroup
+        label="Business name"
+        type="text"
+        placeholder="Business name here"
+        {...register("businessName")}
+        error={errors.businessName?.message}
+      />
+      <InputGroup
+        label="Business email"
+        type="email"
+        placeholder="Email here"
+        {...register("businessEmail")}
+        error={errors.businessEmail?.message}
+      />
+      <div className="grid gap-5 sm:grid-cols-2">
+        <Controller
+          control={control}
+          name="organizationSize"
+          render={({ field }) => (
+            <InputGroup
+              label="Organization size"
+              type="select"
+              placeholder="Select your organization size"
+              options={[
+                { value: "SIZE_1_9", label: "1-9" },
+                { value: "SIZE_10_49", label: "10-49" },
+                { value: "SIZE_50_PLUS", label: "50+" },
+              ]}
+              error={errors.organizationSize?.message}
+              {...field}
+            />
+          )}
+        />
+        <InputGroup
+          label="Estimated number of devices"
+          type="number"
+          min={1}
+          placeholder="10"
+          {...register("estimatedDevices")}
+          error={errors.estimatedDevices?.message}
+        />
+      </div>
       <InputGroup
         label="Business address"
         type="text"
-        placeholder="Enter street address, apt, number, etc"
+        placeholder="Enter street address, apt. number, etc."
+        {...register("address")}
+        error={errors.address?.message}
       />
-      <div className="grid gap-5 sm:grid-cols-2">
-        <InputGroup label="Country" type="select">
-          <Select>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a state" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ng">Lagos</SelectItem>
-              <SelectItem value="gh">Ghana</SelectItem>
-              <SelectItem value="ke">Kenya</SelectItem>
-              <SelectItem value="za">South Africa</SelectItem>
-            </SelectContent>
-          </Select>
-        </InputGroup>
-        <InputGroup label="Country" type="select">
-          <Select>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a country" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ng">Nigeria</SelectItem>
-              <SelectItem value="gh">Ghana</SelectItem>
-              <SelectItem value="ke">Kenya</SelectItem>
-              <SelectItem value="za">South Africa</SelectItem>
-            </SelectContent>
-          </Select>
-        </InputGroup>
-      </div>
+      <CountryStateInput
+        control={control}
+        countryName="country"
+        stateName="state"
+        errors={errors}
+        setValue={setValue}
+      />
 
-      <Button className="w-full">Next</Button>
+      <InputGroup
+        label="Create password"
+        type="password"
+        placeholder="Password"
+        isPasswordValidationEnabled
+        {...register("password")}
+        error={errors.password?.message}
+      />
+      <InputGroup
+        label="Confirm password"
+        type="password"
+        placeholder="Confirm password"
+        {...register("confirmPassword")}
+        error={errors.confirmPassword?.message}
+      />
+      <Button className="w-full" disabled={isSubmitting}>
+        Next
+      </Button>
+      <HaveAnAccount />
     </form>
   );
 }

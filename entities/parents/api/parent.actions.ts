@@ -39,12 +39,11 @@ export async function getParentByIdAction(id: string): Promise<ParentProfile> {
 export async function updateParentAction(
   id: string,
   data: UpdateParentDto
-): Promise<ParentProfile> {
-  const response = await apiClient(`/parents/${id}`, {
+): Promise<{ status: boolean; message: string; data: ParentProfile }> {
+  return apiClient(`/parents/${id}`, {
     method: "PATCH",
     body: JSON.stringify(data),
   });
-  return response.data;
 }
 
 export async function deleteParentAction(id: string): Promise<void> {

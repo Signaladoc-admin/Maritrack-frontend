@@ -1,19 +1,29 @@
 "use client";
 
-import * as React from "react";
-import { Home, LogOut, Plus, User } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Home, Plus, User } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "../Tooltip/Tooltip";
 import Link from "next/link";
-import { childrenProfiles } from "@/app/(in-app)/child/[child]/data";
-import { useParentZones } from "@/features/mdm-sync/model/useMdmSync";
-import { Child, ChildRelationship } from "@/features/child-profile/model/types";
-
 import { SidebarSkeleton } from "./SidebarSkeleton";
 import { ProfilePopover } from "./ProfilePopover";
+import { useParentChildren } from "@/entities/children/model/useChildren";
+import { Child } from "@/features/child-profile/model/types";
+import { useRecentChildren } from "@/shared/hooks/useRecentChildren";
+import { useMemo } from "react";
 
 export function Sidebar() {
-  const { data: parentZonesRes, isLoading: isFetchingChildren } = useParentZones();
+  const { data: parentChildren, isLoading: isFetchingChildren } = useParentChildren();
+  const { recentIds } = useRecentChildren();
+
+  const visibleChildren = useMemo(() => {
+    const all: Child[] = parentChildren?.data ?? [];
+    const recent = recentIds
+      .map((id) => all.find((c) => c.id === id))
+      .filter(Boolean) as Child[];
+    const rest = all.filter((c) => !recentIds.includes(c.id));
+    return [...recent, ...rest].slice(0, 5);
+  }, [parentChildren?.data, recentIds]);
+
+  const hasMore = (parentChildren?.data?.length ?? 0) > 5;
 
   if (isFetchingChildren) {
     return <SidebarSkeleton />;
@@ -40,16 +50,16 @@ export function Sidebar() {
 
         <div className="flex w-full flex-1 flex-col items-center justify-center gap-8">
           <div className="flex flex-col gap-6">
-            {parentZonesRes?.[0]?.parentChildren?.map((child: ChildRelationship) => (
-              <Tooltip key={child.childId}>
+            {visibleChildren.map((child) => (
+              <Tooltip key={child.id}>
                 <TooltipTrigger asChild>
-                  <Link href={`/child/${child.childId}`} className="group relative cursor-pointer">
+                  <Link href={`/child/${child.id}`} className="group relative cursor-pointer">
                     <div className="rounded-full p-[2px] transition-all duration-300 group-hover:scale-110">
                       <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#EEEEEE]">
-                        {child.child.image ? (
+                        {child.imageUrl ? (
                           <img
-                            src={child.child.image}
-                            alt={child.child.name}
+                            src={child.imageUrl}
+                            alt={child.name}
                             className="h-full w-full object-cover"
                           />
                         ) : (
@@ -60,17 +70,34 @@ export function Sidebar() {
                   </Link>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="ml-2">
-                  <p>{child.child.name}</p>
+                  <p>{child.name}</p>
                 </TooltipContent>
               </Tooltip>
             ))}
+            {hasMore && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/children"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EEEEEE] text-xs font-medium text-[#1B3C73] transition-all hover:scale-110"
+                  >
+                    +{(parentChildren?.data?.length ?? 0) - 5}
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="ml-2">
+                  <p>View all children</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <button className="group flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-[#EEEEEE] text-[#1B3C73] transition-all">
-                <Plus className="h-5 w-5" />
-              </button>
+              <Link href={"/children/add"}>
+                <button className="group flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-[#EEEEEE] text-[#1B3C73] transition-all">
+                  <Plus className="h-5 w-5" />
+                </button>
+              </Link>
             </TooltipTrigger>
             <TooltipContent side="right" className="ml-2">
               <p>Add a new child</p>

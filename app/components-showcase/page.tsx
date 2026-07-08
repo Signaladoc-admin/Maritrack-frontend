@@ -60,7 +60,7 @@ export default function ComponentsShowcasePage() {
     <div className="min-h-screen space-y-16 p-4 md:p-8 dark:bg-slate-950">
       {/* Header */}
       <div className="space-y-4">
-        <H1>OptiTrack Design System</H1>
+        <H1>Flentra Design System</H1>
         <P className="text-muted-foreground text-lg">
           Comprehensive verification of all design tokens, atomic components, and composed modules.
         </P>

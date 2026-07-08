@@ -4,7 +4,8 @@ import React from "react";
 export interface InfoListItem {
   id: string;
   icon: IconType | React.ReactNode;
-  title: string;
+  name: string;
+  totalTime?: string;
   subtitle?: string;
   value?: string | React.ReactNode;
   onClick?: () => void;

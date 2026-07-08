@@ -4,21 +4,21 @@ import { FaInstagramSquare, FaWhatsappSquare, FaYoutubeSquare } from "react-icon
 export const appData: InfoListItem[] = [
   {
     id: "1",
-    title: "WhatsApp",
+    name: "WhatsApp",
     subtitle: "Social Media",
     value: "1hr 20min",
     icon: FaWhatsappSquare,
   },
   {
     id: "2",
-    title: "Instagram",
+    name: "Instagram",
     subtitle: "Social Media",
     value: "45min",
     icon: FaInstagramSquare,
   },
   {
     id: "3",
-    title: "YouTube",
+    name: "YouTube",
     subtitle: "Entertainment",
     value: "30min",
     icon: FaYoutubeSquare,

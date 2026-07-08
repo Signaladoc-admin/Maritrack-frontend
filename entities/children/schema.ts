@@ -24,6 +24,7 @@ export const UpdateChildSchema = z.object({
   name: z.string().optional(),
   age: z.coerce.number().optional(),
   gender: z.enum(["MALE", "FEMALE"]).optional(),
+  profilePicture: z.any().optional(),
 });
 export type UpdateChildDto = z.infer<typeof UpdateChildSchema>;
 

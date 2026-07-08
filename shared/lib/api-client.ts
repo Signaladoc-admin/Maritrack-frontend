@@ -9,11 +9,28 @@ let refreshPromise: Promise<string | null> | null = null;
 
 export async function apiClient<T = any>(
   endpoint: string,
-  options: RequestInit & { noRedirect?: boolean } = {}
+  options: RequestInit & {
+    noRedirect?: boolean;
+    skipAuth?: boolean;
+    params?: Record<string, string | number | boolean | undefined>;
+  } = {}
 ): Promise<T> {
   const isServer = typeof window === "undefined";
-  const { noRedirect, ...fetchOptions } = options;
-  const url = `${API_BASE_URL}${endpoint}`;
+  const { noRedirect, skipAuth, params, ...fetchOptions } = options;
+  let url = `${API_BASE_URL}${endpoint}`;
+
+  if (params) {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    });
+    const queryString = searchParams.toString();
+    if (queryString) {
+      url += (url.includes("?") ? "&" : "?") + queryString;
+    }
+  }
 
   // Use dynamic import for cookies to avoid build errors in Pages Router
   let accessToken: string | undefined;
@@ -41,18 +58,10 @@ export async function apiClient<T = any>(
     headers["Content-Type"] = "application/json";
   }
 
-  if (accessToken) {
+  if (accessToken && !skipAuth) {
     headers["Authorization"] = `Bearer ${accessToken}`;
   }
 
-  console.log(`\n================ API REQUEST ================`);
-  console.log(`[URL]: ${url}`);
-  console.log(`[METHOD]: ${fetchOptions.method || "GET"}`);
-  console.log(`[HEADERS]:`, JSON.stringify(headers, null, 2));
-  if (fetchOptions.body) {
-    console.log(`[BODY]:`, fetchOptions.body);
-  }
-  console.log(`=============================================\n`);
   let response: Response;
   try {
     response = await fetch(url, {
@@ -60,11 +69,17 @@ export async function apiClient<T = any>(
       headers,
       cache: "no-store",
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error(`[apiClient] Fetch error for ${url}:`, error);
+    const isNetworkError =
+      error?.message === "Failed to fetch" ||
+      error?.message === "fetch failed" ||
+      error?.name === "TypeError";
+    if (isNetworkError) {
+      throw new Error("No internet connection. Please check your network and try again.");
+    }
     throw error;
   }
-  console.log(`[apiClient] Response status for ${url}: ${response.status}`);
 
   if (
     response.status === 401 &&
@@ -86,6 +101,8 @@ export async function apiClient<T = any>(
         if (isServer && cookieStore) {
           cookieStore.delete("accessToken");
           cookieStore.delete("refreshToken");
+          cookieStore.delete("isEmailVerified");
+          cookieStore.delete("isOnboarded");
         }
         redirect("/login");
       }
@@ -101,6 +118,8 @@ export async function apiClient<T = any>(
       if (isServer && cookieStore) {
         cookieStore.delete("accessToken");
         cookieStore.delete("refreshToken");
+        cookieStore.delete("isEmailVerified");
+        cookieStore.delete("isOnboarded");
       }
       redirect("/login");
     }
@@ -108,46 +127,45 @@ export async function apiClient<T = any>(
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
+    const message = errorData?.message;
 
-    const errorMessage = Array.isArray(errorData.message)
-      ? errorData.message.join(", ")
-      : errorData.message;
+    const errorMessage = Array.isArray(message)
+      ? message.filter((m: any) => typeof m === "string").join(", ") ||
+      message.map((m: any) => (typeof m === "object" ? JSON.stringify(m) : String(m))).join(", ")
+      : typeof message === "string"
+        ? message
+        : response.statusText;
 
-    throw new Error(errorMessage || response.statusText);
+    throw new Error(errorMessage || response.statusText || "Request failed");
   }
 
   const parsedResponse = await response.json();
 
+  // Persist both tokens to httpOnly cookies so server actions can authenticate.
+  // The access token is also returned to the client (via loginAction) to be stored in Zustand,
+  // keeping both in sync from the same source value.
+  //
+  // Login response:   { accessToken: "...", data: { refresh_token: "..." } }
+  // Refresh response: { data: { access_token: "...", refresh_token: "..." }, accessToken: null }
   if (isServer && cookieStore) {
     const accessToken =
-      parsedResponse.accessToken ||
-      parsedResponse.access_token ||
-      parsedResponse.data?.accessToken ||
-      parsedResponse.data?.access_token;
+      parsedResponse.accessToken || // login: top-level camelCase
+      parsedResponse.data?.access_token || // refresh: nested snake_case
+      parsedResponse.data?.accessToken; // future-proofing
 
     const refreshToken =
-      parsedResponse.refreshToken ||
-      parsedResponse.refresh_token ||
-      parsedResponse.data?.refreshToken ||
-      parsedResponse.data?.refresh_token;
+      parsedResponse.data?.refresh_token || parsedResponse.data?.refreshToken; // login + refresh: nested snake_case // future-proofing
 
-    if (accessToken || refreshToken) {
-      const cookieDefaults = {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax" as const,
-        path: "/",
-        maxAge: 7 * 24 * 60 * 60,
-      };
+    const cookieDefaults = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax" as const,
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60,
+    };
 
-      if (accessToken) {
-        cookieStore.set("accessToken", accessToken, cookieDefaults);
-      }
-
-      if (refreshToken) {
-        cookieStore.set("refreshToken", refreshToken, cookieDefaults);
-      }
-    }
+    if (accessToken) cookieStore.set("accessToken", accessToken, cookieDefaults);
+    if (refreshToken) cookieStore.set("refreshToken", refreshToken, cookieDefaults);
   }
 
   return parsedResponse;

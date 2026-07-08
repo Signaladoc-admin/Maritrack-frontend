@@ -1,88 +1,84 @@
 "use server";
 
 import { apiClient } from "@/shared/lib/api-client";
-import type { ActionResult } from "@/shared/api/types";
-
-export interface PaymentPlan {
-  id: string;
-  name: string;
-  slug: string;
-  billingCycle: string;
-  deviceLimit: number;
-  priceNGN: number;
-  paystackPlanCode: string | null;
-  telcoPlanId: string | null;
-  description: string;
-  isActive: true;
-  createdAt: string;
-  updatedAt: string;
-  deleted: boolean;
-  deletedAt: string | null;
-}
+import { withSafeAction } from "@/shared/lib/safe-action";
+import type { ActionResult, ApiResponse } from "@/shared/api/types";
+import { ActiveSubscription, BillingHistoryPaginatedResponse, ExportSubscriptionsResponse, InitializePaymentRequest, InitializePaymentResponse, PaymentPlan, Subscription } from "../types";
 
 export async function getPaymentPlansAction(): Promise<ActionResult<PaymentPlan[]>> {
-  try {
-    const response = await apiClient("/payments/plans", {
-      method: "GET",
-    });
-    return { success: true, data: response.data };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to fetch payment plans" };
-  }
+  return withSafeAction(async () => {
+    const response = await apiClient("/payments/plans", { method: "GET" });
+    return response.data;
+  }, "Failed to fetch payment plans");
 }
 
-export async function initializePaymentAction(data: {
-  planId: string;
-  zoneId: string;
-  callbackUrl: string;
-}): Promise<ActionResult<{ authorizationUrl: string }>> {
-  try {
+export async function initializePaymentAction(payload: InitializePaymentRequest): Promise<ActionResult<InitializePaymentResponse>> {
+  return withSafeAction(async () => {
     const response = await apiClient("/payments/paystack/initialize", {
       method: "POST",
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
-    return { success: true, data: response.data };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to initialize payment" };
-  }
+    return response.data;
+  }, "Failed to initialize payment");
 }
 
 export async function verifyPaymentAction(reference: string): Promise<ActionResult<any>> {
-  try {
+  return withSafeAction(async () => {
     const response = await apiClient("/payments/paystack/verify", {
       method: "POST",
       body: JSON.stringify({ reference }),
     });
-    return { success: true, data: response.data };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to verify payment" };
-  }
+    return response.data;
+  }, "Failed to verify payment");
 }
 
-export interface ActiveSubscription {
-  active: boolean;
-  subscription: {
-    id: string;
-    zoneId: string;
-    planId: string;
-    status: string;
-    deviceLimit: number;
-    devicesUsed: number;
-    currentPeriodStart: string;
-    currentPeriodEnd: string;
-    plan: PaymentPlan;
-  } | null;
-}
-
-export async function getActiveSubscriptionAction(
-  zoneId: string
-): Promise<ActionResult<ActiveSubscription>> {
-  try {
-    const response = await apiClient(`/payments/subscriptions/zone/${zoneId}/active`, {
+export async function getActiveSubscriptionAction(zoneId: string) {
+  return withSafeAction(async () => {
+    const response = await apiClient<ApiResponse<ActiveSubscription>>(`/payments/subscriptions/zone/${zoneId}/active`, {
       method: "GET",
     });
-    return { success: true, data: response.data };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to fetch subscription status" };
-  }
+
+    return response;
+  }, "Failed to fetch subscription status");
+}
+
+export async function getAllSubscriptionsAction(zoneId: string): Promise<
+  ActionResult<{
+    data: Subscription[];
+    status: string;
+    message: string;
+  }>
+> {
+  return withSafeAction(async () => {
+    const response = await apiClient(`/payments/subscriptions/zone/${zoneId}`, {
+      method: "GET",
+    });
+
+    return response;
+  }, "Failed to fetch subscription status");
+}
+
+export async function getPaymentHistoryAction(
+  zoneId: string,
+  page = 1,
+  limit = 10
+): Promise<ActionResult<BillingHistoryPaginatedResponse>> {
+  return withSafeAction(async () => {
+    const response = await apiClient(`/payments/transactions/zone/${zoneId}`, {
+      method: "GET",
+      params: { page, limit },
+    });
+
+    return response;
+  }, "Failed to fetch payment history");
+}
+
+export async function exportSubscriptionsAction(): Promise<ActionResult<ExportSubscriptionsResponse>> {
+  return withSafeAction(async () => {
+    const response = await apiClient<ApiResponse<ExportSubscriptionsResponse>>(
+      "/payments/export/subscriptions",
+      { method: "GET" }
+    );
+    return response.data;
+  }, "Failed to export subscriptions");
 }

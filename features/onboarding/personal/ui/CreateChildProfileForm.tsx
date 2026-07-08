@@ -1,0 +1,134 @@
+"use client";
+
+import { Button } from "@/shared/ui/button";
+import { InputGroup } from "@/shared/ui/input-group";
+import { useForm, Controller } from "react-hook-form";
+import z from "zod";
+import { childProfileSchema } from "../schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Header } from "@/shared/ui/layout/header";
+import { IChildProfile } from "../types";
+import { FileUpload } from "@/shared/ui/image-upload";
+import { FilledUserIcon } from "@/shared/ui/icons";
+import { ChevronLeft } from "lucide-react";
+import { usePathname } from "next/navigation";
+
+interface ICreateChildProfileFormProps {
+  onCancel: () => void;
+  onAddChild: (data: IChildProfile) => void;
+  initialData?: IChildProfile;
+  isLoading?: boolean;
+}
+
+export default function CreateChildProfileForm({
+  onCancel,
+  onAddChild,
+  initialData,
+  isLoading,
+}: ICreateChildProfileFormProps) {
+  const pathname = usePathname();
+
+  const isOnboardingPath = pathname.includes("onboarding");
+
+  const form = useForm<z.infer<typeof childProfileSchema>>({
+    resolver: zodResolver(childProfileSchema) as any,
+    defaultValues: {
+      name: initialData?.name || "",
+      age: (initialData?.age as any) || "",
+      gender: (initialData?.gender as any) || "",
+    },
+  });
+
+  const onSubmit = (data: z.infer<typeof childProfileSchema>) => {
+    const formattedData: IChildProfile = {
+      ...data,
+      id: initialData?.id,
+      profilePicture: data.profilePicture || undefined,
+    };
+    onAddChild(formattedData);
+  };
+
+  return (
+    <div className="space-y-7">
+      <Button variant="link" onClick={onCancel} className="flex items-center gap-1! px-0">
+        <ChevronLeft className="h-6! w-6! text-orange-500" /> Go back
+      </Button>
+      <Header title="Create your child's profile" subtitle="Set up a child account" />
+      <form className="space-y-7" onSubmit={form.handleSubmit(onSubmit)}>
+        <div className="flex flex-col gap-1.5">
+          <FileUpload
+            value={form.watch("profilePicture")}
+            onChange={(file) => {
+              form.setValue("profilePicture", file as File);
+              form.trigger("profilePicture");
+            }}
+            accept="image/*"
+            className="h-24 w-24 rounded-full"
+            previewClassName="h-full w-full rounded-full object-cover"
+          >
+            {initialData?.imageUrl ? (
+              <img
+                src={initialData.imageUrl}
+                alt={initialData.name}
+                className="h-full w-full rounded-full object-cover"
+              />
+            ) : (
+              <div className="bg-muted flex h-full w-full items-center justify-center rounded-full border-gray-300 transition-colors hover:bg-gray-200">
+                <FilledUserIcon className="h-12 w-12 text-[#1b3c73]" />
+              </div>
+            )}
+          </FileUpload>
+          {form.formState.errors.profilePicture && (
+            <p className="text-sm text-red-500">
+              {form.formState.errors.profilePicture.message as string}
+            </p>
+          )}
+        </div>
+        <InputGroup
+          label="Child name"
+          placeholder="Enter name"
+          {...form.register("name")}
+          error={form.formState.errors.name?.message}
+        />
+        <div className="grid gap-x-4 gap-y-7 md:grid-cols-2">
+          <InputGroup
+            label="Age"
+            type="number"
+            placeholder="Enter age"
+            {...form.register("age")}
+            error={form.formState.errors.age?.message}
+          />
+          <Controller
+            control={form.control}
+            name="gender"
+            render={({ field }) => (
+              <InputGroup
+                label="Gender"
+                type="select"
+                className="mb-0!"
+                options={[
+                  { label: "Male", value: "MALE" },
+                  { label: "Female", value: "FEMALE" },
+                ]}
+                error={form.formState.errors.gender?.message}
+                {...field}
+              />
+            )}
+          />
+        </div>
+        <div className="flex gap-4 pt-4">
+          <Button type="submit" className="flex-1" disabled={isLoading}>
+            {isLoading ? "Saving..." : initialData ? "Update Profile" : "Pair"}
+          </Button>
+        </div>
+      </form>
+      {isOnboardingPath && (
+        <div className="flex justify-center">
+          <Button onClick={onCancel} variant="link">
+            Skip for now
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}

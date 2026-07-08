@@ -6,9 +6,35 @@ import { useToast } from "@/shared/ui/toast";
 import VisitedWebsites from "@/features/web-history/ui/visited-websites";
 import { InfoListCard } from "@/shared/ui/AppListCard/AppListCard";
 import { websiteData } from "@/features/general/data";
+import { useParams } from "next/navigation";
+import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
+
+import { Skeleton } from "@/shared/ui/skeleton";
+import { InfoListCardSkeleton } from "@/features/device/ui/DeviceTabsSkeletons";
 
 const WebHistory = () => {
   const { toast } = useToast();
+  const params = useParams<{ device: string }>();
+  const deviceId = params?.device || "";
+
+  const { data: networkData, isPending } = useDeviceDetail(deviceId, "network", {
+    enabled: !!deviceId,
+  });
+  const fetchedNetwork = networkData?.data?.realTimeStats || {};
+
+  const networkList = Array.isArray(fetchedNetwork)
+    ? fetchedNetwork
+    : fetchedNetwork?.websites || fetchedNetwork?.data || Object.values(fetchedNetwork || {});
+
+  const websites = Array.isArray(networkList)
+    ? networkList.map((net: any) => ({
+        id: net?.id || Math.random().toString(),
+        name: net?.url || net?.name || "Unknown Website",
+        totalTime: net?.totalTime || "Unknown",
+        icon: () => <div className="w-full text-center text-xs text-gray-400">WEB</div>,
+      }))
+    : [];
+
   return (
     <div className="space-y-6">
       <AlertBox
@@ -26,15 +52,26 @@ const WebHistory = () => {
       />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <VisitedWebsites />
-        <div className="col-span-2">
-          <InfoListCard
-            title="Browsing History"
-            actionText="View history"
-            onActionClick={() => console.log("View History")}
-            items={websiteData}
-          />
-        </div>
+        {isPending ? (
+          <>
+            <Skeleton className="h-96 rounded-[32px]" />
+            <div className="col-span-2">
+              <InfoListCardSkeleton />
+            </div>
+          </>
+        ) : (
+          <>
+            <VisitedWebsites />
+            <div className="col-span-2">
+              <InfoListCard
+                title="Browsing History"
+                actionText="View history"
+                onActionClick={() => {}}
+                items={websites}
+              />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

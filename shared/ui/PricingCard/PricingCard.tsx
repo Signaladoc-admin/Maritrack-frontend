@@ -1,11 +1,11 @@
 "use client";
 
-import * as React from "react";
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/shared/ui/Button/button"; // Ensure this path is correct
-import { formatCurrency } from "@/shared/lib/utils";
+import { formatCurrency, formatPaystackKoboAmount } from "@/shared/lib/utils";
 import { IPlan } from "@/features/payments/schema";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 // --- Types ---
 export interface PricingFeatureItem {
@@ -29,10 +29,21 @@ export function PricingCard({
   onButtonClick,
   className,
 }: PricingCardProps) {
-  const formattedPrice = React.useMemo(
-    () => formatCurrency(Number(plan?.priceNGN)),
-    [plan?.priceNGN]
-  );
+  // `priceNGN` is the post-discount amount the user actually pays (the "current" price),
+  // in kobo. When a discount applies, the original/slashed price is derived by reversing
+  // it: original = current / (1 - discount/100) — unit-agnostic, so it stays in kobo.
+  // Both are converted to Naira for display via formatPaystackKoboAmount.
+  const currentPrice = plan?.priceNGN ?? 0;
+  const discount = plan?.discountPercentage ?? 0;
+  const hasDiscount = discount > 0;
+  const originalPrice = hasDiscount ? currentPrice / (1 - discount / 100) : currentPrice;
+
+  const formattedPrice = formatCurrency(formatPaystackKoboAmount(currentPrice));
+  const formattedOriginalPrice = formatCurrency(formatPaystackKoboAmount(originalPrice));
+
+  // Card heading: the device-tier portion of the plan name (e.g. "1 Device — Annual"
+  // -> "1 Device"); the billing cycle already shows next to the price.
+  const title = plan?.name?.split("—")[0]?.trim() || plan?.name || "";
 
   const features = [
     { text: plan?.name.split("—")[0], included: true },
@@ -41,10 +52,19 @@ export function PricingCard({
     { text: "Multiple Devices", included: true },
   ];
 
+  const { user } = useAuth();
+
+  function formatPlanDescription(description: string) {
+    if (user?.appRole === "BUSINESS") {
+      return description.replace(/child|children|kids/g, "asset");
+    }
+    return description;
+  }
+
   return (
     <div
       className={cn(
-        "relative flex h-full w-full flex-col rounded-[32px] p-8 shadow-xl transition-all duration-300",
+        "relative flex h-full w-full flex-col rounded-2xl p-8 shadow-xl transition-all duration-300",
         isPremium
           ? "bg-[#1B3C73] text-white ring-1 ring-[#1B3C73]" // Premium Styles
           : "bg-white text-slate-900 ring-1 ring-slate-100", // Basic Styles
@@ -59,36 +79,57 @@ export function PricingCard({
       )}
 
       {/* Header Section */}
-      <div className="flex min-h-[180px] flex-col space-y-4">
+      <div className="flex flex-col space-y-4">
         <h3
           className={cn(
             "text-sm font-bold tracking-widest uppercase",
             isPremium ? "text-slate-200" : "text-[#1B3C73]"
           )}
         >
-          {isPremium ? "Premium Plan" : "FREE PLAN"}
+          {title}
         </h3>
 
-        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+        {hasDiscount && (
+          <div className="flex items-center gap-2">
+            <span
+              className={cn(
+                "text-lg font-semibold line-through",
+                isPremium
+                  ? "text-slate-400 decoration-slate-400"
+                  : "text-slate-400 decoration-slate-300"
+              )}
+            >
+              {formattedOriginalPrice}
+            </span>
+            <span
+              className={cn(
+                "rounded-full px-2 py-0.5 text-xs font-bold",
+                isPremium ? "bg-white/15 text-white" : "bg-[#1B3C73]/10 text-[#1B3C73]"
+              )}
+            >
+              Save {discount}%
+            </span>
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-baseline gap-1">
           <span
             className={cn(
-              "font-extrabold tracking-tight",
-              formattedPrice.length >= 10
-                ? "sm:text-4xl lg:text-5xl"
-                : formattedPrice.length >= 7
-                  ? "sm:text-5xl lg:text-6xl"
-                  : "sm:text-5xl lg:text-6xl"
+              "text-5xl font-extrabold tracking-tight",
+              formattedPrice.length >= 10 ? "text-3xl lg:text-4xl" : "text-4xl lg:text-5xl"
             )}
           >
             {formattedPrice}
           </span>
           <span
             className={cn(
-              "text-lg font-medium whitespace-nowrap",
+              "text-sm font-semibold whitespace-nowrap",
               isPremium ? "text-slate-300" : "text-slate-400"
             )}
           >
-            {plan?.billingCycle}
+            {plan?.billingCycle
+              ? plan?.billingCycle[0].toUpperCase() + plan?.billingCycle.slice(1)
+              : ""}
           </span>
         </div>
 
@@ -98,12 +139,12 @@ export function PricingCard({
             isPremium ? "text-slate-300" : "text-slate-500"
           )}
         >
-          {plan?.description}
+          {formatPlanDescription(plan?.description || "")}
         </p>
       </div>
 
       {/* Divider */}
-      <div className={cn("mb-8 h-px w-full", isPremium ? "bg-white/20" : "bg-slate-100")} />
+      <div className={cn("my-8 h-px w-full", isPremium ? "bg-white/20" : "bg-slate-100")} />
 
       {/* Features List */}
       <ul className="mb-10 flex-1 space-y-5">

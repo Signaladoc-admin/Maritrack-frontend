@@ -8,42 +8,21 @@ const passwordSchema = z
   .regex(/[0-9]/, "At least 1 number")
   .regex(/[^A-Za-z0-9]/, "At least 1 symbol");
 
-export const UserProfileSchema = z.object({
-  id: z.string(),
-  firstName: z.string().optional().nullable(),
-  lastName: z.string().optional().nullable(),
-  email: z.string().email().optional(),
-  role: z.enum(["ADMIN", "USER"]),
-  imageUrl: z.string().optional().nullable(),
-  isFirstLogin: z.boolean().optional(),
-  isEmailVerified: z.boolean().optional(),
-  status: z.string().optional(),
-  phone: z.string().optional().nullable(),
-  firstLogin: z.boolean().optional(),
-  isOnline: z.boolean().optional(),
-  parentId: z.string().optional(),
-  zoneId: z.array(z.string()).optional(),
-});
+export const BUSINESS_ROLES = [
+  "ORGANIZATION_ADMIN",
+  "DEVICE_MANAGER",
+  "DEPARTMENT_MANAGER",
+] as const;
 
-export type UserProfile = z.infer<typeof UserProfileSchema>;
+export const BusinessRoleEnum = {
+  ORGANIZATION_ADMIN: "ORGANIZATION_ADMIN",
+  DEVICE_MANAGER: "DEVICE_MANAGER",
+  DEPARTMENT_MANAGER: "DEPARTMENT_MANAGER",
+} as const;
 
-export interface IUserProfile {
-  id: string;
-  email: string;
-  status: string;
-  firstName: string;
-  lastName: string;
-  role: "ADMIN" | "USER";
-  imageUrl: string;
-  isFirstLogin?: boolean;
-  isEmailVerified?: boolean;
-  parentId: string;
-  zoneId: {
-    name: string;
-    id: string;
-    mdmZoneId: string;
-  }[];
-}
+export type BusinessRoleEnum = (typeof BusinessRoleEnum)[keyof typeof BusinessRoleEnum];
+
+export type BusinessRole = (typeof BUSINESS_ROLES)[number];
 
 export const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -65,7 +44,7 @@ export type RegisterValues = z.infer<typeof registerSchema>;
 export const updateProfileSchema = z.object({
   firstName: z.string().optional(),
   lastName: z.string().optional(),
-  imageUrl: z.string().optional(),
+  imageUrl: z.any().optional(),
   phone: z.string().optional(),
   status: z.string().optional(),
   profilePicture: z.any().optional(),
@@ -80,8 +59,9 @@ export interface AdminUpdateProfileDto extends UpdateProfileDto {
 
 // --- Password Operations ---
 export const changePasswordSchema = z.object({
-  currentPassword: z.string().min(6, "Current password is required"),
-  newPassword: z.string().min(6, "New password must be at least 6 characters"),
+  oldPassword: z.string().min(6, "Current password is required"),
+  password: passwordSchema,
+  confirmPassword: z.string(),
 });
 
 export type ChangePasswordDto = z.infer<typeof changePasswordSchema>;
@@ -120,3 +100,32 @@ export interface UserFilterParams {
   status?: string;
   role?: string;
 }
+
+export const businessUserDetailsSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  department: z.string().min(1, "Department is required"),
+  businessRole: z.enum([BUSINESS_ROLES[1], BUSINESS_ROLES[2]], {
+    error: (el: any) => ({
+      message: `Select a valid business role from ${el.values
+        .map((value: any) => value.replace("_", " "))
+        .map((value: any) => value.charAt(0).toUpperCase() + value.slice(1).toLowerCase())
+        .join(", ")}`,
+    }),
+  }),
+  position: z.string().min(1, "Position is required"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().min(1, "Phone number is required"),
+  address: z.string().min(1, "Address is required"),
+});
+export type BusinessUserDetailsValues = z.infer<typeof businessUserDetailsSchema>;
+
+export const departmentSchema = z.object({
+  name: z.string().min(1, "Department name is required"),
+});
+export type DepartmentValues = z.infer<typeof departmentSchema>;
+
+export const roleSchema = z.object({
+  role: z.string().min(1, "Role is required"),
+});
+export type RoleValues = z.infer<typeof roleSchema>;

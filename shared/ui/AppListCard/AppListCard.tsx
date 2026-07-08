@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatAppValue } from "@/shared/lib/utils";
 import { Card, CardHeader, CardTitle, CardContent } from "@/shared/ui/Card/Card";
 import { IconType } from "react-icons/lib";
 import { InfoListCardProps } from "./types";
@@ -35,7 +35,7 @@ export function InfoListCard({
                 item.onClick && "cursor-pointer hover:border-[#1B3C73]/20 hover:shadow-md"
               )}
             >
-              <div className="flex items-center gap-4">
+              <div className="flex min-w-0 items-center gap-4">
                 {/* Icon Container */}
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-[#1B3C73]">
                   {React.isValidElement(item.icon)
@@ -46,15 +46,17 @@ export function InfoListCard({
                 </div>
 
                 {/* Text Info */}
-                <div className="flex flex-col">
-                  <span className="text-[14px] font-bold text-[#212529] transition-colors group-hover:text-[#1B3C73]">
-                    {item.title}
+                <div className="flex min-w-0 flex-col">
+                  <span className="truncate text-[14px] font-bold text-[#212529] transition-colors group-hover:text-[#1B3C73]">
+                    {item.name}
                   </span>
                 </div>
               </div>
 
               {/* Right Side Value (e.g. Time) */}
-              <div className="text-[14px] font-semibold text-[#667085]">{item.value}</div>
+              <div className="text-[14px] font-semibold text-[#667085]">
+                {formatAppValue(item.totalTime)}
+              </div>
             </div>
           );
         })}

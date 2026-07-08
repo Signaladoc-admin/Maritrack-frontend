@@ -6,20 +6,32 @@ import { Button } from "@/shared/ui/button";
 import { InputGroup } from "@/shared/ui/input-group";
 import Modal from "@/shared/ui/modal";
 import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import UserAccountTypeSelectionCard from "@/features/auth-register/ui/UserAccountTypeSelectionCard";
 import { accountTypes } from "@/features/auth-register/constants";
-import { useLogin } from "../model/useLogin";
 import { loginSchema, type LoginValues } from "@/entities/user/model/user.schema";
-import { useParentStore, useNewUserStore } from "@/shared/stores/user-store";
+import { useParentStore, useNewUserStore } from "@/shared/stores/user.store";
+import { useAuth } from "@/shared/auth/AuthProvider";
+import { useToast } from "@/shared/ui/toast";
 
 export default function LoginForm() {
   const router = useRouter();
   const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] = useState(false);
-  const { login, isSubmitting, error } = useLogin();
+
   const { setParentId } = useParentStore();
-  const { setEmail, setPassword } = useNewUserStore();
+  const { clearCredentials, setEmail } = useNewUserStore();
+  const { login, loginError: error, isSubmitting, resetLoginError } = useAuth();
+
+  const { toast } = useToast()
+
+  const pathname = usePathname()
+  const isBusinessAuthRoute = pathname?.includes("/business")
+
+  useEffect(() => {
+    resetLoginError();
+  }, []);
+
 
   const {
     register,
@@ -29,16 +41,37 @@ export default function LoginForm() {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = async (data: LoginValues) => {
+  const onSubmit = async (credentials: LoginValues) => {
     try {
-      const { profile, redirectTo } = await login(data);
-      setEmail(data.email);
-      setPassword(data.password);
-      if (profile?.parentId) setParentId(profile.parentId);
-      router.push(redirectTo);
-    } catch (err) {
-      console.log(err);
-      // Error handled by hook
+      const { data: user, message } = await login(credentials);
+
+      toast({
+        title: message,
+        type: "success",
+        ...(user?.isFirstLogin && { message: "Please complete your onboarding to continue" }),
+      })
+
+      clearCredentials();
+      if (user?.parentId) setParentId(user.parentId);
+
+      // First-login invited staff are on a default password — send them to change it first.
+      // They can still skip via "Sign out"; on their next login `isFirstLogin` is false.
+      if (user?.isFirstLogin && user?.isInvited) {
+        router.push("/change-password");
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (err: any) {
+      // Toast is already shown by useLogin's onError.
+      // For unverified email specifically, redirect to the confirm-email page.
+      if (err?.message?.toLowerCase().includes("not verified")) {
+        setEmail(credentials.email);
+        const confirmPath = isBusinessAuthRoute
+          ? "/business/confirm-email"
+          : "/confirm-email";
+
+        setTimeout(() => router.push(confirmPath), 1500)
+      }
     }
   };
 
@@ -52,6 +85,7 @@ export default function LoginForm() {
         type="email"
         error={errors.email?.message}
         {...register("email")}
+        placeholder="abcde@example.com"
       />
       <div className="space-y-2">
         <InputGroup
@@ -59,10 +93,15 @@ export default function LoginForm() {
           type="password"
           error={errors.password?.message}
           {...register("password")}
+          placeholder="••••••••"
         />
         <div className="flex justify-end">
           <Link
-            href="/forgot-password"
+            href={
+              isBusinessAuthRoute
+                ? "/business/forgot-password"
+                : "/forgot-password"
+            }
             className="text-muted-foreground text-right text-sm font-medium"
           >
             Forgot password?
@@ -78,7 +117,7 @@ export default function LoginForm() {
           type="button"
           onClick={() => setIsCreateAccountModalOpen(true)}
           variant="link"
-          className="text-primary px-0 font-semibold"
+          className="text-primary px-0 font-semibold text-sm"
         >
           Create an account
         </Button>
@@ -95,13 +134,13 @@ export default function LoginForm() {
             icon={accountTypes.PERSONAL.icon}
             label={accountTypes.PERSONAL.label}
             description={accountTypes.PERSONAL.description}
-            href="/register/personal"
+            href="/register"
           />
           <UserAccountTypeSelectionCard
             icon={accountTypes.BUSINESS.icon}
             label={accountTypes.BUSINESS.label}
             description={accountTypes.BUSINESS.description}
-            href="/register/business"
+            href="/business/register"
           />
         </div>
       </Modal>

@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { CurrentLocationCard } from "./CurrentLocationCard";
-import { LocationHistoryCard } from "./LocationHistoryCard";
 import { MapCard } from "@/features/general/ui/map-card";
-import GeofencingCard, { GeofencingLocation } from "@/shared/ui/GeofencingCard/GeofencingCard";
+import GeofencingCard, {
+  FormattedGeofenceLocation,
+} from "@/shared/ui/GeofencingCard/GeofencingCard";
+import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 
 const historyItems = [
   { id: "1", name: "Lekki Phase 1", duration: "2h 33mins", date: "January 1, 2026" },
@@ -14,34 +16,57 @@ const historyItems = [
   { id: "5", name: "Yaba", duration: "1h 55mins", date: "May 5, 2026" },
 ];
 
-const geofencingLocations: GeofencingLocation[] = [
-  { id: "1", name: "Oshodi, Lagos", radius: "2km" },
-  { id: "2", name: "Maryland, Lagos", radius: "1km" },
-  { id: "3", name: "Ikeja, Lagos", radius: "3km" },
-];
+import { GeofencingModal } from "@/shared/ui/Modal/Modals/GeofencingModal";
+import { useGetBusiness } from "@/entities/business/model/useBusiness";
+import { useChild } from "@/entities/children/model/useChildren";
+import { useAuth } from "@/shared/auth/AuthProvider";
+import { useQueryState } from "nuqs";
 
-export function LocationView() {
-  const [isGeofencingActive, setIsGeofencingActive] = useState(true);
+export function LocationView({ deviceId }: { deviceId: string }) {
+  const [isGeofencingModalOpen, setIsGeofencingModalOpen] = useState(false);
+  const [initialLocations, setInitialLocations] = useState<FormattedGeofenceLocation[]>([]);
+
+  const { data: hardwareData } = useDeviceDetail(deviceId, "hardware", {
+    enabled: !!deviceId,
+  });
+
+  const location = hardwareData?.deviceDetails?.lastKnownLocation;
+
+  // organizationName: business name for business accounts, child's name for parent accounts.
+  const { user } = useAuth();
+  const businessId = user?.businessId ?? "";
+  const [childId] = useQueryState("childId", { defaultValue: "" });
+
+  const { data: business } = useGetBusiness(businessId, { enabled: !!businessId });
+  const { data: child } = useChild(childId, { enabled: !!childId });
+  const organizationName = business?.name ?? child?.name ?? "";
+
+  const geoFencingLocations = hardwareData?.data?.geofences || [];
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Left Column */}
-        <div className="flex flex-col gap-6 lg:col-span-5">
-          <CurrentLocationCard address="23 Ebinpejo Lane, Idumota, Lagos" updatedAt="3:12pm" />
-          <LocationHistoryCard items={historyItems} onSeeMore={() => console.log("See more")} />
+        <div className="flex flex-col gap-6">
+          <CurrentLocationCard lat={location?.latitude} lon={location?.longitude} />
           <GeofencingCard
-            locations={geofencingLocations}
-            isActive={isGeofencingActive}
-            onSetGeofencing={() => setIsGeofencingActive(!isGeofencingActive)}
+            locations={geoFencingLocations}
+            onSetGeofencing={(locs) => {
+              setInitialLocations(locs);
+              setIsGeofencingModalOpen(true);
+            }}
           />
         </div>
 
         {/* Right Column - Map */}
-        <div className="lg:col-span-7">
-          <MapCard />
-        </div>
+        <MapCard deviceId={deviceId} />
       </div>
+
+      <GeofencingModal
+        open={isGeofencingModalOpen}
+        onOpenChange={setIsGeofencingModalOpen}
+        initialLocations={initialLocations}
+      />
     </div>
   );
 }

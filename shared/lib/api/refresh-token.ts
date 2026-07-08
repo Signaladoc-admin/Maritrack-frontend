@@ -1,3 +1,6 @@
+import { RefreshTokenResponse } from "@/features/auth/types";
+import { ApiResponse } from "@/shared/api/types";
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
 
 export async function refreshAccessToken() {
@@ -25,13 +28,10 @@ export async function refreshAccessToken() {
     throw new Error("Token refresh failed");
   }
 
-  const data = await response.json();
+  const data = (await response.json()) as unknown as ApiResponse<RefreshTokenResponse>;
 
-  const newAccessToken =
-    data.accessToken || data.access_token || data.data?.accessToken || data.data?.access_token;
-
-  const newRefreshToken =
-    data.refreshToken || data.refresh_token || data.data?.refreshToken || data.data?.refresh_token;
+  const newAccessToken = data?.data?.access_token;
+  const newRefreshToken = data?.data?.refresh_token;
 
   const cookieDefaults = {
     httpOnly: true,
@@ -41,13 +41,9 @@ export async function refreshAccessToken() {
     maxAge: 7 * 24 * 60 * 60,
   };
 
-  if (newAccessToken) {
-    cookieStore.set("accessToken", newAccessToken, cookieDefaults);
-  }
-
-  if (newRefreshToken) {
-    cookieStore.set("refreshToken", newRefreshToken, cookieDefaults);
-  }
+  // Store both tokens: access token for server actions, refresh token rotated
+  if (newAccessToken) cookieStore.set("accessToken", newAccessToken, cookieDefaults);
+  if (newRefreshToken) cookieStore.set("refreshToken", newRefreshToken, cookieDefaults);
 
   return newAccessToken;
 }

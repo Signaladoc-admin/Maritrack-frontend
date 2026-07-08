@@ -1,98 +1,133 @@
 "use server";
 
 import { apiClient } from "@/shared/lib/api-client";
-import type {
-  ChangePasswordDto,
-  ForgotPasswordDto,
-  ResetForgottenPasswordDto,
-  ResetPasswordDto,
-  UserProfile,
-} from "@/entities/user/model/user.schema";
+import type { ChangePasswordDto } from "@/entities/user/model/user.schema";
 import { cookies } from "next/headers";
-
-// --- Existing ---
-
-interface ValidateOtpPayload {
-  email: string;
-  token: string;
-  otp: string;
-}
-
-export async function validateOtpAction(payload: ValidateOtpPayload) {
-  return apiClient("/users/validate-otp", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-}
-
-// --- Verify Account ---
-
-export async function verifyAccountAction(payload: { email: string; token: string }) {
-  return apiClient("/users/verify", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-}
+import { withSafeAction } from "@/shared/lib/safe-action";
+import {
+  ForgotPasswordRequest,
+  RefreshTokenResponse,
+  RequestTokenRequest,
+  ResetPasswordRequest,
+  ValidateOTPResponse,
+  VerificationTokenMethod,
+  VerifyUserRequest,
+} from "../types";
+import { ApiResponse, MessageResponse } from "@/shared/api/types";
+import { UserProfile } from "@/entities/user";
 
 // --- Password Operations ---
 
-export async function forgotPasswordAction(data: ForgotPasswordDto) {
-  return apiClient("/users/forgot-password", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-}
-
-export async function resetForgottenPasswordAction(data: ResetForgottenPasswordDto) {
-  return apiClient("/users/forgot/reset-password", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-}
-
-export async function resetPasswordAction(data: ResetPasswordDto) {
-  return apiClient("/users/reset-password", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-}
-
 export async function changePasswordAction(data: ChangePasswordDto) {
-  return apiClient("/users/change-password", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
+  return withSafeAction(async () => {
+    return apiClient("/users/change-password", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }, "Failed to change password");
+}
+
+export async function forgotPasswordAction(payload: ForgotPasswordRequest) {
+  return withSafeAction(
+    async () =>
+      apiClient<ApiResponse<MessageResponse>>("/users/forgot-password", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+    "Failed to request password reset"
+  );
+}
+export async function resetForgottenPasswordAction(payload: ResetPasswordRequest) {
+  return withSafeAction(
+    async () =>
+      apiClient<ApiResponse<MessageResponse>>("/users/forgot/reset-password", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+    "Failed to reset forgotten password"
+  );
+}
+export async function resetPasswordAction(payload: ResetPasswordRequest) {
+  return withSafeAction(
+    async () =>
+      apiClient<ApiResponse<ValidateOTPResponse>>("/users/reset-password", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+    "Failed to reset password"
+  );
 }
 
 // --- Verification Token ---
 
-export async function requestTokenAction(method: string) {
-  return apiClient(`/users/request-token/${method}`, {
-    method: "POST",
-  });
+export async function requestTokenAction(
+  method: VerificationTokenMethod = "email",
+  payload: RequestTokenRequest
+) {
+  return withSafeAction(
+    async () =>
+      apiClient<ApiResponse<MessageResponse>>(`/users/request-token/${method}`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+    "Failed to request token"
+  );
 }
 
-export async function resendVerificationAction(method: string) {
-  return apiClient(`/users/resend-verification/${method}`, {
-    method: "POST",
-  });
+export async function resendVerificationAction(
+  method: VerificationTokenMethod = "email",
+  payload: RequestTokenRequest
+) {
+  return withSafeAction(
+    async () =>
+      apiClient<ApiResponse<MessageResponse>>(`/users/resend-verification/${method}`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+    "Failed to resend verification"
+  );
+}
+
+export async function verifyUserAction(payload: VerifyUserRequest) {
+  return withSafeAction(
+    async () =>
+      apiClient<ApiResponse<MessageResponse>>(`/users/verify`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+    "Failed to verify user"
+  );
 }
 
 export async function logoutAction() {
-  const cookieStore = await cookies();
+  return withSafeAction(async () => {
+    const cookieStore = await cookies();
 
-  try {
     await apiClient("/users/logout", {
       method: "POST",
     });
-  } catch (error) {
-    console.error("Backend logout failed:", error);
-  }
 
-  cookieStore.delete("accessToken");
-  cookieStore.delete("refreshToken");
+    cookieStore.delete("accessToken");
+    cookieStore.delete("refreshToken");
+    cookieStore.delete("isOnboarded");
+    cookieStore.delete("isEmailVerified");
+    cookieStore.delete("zoneId");
 
-  return { success: true };
+    return { success: true };
+  }, "Failed to logout");
+}
+
+export async function refreshAccessTokenAction() {
+  const cookieStore = await cookies();
+  const refreshToken = cookieStore.get("refreshToken")?.value;
+
+  return withSafeAction(async () => {
+    return apiClient<ApiResponse<RefreshTokenResponse>>("/users/refreshToken", {
+      method: "POST",
+      skipAuth: true,
+      params: { token: refreshToken },
+    });
+  }, "Failed to refresh access token");
 }
 
 export async function getSessionAction(): Promise<UserProfile | null> {

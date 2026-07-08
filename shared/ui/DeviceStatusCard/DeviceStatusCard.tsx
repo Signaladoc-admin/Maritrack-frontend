@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { BatteryCharging, BatteryFullIcon, Plus, Zap } from "lucide-react";
+import { FaApple } from "react-icons/fa";
 import { cn } from "@/shared/lib/utils";
 
 export type DeviceUsageStatus = "active" | "locked";
@@ -27,11 +28,13 @@ export function DeviceUsageCard({
 }: DeviceUsageCardProps) {
   const isActive = status === "active";
 
-  const accentColor = isActive ? "#0EDD9F" : "#FF736A";
-  const accentTextClass = isActive ? "text-[#0EDD9F]" : "text-[#FF736A]";
+  /** Battery-level-based accent: red when low (≤20%), green otherwise */
+  const isLowBattery = percentage <= 20;
+  const accentColor = isLowBattery ? "#FF736A" : "#0EDD9F";
+  const accentTextClass = isLowBattery ? "text-[#FF736A]" : "text-[#0EDD9F]";
 
   // --- SVG Geometry for Curved Bar ---
-  const radius = 35;
+  const radius = 40;
   const strokeWidth = 15;
   const arcLength = Math.PI * radius;
   const strokeDashoffset = arcLength * (1 - Math.min(percentage, 100) / 100);
@@ -39,25 +42,30 @@ export function DeviceUsageCard({
   return (
     <div
       className={cn(
-        "relative flex cursor-pointer overflow-hidden rounded-[24px] border border-[#1B3C73] bg-[#081223] p-6 transition-colors hover:bg-[#0a172d] lg:p-8",
+        "relative flex cursor-pointer overflow-hidden rounded-[32px] border-none bg-[#0B1528] p-6 transition-colors hover:bg-[#0a172d] lg:p-8",
         isRow ? "w-full flex-row items-center justify-between gap-4" : "flex-col",
         className
       )}
       onClick={onClick}
     >
       {/* --- Left Side: Text Info --- */}
-      <div className="z-10 flex h-full flex-col justify-start gap-2">
-        <h3 className="text-[18px] font-bold tracking-wide text-white lg:text-[20px]">
+      <div className={cn("z-10 flex flex-col gap-1", isRow ? "h-full justify-start text-left" : "mt-2 justify-start text-center")}>
+        {!isRow && (
+          <div className="mb-2 flex justify-center text-[#8198BF]">
+            <FaApple className="h-6 w-6" />
+          </div>
+        )}
+        <h3 className="text-[18px] font-bold tracking-wide text-white lg:text-[22px]">
           {deviceName}
         </h3>
-        <span className="text-[14px] font-medium text-[#8198BF] lg:text-[15px]">{device}</span>
+        <span className="text-[14px] font-medium text-[#8198BF] lg:text-[16px]">{device}</span>
       </div>
 
       {/* --- Right Side: Half Phone Display --- */}
       <div
         className={cn(
           "relative z-10 flex shrink-0 justify-center overflow-hidden",
-          isRow ? "-bottom-2 h-[150px] w-[180px] px-2" : "-bottom-[5rem] h-[300px] w-full"
+          isRow ? "-bottom-[5.5rem] h-[190px] w-[180px] px-2" : "-bottom-[5rem] h-[300px] w-full"
         )}
       >
         {/* The Phone Frame */}
@@ -71,7 +79,7 @@ export function DeviceUsageCard({
           <div className="absolute -top-[1px] left-1/2 z-20 h-3 w-10 -translate-x-1/2 rounded-b-lg border-x-[3px] border-b-[3px] border-[#1B3C73] bg-[#081223]" />
 
           {/* Screen Content */}
-          <div className="flex h-full w-full flex-col items-center justify-start pt-8">
+          <div className="flex h-full w-full flex-col items-center justify-center">
             <div className="relative h-[60px] w-full px-2">
               <svg
                 className="h-full w-full overflow-visible"
@@ -92,14 +100,14 @@ export function DeviceUsageCard({
                   strokeWidth={strokeWidth}
                   strokeDasharray={arcLength}
                   strokeDashoffset={strokeDashoffset}
-                  strokeLinecap="round"
+                  strokeLinecap="butt"
                   className="transition-all duration-700 ease-out"
                 />
               </svg>
             </div>
 
             {/* Battery & Percentage */}
-            <div className="mt-4 flex flex-col items-center">
+            <div className={cn(isRow ? "-mt-5" : "mt-4", "flex flex-col items-center")}>
               <BatteryFullIcon
                 className={cn(isRow ? "h-5 w-5" : "h-10 w-10", accentTextClass)}
                 fill={isActive ? "currentColor" : "none"}
