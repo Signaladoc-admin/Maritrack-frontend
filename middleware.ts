@@ -46,6 +46,7 @@ const businessOnlyRoutes = ["/onboarding/business"];
 const publicRoutes = [
   "/",
   "/landing",
+  "/about",
   "/unauthorized",
   // Personal auth routes
   "/login",
