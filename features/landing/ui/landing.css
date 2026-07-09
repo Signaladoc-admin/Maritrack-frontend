@@ -1,0 +1,128 @@
+/* =============================================
+   FLENTRA LANDING PAGE — ANIMATIONS
+   GPU-accelerated transforms & opacity only.
+   No background decorations in this file.
+   ============================================= */
+
+/* ── Keyframes ─────────────────────────────── */
+
+@keyframes fl-float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%       { transform: translateY(-18px) rotate(1.5deg); }
+  66%       { transform: translateY(-8px) rotate(-1deg); }
+}
+
+@keyframes fl-float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-20px); }
+}
+
+@keyframes fl-slide-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Float utilities ───────────────────────── */
+
+.fl-animate-float {
+  animation: fl-float 6s ease-in-out infinite;
+  will-change: transform;
+}
+
+.fl-animate-float-slow {
+  animation: fl-float-slow 7s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* ── Hero word-by-word reveal ──────────────── */
+
+.fl-word-reveal {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(24px);
+  animation: fl-slide-up 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ── Scroll-reveal base states ─────────────── */
+
+/* Fade + slide up */
+.fl-reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.fl-reveal.fl-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Slide from left */
+.fl-reveal-left {
+  opacity: 0;
+  transform: translateX(-36px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.fl-reveal-left.fl-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Slide from right */
+.fl-reveal-right {
+  opacity: 0;
+  transform: translateX(36px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.fl-reveal-right.fl-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ── Stagger delays (used on grid cards) ───── */
+
+.fl-stagger-1  { transition-delay: 0.05s; }
+.fl-stagger-2  { transition-delay: 0.12s; }
+.fl-stagger-3  { transition-delay: 0.19s; }
+.fl-stagger-4  { transition-delay: 0.26s; }
+.fl-stagger-5  { transition-delay: 0.33s; }
+.fl-stagger-6  { transition-delay: 0.40s; }
+.fl-stagger-7  { transition-delay: 0.47s; }
+.fl-stagger-8  { transition-delay: 0.54s; }
+.fl-stagger-9  { transition-delay: 0.61s; }
+
+/* ── CTA button hover lift ─────────────────── */
+
+.fl-cta-btn {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.fl-cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px -5px rgba(6, 252, 255, 0.35);
+}
+.fl-cta-btn:active {
+  transform: translateY(0);
+}
+
+/* ── Reduced motion ─────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .fl-animate-float,
+  .fl-animate-float-slow,
+  .fl-word-reveal,
+  .fl-cta-btn {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1;
+    transform: none;
+  }
+  .fl-reveal,
+  .fl-reveal-left,
+  .fl-reveal-right {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
