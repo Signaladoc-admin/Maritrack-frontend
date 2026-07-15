@@ -1,5 +1,5 @@
 import React from "react";
-import { Search, SlidersHorizontal, DownloadCloud } from "lucide-react";
+import { Search, SlidersHorizontal, DownloadCloud, MoreHorizontal } from "lucide-react";
 import { TabNavigation } from "@/shared/ui/tab-navigation";
 import { Input } from "@/shared/ui/input";
 import { Button } from "@/shared/ui/button";
@@ -8,6 +8,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuGroup,
 } from "@/shared/ui/dropdown-menu";
 
 interface BusinessDevicesToolbarProps {
@@ -61,6 +64,33 @@ export const BusinessDevicesToolbar: React.FC<BusinessDevicesToolbarProps> = ({
         <Button variant="ghost" size="icon" className="h-12 w-12 rounded-xl bg-[#F9FAFB] border-none">
           <DownloadCloud className="size-5 text-gray-600" />
         </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-12 w-12 rounded-xl bg-[#F9FAFB] hover:bg-gray-100 border-none">
+              <MoreHorizontal className="size-6 text-gray-600" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56 p-2">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Messaging</DropdownMenuLabel>
+              <DropdownMenuItem className="py-2" onClick={() => {}}>Bulk message</DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator className="my-1" />
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="text-xs text-gray-500 font-semibold uppercase tracking-wider mt-1">General Actions</DropdownMenuLabel>
+              <DropdownMenuItem className="py-2" onClick={() => {}}>Wipe device</DropdownMenuItem>
+              <DropdownMenuItem className="py-2" onClick={() => {}}>Lock device</DropdownMenuItem>
+              <DropdownMenuItem className="py-2" onClick={() => {}}>Unlock device</DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator className="my-1" />
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="text-xs text-gray-500 font-semibold uppercase tracking-wider mt-1">Suspensions</DropdownMenuLabel>
+              <DropdownMenuItem className="py-2" onClick={() => {}}>Suspend app</DropdownMenuItem>
+              <DropdownMenuItem className="py-2" onClick={() => {}}>Unsuspend app</DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );

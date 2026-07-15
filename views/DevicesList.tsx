@@ -6,10 +6,13 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from "@/shared/ui/dropdown-menu";
 import { Header } from "@/shared/ui/layout/header";
 import { TabNavigation } from "@/shared/ui/tab-navigation";
-import { DownloadCloud, ListFilter, Plus, SearchIcon } from "lucide-react";
+import { DownloadCloud, ListFilter, Plus, SearchIcon, MoreHorizontal } from "lucide-react";
 import { useDebounce } from "use-debounce";
 import { getDevicesColumns } from "@/features/device/columns";
 import { useRouter } from "next/navigation";
@@ -200,6 +203,33 @@ export default function DevicesList() {
           >
             {exporting ? <Loader /> : <DownloadCloud />}
           </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary" className="h-10 w-[64px] rounded-full flex items-center justify-center border-none">
+                <MoreHorizontal className="size-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 p-2">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Messaging</DropdownMenuLabel>
+                <DropdownMenuItem className="py-2" onClick={() => {}}>Bulk message</DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator className="my-1" />
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="text-xs text-gray-500 font-semibold uppercase tracking-wider mt-1">General Actions</DropdownMenuLabel>
+                <DropdownMenuItem className="py-2" onClick={() => {}}>Wipe device</DropdownMenuItem>
+                <DropdownMenuItem className="py-2" onClick={() => {}}>Lock device</DropdownMenuItem>
+                <DropdownMenuItem className="py-2" onClick={() => {}}>Unlock device</DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator className="my-1" />
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="text-xs text-gray-500 font-semibold uppercase tracking-wider mt-1">Suspensions</DropdownMenuLabel>
+                <DropdownMenuItem className="py-2" onClick={() => {}}>Suspend app</DropdownMenuItem>
+                <DropdownMenuItem className="py-2" onClick={() => {}}>Unsuspend app</DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
