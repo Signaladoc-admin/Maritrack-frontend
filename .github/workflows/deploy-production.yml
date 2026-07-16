@@ -120,7 +120,8 @@ jobs:
                   script: |
                       set -euo pipefail
 
-                      echo '${{ secrets.GHCR_PULL_TOKEN }}' | docker login -u '${{ github.actor }}' --password-stdin "${{ env.REGISTRY }}"
+                      # Log in to GHCR on the host
+                      echo '${{ secrets.GITHUB_TOKEN }}' | docker login -u '${{ github.actor }}' --password-stdin "${{ env.REGISTRY }}"
 
                       docker compose \
                         --env-file /home/dockeradmin/flentra/frontend/apps/${{env.SERVICE_NAME}}.env \
