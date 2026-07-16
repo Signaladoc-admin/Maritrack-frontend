@@ -59,3 +59,28 @@ export async function exportDevicesAction() {
     return res;
   }, "Failed to export devices");
 }
+
+export async function bulkActionDevicesAction(
+  ids: string[],
+  actionId: number,
+  messageText?: string
+) {
+  return withSafeAction(async () => {
+    const payload = {
+      ids,
+      // deviceCount: ids.length,
+      action: {
+        actionId,
+        ...(messageText ? { message: messageText } : {}),
+      },
+    };
+    console.log('payload: ', JSON.stringify(payload))
+
+    const res = await apiClient("/mdm-sync/action/bulk", {
+      method: "POST",
+      body: JSON.stringify(payload),
+      headers: { "Content-Type": "application/json" },
+    });
+    return res.data ?? res;
+  }, "Failed to perform bulk action");
+}

@@ -7,6 +7,7 @@ import {
   getDeviceAction,
   getDevicesAction,
   markDeviceAsReturnedAction,
+  bulkActionDevicesAction,
 } from "../api/device.actions";
 import type { DeviceQueryOptions } from "./types";
 import { useGetStaffMember } from "@/entities/business/model/useStaffMembers";
@@ -68,4 +69,20 @@ export function useExportDevices(options: { enabled?: boolean } = {}) {
     retry: false,
     enabled: options.enabled,
   });
+}
+
+export function useBulkActionDevices(options: { onSuccess?: () => void } = {}) {
+  const queryClient = useQueryClient();
+  return useServerActionMutation(
+    ({ ids, actionId, messageText }: { ids: string[]; actionId: number; messageText?: string }) =>
+      bulkActionDevicesAction(ids, actionId, messageText),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: deviceKeys.list({}) });
+        if (options.onSuccess) {
+          options.onSuccess();
+        }
+      },
+    }
+  );
 }
