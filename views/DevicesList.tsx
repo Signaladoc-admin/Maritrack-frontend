@@ -6,10 +6,13 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from "@/shared/ui/dropdown-menu";
 import { Header } from "@/shared/ui/layout/header";
 import { TabNavigation } from "@/shared/ui/tab-navigation";
-import { DownloadCloud, ListFilter, Plus, SearchIcon } from "lucide-react";
+import { DownloadCloud, ListFilter, Plus, SearchIcon, MoreHorizontal } from "lucide-react";
 import { useDebounce } from "use-debounce";
 import { getDevicesColumns } from "@/features/device/columns";
 import { useRouter } from "next/navigation";
@@ -33,6 +36,10 @@ import { useAuth } from "@/shared/auth/AuthProvider";
 import { useToast } from "@/shared/ui/toast";
 import { BusinessRole } from "@/entities/user/model/user.schema";
 import ReassignDeviceModal from "@/features/business-users/users/ui/ReassignDeviceModal";
+import BulkActionBar from "@/features/business-users/users/ui/BulkActionBar";
+import BulkMessageModal from "@/features/business-users/users/ui/BulkMessageModal";
+import BulkActionConfirmModal from "@/features/business-users/users/ui/BulkActionConfirmModal";
+import SuspendAppsModal from "@/features/business-users/users/ui/SuspendAppsModal";
 
 export default function DevicesList() {
   const [searchQuery, setSearchQuery] = useQueryState("search", { defaultValue: "" });
@@ -66,9 +73,33 @@ export default function DevicesList() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const [selectedDevices, setSelectedDevices] = useState<StaffDevice[]>([]);
+  const [bulkActionMode, setBulkActionMode] = useState<"message" | "wipe" | "lock" | "unlock" | "suspend" | "unsuspend" | null>(null);
+  const [isComposeModalOpen, setIsComposeModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isAppsModalOpen, setIsAppsModalOpen] = useState(false);
+  const [clearSelectionTrigger, setClearSelectionTrigger] = useState(0);
+
+  const handleBulkActionSelect = (mode: "message" | "wipe" | "lock" | "unlock" | "suspend" | "unsuspend") => {
+    if (selectedDevices.length === 0) {
+      toast({
+        title: "Action Required",
+        message: "select a device for this action",
+        type: "error",
+      });
+      return;
+    }
+    setBulkActionMode(mode);
+  };
+
+  const handleBulkMessageClick = () => handleBulkActionSelect("message");
+  const handleWipeDeviceClick = () => handleBulkActionSelect("wipe");
+  const handleLockDeviceClick = () => handleBulkActionSelect("lock");
+  const handleUnlockDeviceClick = () => handleBulkActionSelect("unlock");
+  const handleSuspendAppsClick = () => handleBulkActionSelect("suspend");
+  const handleUnsuspendAppsClick = () => handleBulkActionSelect("unsuspend");
+
   async function handleDeviceAssigned() {
-    // Invalidate + refetch the just-assigned device and the devices list so the
-    // new assignment status shows immediately.
     await Promise.all([
       selectedDevice?.id
         ? queryClient.invalidateQueries({ queryKey: deviceKeys.item(selectedDevice.id) })
@@ -200,8 +231,67 @@ export default function DevicesList() {
           >
             {exporting ? <Loader /> : <DownloadCloud />}
           </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary" className="h-10 w-[64px] rounded-full flex items-center justify-center border-none">
+                <MoreHorizontal className="size-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 p-2">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Messaging</DropdownMenuLabel>
+                <DropdownMenuItem className="py-2" onClick={handleBulkMessageClick}>Bulk message</DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator className="my-1" />
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="text-xs text-gray-500 font-semibold uppercase tracking-wider mt-1">General Actions</DropdownMenuLabel>
+                <DropdownMenuItem className="py-2" onClick={handleWipeDeviceClick}>Wipe device</DropdownMenuItem>
+                <DropdownMenuItem className="py-2" onClick={handleLockDeviceClick}>Lock device</DropdownMenuItem>
+                <DropdownMenuItem className="py-2" onClick={handleUnlockDeviceClick}>Unlock device</DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator className="my-1" />
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="text-xs text-gray-500 font-semibold uppercase tracking-wider mt-1">App Management</DropdownMenuLabel>
+                <DropdownMenuItem className="py-2" onClick={handleSuspendAppsClick}>Suspend apps</DropdownMenuItem>
+                <DropdownMenuItem className="py-2" onClick={handleUnsuspendAppsClick}>Unsuspend apps</DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
+
+      {bulkActionMode && (
+        <BulkActionBar
+          selectedCount={selectedDevices.length}
+          totalCount={devices.length}
+          title={
+            bulkActionMode === "message" ? "Send Bulk Messages" :
+            bulkActionMode === "wipe" ? "Wipe Devices" :
+            bulkActionMode === "lock" ? "Lock devices" : 
+            bulkActionMode === "unlock" ? "Unlock devices" :
+            bulkActionMode === "suspend" ? "Suspend apps" : "Unsuspend apps"
+          }
+          buttonText={
+            bulkActionMode === "message" ? "Proceed to Compose Message" :
+            bulkActionMode === "wipe" ? "Wipe Devices" :
+            bulkActionMode === "lock" ? "Lock Devices" : 
+            bulkActionMode === "unlock" ? "Unlock Devices" :
+            bulkActionMode === "suspend" ? "Suspend Apps" : "Unsuspend Apps"
+          }
+          variant={["message", "unlock", "unsuspend"].includes(bulkActionMode as string) ? "default" : "destructive"}
+          onProceed={() => {
+            if (bulkActionMode === "message") setIsComposeModalOpen(true);
+            else if (bulkActionMode === "suspend" || bulkActionMode === "unsuspend") setIsAppsModalOpen(true);
+            else setIsConfirmModalOpen(true);
+          }}
+          onCancel={() => {
+            setBulkActionMode(null);
+            setSelectedDevices([]);
+            setClearSelectionTrigger(prev => prev + 1);
+          }}
+        />
+      )}
 
       <DevicesTable
         data={devices}
@@ -214,6 +304,9 @@ export default function DevicesList() {
         totalPages={totalPages}
         onPageChange={handlePageChange}
         isLoading={isDevicesPending}
+        selectable={true}
+        onRowSelect={(selected) => setSelectedDevices(selected as StaffDevice[])}
+        clearSelectionTrigger={clearSelectionTrigger}
       />
 
       <NewDeviceModal open={isShowingNewDeviceModal} onOpenChange={setIsShowingNewDeviceModal} />
@@ -225,6 +318,43 @@ export default function DevicesList() {
         type="ASSIGN"
         refetch={handleDeviceAssigned}
       />
+
+      <BulkMessageModal
+        open={isComposeModalOpen}
+        onOpenChange={setIsComposeModalOpen}
+        selectedDevices={selectedDevices}
+        onSuccess={() => {
+          setBulkActionMode(null);
+          setSelectedDevices([]);
+          setClearSelectionTrigger(prev => prev + 1);
+        }}
+      />
+      {bulkActionMode && ["wipe", "lock", "unlock"].includes(bulkActionMode) && (
+        <BulkActionConfirmModal
+          open={isConfirmModalOpen}
+          onOpenChange={setIsConfirmModalOpen}
+          selectedDevices={selectedDevices}
+          actionType={bulkActionMode as "wipe" | "lock" | "unlock"}
+          onSuccess={() => {
+            setBulkActionMode(null);
+            setSelectedDevices([]);
+            setClearSelectionTrigger(prev => prev + 1);
+          }}
+        />
+      )}
+      {bulkActionMode && ["suspend", "unsuspend"].includes(bulkActionMode) && (
+        <SuspendAppsModal
+          open={isAppsModalOpen}
+          onOpenChange={setIsAppsModalOpen}
+          selectedDevices={selectedDevices}
+          actionType={bulkActionMode as "suspend" | "unsuspend"}
+          onSuccess={() => {
+            setBulkActionMode(null);
+            setSelectedDevices([]);
+            setClearSelectionTrigger(prev => prev + 1);
+          }}
+        />
+      )}
     </div>
   );
 }
