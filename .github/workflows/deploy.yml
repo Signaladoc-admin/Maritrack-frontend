@@ -125,7 +125,7 @@ jobs:
                       set -euo pipefail
 
                       # Log in to GHCR on the host
-                      echo '${{ secrets.GHCR_PULL_TOKEN }}' | docker login -u '${{ github.actor }}' --password-stdin "${{ env.REGISTRY }}"
+                      echo '${{ secrets.GITHUB_TOKEN }}' | docker login -u '${{ github.actor }}' --password-stdin "${{ env.REGISTRY }}"
 
                       # Use infra + app + per-app override (pin by digest)
                       docker compose \
