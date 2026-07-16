@@ -9,7 +9,7 @@ concurrency:
     cancel-in-progress: false
 
 env:
-    IMAGE_BASE: ghcr.io/signaladoc-team/maritrackfrontend/optitrack-frontend
+    IMAGE_BASE: ghcr.io/signaladoc-team/maritrack-frontend/optitrack-frontend
     SERVICE_NAME: optitrack-frontend
 
 jobs:
