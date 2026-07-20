@@ -14,44 +14,6 @@ export interface AppListItem {
   icon: React.ComponentType<{ className?: string }>;
 }
 
-export const apps: AppListItem[] = [
-  {
-    id: "1",
-    name: "WhatsApp",
-    totalTime: "2h 33mins",
-    limits: 1,
-    icon: WhatsAppIcon,
-  },
-  {
-    id: "2",
-    name: "Netflix",
-    totalTime: "2h 33mins",
-    limits: 1,
-    icon: NetflixIcon,
-  },
-  {
-    id: "3",
-    name: "Youtube",
-    totalTime: "2h 33mins",
-    limits: 1,
-    icon: YoutubeIcon,
-  },
-  {
-    id: "4",
-    name: "Instagram",
-    totalTime: "2h 33mins",
-    limits: 1,
-    icon: InstagramIcon,
-  },
-  {
-    id: "5",
-    name: "X",
-    totalTime: "2h 33mins",
-    limits: 1,
-    icon: XIcon,
-  },
-];
-
 interface AllAppsCardProps {
   onViewApp?: (appId: string) => void;
   apps?: any[];
