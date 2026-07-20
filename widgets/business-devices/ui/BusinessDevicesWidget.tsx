@@ -17,8 +17,6 @@ export const BusinessDevicesWidget: React.FC = () => {
 
   const currentData = activeTab === "assets" ? MOCK_ASSETS : MOCK_DAMAGED;
 
-  console.log('current data: ', currentData)
-
   const filteredData = useMemo(() => {
     return currentData.filter((item) =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

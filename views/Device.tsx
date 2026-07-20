@@ -64,7 +64,7 @@ const Device = () => {
           {!isMobile && (
             <div className="flex justify-between">
               <div className="flex justify-start">
-                <Back label="Back to profile" href="/dashboard" />
+                <Back label="Back to devices" href="/devices" />
               </div>
             </div>
           )}

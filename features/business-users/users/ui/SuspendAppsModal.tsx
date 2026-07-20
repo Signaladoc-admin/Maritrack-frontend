@@ -5,7 +5,7 @@ import { Dialog, DialogContent } from "@/shared/ui/dialog";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { useBulkActionDevices } from "@/entities/device";
-import { getDeviceDetailAction } from "@/features/device/api/device.actions";
+import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 import { useToast } from "@/shared/ui/toast";
 import { Loader } from "@/shared/ui/loader";
 import { TriangleAlert, SearchIcon } from "lucide-react";
@@ -33,8 +33,6 @@ export default function SuspendAppsModal({
 }: SuspendAppsModalProps) {
   const { toast } = useToast();
   const [isConfirming, setIsConfirming] = useState(false);
-  const [isFetchingApps, setIsFetchingApps] = useState(false);
-  const [apps, setApps] = useState<{ packageName: string }[]>([]);
   const [selectedApps, setSelectedApps] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -42,50 +40,48 @@ export default function SuspendAppsModal({
   const actionId = isSuspend ? 27 : 28;
   const iconColor = isSuspend ? "text-[#d9534f] fill-[#d9534f]/10" : "text-[#1b3c73] fill-[#1b3c73]/10";
   const buttonColor = isSuspend ? "bg-[#d9534f] hover:bg-[#c9302c]" : "bg-[#1b3c73] hover:bg-[#142d57]";
-  
+
+  const firstDeviceId = selectedDevices[0]?.mdmDeviceId || selectedDevices[0]?.device?.mdmDeviceId || selectedDevices[0]?.id || "";
+
+  const { data, isPending: isFetchingApps } = useDeviceDetail(firstDeviceId, "apps", {
+    enabled: !!firstDeviceId && open,
+  });
+
+  const apps = React.useMemo(() => {
+    const appsMap = new Map<string, any>();
+    const deviceApps = data?.data?.apps || (data as any)?.apps || [];
+    
+    if (Array.isArray(deviceApps)) {
+      deviceApps.forEach((app: any) => {
+        if (app && typeof app === "object") {
+          if (app.systemApp === false) {
+            const pkg = app.packageName;
+            if (pkg && !appsMap.has(pkg)) {
+              appsMap.set(pkg, app);
+            }
+          }
+        } else if (typeof app === "string") {
+          if (!appsMap.has(app)) {
+            appsMap.set(app, { packageName: app, appName: app });
+          }
+        }
+      });
+    }
+
+    return Array.from(appsMap.values()).sort((a, b) => {
+      const nameA = a.appName || a.name || a.packageName || "";
+      const nameB = b.appName || b.name || b.packageName || "";
+      return nameA.localeCompare(nameB);
+    });
+  }, [data]);
+
   useEffect(() => {
     if (!open) {
       setIsConfirming(false);
       setSearchQuery("");
       setSelectedApps([]);
-      return;
     }
-
-    let mounted = true;
-    async function loadApps() {
-      setIsFetchingApps(true);
-      try {
-        const allApps = new Set<string>();
-        await Promise.all(
-          selectedDevices.map(async (d) => {
-            const id = d.mdmDeviceId || d.device?.mdmDeviceId || d.id;
-            if (!id) return;
-            const res = await getDeviceDetailAction(id, "apps");
-            const deviceApps = (res as any)?.data?.apps || (res as any)?.apps || (res as any) || [];
-            if (Array.isArray(deviceApps)) {
-              deviceApps.forEach(app => {
-                 if (app.packageName) allApps.add(app.packageName);
-                 else if (typeof app === 'string') allApps.add(app);
-              });
-            }
-          })
-        );
-        if (mounted) {
-           setApps(Array.from(allApps).map(pkg => ({ packageName: pkg })).sort((a,b) => a.packageName.localeCompare(b.packageName)));
-        }
-      } catch (err) {
-         console.error(err);
-      } finally {
-         if (mounted) setIsFetchingApps(false);
-      }
-    }
-    
-    // In a real app we load from devices, but since it might be empty if device has no apps synced,
-    // let's fetch them
-    loadApps();
-    
-    return () => { mounted = false; };
-  }, [open, selectedDevices]);
+  }, [open]);
 
   const { mutate: sendBulkAction, isPending } = useBulkActionDevices({
     onSuccess: () => {
@@ -119,7 +115,10 @@ export default function SuspendAppsModal({
     });
   };
 
-  const filteredApps = apps.filter(app => app.packageName.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredApps = apps.filter(app => {
+    const name = app.appName || app.name || app.packageName || "";
+    return name.toLowerCase().includes(searchQuery.toLowerCase());
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -159,23 +158,31 @@ export default function SuspendAppsModal({
               ) : filteredApps.length === 0 ? (
                 <div className="text-center text-gray-500 py-8">No apps match your search.</div>
               ) : (
-                filteredApps.map(app => (
-                  <label key={app.packageName} className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
-                    <input 
-                      type="checkbox" 
-                      className="w-4 h-4 rounded border-gray-300 text-[#1b3c73] focus:ring-[#1b3c73]"
-                      checked={selectedApps.includes(app.packageName)}
-                      onChange={(e) => {
-                        if (e.target.checked) setSelectedApps([...selectedApps, app.packageName]);
-                        else setSelectedApps(selectedApps.filter(p => p !== app.packageName));
-                      }}
-                    />
-                    <div className="w-10 h-10 rounded-xl bg-gray-200 flex items-center justify-center">
-                      <AndroidIcon className="w-5 h-5 text-[#1b3c73]" />
-                    </div>
-                    <span className="text-[15px] font-medium text-gray-800">{app.packageName}</span>
-                  </label>
-                ))
+                filteredApps.map(app => {
+                  const name = app.appName || app.name || app.packageName;
+                  const icon = app.icon;
+                  return (
+                    <label key={app.packageName} className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+                      <input 
+                        type="checkbox" 
+                        className="w-4 h-4 rounded border-gray-300 text-[#1b3c73] focus:ring-[#1b3c73]"
+                        checked={selectedApps.includes(app.packageName)}
+                        onChange={(e) => {
+                          if (e.target.checked) setSelectedApps([...selectedApps, app.packageName]);
+                          else setSelectedApps(selectedApps.filter(p => p !== app.packageName));
+                        }}
+                      />
+                      <div className="w-10 h-10 rounded-xl bg-gray-200 flex items-center justify-center overflow-hidden">
+                        {icon ? (
+                          <img src={icon} alt={name} className="w-full h-full object-cover" />
+                        ) : (
+                          <AndroidIcon className="w-5 h-5 text-[#1b3c73]" />
+                        )}
+                      </div>
+                      <span className="text-[15px] font-medium text-gray-800">{name}</span>
+                    </label>
+                  );
+                })
               )}
             </div>
           </>

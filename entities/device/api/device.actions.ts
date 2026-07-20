@@ -74,7 +74,6 @@ export async function bulkActionDevicesAction(
         ...(messageText ? { message: messageText } : {}),
       },
     };
-    console.log('payload: ', JSON.stringify(payload))
 
     const res = await apiClient("/mdm-sync/action/bulk", {
       method: "POST",
