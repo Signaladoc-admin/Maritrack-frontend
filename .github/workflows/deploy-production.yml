@@ -65,10 +65,10 @@ jobs:
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
                   build-args: |
-                      NEXT_PUBLIC_BASE_URL=${{ secrets.NEXT_PUBLIC_BASE_URL }}
-                      NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
-                      NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=${{ secrets.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN }}
-                      NEXT_PUBLIC_FLENTRA_SUPPORT_EMAIL=${{ secrets.NEXT_PUBLIC_FLENTRA_SUPPORT_EMAIL }}
+                      NEXT_PUBLIC_BASE_URL=${{ secrets.NEXT_PUBLIC_BASE_URL_PROD }}
+                      NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL_PROD }}
+                      NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=${{ secrets.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN_PROD }}
+                      NEXT_PUBLIC_FLENTRA_SUPPORT_EMAIL=${{ secrets.NEXT_PUBLIC_FLENTRA_SUPPORT_EMAIL_PROD }}
 
             - name: Write image digest to workflow summary
               run: |
