@@ -248,10 +248,6 @@ const LocationFormCard = React.forwardRef<{ submit: () => void }, LocationFormCa
   }
 );
 
-// ---------------------------------------------------------------------------
-// LocationDataItem — accordion: summary header + inline form when expanded
-// ---------------------------------------------------------------------------
-
 interface LocationDataItemProps {
   entry: LocationEntry;
   index: number;
