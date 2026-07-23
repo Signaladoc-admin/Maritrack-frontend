@@ -24,6 +24,7 @@ import { MDMDeviceDetailsResponse } from "@/features/device/types";
 import ReassignDeviceModal from "@/features/business-users/users/ui/ReassignDeviceModal";
 import { DeviceHeaderSkeleton } from "./DeviceHeaderSkeleton";
 import DeviceActions from "./DeviceActions";
+import Messages from "./Messages";
 
 const Device = () => {
   const router = useRouter();
@@ -159,6 +160,7 @@ const Device = () => {
       {activeTab === "web-history" && <WebHistory />}
       {activeTab === "app-control" && <AppControl />}
       {activeTab === "location" && <LocationPage />}
+      {activeTab === "messages" && <Messages deviceId={deviceDetails?.id} />}
       {activeTab === "configuration" && (
         <div className="mx-auto max-w-lg">
           <DevicesConfigurationSetup />
