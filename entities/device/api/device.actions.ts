@@ -3,7 +3,7 @@
 import { apiClient } from "@/shared/lib/api-client";
 import { withSafeAction } from "@/shared/lib/safe-action";
 import { ApiResponse, type ActionResult } from "@/shared/api/types";
-import type { DeviceQueryOptions, PaginatedDevices, StaffDevice } from "../model/types";
+import type { DeviceQueryOptions, PaginatedDevices, StaffDevice, PaginatedDeviceMessages } from "../model/types";
 
 export async function getDevicesAction(
   options?: DeviceQueryOptions
@@ -82,4 +82,18 @@ export async function bulkActionDevicesAction(
     });
     return res.data ?? res;
   }, "Failed to perform bulk action");
+}
+
+export async function getDeviceMessagesAction(
+  deviceId: string,
+  options?: { page?: number; limit?: number }
+): Promise<ActionResult<PaginatedDeviceMessages>> {
+  return withSafeAction(async () => {
+    const res = await apiClient(`/devices/recovery-messages/${deviceId}`, {
+      method: "GET",
+      noRedirect: true,
+      params: options as Record<string, string | number | boolean | undefined>,
+    });
+    return res.data ?? res;
+  }, "Failed to fetch device messages");
 }

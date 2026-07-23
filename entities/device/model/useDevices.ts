@@ -8,6 +8,7 @@ import {
   getDevicesAction,
   markDeviceAsReturnedAction,
   bulkActionDevicesAction,
+  getDeviceMessagesAction,
 } from "../api/device.actions";
 import type { DeviceQueryOptions } from "./types";
 import { useGetStaffMember } from "@/entities/business/model/useStaffMembers";
@@ -17,6 +18,8 @@ export type { DeviceQueryOptions };
 const deviceKeys = {
   list: (options: DeviceQueryOptions) => ["devices", "list", options] as const,
   item: (deviceId: string) => ["devices", "item", deviceId] as const,
+  messages: (deviceId: string, options: { page?: number; limit?: number }) => 
+    ["devices", "messages", deviceId, options] as const,
 };
 
 export function useDevices(options: DeviceQueryOptions = {}) {
@@ -30,6 +33,18 @@ export function useDevice(deviceId: string) {
   return useServerActionQuery(deviceKeys.item(deviceId), getDeviceAction, [deviceId], {
     retry: false,
   });
+}
+
+export function useDeviceMessages(deviceId: string, options: { page?: number; limit?: number } = {}) {
+  return useServerActionQuery(
+    deviceKeys.messages(deviceId, options),
+    getDeviceMessagesAction,
+    [deviceId, options],
+    {
+      retry: false,
+      enabled: !!deviceId,
+    }
+  );
 }
 
 export function useMarkDeviceAsReturned(
