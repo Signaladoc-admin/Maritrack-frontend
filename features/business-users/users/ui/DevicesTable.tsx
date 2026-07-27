@@ -11,6 +11,9 @@ interface DevicesTableProps<T extends { id: string | number }> {
   onPageChange?: (page: number) => void;
   paginationClassName?: string;
   isLoading?: boolean;
+  selectable?: boolean;
+  onRowSelect?: (items: T[]) => void;
+  clearSelectionTrigger?: number;
 }
 
 export default function DevicesTable<T extends { id: string | number }>({
@@ -21,6 +24,9 @@ export default function DevicesTable<T extends { id: string | number }>({
   onPageChange,
   paginationClassName,
   isLoading,
+  selectable,
+  onRowSelect,
+  clearSelectionTrigger,
 }: DevicesTableProps<T>) {
   const router = useRouter();
 
@@ -39,6 +45,9 @@ export default function DevicesTable<T extends { id: string | number }>({
       onPageChange={onPageChange}
       paginationClassName={paginationClassName}
       loading={isLoading}
+      selectable={selectable}
+      onRowSelect={onRowSelect as any}
+      clearSelectionTrigger={clearSelectionTrigger}
     />
   );
 }

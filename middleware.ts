@@ -48,6 +48,8 @@ const publicRoutes = [
   "/landing",
   "/about",
   "/unauthorized",
+  "/privacy-policy",
+  "/terms-of-service",
   // Personal auth routes
   "/login",
   "/register",

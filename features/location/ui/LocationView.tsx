@@ -21,6 +21,7 @@ import { useGetBusiness } from "@/entities/business/model/useBusiness";
 import { useChild } from "@/entities/children/model/useChildren";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { useQueryState } from "nuqs";
+import { useGetRestrictions } from "@/features/mdm-sync/model/useRestrictions";
 
 export function LocationView({ deviceId }: { deviceId: string }) {
   const [isGeofencingModalOpen, setIsGeofencingModalOpen] = useState(false);
@@ -29,6 +30,8 @@ export function LocationView({ deviceId }: { deviceId: string }) {
   const { data: hardwareData } = useDeviceDetail(deviceId, "hardware", {
     enabled: !!deviceId,
   });
+
+  const { data: restrictionsResponse } = useGetRestrictions(deviceId, { enabled: !!deviceId });
 
   const location = hardwareData?.deviceDetails?.lastKnownLocation;
 
@@ -41,7 +44,7 @@ export function LocationView({ deviceId }: { deviceId: string }) {
   const { data: child } = useChild(childId, { enabled: !!childId });
   const organizationName = business?.name ?? child?.name ?? "";
 
-  const geoFencingLocations = hardwareData?.data?.geofences || [];
+  const geoFencingLocations = restrictionsResponse?.data?.geofences || [];
 
   return (
     <div className="flex flex-col gap-6 p-6">

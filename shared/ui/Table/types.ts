@@ -36,6 +36,7 @@ export interface TableProps<T = any> {
   onPageChange?: (page: number) => void;
   hasHeaders?: boolean;
   paginationClassName?: string;
+  clearSelectionTrigger?: number;
 }
 
 export interface ItemWithId {
