@@ -42,6 +42,13 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
     parts.filter(Boolean).join(" ");
 
   useEffect(() => {
+    if (props.clearSelectionTrigger) {
+      setSelectedItems(new Set());
+      setSelectAll(false);
+    }
+  }, [props.clearSelectionTrigger]);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent): void => {
       const target = event.target as HTMLElement;
 
@@ -238,7 +245,10 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
                         <div
                           role="button"
                           aria-label="Select row"
-                          onClick={() => handleSelectItem(item.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSelectItem(item.id);
+                          }}
                           className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-sm border border-gray-400 bg-transparent hover:border-[#7f56d9]"
                         >
                           {selectedItems.has(item.id) && (

@@ -62,6 +62,7 @@ export function MapCard({ deviceId }: { deviceId: string }) {
               zoom={13}
               scrollWheelZoom={false}
               style={{ height: "100%", width: "100%" }}
+              className="z-0"
             >
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

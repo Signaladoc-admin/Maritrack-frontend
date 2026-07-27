@@ -67,6 +67,7 @@ const LocationFormCard = React.forwardRef<{ submit: () => void }, LocationFormCa
     const [suggestions, setSuggestions] = React.useState<any[]>([]);
     const [isSearching, setIsSearching] = React.useState(false);
     const [showSuggestions, setShowSuggestions] = React.useState(false);
+    const [userLocation, setUserLocation] = React.useState<{ lat: number; lon: number } | null>(null);
 
     const searchBoxCore = useSearchBoxCore({ accessToken });
     const searchSession = useSearchSession(searchBoxCore);
@@ -94,13 +95,34 @@ const LocationFormCard = React.forwardRef<{ submit: () => void }, LocationFormCa
       },
     }));
 
+    React.useEffect(() => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            setUserLocation({
+              lat: position.coords.latitude,
+              lon: position.coords.longitude,
+            });
+          },
+          (error) => {
+            console.error("Error getting user location:", error);
+          }
+        );
+      }
+    }, []);
+
     // Mapbox suggestions debounce
     React.useEffect(() => {
       const timer = setTimeout(async () => {
         if (locationName && locationName.length >= 3 && showSuggestions) {
           setIsSearching(true);
           try {
-            const results = await searchSession.suggest(locationName, { limit: 10 });
+            const proximity = userLocation ? [userLocation.lon, userLocation.lat] : "ip";
+            const results = await searchSession.suggest(locationName, { 
+              limit: 10, 
+              proximity: proximity as any,
+              country: "ng"
+            } as any);
             setSuggestions(results.suggestions);
           } catch {
             setSuggestions([]);
@@ -111,7 +133,7 @@ const LocationFormCard = React.forwardRef<{ submit: () => void }, LocationFormCa
         }
       }, 500);
       return () => clearTimeout(timer);
-    }, [locationName, showSuggestions, searchSession]);
+    }, [locationName, showSuggestions, searchSession, userLocation]);
 
     const handleSelectSuggestion = async (suggestion: any) => {
       try {
@@ -137,7 +159,8 @@ const LocationFormCard = React.forwardRef<{ submit: () => void }, LocationFormCa
     return (
       <div
         className={cn(
-          "relative space-y-5",
+          "relative space-y-5 transition-all duration-200",
+          showSuggestions ? "z-50 mb-[18rem]" : "z-10",
           !hideHeader && "rounded-xl border border-slate-100 bg-slate-50 p-4"
         )}
       >
@@ -170,7 +193,7 @@ const LocationFormCard = React.forwardRef<{ submit: () => void }, LocationFormCa
               placeholder="Enter Location here"
               autoComplete="off"
               onFocus={() => setShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             />
             {isSearching && (
               <div className="absolute top-1/2 right-3 -translate-y-1/2">
@@ -180,12 +203,12 @@ const LocationFormCard = React.forwardRef<{ submit: () => void }, LocationFormCa
 
             {/* Suggestions dropdown */}
             {showSuggestions && suggestions.length > 0 && (
-              <div className="absolute top-full left-0 z-50 mt-1 max-h-52 w-full overflow-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+              <div className="absolute top-[105%] left-0 z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl custom-scrollbar">
                 {suggestions.map((s, i) => (
                   <button
                     key={i}
                     type="button"
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-slate-50 focus:bg-slate-50 focus:outline-none"
+                    className="w-full px-4 py-3 text-left text-sm hover:bg-slate-50 focus:bg-slate-50 focus:outline-none border-b border-slate-100 last:border-b-0"
                     onMouseDown={() => handleSelectSuggestion(s)}
                   >
                     {s.full_address ||
@@ -225,10 +248,6 @@ const LocationFormCard = React.forwardRef<{ submit: () => void }, LocationFormCa
   }
 );
 
-// ---------------------------------------------------------------------------
-// LocationDataItem — accordion: summary header + inline form when expanded
-// ---------------------------------------------------------------------------
-
 interface LocationDataItemProps {
   entry: LocationEntry;
   index: number;
@@ -245,9 +264,9 @@ const LocationDataItem = React.forwardRef<{ submit: () => void }, LocationDataIt
     ref
   ) {
     return (
-      <div className="overflow-hidden rounded-xl border border-slate-100 bg-slate-50">
+      <div className={cn("rounded-xl border border-slate-100 bg-slate-50 relative", isExpanded ? "z-50" : "z-10")}>
         {/* Summary header — always visible */}
-        <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center justify-between px-4 py-3 rounded-xl overflow-hidden">
           <button
             type="button"
             className="flex flex-1 items-center gap-3 text-left"
