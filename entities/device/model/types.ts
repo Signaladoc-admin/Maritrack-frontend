@@ -221,3 +221,35 @@ export interface UnassignDeviceRequest {
   unassignmentReason: string;
   unassignmentComment: string;
 }
+
+export interface DeviceMessage {
+  id: string;
+  deviceId: string;
+  userId: string;
+  sentByUserId: string;
+  message: string;
+  createdAt: string;
+  updatedAt: string;
+  deleted: boolean;
+  deletedAt: string | null;
+  sentByUser?: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  } | null;
+  user?: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  } | null;
+}
+
+export interface PaginatedDeviceMessages {
+  messages: DeviceMessage[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}

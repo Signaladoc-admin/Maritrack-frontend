@@ -3,6 +3,7 @@ export const TABS = [
   // { label: "Web history", value: "web-history" },
   { label: "App control", value: "app-control" },
   { label: "Location", value: "location" },
+  { label: "Messages", value: "messages" },
   { label: "Configuration", value: "configuration" },
   { label: "Actions", value: "actions" },
 ];
