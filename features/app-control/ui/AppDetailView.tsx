@@ -1,18 +1,20 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ChevronLeft, Ban, PlayCircle, History, Loader2 } from "lucide-react";
+import { ChevronLeft, Ban, PlayCircle, History, Loader2, Trash2 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/shared/ui/Card/Card";
 import { Button } from "@/shared/ui/Button/button";
 import { cn, formatAppValue } from "@/shared/lib/utils";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from "recharts";
 import { SetTimeLimitModal } from "@/shared/ui/Modal/Modals/TimeLimitModal";
+import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
 import { AppListItem } from "./AllAppsCard";
 import { useParams } from "next/navigation";
 import {
   useSetAppLimit,
   useBlockApp,
   useUnblockApp,
+  useUninstallApp,
   useGetAppLimit,
 } from "@/features/mdm-sync/model/useMdmSync";
 
@@ -32,8 +34,23 @@ export function AppDetailView({ app, onBack }: { app: any; onBack: () => void })
   const setAppLimitMutation = useSetAppLimit();
   const blockAppMutation = useBlockApp();
   const unblockAppMutation = useUnblockApp();
+  const uninstallAppMutation = useUninstallApp();
 
   const [isBlocked, setIsBlocked] = useState(false);
+  const [showUninstallModal, setShowUninstallModal] = useState(false);
+
+  const handleUninstall = async () => {
+    try {
+      await uninstallAppMutation.mutateAsync({
+        deviceId: params?.device || "",
+        packageName: app.packageName || "",
+      });
+      setShowUninstallModal(false);
+      onBack();
+    } catch (err) {
+      // Error handled by hook's toast notification
+    }
+  };
 
   const handleBlockToggle = async () => {
     try {
@@ -174,27 +191,38 @@ export function AppDetailView({ app, onBack }: { app: any; onBack: () => void })
             </div>
           </div>
 
-          <Button
-            onClick={handleBlockToggle}
-            variant={isBlocked ? "default" : "destructive"}
-            disabled={blockAppMutation.isPending || unblockAppMutation.isPending}
-            className={cn(
-              "h-12 w-32 text-white",
-              isBlocked
-                ? "bg-[#1B3C73] hover:bg-[#1B3C73]/90"
-                : "bg-[#D95D55] hover:bg-[#D95D55]/90"
-            )}
-          >
-            {isBlocked ? (
-              <>
-                <PlayCircle className="h-5 w-5" /> Unblock app
-              </>
-            ) : (
-              <>
-                <Ban className="h-5 w-5" /> Block app
-              </>
-            )}
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={handleBlockToggle}
+              variant={isBlocked ? "default" : "destructive"}
+              disabled={blockAppMutation.isPending || unblockAppMutation.isPending || uninstallAppMutation.isPending}
+              className={cn(
+                "h-12 w-32 text-white",
+                isBlocked
+                  ? "bg-[#1B3C73] hover:bg-[#1B3C73]/90"
+                  : "bg-[#D95D55] hover:bg-[#D95D55]/90"
+              )}
+            >
+              {isBlocked ? (
+                <>
+                  <PlayCircle className="h-5 w-5" /> Unblock app
+                </>
+              ) : (
+                <>
+                  <Ban className="h-5 w-5" /> Block app
+                </>
+              )}
+            </Button>
+
+            <Button
+              onClick={() => setShowUninstallModal(true)}
+              variant="secondary"
+              disabled={uninstallAppMutation.isPending || blockAppMutation.isPending || unblockAppMutation.isPending}
+              className="h-12 border border-[#D95D55] bg-transparent text-[#D95D55] hover:bg-[#D95D55]/10"
+            >
+              <Trash2 className="h-5 w-5" /> Uninstall app
+            </Button>
+          </div>
         </div>
 
         {/* Usage History Card */}
@@ -297,6 +325,17 @@ export function AppDetailView({ app, onBack }: { app: any; onBack: () => void })
         onSave={handleSaveLimit}
         isLoading={setAppLimitMutation.isPending}
         initialLimits={limits}
+      />
+
+      <ConfirmationModal
+        open={showUninstallModal}
+        onOpenChange={setShowUninstallModal}
+        title="Uninstall App"
+        description={`Are you sure you want to uninstall ${appDisplayName || "this app"}? This action will send an uninstall command to the device.`}
+        confirmText={uninstallAppMutation.isPending ? "Uninstalling..." : "Uninstall"}
+        onConfirm={handleUninstall}
+        variant="destructive"
+        loading={uninstallAppMutation.isPending}
       />
     </Card>
   );

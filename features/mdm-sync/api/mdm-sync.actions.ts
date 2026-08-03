@@ -199,6 +199,26 @@ export async function unblockAppAction({
   );
 }
 
+export interface UninstallAppVariables {
+  deviceId: string;
+  packageName: string;
+}
+
+export async function uninstallAppAction({
+  deviceId,
+  packageName,
+}: UninstallAppVariables): Promise<ActionResult<any>> {
+  return withSafeAction(
+    async () =>
+      await apiClient(`/mdm-sync/${deviceId}/action`, {
+        method: "POST",
+        body: JSON.stringify({ deviceIds: [deviceId], actionId: 20, message: packageName }),
+      }),
+    "Failed to uninstall app"
+  );
+}
+
+
 export interface DeviceActionVariables {
   deviceId: string;
 }
