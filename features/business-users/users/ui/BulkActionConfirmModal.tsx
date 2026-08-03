@@ -16,7 +16,7 @@ interface BulkActionConfirmModalProps {
 
 const ACTION_CONFIG = {
   wipe: {
-    actionId: 25,
+    actionId: 8,
     title: "Are you sure you want to wipe these devices?",
     buttonText: "Wipe Devices",
     successMessage: "Devices wiped successfully",
