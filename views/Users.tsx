@@ -29,6 +29,7 @@ import BusinessUserPairingQR from "@/features/business-users/users/ui/BusinessUs
 import { Dialog, DialogContent } from "@/shared/ui/Modal/dialog";
 import { useIsOrganizationAdmin } from "@/features/business-users/users/model/useIsOrganizationAdmin";
 import Pagination from "@/shared/ui/Table/Pagination";
+import { useGetFullBusinessDetails } from "@/features/onboarding/business/model/useGetBusinessDetails";
 
 function ActionButtons({
   onOpenQrPairing,
@@ -73,10 +74,23 @@ export default function Users() {
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [showQrPairing, setShowQrPairing] = useState(false);
 
+  const { business, isLoadingBusiness, isLoadingBusinessProfile } = useGetFullBusinessDetails();
   // Reset QR view whenever the selected user or sub-tab changes
   useEffect(() => {
     setShowQrPairing(false);
   }, [selectedId, selectedUserSubTab]);
+
+  const isDeviceFinance = (business?.profile as any)?.type === "DEVICE_FINANCING";
+
+  const availableTabs = isDeviceFinance
+    ? [
+        { label: "Users", value: "users" },
+      ]
+    : [
+        { label: "Users", value: "users" },
+        { label: "Departments", value: "departments" },
+        { label: "Locations", value: "locations" },
+      ];
 
   // Deletion api hooks
   const { mutateAsync: deleteUser, isPending: isDeletingUser } = useDeleteUser();
@@ -135,11 +149,7 @@ export default function Users() {
         <div className="space-y-5">
           <TabNavigation
             className="bg-[#eee]"
-            tabs={[
-              { label: "Users", value: "users" },
-              { label: "Departments", value: "departments" },
-              { label: "Locations", value: "locations" },
-            ]}
+            tabs={availableTabs}
             activeTab={selectedTab}
             onTabChange={handleSelectTab}
             itemClassName="px-4"
