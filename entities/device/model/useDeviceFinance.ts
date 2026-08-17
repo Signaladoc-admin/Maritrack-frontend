@@ -13,8 +13,9 @@ export function useCreateDeviceFinance() {
 
 export function useGetDeviceFinanceByDeviceId(deviceId: string) {
   return useServerActionQuery(
-    () => getDeviceFinanceByDeviceIdAction(deviceId),
     ["device-finance", deviceId],
+    getDeviceFinanceByDeviceIdAction,
+    [deviceId],
     {
       enabled: !!deviceId,
     }
