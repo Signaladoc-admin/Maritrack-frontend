@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { Button } from "@/shared/ui/button";
 import { Header } from "@/shared/ui/layout/header";
 import { useUserProfile } from "@/entities/user/model/useUserProfile";
@@ -26,6 +26,8 @@ import CardHeader from "@/shared/ui/card-header";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import DeviceConfirmation from "../../onboarding/personal/ui/devices-control-setup/DeviceConfirmation";
 import ChildTransparency from "@/features/onboarding/personal/ui/devices-control-setup/ChildTransparency";
+import { RepaymentPlans } from "@/features/device/ui/RepaymentPlans";
+import { useGetBusiness } from "@/entities/business/model/useBusiness";
 
 export type AppRole = "PARENT" | "BUSINESS";
 
@@ -410,6 +412,13 @@ export default function DevicesConfigurationSetup({
 
   const isSubmitting = isCreating || isUpdating;
 
+  const params = useParams<{ device: string }>();
+
+  const mdmDeviceId = params.device;
+
+  const { data: business } = useGetBusiness(user?.businessId as string);
+  const isDeviceFinancing = business?.profile?.type === "DEVICE_FINANCING";
+
   if (isLoading && !isSubmitting) {
     return (
       <div className="animate-pulse">
@@ -477,6 +486,9 @@ export default function DevicesConfigurationSetup({
 
       <FormProvider {...methods}>
         <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-6">
+          {user?.appRole === "BUSINESS" && isDeviceFinancing && mdmDeviceId && (
+            <RepaymentPlans deviceId={mdmDeviceId} />
+          )}
           <MonitoringPermissionsSetup />
           <ScreenTimeRules />
           <AppManagement />

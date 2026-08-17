@@ -25,6 +25,8 @@ import ReassignDeviceModal from "@/features/business-users/users/ui/ReassignDevi
 import { DeviceHeaderSkeleton } from "./DeviceHeaderSkeleton";
 import DeviceActions from "./DeviceActions";
 import Messages from "./Messages";
+import { useGetBusiness } from "@/entities/business/model/useBusiness";
+import { RepaymentPlans } from "@/features/device/ui/RepaymentPlans";
 
 const Device = () => {
   const router = useRouter();
@@ -43,6 +45,8 @@ const Device = () => {
   const deviceResponse: MDMDeviceDetailsResponse = hardwareData;
 
   const deviceDetails = deviceResponse?.deviceDetails;
+  
+  
 
   const activeTab = searchParams?.get("tab") || "general";
   const [showDelete, setShowDelete] = useState(false);
@@ -162,7 +166,8 @@ const Device = () => {
       {activeTab === "location" && <LocationPage />}
       {activeTab === "messages" && <Messages deviceId={deviceDetails?.id} />}
       {activeTab === "configuration" && (
-        <div className="mx-auto max-w-lg">
+        <div className="mx-auto max-w-lg space-y-6">
+          
           <DevicesConfigurationSetup />
         </div>
       )}

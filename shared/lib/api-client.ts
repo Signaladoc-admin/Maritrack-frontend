@@ -75,6 +75,7 @@ export async function apiClient<T = any>(
       error?.message === "Failed to fetch" ||
       error?.message === "fetch failed" ||
       error?.name === "TypeError";
+      
     if (isNetworkError) {
       throw new Error("No internet connection. Please check your network and try again.");
     }
