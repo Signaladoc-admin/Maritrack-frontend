@@ -463,6 +463,23 @@ export default function ReassignDeviceModal({
                         </InputGroup>
                       )}
                     />
+                    <Controller
+                      control={control}
+                      name="gender"
+                      render={({ field }) => (
+                        <InputGroup label="Gender" error={formState.errors.gender?.message}>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select Gender" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="MALE">Male</SelectItem>
+                              <SelectItem value="FEMALE">Female</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </InputGroup>
+                      )}
+                    />
                   </div>
 
                   <Controller
@@ -485,23 +502,6 @@ export default function ReassignDeviceModal({
 
                   {transFer && (
                     <div className="grid grid-cols-2 gap-4 border-t border-slate-200 pt-4">
-                      <Controller
-                        control={control}
-                        name="gender"
-                        render={({ field }) => (
-                          <InputGroup label="Gender" error={formState.errors.gender?.message}>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select Gender" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="MALE">Male</SelectItem>
-                                <SelectItem value="FEMALE">Female</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </InputGroup>
-                        )}
-                      />
                       <Controller
                         control={control}
                         name="address"

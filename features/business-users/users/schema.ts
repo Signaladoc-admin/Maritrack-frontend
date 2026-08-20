@@ -56,14 +56,14 @@ export const assignDeviceToUserSchema = z
           path: ["paymentStartDate"],
         });
       }
+      if (!data.gender) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Gender is required",
+          path: ["gender"],
+        });
+      }
       if (data.transFer) {
-        if (!data.gender) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Gender is required when transfer is enabled",
-            path: ["gender"],
-          });
-        }
         if (!data.address) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,

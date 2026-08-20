@@ -1,22 +1,27 @@
 "use client";
 
-import { useState } from "react";
-import { Gauge, Menu, Smartphone, User, X } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Gauge, Menu, Smartphone, User, X, FileText } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ProfilePopover } from "../Sidebar/ProfilePopover";
 import { cn } from "@/shared/lib/utils";
 import RefreshTokenTest from "@/components/ui/RefreshTokenTest";
-
-const businessNavLinks = [
-  { label: "Dashboard", href: "/dashboard", icon: Gauge },
-  { label: "Devices", href: "/devices", icon: Smartphone },
-  { label: "Users", href: "/users", icon: User },
-];
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 export default function TopNavbar() {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const { user } = useAuth();
+
+  const businessNavLinks = useMemo(() => {
+    const links = [
+      { label: "Dashboard", href: "/dashboard", icon: Gauge },
+      { label: "Devices", href: "/devices", icon: Smartphone },
+      { label: "Users", href: "/users", icon: User },
+    ];
+    return links;
+  }, [user?.businessRole]);
 
   return (
     <>
