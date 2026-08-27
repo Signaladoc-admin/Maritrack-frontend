@@ -56,6 +56,9 @@ export async function apiClient<T = any>(
 
   if (!(fetchOptions.body instanceof FormData) && !headers["Content-Type"]) {
     headers["Content-Type"] = "application/json";
+    if (typeof fetchOptions.body === "string") {
+      headers["Content-Length"] = String(Buffer.byteLength(fetchOptions.body));
+    }
   }
 
   if (accessToken && !skipAuth) {
@@ -126,8 +129,15 @@ export async function apiClient<T = any>(
   }
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    const message = errorData?.message;
+    const responseText = await response.text().catch(() => "");
+    console.error("[apiClient] Raw error response:", responseText);
+    
+    let errorData = {};
+    try {
+      errorData = responseText ? JSON.parse(responseText) : {};
+    } catch (e) {}
+    
+    const message = (errorData as any)?.message;
 
     const errorMessage = Array.isArray(message)
       ? message.filter((m: any) => typeof m === "string").join(", ") ||
