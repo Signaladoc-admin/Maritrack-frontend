@@ -10,7 +10,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
 // Cloudflare drops Node 22's default TLS 1.3 ClientHello (due to Kyber cryptography fragmentation on some networks)
 // Forcing TLSv1.2 prevents the ECONNRESET socket disconnect error.
 // We also enable keepAlive: true to prevent "socket hang up" on sequential API calls.
-const httpsAgent = new https.Agent({ 
+const httpsAgent = new https.Agent({
   maxVersion: "TLSv1.2",
   keepAlive: true,
   keepAliveMsecs: 1000,
@@ -68,6 +68,9 @@ export async function apiClient<T = any>(
 
   if (!(fetchOptions.body instanceof FormData) && !headers["Content-Type"]) {
     headers["Content-Type"] = "application/json";
+    if (typeof fetchOptions.body === "string") {
+      headers["Content-Length"] = String(Buffer.byteLength(fetchOptions.body));
+    }
   }
 
   if (accessToken && !skipAuth) {
@@ -158,8 +161,8 @@ export async function apiClient<T = any>(
 
   // Axios automatically parses JSON to response.data
   // If it was text, it will be a string. But assuming parsed JSON.
-  const parsedResponse = typeof response.data === "string" && response.data.trim().startsWith("{") 
-    ? JSON.parse(response.data) 
+  const parsedResponse = typeof response.data === "string" && response.data.trim().startsWith("{")
+    ? JSON.parse(response.data)
     : response.data;
 
   // Persist both tokens to httpOnly cookies so server actions can authenticate.
