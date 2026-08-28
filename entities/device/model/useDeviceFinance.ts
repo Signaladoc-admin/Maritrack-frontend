@@ -19,8 +19,8 @@ export function useDeviceFinanceDetails(id?: string) {
     queryFn: async () => {
       if (!id) return null;
       const res = await getDeviceFinanceAction(id);
-      if (res?.data) return res.data;
-      return res;
+      if (res.success) return res.data.data;
+      throw new Error(res.error || "Failed to fetch device finance details");
     },
     enabled: !!id,
   });
@@ -37,8 +37,8 @@ export function useDeviceFinanceUserCheck() {
     queryKey: ["device-finance-user-check"],
     queryFn: async () => {
       const res = await checkDeviceFinanceUserAction();
-      if (res?.data) return res.data;
-      return res;
+      if (res.success) return res.data;
+      throw new Error(res.error || "Failed to check device finance user");
     },
   });
 }
