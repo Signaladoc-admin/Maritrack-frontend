@@ -31,7 +31,7 @@ export async function createDeviceFinanceAction(data: CreateDeviceFinanceDto) {
 
 export async function getDeviceFinanceAction(id: string) {
   return withSafeAction(async () => {
-    const res = await apiClient(`/device-finance/${id}`, {
+    const res = await apiClient(`/device-finance/device/${id}`, {
       method: "GET",
       noRedirect: true,
     });
@@ -39,11 +39,11 @@ export async function getDeviceFinanceAction(id: string) {
   }, "Failed to fetch device finance details");
 }
 
-export async function markPlanAsPaidAction(installmentId: string) {
+export async function markPlanAsPaidAction(installmentId: string, amountKobo: number) {
   return withSafeAction(async () => {
     const res = await apiClient(`/device-finance/installments/${installmentId}/pay`, {
-      method: "PATCH",
-      body: JSON.stringify({ amountKobo: 0 }),
+      method: "POST",
+      body: JSON.stringify({ amountKobo }),
       headers: { "Content-Type": "application/json" },
       noRedirect: true,
     });

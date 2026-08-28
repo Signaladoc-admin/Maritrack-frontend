@@ -2,11 +2,11 @@
 
 import { useServerActionMutation } from "@/shared/api/server-action-hooks";
 import { useQuery } from "@tanstack/react-query";
-import { 
-  createDeviceFinanceAction, 
+import {
+  createDeviceFinanceAction,
   CreateDeviceFinanceDto,
-  getDeviceFinanceAction, 
-  markPlanAsPaidAction 
+  getDeviceFinanceAction,
+  markPlanAsPaidAction
 } from "../api/device-finance.actions";
 
 export function useCreateDeviceFinance() {
@@ -19,7 +19,8 @@ export function useDeviceFinanceDetails(id?: string) {
     queryFn: async () => {
       if (!id) return null;
       const res = await getDeviceFinanceAction(id);
-      if (res.success) return res.data.data;
+      if (res.success) return res.data;
+
       throw new Error(res.error || "Failed to fetch device finance details");
     },
     enabled: !!id,
@@ -27,7 +28,10 @@ export function useDeviceFinanceDetails(id?: string) {
 }
 
 export function useMarkPlanAsPaid() {
-  return useServerActionMutation((installmentId: string) => markPlanAsPaidAction(installmentId));
+  return useServerActionMutation(
+    ({ installmentId, amountKobo }: { installmentId: string; amountKobo: number }) =>
+      markPlanAsPaidAction(installmentId, amountKobo)
+  );
 }
 
 import { checkDeviceFinanceUserAction } from "../api/device-finance-user.actions";

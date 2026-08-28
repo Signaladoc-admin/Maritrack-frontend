@@ -50,8 +50,8 @@ export default function AddEditDepartmentModal({
         if (!businessId) {
           throw new Error("Business ID is required to create a department");
         }
-        await createDepartment({ 
-          ...data, 
+        await createDepartment({
+          ...data,
           businessId,
           zone: user?.zoneId || "",
           mdmDepartmentId: "",
@@ -67,7 +67,6 @@ export default function AddEditDepartmentModal({
 
       onOpenChange(false);
     } catch (error: any) {
-      console.log(error)
       toast({
         type: "error",
         title: "Error",

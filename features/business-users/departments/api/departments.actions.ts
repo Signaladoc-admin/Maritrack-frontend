@@ -44,16 +44,13 @@ export async function getDepartmentAction(id: string): Promise<any> {
   }, "Failed to get department");
 }
 export async function createDepartmentAction(data: CreateDepartmentDto): Promise<any> {
-  console.log("[createDepartmentAction] Payload:", data);
   return withSafeAction(
     async () => {
-      console.log("[createDepartmentAction] Sending to backend...");
       const res = await apiClient(`/departments`, {
         method: "POST",
         body: JSON.stringify(data),
         noRedirect: true,
       });
-      console.log("[createDepartmentAction] Response from backend:", res);
       return res;
     },
     "Failed to create department"
