@@ -258,8 +258,6 @@ export default function DevicesConfigurationSetup({
     refetch: refetchDeviceDetail,
   } = useDeviceDetail(deviceId || "", "hardware", { enabled: !!deviceId });
 
-  console.log('hardware: ', hardwareData)
-
   const methods = useForm<FormValues>({
     resolver: zodResolver(getFormSchema(appRole)),
     defaultValues: {
@@ -429,11 +427,7 @@ export default function DevicesConfigurationSetup({
     ? financeUsers?.data?.find((u: any) => u.userId === effectiveUserId)
     : null;
 
-  console.log('finance: ', hardwareData?.deviceDetail?.id)
-
   const isDeviceFinanced = currentDeviceFinanceUser?.isDeviceFinanced;
-
-  console.log('device finance: ', isDeviceFinanced)
 
   const isLoading = isLoadingUser || (parentId && isLoadingSettings) || isLoadingMe || isLoadingFinanceUsers;
 
@@ -502,8 +496,8 @@ export default function DevicesConfigurationSetup({
         }
       />
 
-      {isDeviceFinanced && hardwareData?.deviceDetail?.id && (
-        <RepaymentPlans mdmDeviceId={hardwareData?.deviceDetail?.id} />
+      {isDeviceFinanced && (
+        <RepaymentPlans mdmDeviceId={hardwareData?.deviceDetails?.id} />
       )}
 
       {isOnboardingPath && <LoaderModal open={isSubmitting} text="Setting up your account" />}

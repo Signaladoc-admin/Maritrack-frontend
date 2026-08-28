@@ -28,8 +28,6 @@ export async function loginAction(credentials: LoginValues) {
     const user = response.data;
     const cookieStore = await cookies();
 
-    console.log(user, "user")
-
     // 1. Check email verification first — no point checking onboarding for an unverified account
     const userDetails = await getUserByIdAction(user.id, response?.accessToken as string);
 
