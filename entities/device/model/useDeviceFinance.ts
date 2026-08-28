@@ -1,8 +1,44 @@
 "use client";
 
 import { useServerActionMutation } from "@/shared/api/server-action-hooks";
-import { createDeviceFinanceAction, CreateDeviceFinanceDto } from "../api/device-finance.actions";
+import { useQuery } from "@tanstack/react-query";
+import { 
+  createDeviceFinanceAction, 
+  CreateDeviceFinanceDto,
+  getDeviceFinanceAction, 
+  markPlanAsPaidAction 
+} from "../api/device-finance.actions";
 
 export function useCreateDeviceFinance() {
   return useServerActionMutation((data: CreateDeviceFinanceDto) => createDeviceFinanceAction(data));
+}
+
+export function useDeviceFinanceDetails(id?: string) {
+  return useQuery({
+    queryKey: ["device-finance", id],
+    queryFn: async () => {
+      if (!id) return null;
+      const res = await getDeviceFinanceAction(id);
+      if (res?.data) return res.data;
+      return res;
+    },
+    enabled: !!id,
+  });
+}
+
+export function useMarkPlanAsPaid() {
+  return useServerActionMutation((installmentId: string) => markPlanAsPaidAction(installmentId));
+}
+
+import { checkDeviceFinanceUserAction } from "../api/device-finance-user.actions";
+
+export function useDeviceFinanceUserCheck() {
+  return useQuery({
+    queryKey: ["device-finance-user-check"],
+    queryFn: async () => {
+      const res = await checkDeviceFinanceUserAction();
+      if (res?.data) return res.data;
+      return res;
+    },
+  });
 }
