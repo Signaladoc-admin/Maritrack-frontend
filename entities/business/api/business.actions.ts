@@ -19,11 +19,12 @@ export async function getBusinessesAction(params?: QueryOptions): Promise<Busine
   return response.data;
 }
 
-export async function getBusinessAction(id: string) {
+export async function getBusinessAction(id: string, token?: string) {
   try {
     const res = await apiClient<ApiResponse<Business>>(`/businesses/${id}`, {
       method: "GET",
       noRedirect: true,
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
     return { success: true, data: res };
   } catch (error) {

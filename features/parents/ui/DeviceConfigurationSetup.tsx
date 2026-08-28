@@ -26,6 +26,9 @@ import CardHeader from "@/shared/ui/card-header";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import DeviceConfirmation from "../../onboarding/personal/ui/devices-control-setup/DeviceConfirmation";
 import ChildTransparency from "@/features/onboarding/personal/ui/devices-control-setup/ChildTransparency";
+import { RepaymentPlans } from "./RepaymentPlans";
+import { useDeviceFinanceUserCheck } from "@/entities/device/model/useDeviceFinance";
+import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 
 export type AppRole = "PARENT" | "BUSINESS";
 
@@ -222,9 +225,13 @@ export const devicesControlHeadings = {
 export default function DevicesConfigurationSetup({
   goToPrevStep,
   handleSubmit,
+  deviceId,
+  userId,
 }: {
   goToPrevStep?: () => void;
   handleSubmit?: () => void;
+  deviceId?: string;
+  userId?: string;
 }) {
   const { data: userProfile, isLoading: isLoadingUser } = useUserProfile();
   const parentId = userProfile?.parentId || "";
@@ -244,6 +251,14 @@ export default function DevicesConfigurationSetup({
   const { user } = useAuth();
   const appRole = (user?.appRole?.toUpperCase() as AppRole) || "PARENT";
   const isParent = appRole === "PARENT";
+
+  const {
+    data: hardwareData,
+    isLoading: isHardwarePending,
+    refetch: refetchDeviceDetail,
+  } = useDeviceDetail(deviceId || "", "hardware", { enabled: !!deviceId });
+
+  console.log('hardware: ', hardwareData)
 
   const methods = useForm<FormValues>({
     resolver: zodResolver(getFormSchema(appRole)),
@@ -406,7 +421,21 @@ export default function DevicesConfigurationSetup({
     }
   };
 
-  const isLoading = isLoadingUser || (parentId && isLoadingSettings) || isLoadingMe;
+  const { data: financeUsers, isLoading: isLoadingFinanceUsers } = useDeviceFinanceUserCheck();
+
+  const effectiveUserId = userId || userProfile?.id;
+
+  const currentDeviceFinanceUser = Array.isArray(financeUsers?.data)
+    ? financeUsers?.data?.find((u: any) => u.userId === effectiveUserId)
+    : null;
+
+  console.log('finance: ', hardwareData?.deviceDetail?.id)
+
+  const isDeviceFinanced = currentDeviceFinanceUser?.isDeviceFinanced;
+
+  console.log('device finance: ', isDeviceFinanced)
+
+  const isLoading = isLoadingUser || (parentId && isLoadingSettings) || isLoadingMe || isLoadingFinanceUsers;
 
   const isSubmitting = isCreating || isUpdating;
 
@@ -472,6 +501,10 @@ export default function DevicesConfigurationSetup({
           devicesControlHeadings.header[user?.appRole?.toUpperCase() as AppRole]?.description
         }
       />
+
+      {isDeviceFinanced && hardwareData?.deviceDetail?.id && (
+        <RepaymentPlans mdmDeviceId={hardwareData?.deviceDetail?.id} />
+      )}
 
       {isOnboardingPath && <LoaderModal open={isSubmitting} text="Setting up your account" />}
 

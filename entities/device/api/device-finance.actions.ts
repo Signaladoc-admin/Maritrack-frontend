@@ -28,3 +28,25 @@ export async function createDeviceFinanceAction(data: CreateDeviceFinanceDto) {
     return res;
   }, "Failed to create device finance plan");
 }
+
+export async function getDeviceFinanceAction(id: string) {
+  return withSafeAction(async () => {
+    const res = await apiClient(`/device-finance/${id}`, {
+      method: "GET",
+      noRedirect: true,
+    });
+    return res;
+  }, "Failed to fetch device finance details");
+}
+
+export async function markPlanAsPaidAction(installmentId: string) {
+  return withSafeAction(async () => {
+    const res = await apiClient(`/device-finance/installments/${installmentId}/pay`, {
+      method: "PATCH",
+      body: JSON.stringify({ amountKobo: 0 }),
+      headers: { "Content-Type": "application/json" },
+      noRedirect: true,
+    });
+    return res;
+  }, "Failed to mark plan as paid");
+}

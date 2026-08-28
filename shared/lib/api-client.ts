@@ -2,8 +2,20 @@
 
 import { redirect } from "next/navigation";
 import { refreshAccessToken } from "./api/refresh-token";
+import axios, { AxiosResponse } from "axios";
+import https from "https";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
+
+// Cloudflare drops Node 22's default TLS 1.3 ClientHello (due to Kyber cryptography fragmentation on some networks)
+// Forcing TLSv1.2 prevents the ECONNRESET socket disconnect error.
+// We also enable keepAlive: true to prevent "socket hang up" on sequential API calls.
+const httpsAgent = new https.Agent({ 
+  maxVersion: "TLSv1.2",
+  keepAlive: true,
+  keepAliveMsecs: 1000,
+  timeout: 5000, // Close idle sockets after 5s to prevent reusing dead Cloudflare sockets
+});
 
 let refreshPromise: Promise<string | null> | null = null;
 
@@ -62,24 +74,23 @@ export async function apiClient<T = any>(
     headers["Authorization"] = `Bearer ${accessToken}`;
   }
 
-  let response: Response;
+  let response: AxiosResponse;
   try {
-    response = await fetch(url, {
-      ...fetchOptions,
+    response = await axios({
+      url,
+      method: fetchOptions.method || "GET",
+      data: fetchOptions.body,
       headers,
-      cache: "no-store",
+      httpsAgent,
+      validateStatus: () => true, // Resolve promise for all HTTP status codes
     });
   } catch (error: any) {
     console.error(`[apiClient] Fetch error for ${url}:`, error);
-    const isNetworkError =
-      error?.message === "Failed to fetch" ||
-      error?.message === "fetch failed" ||
-      error?.name === "TypeError";
-    if (isNetworkError) {
-      throw new Error("No internet connection. Please check your network and try again.");
-    }
-    throw error;
+    // Axios throws on network errors, timeouts, CORS, etc. (since we bypass validateStatus for HTTP codes)
+    throw new Error("No internet connection. Please check your network and try again.");
   }
+
+  const isOk = response.status >= 200 && response.status < 300;
 
   if (
     response.status === 401 &&
@@ -109,10 +120,13 @@ export async function apiClient<T = any>(
 
       headers["Authorization"] = `Bearer ${newAccessToken}`;
 
-      response = await fetch(url, {
-        ...fetchOptions,
+      response = await axios({
+        url,
+        method: fetchOptions.method || "GET",
+        data: fetchOptions.body,
         headers,
-        cache: "no-store",
+        httpsAgent,
+        validateStatus: () => true,
       });
     } catch {
       if (isServer && cookieStore) {
@@ -125,8 +139,11 @@ export async function apiClient<T = any>(
     }
   }
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
+  // Check response OK after potential 401 retry
+  const isFinalOk = response.status >= 200 && response.status < 300;
+
+  if (!isFinalOk) {
+    const errorData = response.data || {};
     const message = errorData?.message;
 
     const errorMessage = Array.isArray(message)
@@ -134,19 +151,18 @@ export async function apiClient<T = any>(
       message.map((m: any) => (typeof m === "object" ? JSON.stringify(m) : String(m))).join(", ")
       : typeof message === "string"
         ? message
-        : response.statusText;
+        : response.statusText || `Request failed with status ${response.status}`;
 
-    throw new Error(errorMessage || response.statusText || "Request failed");
+    throw new Error(errorMessage);
   }
 
-  const parsedResponse = await response.json();
+  // Axios automatically parses JSON to response.data
+  // If it was text, it will be a string. But assuming parsed JSON.
+  const parsedResponse = typeof response.data === "string" && response.data.trim().startsWith("{") 
+    ? JSON.parse(response.data) 
+    : response.data;
 
   // Persist both tokens to httpOnly cookies so server actions can authenticate.
-  // The access token is also returned to the client (via loginAction) to be stored in Zustand,
-  // keeping both in sync from the same source value.
-  //
-  // Login response:   { accessToken: "...", data: { refresh_token: "..." } }
-  // Refresh response: { data: { access_token: "...", refresh_token: "..." }, accessToken: null }
   if (isServer && cookieStore) {
     const accessToken =
       parsedResponse.accessToken || // login: top-level camelCase
