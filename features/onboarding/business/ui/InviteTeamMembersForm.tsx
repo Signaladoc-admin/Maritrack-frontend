@@ -15,6 +15,9 @@ export interface TeamMember {
   id: string;
   email: string;
   location: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
 }
 
 export default function InviteTeamMembersForm({
@@ -27,10 +30,13 @@ export default function InviteTeamMembersForm({
 
   const [newTeamMembers, setNewTeamMembers] = useState<TeamMember[]>([]);
   const formattedExistingTeamMembers: TeamMember[] = (existingTeamMembers || []).map(
-    (member) => ({
+    (member: any) => ({
       id: member.id,
       email: member.user?.email || "",
       location: member.location || "",
+      firstName: member.user?.firstName || "",
+      lastName: member.user?.lastName || "",
+      phone: member.user?.phone || "",
     })
   );
 
@@ -50,6 +56,9 @@ export default function InviteTeamMembersForm({
       id: crypto.randomUUID(),
       email: data.email,
       location: data.location,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      phone: data.phone,
     };
     setNewTeamMembers((prev) => [newMember, ...prev]);
   }
@@ -63,12 +72,12 @@ export default function InviteTeamMembersForm({
       const payload = newTeamMembers.map((m) => ({
         email: m.email,
         location: m.location,
-        firstName: "",
-        lastName: "",
+        firstName: m.firstName,
+        lastName: m.lastName,
         departmentId: "",
         businessRole: BusinessRoleEnum.DEPARTMENT_MANAGER,
         position: "",
-        phone: "",
+        phone: m.phone,
       }));
 
       await createStaffMembers(payload);

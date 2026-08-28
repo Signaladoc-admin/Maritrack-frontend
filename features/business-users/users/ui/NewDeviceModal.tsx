@@ -10,6 +10,18 @@ import { useStaffMembersInfinite } from "@/entities/business/model/useTeamMember
 import { useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 import BusinessPairingQR from "@/entities/business/ui/PairingQRBusinessModal";
+import { useGetFullBusinessDetails } from "@/features/onboarding/business/model/useGetBusinessDetails";
+import { useCreateDeviceFinance } from "@/entities/device/model/useDeviceFinance";
+import { Input } from "@/shared/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
+import { Checkbox } from "@/shared/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
+import { Calendar } from "@/shared/ui/calendar";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/ui/button";
+import { Country, State } from "country-state-city";
 
 function StaffOptionContent({ staff }: { staff: BusinessStaff }) {
   const firstName = staff.user?.firstName ?? "";
@@ -71,10 +83,25 @@ export default function NewDeviceModal({
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   }
 
-  const { formState, handleSubmit, reset, control } = useForm<AssignDeviceToUserValues>({
-    defaultValues: { staffId: "" },
+  const { formState, handleSubmit, reset, control, watch, setValue } = useForm<AssignDeviceToUserValues>({
+    defaultValues: { staffId: "", underPaymentPlan: false, transFer: false },
     resolver: zodResolver(assignDeviceToUserSchema),
   });
+
+  const underPaymentPlan = watch("underPaymentPlan");
+  const transFer = watch("transFer");
+  const watchCountry = watch("country");
+
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
+  const countriesList = useMemo(() => Country.getAllCountries().map(c => ({ label: c.name, value: c.name })), []);
+  const selectedCountryIso = useMemo(() => Country.getAllCountries().find(c => c.name === watchCountry)?.isoCode, [watchCountry]);
+  const statesList = useMemo(() => selectedCountryIso ? State.getStatesOfCountry(selectedCountryIso).map(s => ({ label: s.name, value: s.name })) : [], [selectedCountryIso]);
+
+  const { business } = useGetFullBusinessDetails();
+  const isDeviceFinance = (business?.profile as any)?.type === "DEVICE_FINANCING";
+
+  const { mutateAsync: createDeviceFinance, isPending: isFinancing } = useCreateDeviceFinance();
 
   function handleClose() {
     reset();
@@ -90,12 +117,38 @@ export default function NewDeviceModal({
 
   const isPairStep = step === "pair-device";
 
-  function onSubmit(data: AssignDeviceToUserValues) {
+  async function onSubmit(data: AssignDeviceToUserValues) {
     const staff = staffById.get(data.staffId);
     if (!staff) {
       toast({ type: "error", title: "Selected staff member not found" });
       return;
     }
+
+    if (isDeviceFinance && data.underPaymentPlan) {
+      try {
+        await createDeviceFinance({
+          deviceFinanceUserId: staff.id,
+          devicePriceInKobo: Number(data.devicePriceInKobo) * 100,
+          downPaymentInKobo: data.downPaymentInKobo ? Number(data.downPaymentInKobo) * 100 : 0,
+          monthlyPaymentInKobo: Number(data.monthlyPaymentInKobo) * 100,
+          paymentPlanDuration: Number(data.paymentPlanDuration),
+          gracePeriodInDays: data.gracePeriodInDays ? Number(data.gracePeriodInDays) : 0,
+          paymentStartDate: new Date(data.paymentStartDate!).toISOString(),
+          transFer: data.transFer,
+          gender: data.gender,
+          address: data.address,
+          state: data.state,
+          country: data.country,
+        });
+
+        
+        toast({ type: "success", title: "Payment plan initiated successfully" });
+      } catch (error: any) {
+        toast({ type: "error", title: error?.message || "Failed to initiate payment plan" });
+        return; // Don't proceed to QR code if finance creation fails
+      }
+    }
+
     onSelectStaff(staff);
   }
 
@@ -116,7 +169,7 @@ export default function NewDeviceModal({
             control={control}
             name="staffId"
             render={({ field }) => (
-              <InputGroup label="Staff member" error={formState.errors.staffId?.message}>
+              <InputGroup label={isDeviceFinance ? "User" : "Staff member"} error={formState.errors.staffId?.message}>
                 <SearchableSelect
                   options={staffMemberOptions}
                   placeholder="Search by name, email or location"
@@ -135,6 +188,207 @@ export default function NewDeviceModal({
               </InputGroup>
             )}
           />
+
+          {isDeviceFinance && (
+            <div className="space-y-5 pt-2">
+              <Controller
+                control={control}
+                name="underPaymentPlan"
+                render={({ field }) => (
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-slate-700">Is this device under a payment plan?</label>
+                    <div className="flex items-center gap-6">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox
+                          checked={field.value === false}
+                          onCheckedChange={() => field.onChange(false)}
+                          className="rounded-sm"
+                        />
+                        <span className="text-sm text-slate-700">No</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox
+                          checked={field.value === true}
+                          onCheckedChange={() => field.onChange(true)}
+                          className="rounded-sm"
+                        />
+                        <span className="text-sm text-slate-700">Yes</span>
+                      </label>
+                    </div>
+                  </div>
+                )}
+              />
+
+              {underPaymentPlan && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <Controller
+                      control={control}
+                      name="devicePriceInKobo"
+                      render={({ field }) => (
+                        <InputGroup label="Device price (₦)" error={formState.errors.devicePriceInKobo?.message}>
+                          <Input type="number" placeholder="₦0.00" {...field} value={field.value ?? ""} />
+                        </InputGroup>
+                      )}
+                    />
+                    <Controller
+                      control={control}
+                      name="downPaymentInKobo"
+                      render={({ field }) => (
+                        <InputGroup label="Initial payment (₦)" error={formState.errors.downPaymentInKobo?.message}>
+                          <Input type="number" placeholder="₦0.00" {...field} value={field.value ?? ""} />
+                        </InputGroup>
+                      )}
+                    />
+                    <Controller
+                      control={control}
+                      name="monthlyPaymentInKobo"
+                      render={({ field }) => (
+                        <InputGroup label="Monthly payment (₦)" error={formState.errors.monthlyPaymentInKobo?.message}>
+                          <Input type="number" placeholder="₦0.00" {...field} value={field.value ?? ""} />
+                        </InputGroup>
+                      )}
+                    />
+                    <Controller
+                      control={control}
+                      name="paymentPlanDuration"
+                      render={({ field }) => (
+                        <InputGroup label="Repayment duration" helpText="in months" error={formState.errors.paymentPlanDuration?.message}>
+                          <Input type="number" placeholder="0" {...field} value={field.value ?? ""} />
+                        </InputGroup>
+                      )}
+                    />
+                    <Controller
+                      control={control}
+                      name="gracePeriodInDays"
+                      render={({ field }) => (
+                        <InputGroup label="Grace period (in days)" error={formState.errors.gracePeriodInDays?.message}>
+                          <Input type="number" placeholder="0" {...field} value={field.value ?? ""} />
+                        </InputGroup>
+                      )}
+                    />
+                    <Controller
+                      control={control}
+                      name="paymentStartDate"
+                      render={({ field }) => (
+                        <InputGroup label="Payment start date" error={formState.errors.paymentStartDate?.message}>
+                          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full justify-start text-left font-normal bg-[#fafafa] border-[#E5E7EB] h-12 rounded-xl text-slate-800 hover:bg-[#fafafa]",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {field.value ? format(new Date(field.value), "PPP") : <span>Pick a date</span>}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0 bg-white" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value ? new Date(field.value) : undefined}
+                                onSelect={(date) => {
+                                  field.onChange(date ? date.toISOString() : undefined);
+                                  setIsCalendarOpen(false);
+                                }}
+                                disabled={{ before: new Date(new Date().setHours(0, 0, 0, 0)) }}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </InputGroup>
+                      )}
+                    />
+                  </div>
+
+                  <Controller
+                    control={control}
+                    name="transFer"
+                    render={({ field }) => (
+                      <div className="flex items-center gap-2 pt-2">
+                        <Checkbox
+                          id="transfer-profile-new"
+                          checked={field.value === true}
+                          onCheckedChange={field.onChange}
+                          className="rounded-sm"
+                        />
+                        <label htmlFor="transfer-profile-new" className="text-sm text-slate-700 cursor-pointer">
+                          Transfer user profile to flentra after payment is completed
+                        </label>
+                      </div>
+                    )}
+                  />
+
+                  {transFer && (
+                    <div className="grid grid-cols-2 gap-4 border-t border-slate-200 pt-4">
+                      <Controller
+                        control={control}
+                        name="gender"
+                        render={({ field }) => (
+                          <InputGroup label="Gender" error={formState.errors.gender?.message}>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select Gender" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="MALE">Male</SelectItem>
+                                <SelectItem value="FEMALE">Female</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </InputGroup>
+                        )}
+                      />
+                      <Controller
+                        control={control}
+                        name="address"
+                        render={({ field }) => (
+                          <InputGroup label="Address" error={formState.errors.address?.message}>
+                            <Input placeholder="Enter address" {...field} value={field.value ?? ""} />
+                          </InputGroup>
+                        )}
+                      />
+                      <Controller
+                        control={control}
+                        name="country"
+                        render={({ field }) => (
+                          <InputGroup label="Country" error={formState.errors.country?.message}>
+                            <SearchableSelect
+                              options={countriesList}
+                              placeholder="Select country"
+                              value={field.value}
+                              onValueChange={(val) => {
+                                field.onChange(val);
+                                setValue("state", "");
+                              }}
+                              isSearchable={true}
+                            />
+                          </InputGroup>
+                        )}
+                      />
+                      <Controller
+                        control={control}
+                        name="state"
+                        render={({ field }) => (
+                          <InputGroup label="State" error={formState.errors.state?.message}>
+                            <SearchableSelect
+                              options={statesList}
+                              placeholder="Select state"
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              disabled={!watchCountry || statesList.length === 0}
+                              isSearchable={true}
+                            />
+                          </InputGroup>
+                        )}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </form>
       )}
 

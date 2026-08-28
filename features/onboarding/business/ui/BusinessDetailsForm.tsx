@@ -16,46 +16,6 @@ import { useToast } from "@/shared/ui/toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { BusinessProfile } from "@/entities/business/types";
 import { useAuth } from "@/shared/auth/AuthProvider";
-import {
-  useGetDepartments,
-  useCreateDepartment,
-  useDeleteDepartment,
-} from "@/features/business-users/departments/model/useDepartments";
-import {
-  useGetLocations,
-  useCreateLocation,
-  useDeleteLocation,
-} from "@/features/business-users/locations/model/useLocations";
-
-/**
- * Reconciles a list of tag names against the existing entities behind them. Names that
- * aren't backed by an entity yet get created; entities whose name was removed get deleted.
- * A rename therefore reads as a delete + create (a fresh entity, by design). Used to keep
- * departments and locations — which are real entities with ids — in sync with the simple
- * string tags the form edits.
- */
-async function reconcileNamedEntities<T extends { id: string; name: string }>({
-  submitted,
-  existing,
-  create,
-  remove,
-}: {
-  submitted: string[];
-  existing: T[];
-  create: (name: string) => Promise<unknown>;
-  remove: (id: string) => Promise<unknown>;
-}) {
-  const submittedNames = submitted.map((name) => name.trim()).filter(Boolean);
-  const existingNames = existing.map((entity) => entity.name);
-
-  const toCreate = submittedNames.filter((name) => !existingNames.includes(name));
-  const toRemove = existing.filter((entity) => !submittedNames.includes(entity.name));
-
-  await Promise.all([
-    ...toCreate.map((name) => create(name)),
-    ...toRemove.map((entity) => remove(entity.id)),
-  ]);
-}
 
 function BusinessDetailsFormSkeleton() {
   return (
@@ -112,6 +72,7 @@ export default function BusinessDetailsForm({
     resolver: zodResolver(businessDetailsSchema),
     defaultValues: {
       profile: "",
+      type: undefined,
       departments: [],
       locations: [],
     },
@@ -125,73 +86,39 @@ export default function BusinessDetailsForm({
   const { user } = useAuth();
   const businessId = user?.businessId;
 
-  // Departments and locations are real entities (id/createdAt/…), so they're fetched and
-  // saved through their own endpoints — NOT as the string arrays the business-profiles
-  // endpoint stores. The form still edits them as simple name tags; we map to/from entities.
-  const { data: departmentsData, isLoading: isLoadingDepartments } = useGetDepartments(
-    { businessId: businessId!, page: 1, limit: 100 },
-    { enabled: !!businessId }
-  );
-  const { data: locationsData, isLoading: isLoadingLocations } = useGetLocations(
-    { businessId: businessId!, page: 1, limit: 100 },
-    { enabled: !!businessId }
-  );
-
-  const existingDepartments = departmentsData?.departments ?? [];
-  const existingLocations = locationsData?.locations ?? [];
-
   const { mutateAsync: createBusinessProfile } = useCreateBusinessProfile();
   const { mutateAsync: updateBusinessProfile } = useUpdateBusinessProfile();
-  const { mutateAsync: createDepartment } = useCreateDepartment();
-  const { mutateAsync: deleteDepartment } = useDeleteDepartment();
-  const { mutateAsync: createLocation } = useCreateLocation();
-  const { mutateAsync: deleteLocation } = useDeleteLocation();
 
-  const isLoading = isLoadingBusinessProfile || isLoadingDepartments || isLoadingLocations;
+  const isLoading = isLoadingBusinessProfile;
 
-  // Seed the form once everything has loaded. Guarded so a background refetch (which our
-  // own create/delete mutations trigger) can't clobber the user's in-progress tag edits.
+  // Seed the form once everything has loaded.
   const seededRef = useRef(false);
   useEffect(() => {
     if (seededRef.current || isLoading) return;
     reset({
       profile: businessProfile?.profile ?? "",
-      departments: existingDepartments.map((department) => department.name),
-      locations: existingLocations.map((location) => location.name),
+      type: (businessProfile as any)?.type ?? undefined,
+      departments: businessProfile?.departments ?? [],
+      locations: businessProfile?.locations ?? [],
     });
     seededRef.current = true;
-  }, [isLoading, businessProfile, existingDepartments, existingLocations, reset]);
+  }, [isLoading, businessProfile, reset]);
 
   if (isLoading) {
     return <BusinessDetailsFormSkeleton />;
   }
 
   async function onSubmit(data: BusinessDetailsSchemaValues) {
+    
     if (!businessId) {
       toast({ type: "error", title: "Error", message: "Missing business context" });
       return;
     }
 
     try {
-      // Three independent saves: (1) profile-only to business-profiles, plus (2) departments
-      // and (3) locations reconciled as standalone entities through their own endpoints.
-      await Promise.all([
-        businessProfile
-          ? updateBusinessProfile({ id: businessProfile.id, profile: data.profile })
-          : createBusinessProfile({ profile: data.profile }),
-        reconcileNamedEntities({
-          submitted: data.departments ?? [],
-          existing: existingDepartments,
-          create: (name) => createDepartment({ name, businessId }),
-          remove: (id) => deleteDepartment(id),
-        }),
-        reconcileNamedEntities({
-          submitted: data.locations ?? [],
-          existing: existingLocations,
-          create: (name) => createLocation({ name, businessId }),
-          remove: (id) => deleteLocation(id),
-        }),
-      ]);
+      await (businessProfile
+        ? updateBusinessProfile({ id: businessProfile.id, profile: data.profile, type: data.type, departments: data.departments, locations: data.locations })
+        : createBusinessProfile({ profile: data.profile, type: data.type, departments: data.departments, locations: data.locations }));
 
       // Invalidate current business to refresh profile info
       queryClient.invalidateQueries({ queryKey: ["businesses"] });
@@ -230,6 +157,24 @@ export default function BusinessDetailsForm({
           placeholder="Enter your business profile"
           {...register("profile")}
           error={errors.profile?.message}
+        />
+
+        <Controller
+          control={control}
+          name="type"
+          render={({ field }) => (
+            <InputGroup
+              label="Business type"
+              type="select"
+              placeholder="Select your business type"
+              options={[
+                { value: "DEVICE_FINANCING", label: "Device Financing" },
+                { value: "ENTERPRISE_DEVICE_MANAGEMENT", label: "Enterprise Device Management" },
+              ]}
+              error={errors.type?.message}
+              {...field}
+            />
+          )}
         />
 
         <div>
