@@ -5,6 +5,25 @@ import { refreshAccessToken } from "./api/refresh-token";
 import axios, { AxiosResponse } from "axios";
 import https from "https";
 
+function decodeJwt(token: string) {
+  try {
+    const base64Url = token.split('.')[1];
+    if (!base64Url) return null;
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    let jsonPayload;
+    if (typeof Buffer !== 'undefined') {
+      jsonPayload = Buffer.from(base64, 'base64').toString('utf8');
+    } else {
+      jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+    }
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
+  }
+}
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
 
 // Cloudflare drops Node 22's default TLS 1.3 ClientHello (due to Kyber cryptography fragmentation on some networks)
@@ -13,8 +32,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
 const httpsAgent = new https.Agent({
   maxVersion: "TLSv1.2",
   keepAlive: true,
-  keepAliveMsecs: 1000,
-  timeout: 5000, // Close idle sockets after 5s to prevent reusing dead Cloudflare sockets
+  scheduling: "lifo", // Re-use most recently used sockets first to avoid Cloudflare idle disconnects
 });
 
 let refreshPromise: Promise<string | null> | null = null;
@@ -74,6 +92,50 @@ export async function apiClient<T = any>(
   }
 
   if (accessToken && !skipAuth) {
+    const payload = decodeJwt(accessToken);
+    if (payload && payload.exp && !endpoint.includes("/login") && !endpoint.includes("/refresh")) {
+      const now = Math.floor(Date.now() / 1000);
+      const timeLeft = payload.exp - now;
+
+      if (timeLeft <= 0) {
+        if (isServer && cookieStore) {
+          cookieStore.delete("accessToken");
+          cookieStore.delete("refreshToken");
+          cookieStore.delete("isEmailVerified");
+          cookieStore.delete("isOnboarded");
+        }
+        redirect("/login");
+      } else if (timeLeft < 3 * 60) {
+        try {
+          if (!refreshPromise) {
+            refreshPromise = refreshAccessToken().finally(() => {
+              refreshPromise = null;
+            });
+          }
+          const newAccessToken = await refreshPromise;
+          if (newAccessToken) {
+            accessToken = newAccessToken;
+          } else {
+            if (isServer && cookieStore) {
+              cookieStore.delete("accessToken");
+              cookieStore.delete("refreshToken");
+              cookieStore.delete("isEmailVerified");
+              cookieStore.delete("isOnboarded");
+            }
+            redirect("/login");
+          }
+        } catch {
+          if (isServer && cookieStore) {
+            cookieStore.delete("accessToken");
+            cookieStore.delete("refreshToken");
+            cookieStore.delete("isEmailVerified");
+            cookieStore.delete("isOnboarded");
+          }
+          redirect("/login");
+        }
+      }
+    }
+
     headers["Authorization"] = `Bearer ${accessToken}`;
   }
 
@@ -85,12 +147,15 @@ export async function apiClient<T = any>(
       data: fetchOptions.body,
       headers,
       httpsAgent,
+      timeout: 30000, // 30 seconds request timeout to prevent hanging
       validateStatus: () => true, // Resolve promise for all HTTP status codes
     });
   } catch (error: any) {
     console.error(`[apiClient] Fetch error for ${url}:`, error);
     // Axios throws on network errors, timeouts, CORS, etc. (since we bypass validateStatus for HTTP codes)
-    throw new Error("No internet connection. Please check your network and try again.");
+    const err: any = new Error("No internet connection. Please check your network and try again.");
+    err.isNetworkError = true;
+    throw err;
   }
 
   const isOk = response.status >= 200 && response.status < 300;
@@ -129,6 +194,7 @@ export async function apiClient<T = any>(
         data: fetchOptions.body,
         headers,
         httpsAgent,
+        timeout: 30000,
         validateStatus: () => true,
       });
     } catch {
@@ -156,7 +222,11 @@ export async function apiClient<T = any>(
         ? message
         : response.statusText || `Request failed with status ${response.status}`;
 
-    throw new Error(errorMessage);
+    const error: any = new Error(errorMessage);
+    error.isBackendError = true;
+    error.status = response.status;
+    error.responseData = response.data;
+    throw error;
   }
 
   // Axios automatically parses JSON to response.data

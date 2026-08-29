@@ -23,14 +23,14 @@ const ACTION_CONFIG = {
     isDestructive: true,
   },
   lock: {
-    actionId: 201,
+    actionId: 401,
     title: "Are you sure you want to lock these devices?",
     buttonText: "Lock devices",
     successMessage: "Devices locked successfully",
     isDestructive: true,
   },
   unlock: {
-    actionId: 401,
+    actionId: 201,
     title: "Are you sure you want to unlock these devices?",
     buttonText: "Unlock Devices",
     successMessage: "Devices unlocked successfully",
