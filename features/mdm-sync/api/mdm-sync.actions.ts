@@ -227,11 +227,22 @@ export async function lockDeviceAction({
   deviceId,
 }: DeviceActionVariables): Promise<ActionResult<any>> {
   return withSafeAction(
-    async () =>
-      await apiClient(`/mdm-sync/${deviceId}/action`, {
-        method: "POST",
-        body: JSON.stringify({ deviceIds: [deviceId], actionId: 401, message: "NA" }),
-      }),
+    async () => {
+      const payload = {
+        actionId: 401
+      };
+      try {
+        const response = await apiClient(`/mdm-sync/${deviceId}/action`, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        return response;
+      } catch (error: any) {
+        const source = error?.isBackendError ? "BACKEND" : error?.isNetworkError ? "NETWORK" : "FRONTEND";
+        console.error(`lockDeviceAction [${source} ERROR]:`, error?.message || error, error?.responseData || "");
+        throw error;
+      }
+    },
     "Failed to lock device"
   );
 }
@@ -240,11 +251,22 @@ export async function unlockDeviceAction({
   deviceId,
 }: DeviceActionVariables): Promise<ActionResult<any>> {
   return withSafeAction(
-    async () =>
-      await apiClient(`/mdm-sync/${deviceId}/action`, {
-        method: "POST",
-        body: JSON.stringify({ deviceIds: [deviceId], actionId: 201, message: "NA" }),
-      }),
+    async () => {
+      const payload = {
+        actionId: 201
+      };
+      try {
+        const response = await apiClient(`/mdm-sync/${deviceId}/action`, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        return response;
+      } catch (error: any) {
+        const source = error?.isBackendError ? "BACKEND" : error?.isNetworkError ? "NETWORK" : "FRONTEND";
+        console.error(`unlockDeviceAction [${source} ERROR]:`, error?.message || error, error?.responseData || "");
+        throw error;
+      }
+    },
     "Failed to unlock device"
   );
 }
@@ -253,11 +275,22 @@ export async function wipeDeviceAction({
   deviceId,
 }: DeviceActionVariables): Promise<ActionResult<any>> {
   return withSafeAction(
-    async () =>
-      await apiClient(`/mdm-sync/${deviceId}/action`, {
-        method: "POST",
-        body: JSON.stringify({ deviceIds: [deviceId], actionId: 8, message: "NA" }),
-      }),
+    async () => {
+      const payload = {
+        actionId: 8
+      };
+      try {
+        const response = await apiClient(`/mdm-sync/${deviceId}/action`, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        return response;
+      } catch (error: any) {
+        const source = error?.isBackendError ? "BACKEND" : error?.isNetworkError ? "NETWORK" : "FRONTEND";
+        console.error(`wipeDeviceAction [${source} ERROR]:`, error?.message || error, error?.responseData || "");
+        throw error;
+      }
+    },
     "Failed to wipe device"
   );
 }

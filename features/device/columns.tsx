@@ -12,6 +12,7 @@ export function getDevicesColumns(
   businessRole: BusinessRole,
   onShowToast: (message: string) => void
 ) {
+
   const devicesColumns: TableColumn<StaffDevice>[] = [
     {
       key: "asset",
@@ -70,6 +71,11 @@ export function getDevicesColumns(
       key: "imei",
       label: "IMEI",
       render: (item) => <p>{item.imei}</p>,
+    },
+    {
+      key: "deviceStatus",
+      label: "Status",
+      render: (item) => <p>{item.deviceStatus}</p>,
     },
     {
       key: "serialNumber",

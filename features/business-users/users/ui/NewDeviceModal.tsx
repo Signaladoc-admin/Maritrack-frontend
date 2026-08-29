@@ -277,12 +277,14 @@ export default function NewDeviceModal({
                               <Button
                                 variant={"outline"}
                                 className={cn(
-                                  "w-full justify-start text-left font-normal bg-[#fafafa] border-[#E5E7EB] h-12 rounded-xl text-slate-800 hover:bg-[#fafafa]",
+                                  "w-full justify-start text-left font-normal bg-[#fafafa] border-[#E5E7EB] h-12 rounded-xl text-slate-800 hover:bg-[#fafafa] overflow-hidden",
                                   !field.value && "text-muted-foreground"
                                 )}
                               >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {field.value ? format(new Date(field.value), "PPP") : <span>Pick a date</span>}
+                                <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+                                <span className="truncate">
+                                  {field.value ? format(new Date(field.value), "PP") : "Pick a date"}
+                                </span>
                               </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0 bg-white" align="start">
