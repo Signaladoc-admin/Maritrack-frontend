@@ -53,14 +53,20 @@ export function useBlacklistedWebsites() {
 
     for (const q of restrictionsQueries) {
       const restrictions = q.data as Restrictions | null;
-      for (const d of restrictions?.domains ?? []) {
-        if (!d.domain) continue;
-        const key = d.domain.toLowerCase().replace(/^www\./, "");
+      for (const item of restrictions?.domains ?? []) {
+        // Handle both string and object cases at runtime since backend returns objects
+        // but TS types it as string[] to match the mutation payload
+        const d = item as any;
+        const domainStr = typeof d === "string" ? d : d?.domain;
+        const nameStr = typeof d === "string" ? "—" : d?.name ?? "—";
+
+        if (!domainStr) continue;
+        const key = domainStr.toLowerCase().replace(/^www\./, "");
         const existing = map.get(key);
         if (existing) {
           existing.count += 1;
         } else {
-          map.set(key, { name: d.name ?? "—", count: 1 });
+          map.set(key, { name: nameStr, count: 1 });
         }
       }
     }
