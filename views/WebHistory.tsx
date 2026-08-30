@@ -65,7 +65,7 @@ const WebHistory = () => {
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8 bg-white p-6 sm:p-8 rounded-[32px] shadow-sm border border-gray-100">
+    <div className="w-full space-y-8 bg-white p-6 sm:p-8 rounded-[32px] border border-gray-200">
       <div>
         <h2 className="text-2xl font-bold text-[#1b3c73] mb-2">Blocked websites</h2>
         <p className="text-sm text-slate-500">
