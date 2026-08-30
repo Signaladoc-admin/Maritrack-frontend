@@ -2,8 +2,38 @@
 
 import { redirect } from "next/navigation";
 import { refreshAccessToken } from "./api/refresh-token";
+import axios, { AxiosResponse } from "axios";
+import https from "https";
+
+function decodeJwt(token: string) {
+  try {
+    const base64Url = token.split('.')[1];
+    if (!base64Url) return null;
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    let jsonPayload;
+    if (typeof Buffer !== 'undefined') {
+      jsonPayload = Buffer.from(base64, 'base64').toString('utf8');
+    } else {
+      jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+    }
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
+  }
+}
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
+
+// Cloudflare drops Node 22's default TLS 1.3 ClientHello (due to Kyber cryptography fragmentation on some networks)
+// Forcing TLSv1.2 prevents the ECONNRESET socket disconnect error.
+// We also enable keepAlive: true to prevent "socket hang up" on sequential API calls.
+const httpsAgent = new https.Agent({
+  maxVersion: "TLSv1.2",
+  keepAlive: true,
+  scheduling: "lifo", // Re-use most recently used sockets first to avoid Cloudflare idle disconnects
+});
 
 let refreshPromise: Promise<string | null> | null = null;
 
@@ -56,30 +86,79 @@ export async function apiClient<T = any>(
 
   if (!(fetchOptions.body instanceof FormData) && !headers["Content-Type"]) {
     headers["Content-Type"] = "application/json";
+    if (typeof fetchOptions.body === "string") {
+      headers["Content-Length"] = String(Buffer.byteLength(fetchOptions.body));
+    }
   }
 
   if (accessToken && !skipAuth) {
+    const payload = decodeJwt(accessToken);
+    if (payload && payload.exp && !endpoint.includes("/login") && !endpoint.includes("/refresh")) {
+      const now = Math.floor(Date.now() / 1000);
+      const timeLeft = payload.exp - now;
+
+      if (timeLeft <= 0) {
+        if (isServer && cookieStore) {
+          cookieStore.delete("accessToken");
+          cookieStore.delete("refreshToken");
+          cookieStore.delete("isEmailVerified");
+          cookieStore.delete("isOnboarded");
+        }
+        redirect("/login");
+      } else if (timeLeft < 3 * 60) {
+        try {
+          if (!refreshPromise) {
+            refreshPromise = refreshAccessToken().finally(() => {
+              refreshPromise = null;
+            });
+          }
+          const newAccessToken = await refreshPromise;
+          if (newAccessToken) {
+            accessToken = newAccessToken;
+          } else {
+            if (isServer && cookieStore) {
+              cookieStore.delete("accessToken");
+              cookieStore.delete("refreshToken");
+              cookieStore.delete("isEmailVerified");
+              cookieStore.delete("isOnboarded");
+            }
+            redirect("/login");
+          }
+        } catch {
+          if (isServer && cookieStore) {
+            cookieStore.delete("accessToken");
+            cookieStore.delete("refreshToken");
+            cookieStore.delete("isEmailVerified");
+            cookieStore.delete("isOnboarded");
+          }
+          redirect("/login");
+        }
+      }
+    }
+
     headers["Authorization"] = `Bearer ${accessToken}`;
   }
 
-  let response: Response;
+  let response: AxiosResponse;
   try {
-    response = await fetch(url, {
-      ...fetchOptions,
+    response = await axios({
+      url,
+      method: fetchOptions.method || "GET",
+      data: fetchOptions.body,
       headers,
-      cache: "no-store",
+      httpsAgent,
+      timeout: 30000, // 30 seconds request timeout to prevent hanging
+      validateStatus: () => true, // Resolve promise for all HTTP status codes
     });
   } catch (error: any) {
     console.error(`[apiClient] Fetch error for ${url}:`, error);
-    const isNetworkError =
-      error?.message === "Failed to fetch" ||
-      error?.message === "fetch failed" ||
-      error?.name === "TypeError";
-    if (isNetworkError) {
-      throw new Error("No internet connection. Please check your network and try again.");
-    }
-    throw error;
+    // Axios throws on network errors, timeouts, CORS, etc. (since we bypass validateStatus for HTTP codes)
+    const err: any = new Error("No internet connection. Please check your network and try again.");
+    err.isNetworkError = true;
+    throw err;
   }
+
+  const isOk = response.status >= 200 && response.status < 300;
 
   if (
     response.status === 401 &&
@@ -109,10 +188,14 @@ export async function apiClient<T = any>(
 
       headers["Authorization"] = `Bearer ${newAccessToken}`;
 
-      response = await fetch(url, {
-        ...fetchOptions,
+      response = await axios({
+        url,
+        method: fetchOptions.method || "GET",
+        data: fetchOptions.body,
         headers,
-        cache: "no-store",
+        httpsAgent,
+        timeout: 30000,
+        validateStatus: () => true,
       });
     } catch {
       if (isServer && cookieStore) {
@@ -125,8 +208,11 @@ export async function apiClient<T = any>(
     }
   }
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
+  // Check response OK after potential 401 retry
+  const isFinalOk = response.status >= 200 && response.status < 300;
+
+  if (!isFinalOk) {
+    const errorData = response.data || {};
     const message = errorData?.message;
 
     const errorMessage = Array.isArray(message)
@@ -134,19 +220,22 @@ export async function apiClient<T = any>(
       message.map((m: any) => (typeof m === "object" ? JSON.stringify(m) : String(m))).join(", ")
       : typeof message === "string"
         ? message
-        : response.statusText;
+        : response.statusText || `Request failed with status ${response.status}`;
 
-    throw new Error(errorMessage || response.statusText || "Request failed");
+    const error: any = new Error(errorMessage);
+    error.isBackendError = true;
+    error.status = response.status;
+    error.responseData = response.data;
+    throw error;
   }
 
-  const parsedResponse = await response.json();
+  // Axios automatically parses JSON to response.data
+  // If it was text, it will be a string. But assuming parsed JSON.
+  const parsedResponse = typeof response.data === "string" && response.data.trim().startsWith("{")
+    ? JSON.parse(response.data)
+    : response.data;
 
   // Persist both tokens to httpOnly cookies so server actions can authenticate.
-  // The access token is also returned to the client (via loginAction) to be stored in Zustand,
-  // keeping both in sync from the same source value.
-  //
-  // Login response:   { accessToken: "...", data: { refresh_token: "..." } }
-  // Refresh response: { data: { access_token: "...", refresh_token: "..." }, accessToken: null }
   if (isServer && cookieStore) {
     const accessToken =
       parsedResponse.accessToken || // login: top-level camelCase

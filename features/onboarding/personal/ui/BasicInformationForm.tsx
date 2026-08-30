@@ -173,7 +173,7 @@ export default function BasicInformationForm({ goToNextStep }: { goToNextStep: (
 
   return (
     <div className="relative space-y-4">
-      <Header title="Hi Grace, Tell us about you" subtitle="Give us more information about you" />
+      <Header title="Hi, Tell us about you" subtitle="Give us more information about you" />
       <form
         onSubmit={handleSubmit(onSubmit)}
         className={cn("space-y-7 transition-opacity duration-300", {

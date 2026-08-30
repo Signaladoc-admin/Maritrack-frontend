@@ -22,7 +22,10 @@ export default function UsersList({
     page: currentPage,
     limit: 5,
   });
-  const staffMembers = usersData?.data?.staff || [];
+  const dataPayload = usersData?.data as any;
+  const staffMembers = Array.isArray(dataPayload) 
+    ? dataPayload 
+    : (dataPayload?.staff || dataPayload?.deviceFinanceUsers || []);
 
   useEffect(() => {
     if (usersData?.data?.totalPages !== undefined) {
@@ -52,7 +55,7 @@ export default function UsersList({
         ))
       ) : (
         <div className="text-muted-foreground flex h-full items-center justify-center">
-          No staff members found
+          No users found
         </div>
       )}
     </div>

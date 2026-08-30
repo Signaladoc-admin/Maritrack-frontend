@@ -11,6 +11,7 @@ import { UserRole } from "@/features/user-management/model/types";
 export interface BusinessProfileData extends BaseEntity {
   id: string;
   profile: string;
+  type: string;
   departments: string[];
   locations: string[];
   business: Business;

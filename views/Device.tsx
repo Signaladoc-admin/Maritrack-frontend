@@ -163,7 +163,7 @@ const Device = () => {
       {activeTab === "messages" && <Messages deviceId={deviceDetails?.id} />}
       {activeTab === "configuration" && (
         <div className="mx-auto max-w-lg">
-          <DevicesConfigurationSetup />
+          <DevicesConfigurationSetup deviceId={mdmDeviceId} userId={deviceDetails?.currentUserId ?? undefined} />
         </div>
       )}
       {activeTab === "actions" && <DeviceActions />}
