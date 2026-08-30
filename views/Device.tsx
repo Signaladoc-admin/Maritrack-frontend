@@ -61,16 +61,14 @@ const Device = () => {
       {isLoadingHardwareData ? (
         <DeviceHeaderSkeleton isMobile={isMobile} />
       ) : (
-        <div className="mb-10 flex w-full flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div className="mb-10 flex w-full flex-col gap-6">
           {!isMobile && (
-            <div className="flex justify-between">
-              <div className="flex justify-start">
-                <Back label="Back to devices" href="/devices" />
-              </div>
+            <div className="flex justify-start">
+              <Back label="Back to devices" href="/devices" />
             </div>
           )}
 
-          <div className="flex w-full flex-col items-stretch gap-4 lg:w-auto lg:flex-row lg:items-center">
+          <div className="flex w-full flex-col items-stretch gap-4 lg:flex-row lg:items-center">
             <div className="w-full lg:w-auto">
               <TabNavigation
                 tabs={TABS}
