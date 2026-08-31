@@ -176,11 +176,22 @@ export async function blockAppAction({
   packageName,
 }: BlockUnblockAppVariables): Promise<ActionResult<any>> {
   return withSafeAction(
-    async () =>
-      await apiClient(`/mdm-sync/${deviceId}/action`, {
-        method: "POST",
-        body: JSON.stringify({ deviceIds: [deviceId], actionId: 27, message: packageName }),
-      }),
+    async () => {
+      const payload = { actionId: 27, message: packageName };
+      console.log("blockAppAction Payload:", payload);
+      try {
+        const response = await apiClient(`/mdm-sync/${deviceId}/action`, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        console.log("blockAppAction Response:", response);
+        return response;
+      } catch (error: any) {
+        const source = error?.isBackendError ? "BACKEND" : error?.isNetworkError ? "NETWORK" : "FRONTEND";
+        console.error(`blockAppAction [${source} ERROR]:`, error?.message || error, error?.responseData || "");
+        throw error;
+      }
+    },
     "Failed to block app"
   );
 }
@@ -190,11 +201,22 @@ export async function unblockAppAction({
   packageName,
 }: BlockUnblockAppVariables): Promise<ActionResult<any>> {
   return withSafeAction(
-    async () =>
-      await apiClient(`/mdm-sync/${deviceId}/action`, {
-        method: "POST",
-        body: JSON.stringify({ deviceIds: [deviceId], actionId: 28, message: packageName }),
-      }),
+    async () => {
+      const payload = { actionId: 28, message: packageName };
+      console.log("unblockAppAction Payload:", payload);
+      try {
+        const response = await apiClient(`/mdm-sync/${deviceId}/action`, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        console.log("unblockAppAction Response:", response);
+        return response;
+      } catch (error: any) {
+        const source = error?.isBackendError ? "BACKEND" : error?.isNetworkError ? "NETWORK" : "FRONTEND";
+        console.error(`unblockAppAction [${source} ERROR]:`, error?.message || error, error?.responseData || "");
+        throw error;
+      }
+    },
     "Failed to unblock app"
   );
 }
@@ -209,11 +231,22 @@ export async function uninstallAppAction({
   packageName,
 }: UninstallAppVariables): Promise<ActionResult<any>> {
   return withSafeAction(
-    async () =>
-      await apiClient(`/mdm-sync/${deviceId}/action`, {
-        method: "POST",
-        body: JSON.stringify({ deviceIds: [deviceId], actionId: 20, message: packageName }),
-      }),
+    async () => {
+      const payload = { actionId: 20, message: packageName };
+      console.log("uninstallAppAction Payload:", payload);
+      try {
+        const response = await apiClient(`/mdm-sync/${deviceId}/action`, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        console.log("uninstallAppAction Response:", response);
+        return response;
+      } catch (error: any) {
+        const source = error?.isBackendError ? "BACKEND" : error?.isNetworkError ? "NETWORK" : "FRONTEND";
+        console.error(`uninstallAppAction [${source} ERROR]:`, error?.message || error, error?.responseData || "");
+        throw error;
+      }
+    },
     "Failed to uninstall app"
   );
 }
