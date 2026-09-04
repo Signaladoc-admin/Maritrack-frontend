@@ -1,163 +1,111 @@
+"use client";
+
 import { useParams } from "next/navigation";
 import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
+import { MDMDeviceDetailsResponse } from "@/features/device/types";
+import { format } from "date-fns";
 
-import { MetricCardSkeleton, InfoListCardSkeleton } from "@/features/device/ui/DeviceTabsSkeletons";
-import { Skeleton } from "@/shared/ui/skeleton";
-import { useAuth } from "@/shared/auth/AuthProvider";
-import { MetricCard } from "@/features/dashboard/business/ui/MetricCard";
-import DeviceHardwareDetailsCard from "@/features/device/ui/DeviceHardwareDetailsCard";
-import DevicePossesorDetailsCard from "@/features/device/ui/DevicePossesorDetailsCard";
-import { MapCard } from "@/features/general/ui/map-card";
-import { InfoListCard } from "@/shared/ui/AppListCard/AppListCard";
-
-const General = () => {
+const General = ({ deviceResponse: parentDeviceResponse }: { deviceResponse?: MDMDeviceDetailsResponse }) => {
   const params = useParams<{ device: string }>();
   const deviceId = params?.device || "";
 
   const { data: hardwareData, isPending: isHardwarePending } = useDeviceDetail(
     deviceId,
     "hardware",
-    { enabled: !!deviceId }
+    { enabled: !!deviceId && !parentDeviceResponse }
   );
 
-  const { data: networkData, isPending: isNetworkPending } = useDeviceDetail(deviceId, "network", {
-    enabled: !!deviceId,
-  });
+  const deviceResponse = parentDeviceResponse || (hardwareData as MDMDeviceDetailsResponse);
+  const deviceDetails = deviceResponse?.deviceDetails;
+  const hardware = deviceResponse?.hardwareInfo;
+  
+  if (!deviceResponse) return null;
 
-  const { data: appsData, isPending: isAppsPending } = useDeviceDetail(deviceId, "apps", {
-    enabled: !!deviceId,
-  });
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return "-";
+    try {
+      return format(new Date(dateStr), "dd MMM yyyy, h:mm a");
+    } catch {
+      return "-";
+    }
+  };
 
-  const fetchedApps = (appsData?.data?.apps || []).filter((app: any) => app.systemApp === false);
-  const fetchedHardware = hardwareData?.data?.hardwareInfo || {};
-  const fetchedNetwork = networkData?.data?.realTimeStats || {};
+  const getMemoryUsage = () => {
+    if (!deviceResponse.realTimeStats?.totalRAM || !deviceResponse.realTimeStats?.availableRAM) {
+      return { pct: 0, label: "Memory · - / - Gb", dashOffset: 264 };
+    }
+    const total = deviceResponse.realTimeStats.totalRAM / (1024 * 1024 * 1024);
+    const available = deviceResponse.realTimeStats.availableRAM / (1024 * 1024 * 1024);
+    const used = total - available;
+    const pct = Math.round((used / total) * 100);
+    const dashOffset = 264 - (264 * pct) / 100;
+    return {
+      pct,
+      label: `Memory · ${used.toFixed(2)} / ${total.toFixed(2)} Gb`,
+      dashOffset
+    };
+  };
 
-  const top5Apps = Array.isArray(fetchedApps)
-    ? fetchedApps.slice(0, 5).map((app: any) => ({
-        id: app.id,
-        name: app.appName || app.packageName,
-        totalTime: app.totalTime || `Size: ${app.installedAPKSize || 0}`,
-        icon: () => (
-          <div className="w-full text-center text-xs text-gray-400">{app.appName?.slice(0, 2)}</div>
-        ),
-        limits: app.limits || 0,
-      }))
-    : [];
-
-  const batteryLevel = fetchedNetwork?.batteryLevel ?? 0;
-  const batteryColor: "green" | "red" = batteryLevel >= 20 ? "green" : "red";
-  const batteryFooter = batteryLevel >= 20 ? "Battery level is good" : "Battery level is low";
-
-  // Storage logic
-  const storageUsed = hardwareData?.data?.realTimeStats?.internalStorageUsed ?? 0;
-  const storageFree = hardwareData?.data?.realTimeStats?.internalStorageFree ?? 0;
-  const totalStorage = fetchedHardware?.internalStorageSize ?? storageUsed + storageFree;
-
-  const toGB = (bytes: number) => (bytes / (1024 * 1024 * 1024)).toFixed(1);
-  const storageUsedGB = toGB(storageUsed);
-  const totalStorageGB = toGB(totalStorage);
-
-  const freePercent = totalStorage > 0 ? (storageFree / totalStorage) * 100 : 0;
-
-  let storageColor: "green" | "yellow" | "red" = "green";
-  let storageFooter = "Storage space is a lot";
-  if (totalStorage === 0) {
-    storageFooter = "No storage info available";
-    storageColor = "yellow";
-  } else if (freePercent < 10) {
-    storageColor = "red";
-    storageFooter = "Storage space is too low";
-  } else if (freePercent < 30) {
-    storageColor = "yellow";
-    storageFooter = "Storage space is ok";
-  }
-
-  const { user } = useAuth();
-  const isBusiness = user?.appRole === "BUSINESS";
-
-  if (isHardwarePending || isAppsPending || isNetworkPending) {
-    return (
-      <div className="flex flex-col gap-6">
-        {isBusiness ? (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(260px,360px),1fr]">
-            <Skeleton className="h-[420px] rounded-[32px]" />
-            <div className="flex flex-col gap-6">
-              <Skeleton className="h-[120px] rounded-[32px]" />
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <MetricCardSkeleton />
-                <MetricCardSkeleton />
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <MetricCardSkeleton />
-            <MetricCardSkeleton />
-          </div>
-        )}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <InfoListCardSkeleton />
-          <Skeleton className="h-[400px] rounded-[32px]" />
-        </div>
-      </div>
-    );
-  }
-
-  // Generate ascending signal-bar heights scaled to the actual metric percentage
-  const generateSignalBars = (percent: number) =>
-    [1, 2, 3, 4, 5, 6, 7].map((i) => Math.round((i / 7) * percent));
-
-  const isBusinessUser = user?.appRole === "BUSINESS";
-
-  const memoryCard = (
-    <MetricCard
-      title="Memory"
-      value={`${storageUsedGB} GB of ${totalStorageGB} GB`}
-      chartColor={storageColor}
-      chartData={generateSignalBars(freePercent)}
-      footerText={storageFooter}
-    />
-  );
-
-  const batteryCard = (
-    <MetricCard
-      title="Battery health"
-      value={`${batteryLevel}%`}
-      chartColor={batteryColor}
-      chartData={generateSignalBars(batteryLevel)}
-      footerText={batteryFooter}
-    />
-  );
+  const memStats = getMemoryUsage();
+  const cpuPct = 0; // CPU usage generally not provided in realTimeStats
+  const cpuDashOffset = 264 - (264 * cpuPct) / 100;
 
   return (
-    <div className="flex flex-col gap-6">
-      {isBusinessUser ? (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(260px,360px),1fr]">
-          {/* Hardware card — stretches to match right column height */}
-          <DeviceHardwareDetailsCard device={hardwareData} />
+    <div className="detail-tab-panel w-full animate-in fade-in-0 duration-300">
+      <div className="dd-section">
+        <div className="dd-section-title">Identifiers</div>
+        <div className="dd-tile-grid">
+          <div className="dd-tile"><div className="tk">IMEI number</div><div className="tv">{hardware?.imei || "-"}</div></div>
+          <div className="dd-tile"><div className="tk">Serial number</div><div className="tv">{hardware?.serialNumber || "-"}</div></div>
+          <div className="dd-tile"><div className="tk">LAN MAC address</div><div className="tv">{hardware?.wifiMacAddress || "-"}</div></div>
+          <div className="dd-tile"><div className="tk">External UID</div><div className="tv">-</div></div>
+          <div className="dd-tile span-2"><div className="tk">Model &amp; manufacturer</div><div className="tv">{hardware?.model} / {hardware?.manufacturer}</div></div>
+          <div className="dd-tile"><div className="tk">OS version</div><div className="tv">Android v{hardware?.osVersion}</div></div>
+        </div>
+      </div>
 
-          {/* Right column: possessor, memory, battery in a single 3-col row */}
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
-            <DevicePossesorDetailsCard device={hardwareData} />
-            {memoryCard}
-            {batteryCard}
+      <div className="dd-section">
+        <div className="dd-section-title">System</div>
+        <div className="surface" style={{ padding: "20px 22px" }}>
+          <div className="dd-gauge-row">
+            <div className="dd-gauge">
+              <svg viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="9"/>
+                <circle cx="50" cy="50" r="42" fill="none" stroke="#05E0E5" strokeWidth="9" strokeLinecap="round" strokeDasharray="264" strokeDashoffset={cpuDashOffset} transform="rotate(-90 50 50)"/>
+                <text x="50" y="55" textAnchor="middle" fill="#fff" fontSize="18" fontWeight="800">{cpuPct}%</text>
+              </svg>
+              <div className="glbl">CPU · - / - GHz</div>
+            </div>
+            <div className="dd-gauge">
+              <svg viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="9"/>
+                <circle cx="50" cy="50" r="42" fill="none" stroke="#01DB5E" strokeWidth="9" strokeLinecap="round" strokeDasharray="264" strokeDashoffset={memStats.dashOffset} transform="rotate(-90 50 50)"/>
+                <text x="50" y="55" textAnchor="middle" fill="#fff" fontSize="18" fontWeight="800">{memStats.pct}%</text>
+              </svg>
+              <div className="glbl">{memStats.label}</div>
+            </div>
           </div>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          {memoryCard}
-          {batteryCard}
-        </div>
-      )}
+      </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <InfoListCard
-          title="Top 5 apps"
-          actionText="View all"
-          onActionClick={() => {}}
-          items={top5Apps}
-        />
-        <MapCard deviceId={deviceId} />
+      <div className="dd-section">
+        <div className="dd-section-title">Groups &amp; restrictions</div>
+        <div className="dd-tile-grid">
+          <div className="dd-tile span-2"><div className="tk">Groups</div><div className="tv">-</div></div>
+          <div className="dd-tile"><div className="tk">Zone</div><div className="tv">{deviceDetails?.zone?.name || "-"}</div></div>
+          <div className="dd-tile wide">
+            <div><div className="tk">Restrictions</div><div className="tv">-</div></div>
+            <button className="dd-action-btn primary" style={{ width: "auto", padding: "0 16px", height: "34px", borderRadius: "9px", fontSize: "12.5px", fontWeight: "700" }}>Assign group</button>
+          </div>
+        </div>
+      </div>
+
+      <div className="dd-section">
+        <div className="dd-section-title">Status</div>
+        <div className="dd-tile-grid">
+          <div className="dd-tile"><div className="tk">Subscription end date</div><div className="tv">-</div></div>
+          <div className="dd-tile"><div className="tk">Device locked on</div><div className="tv">{deviceDetails?.status === 'LOCKED' ? formatDate(deviceDetails.updatedAt) : "-"}</div></div>
+        </div>
       </div>
     </div>
   );

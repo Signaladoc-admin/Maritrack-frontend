@@ -1,62 +1,128 @@
-import React from "react";
-import { ScreenTimeCard } from "@/features/app-control/ui/ScreenTimeCard";
-import { AllAppsCard } from "@/features/app-control/ui/AllAppsCard";
-import { MostUsedAppsCard } from "@/shared/ui/MostUsedAppsCard/MostUsedAppsCard";
-import { AppDetailView } from "@/features/app-control/ui/AppDetailView";
+"use client";
+
+import React, { useState } from "react";
 import { useParams } from "next/navigation";
 import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 
-import { Skeleton } from "@/shared/ui/skeleton";
+interface InstalledApp {
+  id: string;
+  name: string;
+  category: string;
+  iconLetter: string;
+  iconBg: string;
+  enabled: boolean;
+  disabled?: boolean;
+}
+
+const DEFAULT_APPS: InstalledApp[] = [
+  {
+    id: "whatsapp",
+    name: "WhatsApp Business",
+    category: "Communication",
+    iconLetter: "W",
+    iconBg: "#25D366",
+    enabled: true,
+  },
+  {
+    id: "gmaps",
+    name: "Google Maps",
+    category: "Navigation",
+    iconLetter: "M",
+    iconBg: "var(--accent)",
+    enabled: true,
+  },
+  {
+    id: "tiktok",
+    name: "TikTok",
+    category: "Social & entertainment",
+    iconLetter: "T",
+    iconBg: "#FF6857",
+    enabled: false,
+  },
+  {
+    id: "flentra-agent",
+    name: "Flentra Agent",
+    category: "System — required",
+    iconLetter: "F",
+    iconBg: "var(--accent)",
+    enabled: true,
+    disabled: true,
+  },
+];
 
 const AppControl = () => {
   const params = useParams<{ device: string }>();
-  const [view, setView] = React.useState<"list" | "detail">("list");
-  const [selectedAppId, setSelectedAppId] = React.useState<string | null>(null);
+  const deviceId = params?.device || "";
 
-  const { data, isPending } = useDeviceDetail(params?.device || "", "apps", {
-    enabled: !!params?.device,
+  const { data } = useDeviceDetail(deviceId, "apps", {
+    enabled: !!deviceId,
   });
-  const fetchedApps = (data?.data?.apps || []).filter((app: any) => app.systemApp === false);
 
-  const selectedApp = fetchedApps.find((a: any) => a.id === selectedAppId);
+  const [apps, setApps] = useState<InstalledApp[]>(DEFAULT_APPS);
+
+  const toggleApp = (id: string) => {
+    setApps((prev) =>
+      prev.map((app) =>
+        app.id === id && !app.disabled ? { ...app, enabled: !app.enabled } : app
+      )
+    );
+  };
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-      {/* Left Column */}
-      <div className="flex flex-col gap-6 lg:col-span-1">
-        {isPending ? (
-          <>
-            <Skeleton className="h-48 rounded-[32px]" />
-            <div className="space-y-4">
-              <Skeleton className="h-6 w-40" />
-              <Skeleton className="h-64 rounded-[32px]" />
+    <div className="detail-tab-panel w-full animate-in fade-in-0 duration-300">
+      <div className="dd-section">
+        <div className="dd-section-title">Installed apps</div>
+        <div className="surface" style={{ padding: "6px 22px" }}>
+          {apps.map((app) => (
+            <div className="app-row" key={app.id}>
+              <div className="app-icon" style={{ background: app.iconBg }}>
+                {app.iconLetter}
+              </div>
+              <div className="app-body">
+                <div className="app-name">{app.name}</div>
+                <div className="app-cat">{app.category}</div>
+              </div>
+              <label className="switch">
+                <input
+                  type="checkbox"
+                  checked={app.enabled}
+                  disabled={app.disabled}
+                  onChange={() => toggleApp(app.id)}
+                />
+                <span className="track"></span>
+              </label>
             </div>
-          </>
-        ) : (
-          <>
-            <ScreenTimeCard />
-            <div className="space-y-4">
-              <h3 className="text-base font-medium text-[#667085]">Most Used Apps</h3>
-              <MostUsedAppsCard />
-            </div>
-          </>
-        )}
+          ))}
+        </div>
       </div>
 
-      {/* Right Column - Swappable */}
-      <div className="lg:col-span-2">
-        {view === "detail" && selectedApp ? (
-          <AppDetailView app={selectedApp} onBack={() => setView("list")} />
-        ) : (
-          <AllAppsCard
-            apps={fetchedApps}
-            isLoading={isPending}
-            onViewApp={(appId) => {
-              setSelectedAppId(appId);
-              setView("detail");
-            }}
-          />
-        )}
+      <div className="dd-section">
+        <div className="dd-section-title">App limits</div>
+        <div className="surface" style={{ padding: "6px 22px" }}>
+          <div className="config-row">
+            <div className="config-body">
+              <div className="config-title">Daily screen time cap</div>
+              <div className="config-desc">Restrict total non-essential app usage per day.</div>
+            </div>
+            <select className="form-select config-select" defaultValue="4 hours / day">
+              <option>No limit</option>
+              <option>4 hours / day</option>
+              <option>6 hours / day</option>
+              <option>8 hours / day</option>
+            </select>
+          </div>
+          <div className="config-row" style={{ borderBottom: "none" }}>
+            <div className="config-body">
+              <div className="config-title">Social &amp; entertainment apps</div>
+              <div className="config-desc">Limit access to TikTok, Instagram, and similar apps.</div>
+            </div>
+            <select className="form-select config-select" defaultValue="Blocked">
+              <option>Blocked</option>
+              <option>1 hour / day</option>
+              <option>Unrestricted</option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
   );

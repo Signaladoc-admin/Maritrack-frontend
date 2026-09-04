@@ -18,7 +18,7 @@ import { useAuth } from "@/shared/auth/AuthProvider";
 import { Button } from "@/shared/ui/button";
 import { useDevice } from "@/entities/device";
 import LocationPage from "./Location";
-import DevicesConfigurationSetup from "@/features/parents/ui/DeviceConfigurationSetup";
+import Configuration from "./Configuration";
 import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 import { MDMDeviceDetailsResponse } from "@/features/device/types";
 import ReassignDeviceModal from "@/features/business-users/users/ui/ReassignDeviceModal";
@@ -26,6 +26,8 @@ import { DeviceHeaderSkeleton } from "./DeviceHeaderSkeleton";
 import DeviceActions from "./DeviceActions";
 import Messages from "./Messages";
 
+import { format } from "date-fns";
+import { cn } from "@/shared/lib/utils";
 const Device = () => {
   const router = useRouter();
   const params = useParams<{ device: string }>();
@@ -41,96 +43,144 @@ const Device = () => {
     }
   );
   const deviceResponse: MDMDeviceDetailsResponse = hardwareData;
-
   const deviceDetails = deviceResponse?.deviceDetails;
 
-  const activeTab = searchParams?.get("tab") || "general";
+  const initialTab = searchParams?.get("tab") || "general";
+  const normalizedInitialTab = initialTab === "app-control" ? "appcontrol" : initialTab;
+  const [activeTab, setActiveTab] = useState(normalizedInitialTab);
   const [showDelete, setShowDelete] = useState(false);
   const [showMarkAsReturned, setShowMarkAsReturned] = useState(false);
   const [showReassign, setShowReassign] = useState(false);
 
   const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
     const deviceId = params?.device || "device-id";
-    router.push(`/devices/${deviceId}?tab=${tab}`);
+    try {
+      window.history.replaceState(null, "", `/devices/${deviceId}?tab=${tab}`);
+    } catch (e) {
+      router.push(`/devices/${deviceId}?tab=${tab}`);
+    }
   };
 
   const isMobile = useIsMobile();
 
+  if (isLoadingHardwareData) {
+    return <DeviceHeaderSkeleton isMobile={isMobile} />;
+  }
+
+  const formatDateTime = (dateStr?: string) => {
+    if (!dateStr) return "-";
+    try {
+      return format(new Date(dateStr), "dd MMM yyyy, h:mm a");
+    } catch (e) {
+      return "-";
+    }
+  };
+
+  const isAppControlActive = activeTab === "appcontrol" || activeTab === "app-control";
+
   return (
-    <div>
-      {isLoadingHardwareData ? (
-        <DeviceHeaderSkeleton isMobile={isMobile} />
-      ) : (
-        <div className="mb-10 flex w-full flex-col gap-6">
-          {!isMobile && (
-            <div className="flex justify-start">
-              <Back label="Back to devices" href="/devices" />
-            </div>
-          )}
+    <div className="flex flex-col w-full min-h-[500px]">
+      <button className="dd-back-link" onClick={() => router.push("/devices")}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back to devices
+      </button>
 
-          <div className="flex w-full flex-col items-center justify-center gap-6 lg:flex-row">
-            <div className="w-full lg:w-auto flex justify-center">
-              <TabNavigation
-                tabs={TABS}
-                activeTab={activeTab}
-                onTabChange={handleTabChange}
-                className="w-full"
-              />
+      <div className="surface dd-hero">
+        <div className="dd-hero-top">
+          <div className="dd-hero-id">
+            <div className="dd-avatar" id="ddAvatar">
+              <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8"><rect x="7" y="2" width="10" height="20" rx="2"/></svg>
             </div>
-
-            <div className="flex items-center justify-center gap-4">
-              {/* {activeTab !== "configuration" && (
-                <div className="flex-1 lg:flex-none">
-                  <DateDropdown />
-                </div>
-              )} */}
-              {user?.appRole === "PARENT" && (
-                <div className="flex lg:ml-0">
-                  <IconWrapper
-                    action={() => setShowDelete(true)}
-                    icon={<Trash2Icon className="h-5 w-5 text-[#D95D55]" />}
-                  />
-                </div>
-              )}
-              {user?.appRole === "BUSINESS" && (
-                <>
-                  {deviceDetails?.assignmentStatus === "RETURNED" ? (
-                    <Button
-                      onClick={() => setShowReassign(true)}
-                      variant="secondary"
-                      className="text-primary/80 flex h-auto! items-center gap-2 self-stretch rounded-full p-5 text-sm font-semibold"
-                    >
-                      <svg
-                        className="size-5!"
-                        width="14"
-                        height="16"
-                        viewBox="0 0 14 16"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M3.27934 1.26129C3.41182 1.11912 3.48394 0.93107 3.48052 0.736769C3.47709 0.542468 3.39838 0.357083 3.26096 0.21967C3.12355 0.0822568 2.93816 0.00354506 2.74386 0.000116847C2.54956 -0.00331137 2.36151 0.0688116 2.21934 0.201292L0.21934 2.20129C0.0788894 2.34192 0 2.53254 0 2.73129C0 2.93004 0.0788894 3.12067 0.21934 3.26129L2.21934 5.26129C2.288 5.33498 2.3708 5.39408 2.4628 5.43507C2.5548 5.47606 2.65411 5.49811 2.75482 5.49988C2.85552 5.50166 2.95555 5.48314 3.04894 5.44541C3.14233 5.40769 3.22716 5.35155 3.29838 5.28033C3.3696 5.20911 3.42574 5.12428 3.46346 5.03089C3.50118 4.9375 3.51971 4.83747 3.51793 4.73677C3.51615 4.63607 3.49411 4.53675 3.45312 4.44475C3.41213 4.35275 3.35303 4.26995 3.27934 4.20129L2.55934 3.48129H12.7493C12.9483 3.48129 13.139 3.40227 13.2797 3.26162C13.4203 3.12097 13.4993 2.9302 13.4993 2.73129C13.4993 2.53238 13.4203 2.34161 13.2797 2.20096C13.139 2.06031 12.9483 1.98129 12.7493 1.98129H2.55934L3.27934 1.26129ZM12.2193 8.20129C12.0789 8.34192 12 8.53254 12 8.73129C12 8.93004 12.0789 9.12067 12.2193 9.26129L12.9393 9.98129H2.74934C2.55043 9.98129 2.35966 10.0603 2.21901 10.201C2.07836 10.3416 1.99934 10.5324 1.99934 10.7313C1.99934 10.9302 2.07836 11.121 2.21901 11.2616C2.35966 11.4023 2.55043 11.4813 2.74934 11.4813H12.9393L12.2193 12.2013C12.1457 12.27 12.0866 12.3528 12.0456 12.4448C12.0046 12.5368 11.9825 12.6361 11.9807 12.7368C11.979 12.8375 11.9975 12.9375 12.0352 13.0309C12.0729 13.1243 12.1291 13.2091 12.2003 13.2803C12.2715 13.3515 12.3564 13.4077 12.4497 13.4454C12.5431 13.4831 12.6432 13.5017 12.7439 13.4999C12.8446 13.4981 12.9439 13.4761 13.0359 13.4351C13.1279 13.3941 13.2107 13.335 13.2793 13.2613L15.2793 11.2613C15.4198 11.1207 15.4987 10.93 15.4987 10.7313C15.4987 10.5325 15.4198 10.3419 15.2793 10.2013L13.2793 8.20129C13.1387 8.06084 12.9481 7.98195 12.7493 7.98195C12.5506 7.98195 12.36 8.06084 12.2193 8.20129Z"
-                          fill="currentColor"
-                        />
-                      </svg>
-                      <span>Reassign device</span>
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="secondary"
-                      className="flex items-center gap-3 rounded-full bg-[#f4f7fa]"
-                      onClick={() => setShowMarkAsReturned(true)}
-                    >
-                      <X className="text-red-500" size={18} />
-                      Mark as returned
-                    </Button>
-                  )}
-                </>
-              )}
+            <div>
+              <div className="dd-hero-title" id="ddTitle">{deviceDetails?.name || "Samsung Galaxy A14"}</div>
+              <div className="dd-hero-sub" id="ddDeviceId">{deviceDetails?.id || mdmDeviceId}</div>
             </div>
           </div>
+          <div className="dd-hero-actions">
+            <button className="dd-action-btn" aria-label="Refresh" onClick={() => window.location.reload()}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.5 9a9 9 0 0114.85-3.36L23 10M1 14l4.65 4.36A9 9 0 0020.5 15"/></svg>
+            </button>
+            <button className="dd-action-btn" aria-label="Edit">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            </button>
+            <button className="dd-action-btn" aria-label="More options">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/></svg>
+            </button>
+            {user?.appRole === "BUSINESS" && (
+              <button className="dd-action-btn primary" aria-label="Assign group" onClick={() => setShowReassign(true)}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="9" r="3"/><circle cx="17" cy="9" r="3"/><path d="M3 20c0-3 2.5-5 5-5s5 2 5 5M11 20c0-3 2.5-5 5-5s5 2 5 5"/></svg>
+              </button>
+            )}
+            {user?.appRole === "PARENT" && (
+              <button className="dd-action-btn" style={{ borderColor: 'var(--coral-border)', color: 'var(--coral)' }} aria-label="Delete" onClick={() => setShowDelete(true)}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+              </button>
+            )}
+          </div>
         </div>
-      )}
+
+        <div className="dd-hero-chips">
+          <span className="dd-chip" id="ddStatusChip">
+            <span className="dot" id="ddStatusDot" style={{ background: deviceDetails?.status === 'ACTIVE' ? '#01DB5E' : '#FF6857' }}></span>
+            <span id="ddStatusText">{deviceDetails?.status || "Activated"}</span>
+          </span>
+          <span className="dd-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C7.6 2 4 5.6 4 10c0 6 8 12 8 12s8-6 8-12c0-4.4-3.6-8-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+            Zone <b id="ddZone">{deviceDetails?.zone?.name || "ZONE-LAGOS-3391"}</b>
+          </span>
+          <span className="dd-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+            Last seen <b id="ddLastSeen">{formatDateTime(deviceDetails?.updatedAt) !== "-" ? formatDateTime(deviceDetails?.updatedAt) : "12 Aug 2026, 9:41 am"}</b>
+          </span>
+          <span className="dd-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+            Registered <b id="ddRegDate">{formatDateTime(deviceDetails?.createdAt) !== "-" ? formatDateTime(deviceDetails?.createdAt) : "01 Aug 2026, 10:00 am"}</b>
+          </span>
+        </div>
+      </div>
+
+      <div className="dd-tabs-bar" id="ddTabs">
+        <button className={cn("dd-tab-item", activeTab === "general" && "active")} onClick={() => handleTabChange("general")}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h5"/></svg>
+          General
+        </button>
+        <button className={cn("dd-tab-item", isAppControlActive && "active")} onClick={() => handleTabChange("appcontrol")}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.4"/><rect x="14" y="3" width="7" height="7" rx="1.4"/><rect x="3" y="14" width="7" height="7" rx="1.4"/><rect x="14" y="14" width="7" height="7" rx="1.4"/></svg>
+          App control
+        </button>
+        <button className={cn("dd-tab-item", activeTab === "location" && "active")} onClick={() => handleTabChange("location")}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C7.6 2 4 5.6 4 10c0 6 8 12 8 12s8-6 8-12c0-4.4-3.6-8-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+          Location
+        </button>
+        <button className={cn("dd-tab-item", activeTab === "messages" && "active")} onClick={() => handleTabChange("messages")}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          Messages
+          <span className="tab-badge" id="ddMsgBadge">3</span>
+        </button>
+        <button className={cn("dd-tab-item", activeTab === "configuration" && "active")} onClick={() => handleTabChange("configuration")}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1 1.55V21a2 2 0 01-4 0v-.09a1.7 1.7 0 00-1-1.55 1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.7 1.7 0 00.34-1.87 1.7 1.7 0 00-1.55-1H3a2 2 0 010-4h.09a1.7 1.7 0 001.55-1 1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06a1.7 1.7 0 001.87.34H9a1.7 1.7 0 001-1.55V3a2 2 0 014 0v.09a1.7 1.7 0 001 1.55 1.7 1.7 0 001.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06a1.7 1.7 0 00-.34 1.87V9a1.7 1.7 0 001.55 1H21a2 2 0 010 4h-.09a1.7 1.7 0 00-1.55 1z"/></svg>
+          Configuration
+        </button>
+        <button className={cn("dd-tab-item", activeTab === "actions" && "active")} onClick={() => handleTabChange("actions")}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z"/></svg>
+          Actions
+        </button>
+      </div>
+
+      <div className="dd-content">
+        {activeTab === "general" && <General deviceResponse={deviceResponse} />}
+        {activeTab === "web-history" && <WebHistory />}
+        {isAppControlActive && <AppControl />}
+        {activeTab === "location" && <LocationPage />}
+        {activeTab === "messages" && <Messages deviceId={deviceDetails?.id} />}
+        {activeTab === "configuration" && (
+          <div className="w-full">
+            <Configuration />
+          </div>
+        )}
+        {activeTab === "actions" && <DeviceActions />}
+      </div>
 
       <ConfirmationModal
         open={showDelete}
@@ -153,18 +203,6 @@ const Device = () => {
         onOpenChange={setShowReassign}
         selectedDeviceMdmId={mdmDeviceId}
       />
-
-      {activeTab === "general" && <General />}
-      {activeTab === "web-history" && <WebHistory />}
-      {activeTab === "app-control" && <AppControl />}
-      {activeTab === "location" && <LocationPage />}
-      {activeTab === "messages" && <Messages deviceId={deviceDetails?.id} />}
-      {activeTab === "configuration" && (
-        <div className="mx-auto max-w-lg">
-          <DevicesConfigurationSetup deviceId={mdmDeviceId} userId={deviceDetails?.currentUserId ?? undefined} />
-        </div>
-      )}
-      {activeTab === "actions" && <DeviceActions />}
     </div>
   );
 };

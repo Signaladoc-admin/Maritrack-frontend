@@ -5,14 +5,20 @@ import { formatID } from "@/shared/lib/utils";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { useEffect } from "react";
 
+import Table from "@/shared/ui/Table/Table";
+import { TableColumn } from "@/shared/ui/Table/types";
+import { Badge } from "@/shared/ui/badge";
+
 export default function UsersList({
   searchTerm,
   currentPage,
   setSelectedTabTotalPages,
+  onRowClick,
 }: {
   searchTerm: string;
   currentPage: number;
   setSelectedTabTotalPages: (totalPages: number) => void;
+  onRowClick?: (id: string) => void;
 }) {
   const { user } = useAuth();
 
@@ -20,7 +26,7 @@ export default function UsersList({
     businessId: user?.businessId!,
     search: searchTerm,
     page: currentPage,
-    limit: 5,
+    limit: 10,
   });
   const dataPayload = usersData?.data as any;
   const staffMembers = Array.isArray(dataPayload) 
@@ -33,31 +39,45 @@ export default function UsersList({
     }
   }, [usersData?.data?.totalPages, setSelectedTabTotalPages]);
 
-  if (isLoading)
-    return (
-      <div className="space-y-3 p-3">
-        {Array.from({ length: 5 }).map((_, index) => (
-          <Skeleton key={index} className="h-14 w-full rounded-lg" />
-        ))}
-      </div>
-    );
+  const columns: TableColumn<any>[] = [
+    {
+      key: "user",
+      label: "User",
+      render: (item) => {
+        const initials = `${item?.user?.firstName?.[0] || ""}${item?.user?.lastName?.[0] || ""}`.toUpperCase() || "-";
+        return (
+          <div className="account-row no-bg">
+            <div className="avatar" style={{ background: '#05E0E5', color: '#002147' }}>{initials}</div>
+            <div className="who">
+              <div className="name">{`${item?.user?.firstName || ""} ${item?.user?.lastName || ""}`.trim() || "-"}</div>
+              <div className="email text-muted-foreground">{item?.user?.email || formatID(item?.user?.id) || "N/A"}</div>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      key: "role",
+      label: "Role",
+      render: (item) => <>{item?.role || "Staff"}</>
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (item) => (
+        <span className="status-pill online"><span className="dot"></span>Active</span>
+      )
+    }
+  ];
 
   return (
-    <div className="space-y-1">
-      {staffMembers && staffMembers.length > 0 ? (
-        staffMembers?.map((staffMember: any) => (
-          <EntityListItem
-            key={staffMember?.id}
-            id={staffMember?.id}
-            title={`${staffMember?.user?.firstName || "-"} ${!staffMember?.user?.firstName && !staffMember?.user?.lastName ? "-" : ""}`}
-            subtitle={formatID(staffMember?.user?.id) || "N/A"}
-          />
-        ))
-      ) : (
-        <div className="text-muted-foreground flex h-full items-center justify-center">
-          No users found
-        </div>
-      )}
-    </div>
+    <Table
+      data={staffMembers || []}
+      columns={columns}
+      loading={isLoading}
+      isPaginated={false}
+      onItemClick={(item) => onRowClick?.(item.id)}
+      emptyMessage="No users found"
+    />
   );
 }

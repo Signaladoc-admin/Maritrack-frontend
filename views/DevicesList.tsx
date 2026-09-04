@@ -142,124 +142,121 @@ export default function DevicesList() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-7">
-      <div className="flex items-center justify-between gap-10">
-        <Header title="Devices" subtitle="Manage your devices" className="mb-0!" />
-        <Button size="sm" onClick={handleNewDevice}>
-          <Plus size={16} />
-          New device
-        </Button>
-      </div>
-      <div className="flex flex-col justify-between gap-5 md:flex-row">
-        <TabNavigation
-          className="w-fit"
-          tabs={[
-            { label: "All assets", value: "ALL" },
-            { label: "Damaged & returned assets", value: "RETURNED" },
-          ]}
-          activeTab={selectedTab}
-          onTabChange={(tab) => setSelectedTab(tab)}
-        />
-        <div className="flex items-center gap-2">
-          <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            iconLeft={<SearchIcon size={16} className="text-gray-500" />}
-            placeholder="Search devices"
-            className="h-11!"
-          />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <div className="relative">
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className={cn(
-                    "rounded-full transition-colors",
-                    selectedFilter !== "" && "bg-primary/10 text-primary hover:bg-primary/15"
-                  )}
-                >
-                  <ListFilter />
-                </Button>
-                {selectedFilter !== "" && (
-                  <span className="bg-primary ring-background pointer-events-none absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full ring-2" />
-                )}
-              </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-40 p-2">
-              <p className="mb-4 px-2 text-sm font-semibold">Filter By:</p>
-              <div className="space-y-1">
-                <DropdownMenuItem
-                  onClick={() => setSelectedFilter("")}
-                  className={cn(
-                    "flex items-center gap-2",
-                    selectedFilter === "" &&
-                      "bg-primary hover:bg-primary! text-white hover:text-white!"
-                  )}
-                >
-                  All
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setSelectedFilter("ACTIVE")}
-                  className={cn(
-                    "flex items-center gap-2",
-                    selectedFilter === "ACTIVE" &&
-                      "bg-primary hover:bg-primary! text-white hover:text-white!"
-                  )}
-                >
-                  Active
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setSelectedFilter("INACTIVE")}
-                  className={cn(
-                    "flex items-center gap-2",
-                    selectedFilter === "INACTIVE" &&
-                      "bg-primary hover:bg-primary! text-white hover:text-white!"
-                  )}
-                >
-                  Inactive
-                </DropdownMenuItem>
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Button
-            onClick={handleExport}
-            variant="secondary"
-            size="icon"
-            className="rounded-full"
-            disabled={exporting}
-          >
-            {exporting ? <Loader /> : <DownloadCloud />}
-          </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="secondary" className="h-10 w-[64px] rounded-full flex items-center justify-center border-none">
-                <MoreHorizontal className="size-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 p-2">
-              <DropdownMenuGroup>
-                <DropdownMenuLabel className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Messaging</DropdownMenuLabel>
-                <DropdownMenuItem className="py-2" onClick={handleBulkMessageClick}>Bulk message</DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator className="my-1" />
-              <DropdownMenuGroup>
-                <DropdownMenuLabel className="text-xs text-gray-500 font-semibold uppercase tracking-wider mt-1">General Actions</DropdownMenuLabel>
-                <DropdownMenuItem className="py-2" onClick={handleWipeDeviceClick}>Wipe device</DropdownMenuItem>
-                <DropdownMenuItem className="py-2" onClick={handleLockDeviceClick}>Lock device</DropdownMenuItem>
-                <DropdownMenuItem className="py-2" onClick={handleUnlockDeviceClick}>Unlock device</DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator className="my-1" />
-              <DropdownMenuGroup>
-                <DropdownMenuLabel className="text-xs text-gray-500 font-semibold uppercase tracking-wider mt-1">App Management</DropdownMenuLabel>
-                <DropdownMenuItem className="py-2" onClick={handleSuspendAppsClick}>Suspend apps</DropdownMenuItem>
-                <DropdownMenuItem className="py-2" onClick={handleUnsuspendAppsClick}>Unsuspend apps</DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+    <section className="page active" id="page-devices">
+      <div className="page-head">
+        <div className="page-head-row">
+          <div>
+            <h1>Devices</h1>
+            <p>Manage every device financed, leased, or issued to your fleet.</p>
+          </div>
+          <button className="btn-primary cursor-pointer" onClick={handleNewDevice}>
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>
+            New device
+          </button>
         </div>
       </div>
+
+      <div className="surface table-panel">
+        <div className="table-head-row">
+          <div className="tabs">
+            <button
+              className={cn("tab", selectedTab === "ALL" && "active")}
+              onClick={() => setSelectedTab("ALL")}
+            >
+              All assets
+            </button>
+            <button
+              className={cn("tab", selectedTab === "RETURNED" && "active")}
+              onClick={() => setSelectedTab("RETURNED")}
+            >
+              Damaged & returned
+            </button>
+          </div>
+
+          <div className="toolbar-right">
+            <div className="search-wrap toolbar-search">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8"/><path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+              <input
+                type="text"
+                placeholder="Search devices"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+
+            <div className="dropdown-wrap">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="icon-btn-square cursor-pointer" aria-label="Filter devices">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+                    {selectedFilter !== "" && <span className="filter-dot"></span>}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-40 p-2">
+                  <p className="mb-4 px-2 text-sm font-semibold">Filter By:</p>
+                  <div className="space-y-1">
+                    <DropdownMenuItem
+                      onClick={() => setSelectedFilter("")}
+                      className={cn("flex items-center gap-2", selectedFilter === "" && "bg-primary text-white")}
+                    >
+                      All
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setSelectedFilter("ACTIVE")}
+                      className={cn("flex items-center gap-2", selectedFilter === "ACTIVE" && "bg-primary text-white")}
+                    >
+                      Active
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setSelectedFilter("INACTIVE")}
+                      className={cn("flex items-center gap-2", selectedFilter === "INACTIVE" && "bg-primary text-white")}
+                    >
+                      Inactive
+                    </DropdownMenuItem>
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            <button
+              onClick={handleExport}
+              className="icon-btn-square cursor-pointer flex items-center justify-center"
+              disabled={exporting}
+              aria-label="Export devices"
+            >
+              {exporting ? <Loader /> : <DownloadCloud size={16} />}
+            </button>
+
+            <div className="dropdown-wrap">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="icon-btn-square cursor-pointer" aria-label="Bulk actions">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/></svg>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 p-2">
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Messaging</DropdownMenuLabel>
+                    <DropdownMenuItem className="py-2 cursor-pointer" onClick={handleBulkMessageClick}>Bulk message</DropdownMenuItem>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator className="my-1" />
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel className="text-xs text-gray-500 font-semibold uppercase tracking-wider mt-1">General Actions</DropdownMenuLabel>
+                    <DropdownMenuItem className="py-2 cursor-pointer" onClick={handleWipeDeviceClick}>Wipe device</DropdownMenuItem>
+                    <DropdownMenuItem className="py-2 cursor-pointer" onClick={handleLockDeviceClick}>Lock device</DropdownMenuItem>
+                    <DropdownMenuItem className="py-2 cursor-pointer" onClick={handleUnlockDeviceClick}>Unlock device</DropdownMenuItem>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator className="my-1" />
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel className="text-xs text-gray-500 font-semibold uppercase tracking-wider mt-1">App Management</DropdownMenuLabel>
+                    <DropdownMenuItem className="py-2 cursor-pointer" onClick={handleSuspendAppsClick}>Suspend apps</DropdownMenuItem>
+                    <DropdownMenuItem className="py-2 cursor-pointer" onClick={handleUnsuspendAppsClick}>Unsuspend apps</DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </div>
 
       {bulkActionMode && (
         <BulkActionBar
@@ -308,6 +305,7 @@ export default function DevicesList() {
         onRowSelect={(selected) => setSelectedDevices(selected as StaffDevice[])}
         clearSelectionTrigger={clearSelectionTrigger}
       />
+      </div>
 
       <NewDeviceModal open={isShowingNewDeviceModal} onOpenChange={setIsShowingNewDeviceModal} />
 
@@ -355,6 +353,6 @@ export default function DevicesList() {
           }}
         />
       )}
-    </div>
+    </section>
   );
 }

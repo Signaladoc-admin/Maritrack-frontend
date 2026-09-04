@@ -31,13 +31,13 @@ export function Sidebar() {
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="fixed top-0 left-0 z-40 flex h-screen w-[100px] flex-col items-center bg-[#F7F7F7] py-10">
+      <div className="sticky top-0 left-0 z-40 hidden h-screen w-[100px] flex-col items-center border-r border-card-line bg-background py-10 md:flex">
         <div className="flex w-full flex-col items-center">
           <Tooltip>
             <TooltipTrigger asChild>
               <Link
                 href={"/dashboard"}
-                className="cursor-pointer rounded-full bg-[#1B3C73] p-3 text-white transition-all"
+                className="cursor-pointer rounded-xl bg-accent-tint p-3 text-accent transition-all hover:bg-accent hover:text-background"
               >
                 <Home className="h-6 w-6" />
               </Link>
@@ -55,7 +55,7 @@ export function Sidebar() {
                 <TooltipTrigger asChild>
                   <Link href={`/child/${child.id}`} className="group relative cursor-pointer">
                     <div className="rounded-full p-[2px] transition-all duration-300 group-hover:scale-110">
-                      <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#EEEEEE]">
+                      <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-card-line bg-card-fill">
                         {child.imageUrl ? (
                           <img
                             src={child.imageUrl}
@@ -63,7 +63,7 @@ export function Sidebar() {
                             className="h-full w-full object-cover"
                           />
                         ) : (
-                          <User className="h-6 w-6 text-[#1B3C73]" />
+                          <User className="h-6 w-6 text-foreground" />
                         )}
                       </div>
                     </div>
@@ -79,7 +79,7 @@ export function Sidebar() {
                 <TooltipTrigger asChild>
                   <Link
                     href="/children"
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EEEEEE] text-xs font-medium text-[#1B3C73] transition-all hover:scale-110"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-card-line bg-card-fill text-xs font-bold text-foreground transition-all hover:scale-110 hover:border-card-line-strong hover:bg-card-hover"
                   >
                     +{(parentChildren?.data?.length ?? 0) - 5}
                   </Link>
@@ -94,7 +94,7 @@ export function Sidebar() {
           <Tooltip>
             <TooltipTrigger asChild>
               <Link href={"/children/add"}>
-                <button className="group flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-[#EEEEEE] text-[#1B3C73] transition-all">
+                <button className="group flex h-12 w-12 cursor-pointer items-center justify-center rounded-xl border border-card-line bg-card-fill text-foreground transition-all hover:border-card-line-strong hover:bg-card-hover">
                   <Plus className="h-5 w-5" />
                 </button>
               </Link>

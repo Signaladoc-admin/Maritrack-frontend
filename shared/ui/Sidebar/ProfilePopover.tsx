@@ -32,45 +32,49 @@ export function ProfilePopover() {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <button className="h-10 w-10 cursor-pointer overflow-hidden rounded-full transition-all hover:ring-2 hover:ring-[#1B3C73] hover:ring-offset-2 md:h-12 md:w-12">
-          {userProfile?.imageUrl ? (
-            <img src={userProfile.imageUrl} alt="Profile" className="h-full w-full object-cover" />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center bg-[#EEEEEE] text-[#1B3C73]">
-              <UserIcon className="h-5 w-5 md:h-6 md:w-6" strokeWidth={2} />
-            </div>
-          )}
+        <button className="flex w-full items-center gap-2 cursor-pointer border-none bg-transparent p-0 text-left focus:outline-none">
+          <div className="avatar">
+            {userProfile?.imageUrl ? (
+              <img src={userProfile.imageUrl} alt="Profile" className="h-full w-full object-cover rounded-[10px]" />
+            ) : (
+              <UserIcon className="h-4 w-4" />
+            )}
+          </div>
+          <div className="who">
+            <div className="name">{userProfile?.firstName || 'Damola'} {userProfile?.lastName || 'Ojo'}</div>
+            <div className="role">{userProfile?.role || 'Operations admin'}</div>
+          </div>
         </button>
       </PopoverTrigger>
       <PopoverContent
         side="bottom"
         align="end"
-        className="z-99999 mt-2 w-56 rounded-[24px] border-none p-4"
+        className="z-[99999] mt-2 w-56 rounded-xl border border-card-line bg-card p-4 shadow-none"
       >
         <div className="flex flex-col gap-1">
           <Link
             href="/profile"
-            className="flex items-center gap-3 rounded-xl p-3 text-[#1B3C73] transition-colors hover:bg-[#F7F7F7]"
+            className="flex items-center gap-3 rounded-md p-3 text-foreground transition-colors hover:bg-card-hover"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F7F7F7] text-[#1B3C73]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-card-fill text-foreground">
               <UserIcon className="h-4 w-4" />
             </div>
             <span className="text-sm font-semibold">Profile</span>
           </Link>
           <Link
             href="/plans"
-            className="flex items-center gap-3 rounded-xl p-3 text-[#1B3C73] transition-colors hover:bg-[#F7F7F7]"
+            className="flex items-center gap-3 rounded-md p-3 text-foreground transition-colors hover:bg-card-hover"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F7F7F7] text-[#1B3C73]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-card-fill text-foreground">
               <CardIcon className="h-4 w-4" />
             </div>
             <span className="text-sm font-semibold">Plans</span>
           </Link>
           <button
             onClick={() => setIsSignoutModalOpen(true)}
-            className="flex items-center gap-3 rounded-xl p-3 text-[#FF736A] transition-colors hover:bg-[#FFF5F5]"
+            className="flex items-center gap-3 rounded-md p-3 text-destructive transition-colors hover:bg-destructive/10"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF5F5] text-[#FF736A]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-destructive/10 text-destructive">
               <LogOut className="h-4 w-4" />
             </div>
             <span className="text-sm font-semibold">Sign Out</span>

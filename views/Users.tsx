@@ -144,59 +144,81 @@ export default function Users() {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-[auto_1fr]">
-      <CardWrapper className="bg-[#f7f7f7]">
-        <div className="space-y-5">
-          <TabNavigation
-            className="bg-[#eee]"
-            tabs={availableTabs}
-            activeTab={selectedTab}
-            onTabChange={handleSelectTab}
-            itemClassName="px-4"
-          />
-          <div className="flex items-center gap-2">
-            <Input className="h-10!" placeholder="Search" value={search} onChange={handleSearch} />
-            <Button
-              className="h-10 w-10 shrink-0 rounded-xl"
-              onClick={() => {
+    <section className="page active" id="page-users">
+      <div className="page-head">
+        <div className="page-head-row">
+          <div>
+            <h1>Device users</h1>
+            <p>Assign devices to staff, departments, or specific locations.</p>
+          </div>
+          <div className="actions">
+            <button className="btn-secondary cursor-pointer">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              Import
+            </button>
+            <button className="btn-primary cursor-pointer" onClick={() => {
                 setIsAddEditModalOpen(true);
                 setSelectedId("");
-              }}
-            >
-              <PlusIcon color="white" className="size-5" />
-            </Button>
+              }}>
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>
+              New user
+            </button>
           </div>
-          {selectedTab === "users" && (
-            <UsersList
-              searchTerm={debouncedSearchTerm.trim()}
-              currentPage={currentPage}
-              setSelectedTabTotalPages={setSelectedTabTotalPages}
-            />
-          )}
-          {selectedTab === "departments" && (
-            <DepartmentsList
-              searchTerm={debouncedSearchTerm.trim()}
-              currentPage={currentPage}
-              setSelectedTabTotalPages={setSelectedTabTotalPages}
-            />
-          )}
-          {selectedTab === "locations" && (
-            <LocationsList
-              searchTerm={debouncedSearchTerm.trim()}
-              currentPage={currentPage}
-              setSelectedTabTotalPages={setSelectedTabTotalPages}
-            />
-          )}
-          <Pagination
-            className="border-none p-0!"
-            currentPage={currentPage}
-            totalPages={selectedTabTotalPages}
-            onPageChange={setCurrentPage}
-          />
         </div>
-      </CardWrapper>
-      <CardWrapper className={cn(selectedId ? "" : "hidden md:block")}>
-        {selectedId && (
+      </div>
+
+      {!selectedId ? (
+        <div className="surface table-panel">
+          <div className="table-head-row">
+            <div className="tabs">
+              {availableTabs.map((tab) => (
+                <button
+                  key={tab.value}
+                  className={cn("tab cursor-pointer", selectedTab === tab.value && "active")}
+                  onClick={() => handleSelectTab(tab.value)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            <div className="toolbar-right">
+              <div className="search-wrap toolbar-search">
+                <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8"/><path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+                <input type="text" placeholder="Search" value={search} onChange={handleSearch} />
+              </div>
+            </div>
+          </div>
+          
+          <div className={selectedTab !== "users" ? "p-4" : ""}>
+            {selectedTab === "users" && (
+              <UsersList
+                searchTerm={debouncedSearchTerm.trim()}
+                currentPage={currentPage}
+                setSelectedTabTotalPages={setSelectedTabTotalPages}
+                onRowClick={setSelectedId}
+              />
+            )}
+            {selectedTab === "departments" && (
+              <DepartmentsList
+                searchTerm={debouncedSearchTerm.trim()}
+                currentPage={currentPage}
+                setSelectedTabTotalPages={setSelectedTabTotalPages}
+              />
+            )}
+            {selectedTab === "locations" && (
+              <LocationsList
+                searchTerm={debouncedSearchTerm.trim()}
+                currentPage={currentPage}
+                setSelectedTabTotalPages={setSelectedTabTotalPages}
+              />
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="surface p-6">
+          <Button variant="outline" className="mb-6" onClick={() => setSelectedId("")}>
+             &larr; Back to list
+          </Button>
           <>
             {selectedTab === "users" && (
               <div className="space-y-5">
@@ -250,8 +272,8 @@ export default function Users() {
               </div>
             )}
           </>
-        )}
-      </CardWrapper>
+        </div>
+      )}
 
       <AddEditUserDetailsModal
         open={selectedTab === "users" && isAddEditModalOpen}
@@ -298,6 +320,6 @@ export default function Users() {
                 : false
         }
       />
-    </div>
+    </section>
   );
 }

@@ -6,30 +6,30 @@ import { H4, P } from "./typography";
 // We will import Card components after creating them, or define them locally if simple.
 // For now, I'll assume standard Card structure.
 
-const cardWrapperVariants = cva("w-full rounded-2xl bg-card text-card-foreground transition-all", {
+const cardWrapperVariants = cva("w-full bg-card-fill border border-card-line text-foreground transition-all shadow-none", {
   variants: {
     variant: {
-      default: "bg-[#f7f7f7] text-slate-950 dark:bg-slate-950 dark:text-slate-50",
+      default: "bg-card-fill text-foreground border-card-line",
       primary:
-        "bg-[#F7F7F7] text-slate-50 dark:bg-slate-50 dark:text-slate-900 border-slate-900 dark:border-slate-50",
-      destructive: "bg-red-500 text-white border-red-500",
+        "bg-accent text-background border-accent",
+      destructive: "bg-destructive text-white border-destructive",
       warning: "bg-[#f87171] text-white",
-      outline: "bg-transparent border-1 border-[#efefef]",
+      outline: "bg-transparent border border-card-line",
       ghost: "border-none shadow-none bg-transparent",
     },
     padding: {
       none: "p-0",
       xs: "p-1",
       sm: "p-3",
-      default: "p-4",
+      default: "p-5",
       lg: "p-6",
       xl: "p-8",
     },
     radius: {
       none: "rounded-none",
       sm: "rounded-sm",
-      default: "rounded-2xl",
-      lg: "rounded-3xl",
+      default: "rounded-sm",
+      lg: "rounded-md",
       full: "rounded-full",
     },
   },

@@ -7,6 +7,8 @@ import { MobileNavbar } from "../ui/layout/mobile-navbar";
 import TopNavbar from "../ui/TopNavbar/TopNavbar";
 import { ProfilePopover } from "@/shared/ui/Sidebar/ProfilePopover";
 
+import { BusinessSidebar } from "../ui/Sidebar/BusinessSidebar";
+
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { user } = useAuth();
 
@@ -21,24 +23,30 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
 function ParentLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="relative min-h-screen bg-[#F7F7F7] lg:bg-white">
-      <div className="absolute right-6 top-6 z-50 flex items-center lg:right-12 lg:top-12">
-        <ProfilePopover />
+    <div className="flex min-h-screen bg-background text-foreground w-full">
+      <Sidebar />
+      <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex w-full items-center justify-end p-6 lg:p-8 md:hidden">
+           <ProfilePopover />
+        </div>
+        <main className="mx-auto w-full max-w-[1360px] p-6 lg:p-10 flex-1">
+          {children}
+        </main>
       </div>
-      <main className="min-w-0 flex-1">
-        <div className="mx-auto max-w-6xl p-6 lg:p-12">{children}</div>
-      </main>
     </div>
   );
 }
 
 function BusinessLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen">
-      <TopNavbar />
-      <main className="min-w-0 flex-1 pt-20">
-        <div className="mx-auto max-w-6xl p-6 lg:p-12">{children}</div>
-      </main>
+    <div className="flex min-h-screen bg-background text-foreground w-full">
+      <BusinessSidebar />
+      <div className="flex-1 flex flex-col min-w-0">
+        <TopNavbar />
+        <main className="mx-auto w-full max-w-[1360px] p-6 lg:p-10 flex-1">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

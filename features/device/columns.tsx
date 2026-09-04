@@ -18,32 +18,27 @@ export function getDevicesColumns(
       key: "asset",
       label: "Asset",
       render: (item) => (
-        <div className="space-y-1 leading-tight">
-          <p className="font-semibold text-neutral-800">
-            {[item.manufacturer, item.model].filter(Boolean).join(" ") || "N/A"}
-          </p>
-          <p className="text-xs text-neutral-500">
-            {item?.serialNumber ? formatID(item?.serialNumber) : "N/A"}
-          </p>
+        <div className="asset-cell">
+          <div className="asset-swatch">
+            <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8"><rect x="7" y="2" width="10" height="20" rx="2"/></svg>
+          </div>
+          <div>
+            <div className="name">{[item.manufacturer, item.model].filter(Boolean).join(" ") || "N/A"}</div>
+            <div className="id">{item?.serialNumber ? formatID(item?.serialNumber) : "N/A"}</div>
+          </div>
         </div>
       ),
     },
     {
       key: "assignmentStatus",
       label: "Assignment",
+      className: "assign-cell",
       render: (item) =>
         !!item.currentUser && item.assignmentStatus !== "UNASSIGNED" ? (
-          <div className="space-y-1.5 leading-tight">
-            <p className="font-semibold text-neutral-900">{`${item.currentUser?.firstName} ${item.currentUser?.lastName}`}</p>
-            <p className="text-neutral-500">{item.currentUser?.email}</p>
-            {item?.assignmentStatus === "RETURNED" && (
-              <Badge2
-                content={capitalizeFirstLetters(item.assignmentStatus)}
-                variant="destructive"
-                className="text-xs!"
-              />
-            )}
-          </div>
+          <>
+            <div className="who">{`${item.currentUser?.firstName} ${item.currentUser?.lastName}`}</div>
+            <div className="email">{item.currentUser?.email}</div>
+          </>
         ) : (
           <Button
             type="button"
@@ -70,27 +65,35 @@ export function getDevicesColumns(
     {
       key: "imei",
       label: "IMEI",
-      render: (item) => <p>{item.imei}</p>,
+      className: "mono",
+      render: (item) => <>{item.imei}</>,
     },
     {
       key: "deviceStatus",
       label: "Status",
-      render: (item) => <p>{item.deviceStatus}</p>,
+      render: (item) => (
+        <span className={cn("status-pill", item.deviceStatus === "ACTIVE" ? "online" : "locked")}>
+          <span className="dot"></span>{item.deviceStatus || "Unknown"}
+        </span>
+      ),
     },
     {
       key: "serialNumber",
-      label: "Serial Number",
-      render: (item) => <p>{item.serialNumber}</p>,
+      label: "Serial number",
+      className: "mono",
+      render: (item) => <>{item.serialNumber}</>,
     },
     {
       key: "macAddress",
-      label: "MAC Address",
-      render: (item) => <p>{item.macAddress}</p>,
+      label: "MAC address",
+      className: "mono",
+      render: (item) => <>{item.macAddress}</>,
     },
     {
       key: "lastSynced",
-      label: "Last Synced",
-      render: (item) => <p>{formatDate(new Date(item.mdmLastSyncAt))}</p>,
+      label: "Last synced",
+      className: "mono",
+      render: (item) => <>{formatDate(new Date(item.mdmLastSyncAt))}</>,
     },
   ];
 

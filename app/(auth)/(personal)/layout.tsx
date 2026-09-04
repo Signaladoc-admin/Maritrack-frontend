@@ -2,22 +2,37 @@ import { H3, H4, P } from "@/shared/ui/typography";
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-background grid min-h-screen w-full grid-cols-1 items-center gap-5 p-5 lg:grid-cols-[4fr_3fr]">
-      {/* Form Section */}
-      <div className="mx-auto w-full max-w-4xl lg:px-28">{children}</div>
+    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2 bg-background">
+      {/* BRAND PANEL */}
+      <div className="relative hidden flex-col overflow-hidden border-r border-border bg-background p-11 lg:flex">
+        <div className="flex h-5 w-auto items-center text-xl font-bold">
+          Flentra
+        </div>
 
-      {/* Image Section using background image - matching design screenshot */}
-      <div className="hidden h-full overflow-hidden rounded-4xl bg-[url('/assets/auth.jpg')] bg-cover bg-center text-white lg:block">
-        <div className="flex h-full flex-col bg-linear-to-b from-transparent from-0% via-[#0B182E]/40 via-45% to-[#0B182E] to-100% px-10 pb-20">
-          <div className="mt-auto space-y-4">
-            <H4 className="text-[28px] leading-tight font-semibold tracking-tight text-white">
-              Build healthy digital <br />
-              habits together.
-            </H4>
-            <P className="max-w-md text-base leading-relaxed font-medium text-white/90">
-              Set boundaries, manage screen time, and guide them through a smarter digital journey.
-            </P>
+        <div className="relative my-auto max-w-[460px] py-16">
+          <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-accent-border bg-accent-tint px-3.5 py-1.5 text-xs font-bold tracking-wide text-accent">
+            Digital habits platform
+          </span>
+          <h1 className="mb-4 text-4xl font-extrabold leading-tight tracking-tight text-foreground">
+            Build healthy digital habits together.
+          </h1>
+          <p className="mb-8 text-base leading-relaxed text-muted-foreground">
+            Set boundaries, manage screen time, and guide your children through a smarter digital journey with real-time visibility.
+          </p>
+        </div>
+
+        <div className="relative text-xs text-muted-foreground">
+          © 2026 Flentra. All rights reserved.
+        </div>
+      </div>
+
+      {/* FORM PANEL */}
+      <div className="flex items-center justify-center p-10">
+        <div className="w-full max-w-[400px]">
+          <div className="mb-7 flex justify-center lg:hidden text-xl font-bold">
+            Flentra
           </div>
+          {children}
         </div>
       </div>
     </div>

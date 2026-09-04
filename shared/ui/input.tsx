@@ -187,7 +187,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && <Label htmlFor={inputId}>{label}</Label>}
         <div
           className={cn(
-            "ring-offset-background flex h-[50px] w-full items-center rounded-xl border border-[#E5E7EB] bg-[#fafafa] px-4 text-base transition-colors focus-within:ring-[1.5px] focus-within:ring-[#1b3c73] focus-within:ring-offset-0 focus-within:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+            "flex h-[44px] w-full items-center rounded-sm border border-card-line bg-white/5 px-4 text-sm transition-colors focus-within:border-accent-border focus-within:outline-none disabled:cursor-not-allowed disabled:opacity-50",
             className
           )}
         >
