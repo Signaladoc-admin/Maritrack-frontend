@@ -1,4 +1,5 @@
 import { H3, H4, P } from "@/shared/ui/typography";
+import { ThemeToggle } from "@/shared/ui/ThemeToggle/ThemeToggle";
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -27,7 +28,10 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
       </div>
 
       {/* FORM PANEL */}
-      <div className="flex items-center justify-center p-10">
+      <div className="flex items-center justify-center p-10 relative">
+        <div className="absolute top-6 right-6">
+          <ThemeToggle variant="icon" />
+        </div>
         <div className="w-full max-w-[400px]">
           <div className="mb-7 flex justify-center lg:hidden text-xl font-bold">
             Flentra

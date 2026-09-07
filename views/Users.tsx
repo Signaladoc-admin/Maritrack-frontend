@@ -216,7 +216,7 @@ export default function Users() {
         </div>
       ) : (
         <div className="surface p-6">
-          <Button variant="outline" className="mb-6" onClick={() => setSelectedId("")}>
+          <Button variant="secondary" className="mb-6" onClick={() => setSelectedId("")}>
              &larr; Back to list
           </Button>
           <>

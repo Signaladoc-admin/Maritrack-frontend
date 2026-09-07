@@ -93,7 +93,7 @@ const Device = () => {
               <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8"><rect x="7" y="2" width="10" height="20" rx="2"/></svg>
             </div>
             <div>
-              <div className="dd-hero-title" id="ddTitle">{deviceDetails?.name || "Samsung Galaxy A14"}</div>
+              <div className="dd-hero-title" id="ddTitle">{(deviceDetails as any)?.name || deviceDetails?.model || "Samsung Galaxy A14"}</div>
               <div className="dd-hero-sub" id="ddDeviceId">{deviceDetails?.id || mdmDeviceId}</div>
             </div>
           </div>
@@ -122,12 +122,12 @@ const Device = () => {
 
         <div className="dd-hero-chips">
           <span className="dd-chip" id="ddStatusChip">
-            <span className="dot" id="ddStatusDot" style={{ background: deviceDetails?.status === 'ACTIVE' ? '#01DB5E' : '#FF6857' }}></span>
-            <span id="ddStatusText">{deviceDetails?.status || "Activated"}</span>
+            <span className="dot" id="ddStatusDot" style={{ background: ((deviceDetails as any)?.status || deviceDetails?.deviceStatus) === 'ACTIVE' ? '#01DB5E' : '#FF6857' }}></span>
+            <span id="ddStatusText">{(deviceDetails as any)?.status || deviceDetails?.deviceStatus || "Activated"}</span>
           </span>
           <span className="dd-chip">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C7.6 2 4 5.6 4 10c0 6 8 12 8 12s8-6 8-12c0-4.4-3.6-8-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
-            Zone <b id="ddZone">{deviceDetails?.zone?.name || "ZONE-LAGOS-3391"}</b>
+            Zone <b id="ddZone">{(deviceDetails as any)?.zone?.name || "ZONE-LAGOS-3391"}</b>
           </span>
           <span className="dd-chip">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>

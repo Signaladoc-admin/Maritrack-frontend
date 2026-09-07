@@ -7,7 +7,7 @@ import { useEffect } from "react";
 
 import Table from "@/shared/ui/Table/Table";
 import { TableColumn } from "@/shared/ui/Table/types";
-import { Badge } from "@/shared/ui/badge";
+import { Badge } from "@/shared/ui/Badge";
 
 export default function UsersList({
   searchTerm,

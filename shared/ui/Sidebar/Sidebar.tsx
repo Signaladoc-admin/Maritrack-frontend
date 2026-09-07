@@ -5,6 +5,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "../Too
 import Link from "next/link";
 import { SidebarSkeleton } from "./SidebarSkeleton";
 import { ProfilePopover } from "./ProfilePopover";
+import { ThemeToggle } from "../ThemeToggle/ThemeToggle";
 import { useParentChildren } from "@/entities/children/model/useChildren";
 import { Child } from "@/features/child-profile/model/types";
 import { useRecentChildren } from "@/shared/hooks/useRecentChildren";
@@ -31,7 +32,7 @@ export function Sidebar() {
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="sticky top-0 left-0 z-40 hidden h-screen w-[100px] flex-col items-center border-r border-card-line bg-background py-10 md:flex">
+      <div className="sticky top-0 left-0 z-40 hidden h-screen w-[100px] flex-col items-center border-r border-card-line bg-[var(--sidebar-bg)] py-10 md:flex">
         <div className="flex w-full flex-col items-center">
           <Tooltip>
             <TooltipTrigger asChild>
@@ -105,7 +106,8 @@ export function Sidebar() {
           </Tooltip>
         </div>
 
-        <div className="mt-auto mb-10 flex flex-col items-center">
+        <div className="mt-auto mb-10 flex flex-col items-center gap-4">
+          <ThemeToggle variant="icon" />
           <ProfilePopover />
         </div>
       </div>

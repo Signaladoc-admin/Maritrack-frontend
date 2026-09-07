@@ -60,7 +60,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       return (
         <div className={cn("grid w-full items-center gap-1.5", wrapperClassName)}>
           {label && <Label htmlFor={inputId}>{label}</Label>}
-          <textarea className="placeholder:text-muted-foreground w-full min-w-0 flex-1 bg-transparent file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none disabled:cursor-not-allowed"></textarea>
+          <textarea className="placeholder:text-muted-foreground w-full min-w-0 flex-1 bg-transparent text-foreground focus:bg-transparent active:bg-transparent file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none disabled:cursor-not-allowed"></textarea>
         </div>
       );
     }
@@ -187,7 +187,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && <Label htmlFor={inputId}>{label}</Label>}
         <div
           className={cn(
-            "flex h-[44px] w-full items-center rounded-sm border border-card-line bg-white/5 px-4 text-sm transition-colors focus-within:border-accent-border focus-within:outline-none disabled:cursor-not-allowed disabled:opacity-50",
+            "flex h-[44px] w-full items-center rounded-sm border border-card-line bg-white/5 px-4 text-sm transition-colors focus-within:border-accent-border focus-within:ring-1 focus-within:ring-accent-border/40 focus-within:outline-none disabled:cursor-not-allowed disabled:opacity-50",
             className
           )}
         >
@@ -202,7 +202,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             onChange={handleChange}
             type={resolvedType}
             className={cn(
-              "placeholder:text-muted-foreground w-full min-w-0 flex-1 bg-transparent file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none disabled:cursor-not-allowed",
+              "placeholder:text-muted-foreground w-full min-w-0 flex-1 bg-transparent text-foreground focus:bg-transparent active:bg-transparent file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none disabled:cursor-not-allowed",
               (type === "time" || type === "date") &&
                 "appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-clear-button]:hidden [&::-webkit-inner-spin-button]:hidden"
             )}

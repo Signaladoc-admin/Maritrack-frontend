@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { ConfirmationModal } from "../Modal/Modals/ConfirmationModal";
 import { useToast } from "../toast";
 import { useLogout } from "@/features/auth/model/useLogout";
+import { ThemeToggle } from "../ThemeToggle/ThemeToggle";
 
 export function ProfilePopover() {
   const { data: userProfile } = useUserProfile();
@@ -70,9 +71,12 @@ export function ProfilePopover() {
             </div>
             <span className="text-sm font-semibold">Plans</span>
           </Link>
+          <div className="border-t border-card-line my-1" />
+          <ThemeToggle variant="menu" />
+          <div className="border-t border-card-line my-1" />
           <button
             onClick={() => setIsSignoutModalOpen(true)}
-            className="flex items-center gap-3 rounded-md p-3 text-destructive transition-colors hover:bg-destructive/10"
+            className="flex items-center gap-3 rounded-md p-3 text-destructive transition-colors hover:bg-destructive/10 cursor-pointer"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-destructive/10 text-destructive">
               <LogOut className="h-4 w-4" />

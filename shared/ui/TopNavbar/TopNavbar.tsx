@@ -5,6 +5,7 @@ import { Gauge, Menu, Smartphone, User, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ProfilePopover } from "../Sidebar/ProfilePopover";
+import { ThemeToggle } from "../ThemeToggle/ThemeToggle";
 import { cn } from "@/shared/lib/utils";
 
 const businessNavLinks = [
@@ -20,10 +21,10 @@ export default function TopNavbar() {
   return (
     <>
       {/* Top bar (Desktop & Mobile) */}
-      <div className="topbar">
+      <div className="topbar sticky top-0 z-50">
         {/* Mobile menu button */}
         <button
-          className="p-1 text-muted-foreground hover:text-foreground md:hidden mr-2"
+          className="p-1 text-muted-foreground hover:text-foreground md:hidden mr-2 cursor-pointer"
           onClick={() => setDrawerOpen(true)}
           aria-label="Open menu"
         >
@@ -41,6 +42,12 @@ export default function TopNavbar() {
           <button className="os-pill active">Android</button>
           <button className="os-pill">Windows</button>
           <button className="os-pill">iOS</button>
+        </div>
+
+        {/* Theme Toggle */}
+        <div className="flex items-center gap-2">
+          <ThemeToggle variant="pill" className="hidden sm:inline-flex" />
+          <ThemeToggle variant="icon" className="sm:hidden" />
         </div>
 
         {/* Avatar */}
@@ -86,7 +93,7 @@ export default function TopNavbar() {
                 className={cn(
                   "flex items-center gap-3 rounded-full px-4 py-3 font-semibold transition-all",
                   isActive
-                    ? "bg-accent-tint text-white"
+                    ? "bg-accent-tint text-accent"
                     : "text-muted-foreground hover:bg-card-hover hover:text-foreground"
                 )}
               >
@@ -97,7 +104,11 @@ export default function TopNavbar() {
           })}
         </nav>
         
-        <div className="absolute bottom-5 left-0 w-full px-4">
+        <div className="absolute bottom-5 left-0 w-full px-4 flex flex-col gap-2">
+          <div className="flex items-center justify-between rounded-md border border-card-line bg-card-fill p-2">
+            <span className="text-xs font-semibold text-muted-foreground px-1">Theme</span>
+            <ThemeToggle variant="pill" />
+          </div>
           <div className="flex items-center gap-2.5 rounded-md border border-card-line bg-card-fill p-2.5">
             <ProfilePopover />
           </div>
