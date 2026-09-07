@@ -8,6 +8,7 @@ import {
   getDevicesAction,
   markDeviceAsReturnedAction,
   bulkActionDevicesAction,
+  bulkMessageDevicesAction,
   getDeviceMessagesAction,
 } from "../api/device.actions";
 import type { DeviceQueryOptions } from "./types";
@@ -91,6 +92,22 @@ export function useBulkActionDevices(options: { onSuccess?: () => void } = {}) {
   return useServerActionMutation(
     ({ ids, actionId, messageText }: { ids: string[]; actionId: number; messageText?: string }) =>
       bulkActionDevicesAction(ids, actionId, messageText),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: deviceKeys.list({}) });
+        if (options.onSuccess) {
+          options.onSuccess();
+        }
+      },
+    }
+  );
+}
+
+export function useBulkMessageDevices(options: { onSuccess?: () => void } = {}) {
+  const queryClient = useQueryClient();
+  return useServerActionMutation(
+    ({ ids, messageType, message }: { ids: string[]; messageType: string; message: string }) =>
+      bulkMessageDevicesAction(ids, messageType, message),
     {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: deviceKeys.list({}) });

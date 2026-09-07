@@ -61,17 +61,15 @@ const Device = () => {
       {isLoadingHardwareData ? (
         <DeviceHeaderSkeleton isMobile={isMobile} />
       ) : (
-        <div className="mb-10 flex w-full flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div className="mb-10 flex w-full flex-col gap-6">
           {!isMobile && (
-            <div className="flex justify-between">
-              <div className="flex justify-start">
-                <Back label="Back to devices" href="/devices" />
-              </div>
+            <div className="flex justify-start">
+              <Back label="Back to devices" href="/devices" />
             </div>
           )}
 
-          <div className="flex w-full flex-col items-stretch gap-4 lg:w-auto lg:flex-row lg:items-center">
-            <div className="w-full lg:w-auto">
+          <div className="flex w-full flex-col items-center justify-center gap-6 lg:flex-row">
+            <div className="w-full lg:w-auto flex justify-center">
               <TabNavigation
                 tabs={TABS}
                 activeTab={activeTab}
@@ -80,14 +78,14 @@ const Device = () => {
               />
             </div>
 
-            <div className="ml-auto flex w-full items-center gap-4 lg:w-auto">
-              {activeTab !== "configuration" && (
+            <div className="flex items-center justify-center gap-4">
+              {/* {activeTab !== "configuration" && (
                 <div className="flex-1 lg:flex-none">
                   <DateDropdown />
                 </div>
-              )}
+              )} */}
               {user?.appRole === "PARENT" && (
-                <div className="ml-auto flex lg:ml-0">
+                <div className="flex lg:ml-0">
                   <IconWrapper
                     action={() => setShowDelete(true)}
                     icon={<Trash2Icon className="h-5 w-5 text-[#D95D55]" />}
@@ -163,7 +161,7 @@ const Device = () => {
       {activeTab === "messages" && <Messages deviceId={deviceDetails?.id} />}
       {activeTab === "configuration" && (
         <div className="mx-auto max-w-lg">
-          <DevicesConfigurationSetup />
+          <DevicesConfigurationSetup deviceId={mdmDeviceId} userId={deviceDetails?.currentUserId ?? undefined} />
         </div>
       )}
       {activeTab === "actions" && <DeviceActions />}

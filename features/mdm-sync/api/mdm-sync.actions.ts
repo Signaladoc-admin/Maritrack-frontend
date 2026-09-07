@@ -176,11 +176,22 @@ export async function blockAppAction({
   packageName,
 }: BlockUnblockAppVariables): Promise<ActionResult<any>> {
   return withSafeAction(
-    async () =>
-      await apiClient(`/mdm-sync/${deviceId}/action`, {
-        method: "POST",
-        body: JSON.stringify({ deviceIds: [deviceId], actionId: 27, message: packageName }),
-      }),
+    async () => {
+      const payload = { actionId: 27, message: packageName };
+      console.log("blockAppAction Payload:", payload);
+      try {
+        const response = await apiClient(`/mdm-sync/${deviceId}/action`, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        console.log("blockAppAction Response:", response);
+        return response;
+      } catch (error: any) {
+        const source = error?.isBackendError ? "BACKEND" : error?.isNetworkError ? "NETWORK" : "FRONTEND";
+        console.error(`blockAppAction [${source} ERROR]:`, error?.message || error, error?.responseData || "");
+        throw error;
+      }
+    },
     "Failed to block app"
   );
 }
@@ -190,14 +201,56 @@ export async function unblockAppAction({
   packageName,
 }: BlockUnblockAppVariables): Promise<ActionResult<any>> {
   return withSafeAction(
-    async () =>
-      await apiClient(`/mdm-sync/${deviceId}/action`, {
-        method: "POST",
-        body: JSON.stringify({ deviceIds: [deviceId], actionId: 28, message: packageName }),
-      }),
+    async () => {
+      const payload = { actionId: 28, message: packageName };
+      console.log("unblockAppAction Payload:", payload);
+      try {
+        const response = await apiClient(`/mdm-sync/${deviceId}/action`, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        console.log("unblockAppAction Response:", response);
+        return response;
+      } catch (error: any) {
+        const source = error?.isBackendError ? "BACKEND" : error?.isNetworkError ? "NETWORK" : "FRONTEND";
+        console.error(`unblockAppAction [${source} ERROR]:`, error?.message || error, error?.responseData || "");
+        throw error;
+      }
+    },
     "Failed to unblock app"
   );
 }
+
+export interface UninstallAppVariables {
+  deviceId: string;
+  packageName: string;
+}
+
+export async function uninstallAppAction({
+  deviceId,
+  packageName,
+}: UninstallAppVariables): Promise<ActionResult<any>> {
+  return withSafeAction(
+    async () => {
+      const payload = { actionId: 20, message: packageName };
+      console.log("uninstallAppAction Payload:", payload);
+      try {
+        const response = await apiClient(`/mdm-sync/${deviceId}/action`, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        console.log("uninstallAppAction Response:", response);
+        return response;
+      } catch (error: any) {
+        const source = error?.isBackendError ? "BACKEND" : error?.isNetworkError ? "NETWORK" : "FRONTEND";
+        console.error(`uninstallAppAction [${source} ERROR]:`, error?.message || error, error?.responseData || "");
+        throw error;
+      }
+    },
+    "Failed to uninstall app"
+  );
+}
+
 
 export interface DeviceActionVariables {
   deviceId: string;
@@ -207,11 +260,22 @@ export async function lockDeviceAction({
   deviceId,
 }: DeviceActionVariables): Promise<ActionResult<any>> {
   return withSafeAction(
-    async () =>
-      await apiClient(`/mdm-sync/${deviceId}/action`, {
-        method: "POST",
-        body: JSON.stringify({ deviceIds: [deviceId], actionId: 401, message: "NA" }),
-      }),
+    async () => {
+      const payload = {
+        actionId: 401
+      };
+      try {
+        const response = await apiClient(`/mdm-sync/${deviceId}/action`, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        return response;
+      } catch (error: any) {
+        const source = error?.isBackendError ? "BACKEND" : error?.isNetworkError ? "NETWORK" : "FRONTEND";
+        console.error(`lockDeviceAction [${source} ERROR]:`, error?.message || error, error?.responseData || "");
+        throw error;
+      }
+    },
     "Failed to lock device"
   );
 }
@@ -220,11 +284,22 @@ export async function unlockDeviceAction({
   deviceId,
 }: DeviceActionVariables): Promise<ActionResult<any>> {
   return withSafeAction(
-    async () =>
-      await apiClient(`/mdm-sync/${deviceId}/action`, {
-        method: "POST",
-        body: JSON.stringify({ deviceIds: [deviceId], actionId: 201, message: "NA" }),
-      }),
+    async () => {
+      const payload = {
+        actionId: 201
+      };
+      try {
+        const response = await apiClient(`/mdm-sync/${deviceId}/action`, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        return response;
+      } catch (error: any) {
+        const source = error?.isBackendError ? "BACKEND" : error?.isNetworkError ? "NETWORK" : "FRONTEND";
+        console.error(`unlockDeviceAction [${source} ERROR]:`, error?.message || error, error?.responseData || "");
+        throw error;
+      }
+    },
     "Failed to unlock device"
   );
 }
@@ -233,11 +308,22 @@ export async function wipeDeviceAction({
   deviceId,
 }: DeviceActionVariables): Promise<ActionResult<any>> {
   return withSafeAction(
-    async () =>
-      await apiClient(`/mdm-sync/${deviceId}/action`, {
-        method: "POST",
-        body: JSON.stringify({ deviceIds: [deviceId], actionId: 8, message: "NA" }),
-      }),
+    async () => {
+      const payload = {
+        actionId: 8
+      };
+      try {
+        const response = await apiClient(`/mdm-sync/${deviceId}/action`, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        return response;
+      } catch (error: any) {
+        const source = error?.isBackendError ? "BACKEND" : error?.isNetworkError ? "NETWORK" : "FRONTEND";
+        console.error(`wipeDeviceAction [${source} ERROR]:`, error?.message || error, error?.responseData || "");
+        throw error;
+      }
+    },
     "Failed to wipe device"
   );
 }

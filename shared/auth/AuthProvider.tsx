@@ -132,31 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => controller.abort();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Schedule a silent refresh 1 minute before the token expires
-  useEffect(() => {
-    if (!accessToken) return;
 
-    const payload = getTokenPayload(accessToken);
-    if (!payload?.exp) return;
-
-    const msUntilRefresh = payload.exp * 1000 - Date.now() - 60_000;
-    if (msUntilRefresh <= 0) return;
-
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch("/api/refresh", { method: "POST", credentials: "include" });
-        if (!res.ok) throw new Error("Refresh failed");
-        const { accessToken: newToken } = await res.json();
-        setAccessToken(newToken);
-      } catch {
-        // Background refresh failed — do NOT logout. The current token is still valid
-        // for the remaining ~60 s. When it actually expires, apiClient's 401 handler
-        // will call refreshAccessToken() and redirect to /login if that also fails.
-      }
-    }, msUntilRefresh);
-
-    return () => clearTimeout(timer);
-  }, [accessToken]);
 
   if (isUserLoading) {
     return <PageLoader />;

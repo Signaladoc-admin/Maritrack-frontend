@@ -16,6 +16,9 @@ export type UpdateBusinessDto = z.infer<typeof UpdateBusinessSchema>;
 // locations endpoints), so the business-profiles payload carries only `profile`.
 export const BusinessProfileSchema = z.object({
     profile: z.string().min(1, "Business profile is required"),
+    type: z.string().min(1, "Business type is required"),
+    departments: z.array(z.string()).optional(),
+    locations: z.array(z.string()).optional(),
 });
 
 export type BusinessProfileDto = z.infer<typeof BusinessProfileSchema>;

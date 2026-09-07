@@ -32,7 +32,7 @@ export interface GeofenceLocation extends BaseEntity {
 }
 
 export interface Restrictions {
-  domains?: Domain[];
+  domains?: string[];
   geofences?: GeofenceLocation[];
 }
 

@@ -50,7 +50,7 @@ export default function SuspendAppsModal({
   const apps = React.useMemo(() => {
     const appsMap = new Map<string, any>();
     const deviceApps = data?.data?.apps || (data as any)?.apps || [];
-    
+
     if (Array.isArray(deviceApps)) {
       deviceApps.forEach((app: any) => {
         if (app && typeof app === "object") {
@@ -130,18 +130,18 @@ export default function SuspendAppsModal({
                 {isSuspend ? "Suspend apps" : "Unsuspend apps"}
               </h2>
             </div>
-            
+
             <div className="flex gap-4">
               <div className="flex-1 relative">
                 <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input 
-                  placeholder="Search for an app" 
-                  value={searchQuery} 
+                <Input
+                  placeholder="Search for an app"
+                  value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   className="pl-9 bg-gray-50 border-gray-100 rounded-xl focus-visible:ring-1 focus-visible:ring-gray-300"
                 />
               </div>
-              <Button 
+              <Button
                 className={`text-white rounded-xl px-6 ${buttonColor}`}
                 onClick={() => setIsConfirming(true)}
                 disabled={selectedApps.length === 0 || isFetchingApps}
@@ -163,8 +163,8 @@ export default function SuspendAppsModal({
                   const icon = app.icon;
                   return (
                     <label key={app.packageName} className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         className="w-4 h-4 rounded border-gray-300 text-[#1b3c73] focus:ring-[#1b3c73]"
                         checked={selectedApps.includes(app.packageName)}
                         onChange={(e) => {

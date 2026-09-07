@@ -19,11 +19,12 @@ export async function getBusinessesAction(params?: QueryOptions): Promise<Busine
   return response.data;
 }
 
-export async function getBusinessAction(id: string) {
+export async function getBusinessAction(id: string, token?: string) {
   try {
     const res = await apiClient<ApiResponse<Business>>(`/businesses/${id}`, {
       method: "GET",
       noRedirect: true,
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
     return { success: true, data: res };
   } catch (error) {
@@ -78,8 +79,12 @@ export async function createBusinessProfileAction({
   ...data
 }: {
   profile: string;
+  type?: string;
+  departments?: string[];
+  locations?: string[];
 }): Promise<any> {
   return withSafeAction(async () => {
+    
     const res = await apiClient(`/business-profiles`, {
       method: "POST",
       body: JSON.stringify(data),
@@ -95,8 +100,12 @@ export async function updateBusinessProfileAction({
 }: {
   id: string;
   profile?: string;
+  type?: string;
+  departments?: string[];
+  locations?: string[];
 }): Promise<any> {
   return withSafeAction(async () => {
+    
     const res = await apiClient(`/business-profiles/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),

@@ -13,7 +13,7 @@ export default function BusinessRegistrationPage() {
     <div className="space-y-7">
       <Header
         className="pt-0"
-        title="Hi Grace, Tell us about your business"
+        title="Hi, Tell us about your business"
         subtitle="Give us more information about your business"
       />
       <BusinessRegistrationForm />
