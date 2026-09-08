@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { useAuth } from "../auth/AuthProvider";
 import { Sidebar } from "../ui/Sidebar/Sidebar";
 import { MobileNavbar } from "../ui/layout/mobile-navbar";
@@ -29,7 +29,7 @@ function ParentLayout({ children }: { children: ReactNode }) {
         <div className="flex w-full items-center justify-end p-6 lg:p-8 md:hidden">
            <ProfilePopover />
         </div>
-        <main className="mx-auto w-full max-w-[1360px] p-6 lg:p-10 flex-1">
+        <main className="mx-auto w-full max-w-[1360px] p-4 sm:p-6 lg:p-10 flex-1">
           {children}
         </main>
       </div>
@@ -38,12 +38,14 @@ function ParentLayout({ children }: { children: ReactNode }) {
 }
 
 function BusinessLayout({ children }: { children: ReactNode }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="flex min-h-screen bg-background text-foreground w-full">
-      <BusinessSidebar />
+      <BusinessSidebar mobileOpen={mobileMenuOpen} setMobileOpen={setMobileMenuOpen} />
       <div className="flex-1 flex flex-col min-w-0">
-        <TopNavbar />
-        <main className="mx-auto w-full max-w-[1360px] p-6 lg:p-10 flex-1">
+        <TopNavbar onMenuClick={() => setMobileMenuOpen(true)} />
+        <main className="mx-auto w-full max-w-[1360px] p-4 sm:p-6 lg:p-10 flex-1">
           {children}
         </main>
       </div>

@@ -1232,3 +1232,50 @@ body, button, input, select, textarea {
   .sidebar.collapsed .account-row .who{ opacity:0; width:0; display:none; }
   .account-row .who .name{ font-size:13px; color: var(--text-1); font-weight:600; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;}
   .account-row .who .role{ font-size:11.5px; color: var(--text-3); }
+
+/* ---------- MOBILE RESPONSIVENESS OVERRIDES ---------- */
+@media (max-width: 768px) {
+  .topbar {
+    padding: 14px 16px;
+  }
+  .table-panel {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .table-panel table {
+    min-width: 640px;
+  }
+  .method-row {
+    grid-template-columns: 1fr;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .dd-hero-top {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .dd-hero-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .dd-tabs-bar {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .dd-tabs-bar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .dd-tile-grid {
+    grid-template-columns: 1fr;
+  }
+  .dd-tile.span-2 {
+    grid-column: span 1;
+  }
+}

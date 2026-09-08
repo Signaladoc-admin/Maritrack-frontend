@@ -14,9 +14,9 @@ const businessNavLinks = [
   { label: "Users", href: "/users", icon: User },
 ];
 
-export default function TopNavbar() {
+export default function TopNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const pathname = usePathname();
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   return (
     <>
@@ -24,95 +24,57 @@ export default function TopNavbar() {
       <div className="topbar sticky top-0 z-50">
         {/* Mobile menu button */}
         <button
-          className="p-1 text-muted-foreground hover:text-foreground md:hidden mr-2 cursor-pointer"
-          onClick={() => setDrawerOpen(true)}
+          className={cn(
+            "p-1 text-muted-foreground hover:text-foreground md:hidden mr-2 cursor-pointer",
+            searchOpen && "hidden"
+          )}
+          onClick={onMenuClick}
           aria-label="Open menu"
         >
           <Menu className="h-5 w-5" />
         </button>
 
         {/* Search bar */}
-        <div className="search-wrap">
+        <div className={cn(
+          "search-wrap transition-all",
+          searchOpen ? "flex w-full" : "hidden sm:flex",
+          "sm:w-auto"
+        )}>
           <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8"/><path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
           <input type="text" placeholder="Search by serial number, IMEI, MAC, or alias" />
+          {searchOpen && (
+            <button className="sm:hidden p-1 ml-1 cursor-pointer" onClick={() => setSearchOpen(false)}>
+              <X className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+            </button>
+          )}
         </div>
 
+        {/* Mobile Search Icon (when search is closed) */}
+        {!searchOpen && (
+          <button 
+            className="p-1 ml-auto text-muted-foreground hover:text-foreground sm:hidden cursor-pointer"
+            onClick={() => setSearchOpen(true)}
+            aria-label="Open search"
+          >
+            <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8"/><path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+          </button>
+        )}
+
         {/* OS Filters */}
-        <div className="os-pills hidden sm:flex">
+        <div className={cn("os-pills hidden sm:flex")}>
           <button className="os-pill active">Android</button>
           <button className="os-pill">Windows</button>
           <button className="os-pill">iOS</button>
         </div>
 
         {/* Theme Toggle */}
-        <div className="flex items-center gap-2">
+        <div className={cn("flex items-center gap-2", searchOpen && "hidden sm:flex")}>
           <ThemeToggle variant="pill" className="hidden sm:inline-flex" />
           <ThemeToggle variant="icon" className="sm:hidden" />
         </div>
 
         {/* Avatar */}
-        <div className="topbar-avatar hidden sm:flex">DO</div>
-      </div>
-
-      {/* Backdrop */}
-      <div
-        className={cn(
-          "fixed inset-0 z-[10001] bg-black/40 transition-opacity duration-300 md:hidden",
-          drawerOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
-        )}
-        onClick={() => setDrawerOpen(false)}
-      />
-
-      {/* Slide-out drawer */}
-      <div
-        className={cn(
-          "fixed top-0 left-0 z-[10002] h-full w-64 border-r border-card-line bg-background shadow-none transition-transform duration-300 md:hidden",
-          drawerOpen ? "translate-x-0" : "-translate-x-full"
-        )}
-      >
-        <div className="flex items-center justify-between border-b border-card-line px-5 py-6">
-          <span className="font-bold text-foreground">Menu</span>
-          <button
-            onClick={() => setDrawerOpen(false)}
-            aria-label="Close menu"
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <nav className="flex flex-col gap-1 p-4">
-          {businessNavLinks.map((link) => {
-            const isActive = pathname === link.href;
-            const Icon = link.icon;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setDrawerOpen(false)}
-                className={cn(
-                  "flex items-center gap-3 rounded-full px-4 py-3 font-semibold transition-all",
-                  isActive
-                    ? "bg-accent-tint text-accent"
-                    : "text-muted-foreground hover:bg-card-hover hover:text-foreground"
-                )}
-              >
-                <Icon className="h-5 w-5" />
-                <span>{link.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-        
-        <div className="absolute bottom-5 left-0 w-full px-4 flex flex-col gap-2">
-          <div className="flex items-center justify-between rounded-md border border-card-line bg-card-fill p-2">
-            <span className="text-xs font-semibold text-muted-foreground px-1">Theme</span>
-            <ThemeToggle variant="pill" />
-          </div>
-          <div className="flex items-center gap-2.5 rounded-md border border-card-line bg-card-fill p-2.5">
-            <ProfilePopover />
-          </div>
-        </div>
+        <div className={cn("topbar-avatar hidden sm:flex")}>DO</div>
       </div>
     </>
   );

@@ -28,7 +28,7 @@ export function QRCodeCard({
       <div className="flex flex-col items-center justify-center rounded-3xl text-center text-white">
         <div className="mb-4 flex w-full items-center justify-center rounded-xl bg-white p-4 shadow-lg">
           {isLoading ? (
-            <div className="aspect-square h-auto w-72 animate-pulse rounded bg-slate-100" />
+            <div className="aspect-square h-auto w-72 animate-pulse rounded bg-[var(--card-line)]" />
           ) : isError ? (
             <div className="text-destructive text-sm font-medium">Failed to load QR</div>
           ) : src ? (

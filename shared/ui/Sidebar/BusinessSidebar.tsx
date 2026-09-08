@@ -6,7 +6,13 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/shared/lib/utils";
 import { ProfilePopover } from "../Sidebar/ProfilePopover";
 
-export function BusinessSidebar() {
+export function BusinessSidebar({ 
+  mobileOpen, 
+  setMobileOpen 
+}: { 
+  mobileOpen?: boolean; 
+  setMobileOpen?: (open: boolean) => void;
+}) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState({ monitor: false, manage: false });
   const [isAppCollapsed, setIsAppCollapsed] = useState(false);
@@ -16,15 +22,45 @@ export function BusinessSidebar() {
   };
 
   return (
-    <aside className={cn("sidebar hidden md:flex transition-all duration-300", isAppCollapsed ? "collapsed w-[70px]" : "w-[258px]")}>
-      <div className="brand-zone">
-        <div className="brand">
-          <img src="/assets/FlentraLogo.svg" alt="Flentra Logo" />
+    <>
+      {/* Mobile Backdrop */}
+      {setMobileOpen && (
+        <div 
+          className={cn(
+            "fixed inset-0 z-[10001] bg-black/40 transition-opacity duration-300 md:hidden",
+            mobileOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
+          )}
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      <aside 
+        className={cn(
+          "sidebar transition-all duration-300",
+          isAppCollapsed ? "collapsed w-[70px]" : "w-[258px]",
+          // Desktop behavior: sticky, always visible.
+          "md:!sticky md:translate-x-0 md:flex",
+          // Mobile behavior: fixed drawer, hidden unless mobileOpen is true.
+          "!fixed top-0 left-0 z-[10002] h-full shadow-xl md:shadow-none",
+          mobileOpen ? "translate-x-0 flex" : "-translate-x-full md:-translate-x-0"
+        )}
+      >
+        <div className="brand-zone">
+          <div className="brand flex items-center justify-between w-full">
+            <img src="/assets/FlentraLogo.svg" alt="Flentra Logo" />
+            {setMobileOpen && (
+              <button 
+                className="md:hidden p-1 text-muted-foreground hover:text-foreground"
+                onClick={() => setMobileOpen(false)}
+              >
+                <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </button>
+            )}
+          </div>
+          <button className="collapse-btn hidden md:flex" aria-label="Collapse sidebar" onClick={() => setIsAppCollapsed(!isAppCollapsed)}>
+            <svg viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </button>
         </div>
-        <button className="collapse-btn" aria-label="Collapse sidebar" onClick={() => setIsAppCollapsed(!isAppCollapsed)}>
-          <svg viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-        </button>
-      </div>
 
       <div className="nav-section no-card">
         <div className="nav-section-body">
@@ -119,5 +155,6 @@ export function BusinessSidebar() {
         </div>
       </div>
     </aside>
+    </>
   );
 }
