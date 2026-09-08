@@ -107,12 +107,12 @@ export function SetTimeLimitModal({
           {view === "custom" && (
             <button
               onClick={() => setView("general")}
-              className="mb-2 flex items-center text-sm font-medium text-[#1B3C73] hover:underline"
+              className="mb-2 flex items-center text-sm font-medium text-[var(--accent)] hover:underline"
             >
               <ChevronLeft className="mr-1 h-4 w-4" /> Back to general
             </button>
           )}
-          <DialogTitle className="text-xl font-bold text-slate-900">
+          <DialogTitle className="text-xl font-bold text-[var(--text-1)]">
             {view === "general" ? `Set Limit for ${appName}` : `Set Limit for ${appName} (custom)`}
           </DialogTitle>
         </DialogHeader>
@@ -120,10 +120,10 @@ export function SetTimeLimitModal({
         {view === "general" ? (
           // === GENERAL VIEW ===
           <div className="space-y-6">
-            <div className="space-y-4 rounded-xl bg-slate-50 p-4">
+            <div className="space-y-4 rounded-xl bg-[var(--card-fill)] p-4">
               <div className="flex items-center justify-between">
                 <span className="text-lg font-medium">Time</span>
-                <span className="font-medium text-[#1B3C73]">
+                <span className="font-medium text-[var(--accent)]">
                   {generalLimit.hour > 0 || generalLimit.minutes > 0
                     ? `${generalLimit.hour}hr ${generalLimit.minutes > 0 ? `${generalLimit.minutes}m` : ""}, everyday`
                     : "No limit"}
@@ -153,10 +153,10 @@ export function SetTimeLimitModal({
 
             <button
               onClick={() => setView("custom")}
-              className="flex w-full items-center justify-between rounded-xl bg-slate-50 p-4 transition-colors hover:bg-slate-100"
+              className="flex w-full items-center justify-between rounded-xl bg-[var(--card-fill)] p-4 transition-colors hover:bg-[var(--card-hover)]"
             >
               <span className="text-lg font-medium">Customize days</span>
-              <ChevronRight className="h-5 w-5 text-[#1B3C73]" />
+              <ChevronRight className="h-5 w-5 text-[var(--accent)]" />
             </button>
           </div>
         ) : (
@@ -166,7 +166,7 @@ export function SetTimeLimitModal({
               const isExpanded = expandedDay === day;
               const limit = weekLimits[day] || defaultLimit;
               return (
-                <div key={day} className="rounded-xl bg-slate-50 p-4">
+                <div key={day} className="rounded-xl bg-[var(--card-fill)] p-4">
                   <button
                     type="button"
                     onClick={() => toggleDay(day)}
@@ -174,7 +174,7 @@ export function SetTimeLimitModal({
                   >
                     <span>{day}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-[#1B3C73]">
+                      <span className="text-sm font-medium text-[var(--accent)]">
                         {limit.hour > 0 || limit.minutes > 0
                           ? `${limit.hour}h ${limit.minutes > 0 ? `${limit.minutes}m` : ""}`
                           : "No limit"}
@@ -190,7 +190,7 @@ export function SetTimeLimitModal({
                   {isExpanded && (
                     <div className="mt-3 grid grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-500">Hour</label>
+                        <label className="text-xs font-medium text-[var(--text-2)]">Hour</label>
                         <SelectBox
                           value={limit.hour}
                           onChange={(val) => handleDayChange(day, "hour", val)}
@@ -198,7 +198,7 @@ export function SetTimeLimitModal({
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-500">Minutes</label>
+                        <label className="text-xs font-medium text-[var(--text-2)]">Minutes</label>
                         <SelectBox
                           value={limit.minutes}
                           onChange={(val) => handleDayChange(day, "minutes", val)}
@@ -216,7 +216,7 @@ export function SetTimeLimitModal({
 
         <DialogFooter className="mt-6">
           <Button
-            className="h-12 w-full bg-[#1B3C73] text-base"
+            className="h-12 w-full text-base"
             onClick={handleSave}
             isLoading={isLoading}
           >
@@ -247,7 +247,7 @@ function SelectBox({ value, onChange, max, step = 1 }: SelectBoxProps) {
       <select
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-8 text-slate-600 focus:border-[#1B3C73] focus:outline-none"
+        className="h-11 w-full appearance-none rounded-lg border border-[var(--card-line-strong)] bg-transparent px-3 pr-8 text-[var(--text-1)] focus:border-[var(--accent)] focus:outline-none"
       >
         {options.map((opt) => (
           <option key={opt} value={opt}>

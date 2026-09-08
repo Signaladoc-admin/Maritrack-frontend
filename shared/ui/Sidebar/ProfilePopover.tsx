@@ -72,8 +72,6 @@ export function ProfilePopover() {
             <span className="text-sm font-semibold">Plans</span>
           </Link>
           <div className="border-t border-card-line my-1" />
-          <ThemeToggle variant="menu" />
-          <div className="border-t border-card-line my-1" />
           <button
             onClick={() => setIsSignoutModalOpen(true)}
             className="flex items-center gap-3 rounded-md p-3 text-destructive transition-colors hover:bg-destructive/10 cursor-pointer"

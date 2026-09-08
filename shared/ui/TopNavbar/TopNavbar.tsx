@@ -74,7 +74,7 @@ export default function TopNavbar({ onMenuClick }: { onMenuClick?: () => void })
         </div>
 
         {/* Avatar */}
-        <div className={cn("topbar-avatar hidden sm:flex")}>DO</div>
+        <Link href="/profile" className={cn("topbar-avatar hidden sm:flex cursor-pointer hover:opacity-80 transition-opacity")}>DO</Link>
       </div>
     </>
   );

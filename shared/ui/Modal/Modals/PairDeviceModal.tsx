@@ -29,10 +29,10 @@ export function PairDeviceModal({
     >
       <div className="grid place-items-center gap-8 md:grid-cols-2 md:place-items-stretch md:gap-12">
         {/* Left Column: Instructions */}
-        <div className="flex flex-col justify-between rounded-3xl bg-neutral-100 p-8 py-14! md:p-10">
+        <div className="flex flex-col justify-between rounded-3xl bg-[var(--card-fill)] border border-[var(--card-line)] p-8 py-14! md:p-10">
           <div className="">
             <DialogHeader className="mb-6">
-              <DialogTitle className="text-left text-xl font-bold text-[#1B3C73]">
+              <DialogTitle className="text-left text-xl font-bold text-[var(--text-1)]">
                 Pair new device
               </DialogTitle>
             </DialogHeader>
@@ -46,7 +46,7 @@ export function PairDeviceModal({
             </div>
           </div>
 
-          <div className="mt-8 flex items-center gap-2 rounded text-xs font-medium text-slate-400">
+          <div className="mt-8 flex items-center gap-2 rounded text-xs font-medium text-[var(--text-2)]">
             <span className="text-center">
               <Lock className="mr-1 inline h-3 w-3" strokeWidth={2.5} />
               Pairing is secure and only works with your approval.
