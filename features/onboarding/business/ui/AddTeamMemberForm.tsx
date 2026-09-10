@@ -44,7 +44,7 @@ export default function AddTeamMemberForm({
     formState: { errors },
   } = useForm<OnboardingStaffMemberValues>({
     resolver: zodResolver(onboardingStaffMemberSchema),
-    defaultValues: { email: "", location: "" },
+    defaultValues: { email: "", location: "", firstName: "", lastName: "", phone: "" },
     mode: "onTouched",
   });
 
@@ -92,6 +92,29 @@ export default function AddTeamMemberForm({
             emailRef.current = node;
           }}
           error={errors.email?.message}
+        />
+        <div className="grid grid-cols-2 gap-4">
+          <InputGroup
+            label="First name"
+            type="text"
+            placeholder="John"
+            {...register("firstName")}
+            error={errors.firstName?.message}
+          />
+          <InputGroup
+            label="Last name"
+            type="text"
+            placeholder="Doe"
+            {...register("lastName")}
+            error={errors.lastName?.message}
+          />
+        </div>
+        <InputGroup
+          label="Phone number"
+          type="tel"
+          placeholder="+1234567890"
+          {...register("phone")}
+          error={errors.phone?.message}
         />
         <InputGroup
           label="Location"

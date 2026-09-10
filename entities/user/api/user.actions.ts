@@ -25,10 +25,11 @@ export async function getProfileAction(): Promise<UserProfile | null> {
   }
 }
 
-export async function getUserByIdAction(id: string) {
+export async function getUserByIdAction(id: string, token?: string) {
   return withSafeAction(async () => {
     const response = await apiClient<ApiResponse<UserDetails>>(`/users/user/${id}`, {
       method: "GET",
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
     return response.data;
   }, "Failed to get user details")

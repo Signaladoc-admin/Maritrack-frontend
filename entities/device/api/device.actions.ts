@@ -67,8 +67,7 @@ export async function bulkActionDevicesAction(
 ) {
   return withSafeAction(async () => {
     const payload = {
-      ids,
-      // deviceCount: ids.length,
+      mdmDeviceIds: ids,
       action: {
         actionId,
         ...(messageText ? { message: messageText } : {}),
@@ -96,4 +95,29 @@ export async function getDeviceMessagesAction(
     });
     return res.data ?? res;
   }, "Failed to fetch device messages");
+}
+
+export async function bulkMessageDevicesAction(
+  ids: string[],
+  messageType: string,
+  message: string
+) {
+  return withSafeAction(async () => {
+    const payload = {
+      mdmDeviceIds: ids,
+      action: {
+        actionId: 3,
+        messageType,
+        message,
+      },
+    };
+
+    const res = await apiClient("/mdm-sync/action/bulk", {
+      method: "POST",
+      body: JSON.stringify(payload),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    return res.data ?? res;
+  }, "Failed to send bulk message");
 }

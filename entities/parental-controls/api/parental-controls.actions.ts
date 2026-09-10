@@ -43,11 +43,12 @@ export async function getMdmPolicyByParentIdAction(parentId: string): Promise<an
   return response.data;
 }
 
-export async function getParentalControlMeAction() {
+export async function getParentalControlMeAction(token?: string) {
   try {
     const response = await apiClient<ApiResponse<ParentalControlResponse>>("/parental-controls/me", {
       method: "GET",
       noRedirect: true,
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
     return { success: true, data: response.data };
   } catch (error) {

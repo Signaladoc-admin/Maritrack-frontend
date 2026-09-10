@@ -7,7 +7,7 @@ import {
   DialogFooter,
 } from "@/shared/ui/dialog";
 import { Button } from "@/shared/ui/button";
-import { useBulkActionDevices } from "@/entities/device";
+import { useBulkMessageDevices } from "@/entities/device";
 import { useToast } from "@/shared/ui/toast";
 import { Loader } from "@/shared/ui/loader";
 import { TriangleAlert } from "lucide-react";
@@ -26,10 +26,11 @@ export default function BulkMessageModal({
   onSuccess,
 }: BulkMessageModalProps) {
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("WELCOME");
   const [isConfirming, setIsConfirming] = useState(false);
   const { toast } = useToast();
 
-  const { mutate: sendBulkMessage, isPending } = useBulkActionDevices({
+  const { mutate: sendBulkMessage, isPending } = useBulkMessageDevices({
     onSuccess: () => {
       toast({
         title: "Success",
@@ -72,8 +73,8 @@ export default function BulkMessageModal({
 
     sendBulkMessage({
       ids: validIds,
-      actionId: 3,
-      messageText: message,
+      messageType,
+      message,
     });
   };
 
@@ -138,6 +139,24 @@ export default function BulkMessageModal({
                     +{remainingCount}
                   </span>
                 )}
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-medium text-gray-700">Message Type</span>
+                <select
+                  className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm bg-white"
+                  value={messageType}
+                  onChange={(e) => setMessageType(e.target.value)}
+                >
+                  <option value="WELCOME">Welcome</option>
+                  <option value="PAYMENT_REMINDER">Payment Reminder</option>
+                  <option value="PAYMENT_DUE">Payment Due</option>
+                  <option value="OVERDUE_NOTICE">Overdue Notice</option>
+                  <option value="FINAL_WARNING">Final Warning</option>
+                  <option value="DEVICE_LOCKED">Device Locked</option>
+                  <option value="DEVICE_UNLOCKED">Device Unlocked</option>
+                  <option value="DEVICE_RESTRICTED">Device Restricted</option>
+                </select>
               </div>
 
               <div className="flex flex-col gap-2">

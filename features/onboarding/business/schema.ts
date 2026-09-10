@@ -3,6 +3,9 @@ import z from "zod";
 
 export const businessDetailsSchema = z.object({
   profile: z.string().min(1, "Business profile is required"),
+  type: z.enum(["DEVICE_FINANCING", "ENTERPRISE_DEVICE_MANAGEMENT"], {
+    error: () => ({ message: "Select a valid business type" })
+  }),
   departments: z.array(z.string()).optional(),
   locations: z.array(z.string()).optional(),
 });
@@ -27,5 +30,8 @@ export type UpdateStaffMemberValues = Omit<
 export const onboardingStaffMemberSchema = z.object({
   email: z.email("Invalid email"),
   location: z.string().min(1, "Location is required"),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  phone: z.string().min(1, "Phone number is required"),
 });
 export type OnboardingStaffMemberValues = z.infer<typeof onboardingStaffMemberSchema>;

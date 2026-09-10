@@ -14,6 +14,7 @@ import {
   setAppLimitAction,
   blockAppAction,
   unblockAppAction,
+  uninstallAppAction,
   getAppLimitsAction,
   getZoneAction,
   lockDeviceAction,
@@ -210,6 +211,29 @@ export function useUnblockApp() {
       toast({
         title: "Error",
         message: error.message || "Failed to unblock app",
+        type: "error",
+      });
+    },
+  });
+}
+
+export function useUninstallApp() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  return useServerActionMutation(uninstallAppAction, {
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["deviceDetail"] });
+      toast({
+        title: "Success",
+        message: "App uninstall command sent successfully",
+        type: "success",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        message: error.message || "Failed to uninstall app",
         type: "error",
       });
     },

@@ -45,12 +45,14 @@ export async function getDepartmentAction(id: string): Promise<any> {
 }
 export async function createDepartmentAction(data: CreateDepartmentDto): Promise<any> {
   return withSafeAction(
-    async () =>
-      await apiClient(`/departments`, {
+    async () => {
+      const res = await apiClient(`/departments`, {
         method: "POST",
         body: JSON.stringify(data),
         noRedirect: true,
-      }),
+      });
+      return res;
+    },
     "Failed to create department"
   );
 }
