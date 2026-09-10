@@ -18,6 +18,7 @@ import { useAuth } from "@/shared/auth/AuthProvider";
 import { SearchableSelect } from "@/shared/ui/searchable-select";
 import { Button } from "@/shared/ui/button";
 import { useToast } from "@/shared/ui/toast";
+import { useGetFullBusinessDetails } from "@/features/onboarding/business/model/useGetBusinessDetails";
 
 export default function AddEditUserDetailsModal({
   open,
@@ -59,6 +60,9 @@ export default function AddEditUserDetailsModal({
     label: department.name,
   }));
 
+  const { business } = useGetFullBusinessDetails();
+  const isDeviceFinance = (business?.profile as any)?.type === "DEVICE_FINANCING";
+
   const { toast } = useToast();
 
   useEffect(() => {
@@ -86,18 +90,10 @@ export default function AddEditUserDetailsModal({
 
     try {
       const updatePayload = { ...payload };
-      // @ts-ignore
-      delete updatePayload.email;
-      // @ts-ignore
-      delete updatePayload.firstName;
-      // @ts-ignore
-      delete updatePayload.lastName;
-      // @ts-ignore
-      delete updatePayload.phone;
 
       const res = initialData
-        ? await updateStaffMember({ id: selectedId!, ...updatePayload })
-        : await createStaffMember(payload);
+        ? await updateStaffMember({ id: selectedId!, ...updatePayload } as any)
+        : await createStaffMember(payload as any);
 
       toast({
         type: "success",
@@ -146,44 +142,50 @@ export default function AddEditUserDetailsModal({
               error={formState.errors.lastName?.message}
             />
           </div>
-          <Controller
-            control={control}
-            name="department"
-            render={({ field }) => (
-              <InputGroup label="Department" error={formState.errors.department?.message}>
-                <SearchableSelect
-                  options={departmentOptions || []}
-                  placeholder="Select a department"
-                  value={field.value}
-                  onValueChange={field.onChange}
-                />
-              </InputGroup>
-            )}
-          />
-          <Controller
-            control={control}
-            name="businessRole"
-            render={({ field }) => (
-              <InputGroup label="Role" error={formState.errors.businessRole?.message}>
-                <SearchableSelect
-                  placeholder="Select a role"
-                  options={[
-                    { value: "DEVICE_MANAGER", label: "Device manager" },
-                    { value: "DEPARTMENT_MANAGER", label: "Department manager" },
-                  ]}
-                  value={field.value}
-                  onValueChange={field.onChange}
-                />
-              </InputGroup>
-            )}
-          />
-          <InputGroup
-            className=""
-            {...register("position")}
-            placeholder="Manager"
-            label="Position"
-            error={formState.errors.position?.message}
-          />
+          
+          {!isDeviceFinance && (
+            <>
+              <Controller
+                control={control}
+                name="department"
+                render={({ field }) => (
+                  <InputGroup label="Department" error={formState.errors.department?.message}>
+                    <SearchableSelect
+                      options={departmentOptions || []}
+                      placeholder="Select a department"
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    />
+                  </InputGroup>
+                )}
+              />
+              <Controller
+                control={control}
+                name="businessRole"
+                render={({ field }) => (
+                  <InputGroup label="Role" error={formState.errors.businessRole?.message}>
+                    <SearchableSelect
+                      placeholder="Select a role"
+                      options={[
+                        { value: "DEVICE_MANAGER", label: "Device manager" },
+                        { value: "DEPARTMENT_MANAGER", label: "Department manager" },
+                      ]}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    />
+                  </InputGroup>
+                )}
+              />
+              <InputGroup
+                className=""
+                {...register("position")}
+                placeholder="Manager"
+                label="Position"
+                error={formState.errors.position?.message}
+              />
+            </>
+          )}
+
           <InputGroup
             className=""
             {...register("email")}

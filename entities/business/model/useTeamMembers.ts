@@ -6,7 +6,11 @@ import { getStaffMembersAction } from "../api/staff.actions";
 export function useAllTeamMembers(params?: { search: string }) {
   const { data: staffMembers } = useGetStaffMembers(params);
 
-  const allTeamMembers = staffMembers?.data?.staff?.map((member) => ({
+  const dataPayload = staffMembers?.data as any;
+  const staffArray = Array.isArray(dataPayload) 
+    ? dataPayload 
+    : (dataPayload?.staff || dataPayload?.deviceFinanceUsers || []);
+  const allTeamMembers = staffArray.map((member: any) => ({
     id: member.id,
     email: member?.user?.email || "",
     location: member?.location || "",
@@ -18,9 +22,12 @@ export function useAllTeamMembers(params?: { search: string }) {
 export function useOtherTeamMembers(params?: { search: string }) {
   const { data: staffMembersData, isLoading } = useGetStaffMembers(params);
   const { user } = useAuth();
-  const staffMembers = staffMembersData?.data?.staff || [];
+  const dataPayload = staffMembersData?.data as any;
+  const staffMembers = Array.isArray(dataPayload) 
+    ? dataPayload 
+    : (dataPayload?.staff || dataPayload?.deviceFinanceUsers || []);
 
-  const otherTeamMembers = staffMembers?.filter((member) => member?.user?.email !== user?.email);
+  const otherTeamMembers = staffMembers?.filter((member: any) => member?.user?.email !== user?.email);
 
   return { otherTeamMembers, isLoading };
 }
@@ -46,7 +53,10 @@ export function useStaffMembersInfinite({
     },
   });
 
-  const staffMembers = data?.pages.flatMap((page) => page?.data?.staff ?? []) ?? [];
+  const staffMembers = data?.pages.flatMap((page) => {
+    const payload = page?.data as any;
+    return Array.isArray(payload) ? payload : (payload?.staff || payload?.deviceFinanceUsers || []);
+  }) ?? [];
 
   return {
     staffMembers,
@@ -82,8 +92,11 @@ export function useOtherStaffMembersExceptStaff({
     },
   });
 
-  const staffMembers = data?.pages.flatMap((page) => page?.data?.staff ?? []) ?? [];
-  const otherTeamMembers = staffMembers.filter((member) => member?.user?.id !== excludeUserId);
+  const staffMembers = data?.pages.flatMap((page) => {
+    const payload = page?.data as any;
+    return Array.isArray(payload) ? payload : (payload?.staff || payload?.deviceFinanceUsers || []);
+  }) ?? [];
+  const otherTeamMembers = staffMembers.filter((member: any) => member?.user?.id !== excludeUserId);
 
   return {
     otherTeamMembers,
