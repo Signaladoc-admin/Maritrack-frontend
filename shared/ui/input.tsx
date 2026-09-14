@@ -60,7 +60,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       return (
         <div className={cn("grid w-full items-center gap-1.5", wrapperClassName)}>
           {label && <Label htmlFor={inputId}>{label}</Label>}
-          <textarea className="placeholder:text-muted-foreground w-full min-w-0 flex-1 bg-transparent text-foreground focus:bg-transparent active:bg-transparent file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none disabled:cursor-not-allowed"></textarea>
+          <textarea className="placeholder:text-muted-foreground text-foreground w-full min-w-0 flex-1 bg-transparent file:border-0 file:bg-transparent file:text-sm file:font-medium focus:bg-transparent focus-visible:outline-none active:bg-transparent disabled:cursor-not-allowed"></textarea>
         </div>
       );
     }
@@ -125,12 +125,15 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 <div className="flex flex-col">
                   <Label
                     htmlFor={optionId}
-                    className={cn("leading-normal font-normal", option.labelClassName)}
+                    className={cn(
+                      "cursor-pointer leading-normal font-normal text-[var(--text-1)]",
+                      option.labelClassName
+                    )}
                   >
                     {option.label}
                   </Label>
                   {option.description && (
-                    <p className="text-muted-foreground text-xs">{option.description}</p>
+                    <p className="text-xs text-[var(--text-2)]">{option.description}</p>
                   )}
                 </div>
               </div>
@@ -163,7 +166,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             className={cn("mt-1", className)}
           />
           {label && (
-            <Label htmlFor={inputId} className="leading-normal font-normal">
+            <Label
+              htmlFor={inputId}
+              className="cursor-pointer leading-normal font-normal text-[var(--text-1)]"
+            >
               {label}
             </Label>
           )}
@@ -187,7 +193,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && <Label htmlFor={inputId}>{label}</Label>}
         <div
           className={cn(
-            "flex h-[44px] w-full items-center rounded-sm border border-card-line bg-white/5 px-4 text-sm transition-colors focus-within:border-accent-border focus-within:ring-1 focus-within:ring-accent-border/40 focus-within:outline-none disabled:cursor-not-allowed disabled:opacity-50",
+            "border-card-line focus-within:border-accent-border focus-within:ring-accent-border/40 flex h-[44px] w-full items-center rounded-sm border bg-[var(--card-fill)] px-4 text-sm transition-colors focus-within:ring-1 focus-within:outline-none disabled:cursor-not-allowed disabled:opacity-50",
             className
           )}
         >
@@ -202,7 +208,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             onChange={handleChange}
             type={resolvedType}
             className={cn(
-              "placeholder:text-muted-foreground w-full min-w-0 flex-1 bg-transparent text-foreground focus:bg-transparent active:bg-transparent file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none disabled:cursor-not-allowed",
+              "placeholder:text-muted-foreground text-foreground w-full min-w-0 flex-1 bg-transparent file:border-0 file:bg-transparent file:text-sm file:font-medium focus:bg-transparent focus-visible:outline-none active:bg-transparent disabled:cursor-not-allowed",
               (type === "time" || type === "date") &&
                 "appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-clear-button]:hidden [&::-webkit-inner-spin-button]:hidden"
             )}

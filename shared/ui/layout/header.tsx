@@ -20,13 +20,13 @@ export function Header({
   variant = "base",
 }: HeaderProps) {
   const titleVariants = {
-    primary: "text-primary",
-    neutral: "text-neutral-800",
+    primary: "text-[var(--text-1)] font-bold",
+    neutral: "text-[var(--text-1)] font-bold",
   };
 
   return (
-    <header className={cn("bg-background mb-12 flex items-center justify-between", className)}>
-      <div className="space-y-2">
+    <header className={cn("bg-background mb-8 flex items-center justify-between", className)}>
+      <div className="space-y-1.5">
         {variant === "base" && (
           <H3 className={cn("text-2xl leading-tight md:text-3xl", titleVariants[titleVariant])}>
             {title}
@@ -38,7 +38,7 @@ export function Header({
           </H4>
         )}
         {subtitle && (
-          <div className="text-muted-foreground mt-0! text-sm font-medium md:text-base">
+          <div className="mt-0! text-sm font-medium text-[var(--text-2)] md:text-base">
             {subtitle}
           </div>
         )}

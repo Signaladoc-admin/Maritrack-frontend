@@ -74,13 +74,17 @@ export default function DevicesList() {
   const queryClient = useQueryClient();
 
   const [selectedDevices, setSelectedDevices] = useState<StaffDevice[]>([]);
-  const [bulkActionMode, setBulkActionMode] = useState<"message" | "wipe" | "lock" | "unlock" | "suspend" | "unsuspend" | null>(null);
+  const [bulkActionMode, setBulkActionMode] = useState<
+    "message" | "wipe" | "lock" | "unlock" | "suspend" | "unsuspend" | null
+  >(null);
   const [isComposeModalOpen, setIsComposeModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isAppsModalOpen, setIsAppsModalOpen] = useState(false);
   const [clearSelectionTrigger, setClearSelectionTrigger] = useState(0);
 
-  const handleBulkActionSelect = (mode: "message" | "wipe" | "lock" | "unlock" | "suspend" | "unsuspend") => {
+  const handleBulkActionSelect = (
+    mode: "message" | "wipe" | "lock" | "unlock" | "suspend" | "unsuspend"
+  ) => {
     if (selectedDevices.length === 0) {
       toast({
         title: "Action Required",
@@ -150,7 +154,14 @@ export default function DevicesList() {
             <p>Manage every device financed, leased, or issued to your fleet.</p>
           </div>
           <button className="btn-primary cursor-pointer" onClick={handleNewDevice}>
-            <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>
+            <svg viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 5v14M5 12h14"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+              />
+            </svg>
             New device
           </button>
         </div>
@@ -175,7 +186,15 @@ export default function DevicesList() {
 
           <div className="toolbar-right">
             <div className="search-wrap toolbar-search">
-              <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8"/><path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8" />
+                <path
+                  d="M21 21l-4.3-4.3"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+              </svg>
               <input
                 type="text"
                 placeholder="Search devices"
@@ -188,7 +207,16 @@ export default function DevicesList() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="icon-btn-square cursor-pointer" aria-label="Filter devices">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M4 6h16M7 12h10M10 18h4" />
+                    </svg>
                     {selectedFilter !== "" && <span className="filter-dot"></span>}
                   </button>
                 </DropdownMenuTrigger>
@@ -197,19 +225,31 @@ export default function DevicesList() {
                   <div className="space-y-1">
                     <DropdownMenuItem
                       onClick={() => setSelectedFilter("")}
-                      className={cn("flex items-center gap-2", selectedFilter === "" && "bg-primary text-white")}
+                      className={cn(
+                        "flex items-center gap-2",
+                        selectedFilter === "" &&
+                          "bg-[var(--accent-tint)] font-bold text-[var(--accent)]"
+                      )}
                     >
                       All
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => setSelectedFilter("ACTIVE")}
-                      className={cn("flex items-center gap-2", selectedFilter === "ACTIVE" && "bg-primary text-white")}
+                      className={cn(
+                        "flex items-center gap-2",
+                        selectedFilter === "ACTIVE" &&
+                          "bg-[var(--accent-tint)] font-bold text-[var(--accent)]"
+                      )}
                     >
                       Active
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => setSelectedFilter("INACTIVE")}
-                      className={cn("flex items-center gap-2", selectedFilter === "INACTIVE" && "bg-primary text-white")}
+                      className={cn(
+                        "flex items-center gap-2",
+                        selectedFilter === "INACTIVE" &&
+                          "bg-[var(--accent-tint)] font-bold text-[var(--accent)]"
+                      )}
                     >
                       Inactive
                     </DropdownMenuItem>
@@ -220,7 +260,7 @@ export default function DevicesList() {
 
             <button
               onClick={handleExport}
-              className="icon-btn-square cursor-pointer flex items-center justify-center"
+              className="icon-btn-square flex cursor-pointer items-center justify-center"
               disabled={exporting}
               aria-label="Export devices"
             >
@@ -231,26 +271,72 @@ export default function DevicesList() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="icon-btn-square cursor-pointer" aria-label="Bulk actions">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/></svg>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                    >
+                      <circle cx="12" cy="5" r="1.4" />
+                      <circle cx="12" cy="12" r="1.4" />
+                      <circle cx="12" cy="19" r="1.4" />
+                    </svg>
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 p-2">
                   <DropdownMenuGroup>
-                    <DropdownMenuLabel className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Messaging</DropdownMenuLabel>
-                    <DropdownMenuItem className="py-2 cursor-pointer" onClick={handleBulkMessageClick}>Bulk message</DropdownMenuItem>
+                    <DropdownMenuLabel className="text-xs font-semibold tracking-wider text-gray-500 uppercase">
+                      Messaging
+                    </DropdownMenuLabel>
+                    <DropdownMenuItem
+                      className="cursor-pointer py-2"
+                      onClick={handleBulkMessageClick}
+                    >
+                      Bulk message
+                    </DropdownMenuItem>
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator className="my-1" />
                   <DropdownMenuGroup>
-                    <DropdownMenuLabel className="text-xs text-gray-500 font-semibold uppercase tracking-wider mt-1">General Actions</DropdownMenuLabel>
-                    <DropdownMenuItem className="py-2 cursor-pointer" onClick={handleWipeDeviceClick}>Wipe device</DropdownMenuItem>
-                    <DropdownMenuItem className="py-2 cursor-pointer" onClick={handleLockDeviceClick}>Lock device</DropdownMenuItem>
-                    <DropdownMenuItem className="py-2 cursor-pointer" onClick={handleUnlockDeviceClick}>Unlock device</DropdownMenuItem>
+                    <DropdownMenuLabel className="mt-1 text-xs font-semibold tracking-wider text-gray-500 uppercase">
+                      General Actions
+                    </DropdownMenuLabel>
+                    <DropdownMenuItem
+                      className="cursor-pointer py-2"
+                      onClick={handleWipeDeviceClick}
+                    >
+                      Wipe device
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer py-2"
+                      onClick={handleLockDeviceClick}
+                    >
+                      Lock device
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer py-2"
+                      onClick={handleUnlockDeviceClick}
+                    >
+                      Unlock device
+                    </DropdownMenuItem>
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator className="my-1" />
                   <DropdownMenuGroup>
-                    <DropdownMenuLabel className="text-xs text-gray-500 font-semibold uppercase tracking-wider mt-1">App Management</DropdownMenuLabel>
-                    <DropdownMenuItem className="py-2 cursor-pointer" onClick={handleSuspendAppsClick}>Suspend apps</DropdownMenuItem>
-                    <DropdownMenuItem className="py-2 cursor-pointer" onClick={handleUnsuspendAppsClick}>Unsuspend apps</DropdownMenuItem>
+                    <DropdownMenuLabel className="mt-1 text-xs font-semibold tracking-wider text-gray-500 uppercase">
+                      App Management
+                    </DropdownMenuLabel>
+                    <DropdownMenuItem
+                      className="cursor-pointer py-2"
+                      onClick={handleSuspendAppsClick}
+                    >
+                      Suspend apps
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer py-2"
+                      onClick={handleUnsuspendAppsClick}
+                    >
+                      Unsuspend apps
+                    </DropdownMenuItem>
                   </DropdownMenuGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -258,53 +344,70 @@ export default function DevicesList() {
           </div>
         </div>
 
-      {bulkActionMode && (
-        <BulkActionBar
-          selectedCount={selectedDevices.length}
-          totalCount={devices.length}
-          title={
-            bulkActionMode === "message" ? "Send Bulk Messages" :
-            bulkActionMode === "wipe" ? "Wipe Devices" :
-            bulkActionMode === "lock" ? "Lock devices" : 
-            bulkActionMode === "unlock" ? "Unlock devices" :
-            bulkActionMode === "suspend" ? "Suspend apps" : "Unsuspend apps"
-          }
-          buttonText={
-            bulkActionMode === "message" ? "Proceed to Compose Message" :
-            bulkActionMode === "wipe" ? "Wipe Devices" :
-            bulkActionMode === "lock" ? "Lock Devices" : 
-            bulkActionMode === "unlock" ? "Unlock Devices" :
-            bulkActionMode === "suspend" ? "Suspend Apps" : "Unsuspend Apps"
-          }
-          variant={["message", "unlock", "unsuspend"].includes(bulkActionMode as string) ? "default" : "destructive"}
-          onProceed={() => {
-            if (bulkActionMode === "message") setIsComposeModalOpen(true);
-            else if (bulkActionMode === "suspend" || bulkActionMode === "unsuspend") setIsAppsModalOpen(true);
-            else setIsConfirmModalOpen(true);
-          }}
-          onCancel={() => {
-            setBulkActionMode(null);
-            setSelectedDevices([]);
-            setClearSelectionTrigger(prev => prev + 1);
-          }}
-        />
-      )}
-
-      <DevicesTable
-        data={devices}
-        columns={getDevicesColumns(
-          handleAssignDevice,
-          user?.businessRole as BusinessRole,
-          handleShowToast
+        {bulkActionMode && (
+          <BulkActionBar
+            selectedCount={selectedDevices.length}
+            totalCount={devices.length}
+            title={
+              bulkActionMode === "message"
+                ? "Send Bulk Messages"
+                : bulkActionMode === "wipe"
+                  ? "Wipe Devices"
+                  : bulkActionMode === "lock"
+                    ? "Lock devices"
+                    : bulkActionMode === "unlock"
+                      ? "Unlock devices"
+                      : bulkActionMode === "suspend"
+                        ? "Suspend apps"
+                        : "Unsuspend apps"
+            }
+            buttonText={
+              bulkActionMode === "message"
+                ? "Proceed to Compose Message"
+                : bulkActionMode === "wipe"
+                  ? "Wipe Devices"
+                  : bulkActionMode === "lock"
+                    ? "Lock Devices"
+                    : bulkActionMode === "unlock"
+                      ? "Unlock Devices"
+                      : bulkActionMode === "suspend"
+                        ? "Suspend Apps"
+                        : "Unsuspend Apps"
+            }
+            variant={
+              ["message", "unlock", "unsuspend"].includes(bulkActionMode as string)
+                ? "default"
+                : "destructive"
+            }
+            onProceed={() => {
+              if (bulkActionMode === "message") setIsComposeModalOpen(true);
+              else if (bulkActionMode === "suspend" || bulkActionMode === "unsuspend")
+                setIsAppsModalOpen(true);
+              else setIsConfirmModalOpen(true);
+            }}
+            onCancel={() => {
+              setBulkActionMode(null);
+              setSelectedDevices([]);
+              setClearSelectionTrigger((prev) => prev + 1);
+            }}
+          />
         )}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-        isLoading={isDevicesPending}
-        selectable={true}
-        onRowSelect={(selected) => setSelectedDevices(selected as StaffDevice[])}
-        clearSelectionTrigger={clearSelectionTrigger}
-      />
+
+        <DevicesTable
+          data={devices}
+          columns={getDevicesColumns(
+            handleAssignDevice,
+            user?.businessRole as BusinessRole,
+            handleShowToast
+          )}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          isLoading={isDevicesPending}
+          selectable={true}
+          onRowSelect={(selected) => setSelectedDevices(selected as StaffDevice[])}
+          clearSelectionTrigger={clearSelectionTrigger}
+        />
       </div>
 
       <NewDeviceModal open={isShowingNewDeviceModal} onOpenChange={setIsShowingNewDeviceModal} />
@@ -324,7 +427,7 @@ export default function DevicesList() {
         onSuccess={() => {
           setBulkActionMode(null);
           setSelectedDevices([]);
-          setClearSelectionTrigger(prev => prev + 1);
+          setClearSelectionTrigger((prev) => prev + 1);
         }}
       />
       {bulkActionMode && ["wipe", "lock", "unlock"].includes(bulkActionMode) && (
@@ -336,7 +439,7 @@ export default function DevicesList() {
           onSuccess={() => {
             setBulkActionMode(null);
             setSelectedDevices([]);
-            setClearSelectionTrigger(prev => prev + 1);
+            setClearSelectionTrigger((prev) => prev + 1);
           }}
         />
       )}
@@ -349,7 +452,7 @@ export default function DevicesList() {
           onSuccess={() => {
             setBulkActionMode(null);
             setSelectedDevices([]);
-            setClearSelectionTrigger(prev => prev + 1);
+            setClearSelectionTrigger((prev) => prev + 1);
           }}
         />
       )}
