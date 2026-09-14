@@ -161,13 +161,13 @@ const LocationFormCard = React.forwardRef<{ submit: () => void }, LocationFormCa
         className={cn(
           "relative space-y-5 transition-all duration-200",
           showSuggestions ? "z-50 mb-[18rem]" : "z-10",
-          !hideHeader && "rounded-xl border border-slate-100 bg-slate-50 p-4"
+          !hideHeader && "rounded-xl border border-[var(--card-line-strong)] bg-[var(--card-fill)] p-4"
         )}
       >
         {/* Header — only shown for standalone cards (not embedded in accordion) */}
         {!hideHeader && (
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-slate-800">Location {index + 1}</p>
+            <p className="text-sm font-semibold text-[var(--text-1)]">Location {index + 1}</p>
             <button
               type="button"
               className="rounded p-1 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
@@ -181,14 +181,14 @@ const LocationFormCard = React.forwardRef<{ submit: () => void }, LocationFormCa
 
         {/* Location name search */}
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-slate-700">Enter location</label>
+          <label className="text-sm font-medium text-[var(--text-2)]">Enter location</label>
           <div className="relative">
             <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               {...register("locationName")}
               className={cn(
-                "h-11 w-full rounded-lg border bg-white pr-9 pl-10 text-sm focus:ring-2 focus:ring-[#1B3C73] focus:outline-none",
-                errors.locationName ? "border-red-400" : "border-slate-200"
+                "h-11 w-full rounded-lg border bg-transparent pr-9 pl-10 text-sm focus:ring-2 focus:ring-[var(--accent)] focus:outline-none",
+                errors.locationName ? "border-red-400" : "border-[var(--card-line-strong)]"
               )}
               placeholder="Enter Location here"
               autoComplete="off"
@@ -203,12 +203,12 @@ const LocationFormCard = React.forwardRef<{ submit: () => void }, LocationFormCa
 
             {/* Suggestions dropdown */}
             {showSuggestions && suggestions.length > 0 && (
-              <div className="absolute top-[105%] left-0 z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl custom-scrollbar">
+              <div className="absolute top-[105%] left-0 z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-[var(--card-line-strong)] bg-[var(--surface)] shadow-xl custom-scrollbar">
                 {suggestions.map((s, i) => (
                   <button
                     key={i}
                     type="button"
-                    className="w-full px-4 py-3 text-left text-sm hover:bg-slate-50 focus:bg-slate-50 focus:outline-none border-b border-slate-100 last:border-b-0"
+                    className="w-full px-4 py-3 text-left text-sm hover:bg-[var(--card-hover)] focus:bg-[var(--card-hover)] focus:outline-none border-b border-[var(--card-line)] last:border-b-0 text-[var(--text-1)]"
                     onMouseDown={() => handleSelectSuggestion(s)}
                   >
                     {s.full_address ||
@@ -229,12 +229,12 @@ const LocationFormCard = React.forwardRef<{ submit: () => void }, LocationFormCa
 
         {/* Radius */}
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-slate-700">Set radius (in KM)</label>
+          <label className="text-sm font-medium text-[var(--text-2)]">Set radius (in KM)</label>
           <input
             {...register("radius", { valueAsNumber: true })}
             className={cn(
-              "h-11 w-full rounded-lg border bg-white px-3 text-sm focus:ring-2 focus:ring-[#1B3C73] focus:outline-none",
-              errors.radius ? "border-red-400" : "border-slate-200"
+              "h-11 w-full rounded-lg border bg-transparent px-3 text-sm focus:ring-2 focus:ring-[var(--accent)] focus:outline-none",
+              errors.radius ? "border-red-400" : "border-[var(--card-line-strong)]"
             )}
             placeholder="0"
             type="number"
@@ -264,7 +264,7 @@ const LocationDataItem = React.forwardRef<{ submit: () => void }, LocationDataIt
     ref
   ) {
     return (
-      <div className={cn("rounded-xl border border-slate-100 bg-slate-50 relative", isExpanded ? "z-50" : "z-10")}>
+      <div className={cn("rounded-xl border border-[var(--card-line-strong)] bg-[var(--card-fill)] relative", isExpanded ? "z-50" : "z-10")}>
         {/* Summary header — always visible */}
         <div className="flex items-center justify-between px-4 py-3 rounded-xl overflow-hidden">
           <button
@@ -273,7 +273,7 @@ const LocationDataItem = React.forwardRef<{ submit: () => void }, LocationDataIt
             onClick={onToggle}
           >
             <div className="flex-1">
-              <p className="text-sm font-semibold text-slate-800">
+              <p className="text-sm font-semibold text-[var(--text-1)]">
                 {entry.locationName}{" "}
                 <span className="font-normal text-slate-500">({entry.radius}km radius)</span>
               </p>
@@ -301,7 +301,7 @@ const LocationDataItem = React.forwardRef<{ submit: () => void }, LocationDataIt
 
         {/* Inline form — only rendered when expanded */}
         {isExpanded && (
-          <div className="relative border-t border-slate-100 px-4 pt-4 pb-4">
+          <div className="relative border-t border-[var(--card-line)] px-4 pt-4 pb-4">
             <LocationFormCard
               key={entry.id}
               ref={ref}
@@ -569,7 +569,7 @@ export function GeofencingModal({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="p-6 sm:max-w-lg">
         <DialogHeader className="mb-3">
-          <DialogTitle className="font-bold text-slate-900">Set Geofencing</DialogTitle>
+          <DialogTitle className="font-bold text-[var(--text-1)]">Set Geofencing</DialogTitle>
           {totalCount > 0 && (
             <p className="text-sm text-slate-400">
               {locations.length}/{totalCount} location{totalCount !== 1 ? "s" : ""} added
@@ -621,7 +621,7 @@ export function GeofencingModal({
             type="button"
             className={cn(
               "h-12 w-full rounded-xl text-base font-semibold",
-              isClearMode ? "bg-red-600 hover:bg-red-700" : "bg-[#1B3C73]"
+              isClearMode ? "bg-destructive hover:bg-destructive/90" : ""
             )}
             disabled={isPending || (!hasAnythingToSave && !isClearMode)}
             onClick={handleSave}

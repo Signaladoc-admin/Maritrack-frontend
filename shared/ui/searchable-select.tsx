@@ -116,7 +116,7 @@ export function SearchableSelect({
           disabled={disabled}
           onKeyDown={!isSearchable ? handleKeyDown : undefined}
           className={cn(
-            "ring-offset-background flex h-[50px] w-full items-center rounded-xl border border-[#E5E7EB] bg-[#fafafa] px-4 text-base transition-colors focus-within:ring-[1.5px] focus-within:ring-[#1b3c73] focus-within:ring-offset-0 focus-within:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+            "ring-offset-background flex h-[50px] w-full items-center rounded-xl border border-card-line bg-white/5 px-4 text-base text-foreground transition-colors focus-within:ring-[1.5px] focus-within:ring-accent-border focus-within:ring-offset-0 focus-within:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
             className
           )}
         >
@@ -165,10 +165,10 @@ export function SearchableSelect({
         >
           {isLoading ? (
             <div className="flex items-center justify-center p-4">
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#1b3c73] border-t-transparent" />
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-foreground/20 border-t-accent" />
             </div>
           ) : filteredOptions.length === 0 ? (
-            <p className="p-2 text-center text-sm text-slate-500">No options found.</p>
+            <p className="p-2 text-center text-sm text-muted-foreground">No options found.</p>
           ) : (
             <>
               {filteredOptions.map((option, index) => {
@@ -178,8 +178,8 @@ export function SearchableSelect({
                     key={option.value}
                     className={cn(
                       "relative flex w-full cursor-pointer items-center rounded-sm py-1.5 pr-2 pl-8 text-sm select-none",
-                      isSelected && "bg-slate-50 font-medium text-[#1b3c73]",
-                      highlightedIndex === index ? "bg-slate-100" : "hover:bg-slate-100"
+                      isSelected && "bg-accent/10 font-medium text-accent",
+                      highlightedIndex === index ? "bg-card-hover" : "hover:bg-card-hover"
                     )}
                     onClick={() => handleSelect(option.value)}
                   >
@@ -192,7 +192,7 @@ export function SearchableSelect({
               })}
               {isLoadingMore && (
                 <div className="flex items-center justify-center p-2">
-                  <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#1b3c73] border-t-transparent" />
+                  <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-foreground/20 border-t-accent" />
                 </div>
               )}
             </>

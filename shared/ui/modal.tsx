@@ -34,7 +34,7 @@ export default function Modal({
 }) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={cn("z-99999 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl p-5 sm:max-w-md", className)}>
+      <DialogContent className={cn("z-[99999] max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl p-5 sm:max-w-md", className)}>
         <DialogHeader className="flex flex-col items-start space-y-3">
           <DialogTitle asChild className="mb-0! text-xl">
             <H3 className="text-primary">{title}</H3>

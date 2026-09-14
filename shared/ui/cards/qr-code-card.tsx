@@ -1,5 +1,4 @@
 import { QrCode } from "lucide-react";
-import { CardWrapper } from "@/shared/ui/card-wrapper";
 import { cn } from "@/shared/lib/utils";
 
 interface QRCodeCardProps {
@@ -18,31 +17,32 @@ export function QRCodeCard({
   className,
 }: QRCodeCardProps) {
   return (
-    <CardWrapper
-      variant="warning"
+    <div
       className={cn(
-        "flex flex-col justify-center p-8 text-center shadow-2xl transition-transform hover:scale-[1.02]",
+        "surface flex flex-col items-center justify-center rounded-2xl border border-[var(--card-line)] bg-[var(--card-fill)] p-6 text-center shadow-none",
         className
       )}
     >
-      <div className="flex flex-col items-center justify-center rounded-3xl text-center text-white">
-        <div className="mb-4 flex w-full items-center justify-center rounded-xl bg-white p-4 shadow-lg">
+      <div className="flex flex-col items-center justify-center text-center">
+        <div className="mb-3 flex w-full items-center justify-center rounded-xl border border-black/5 bg-white p-4 shadow-none">
           {isLoading ? (
-            <div className="aspect-square h-auto w-72 animate-pulse rounded bg-slate-100" />
+            <div className="aspect-square h-auto w-64 animate-pulse rounded bg-neutral-200" />
           ) : isError ? (
-            <div className="text-destructive text-sm font-medium">Failed to load QR</div>
+            <div className="text-destructive py-12 text-xs font-medium">Failed to load QR code</div>
           ) : src ? (
             <img
               src={src}
               alt="Pairing QR Code"
-              className="h-auto w-full max-w-[300px] min-w-[265px] object-contain lg:max-w-[350px] lg:min-w-[350px]"
+              className="h-auto w-full max-w-[260px] min-w-[220px] object-contain"
             />
           ) : (
-            <QrCode className="h-32 w-32 text-slate-300" />
+            <QrCode className="h-28 w-28 text-neutral-400" />
           )}
         </div>
-        <p className="mt-4 max-w-[200px]">{description}</p>
+        <p className="max-w-[240px] text-xs leading-relaxed font-medium text-[var(--text-2)]">
+          {description}
+        </p>
       </div>
-    </CardWrapper>
+    </div>
   );
 }
