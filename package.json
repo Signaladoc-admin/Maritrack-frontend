@@ -12,7 +12,9 @@
     "test": "vitest run",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "prepare": "git config core.hooksPath .githooks || true",
+    "check-injection": "node scripts/check-injection.mjs"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
