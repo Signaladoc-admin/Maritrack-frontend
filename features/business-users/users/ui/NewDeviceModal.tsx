@@ -32,20 +32,20 @@ function StaffOptionContent({ staff }: { staff: BusinessStaff }) {
 
   return (
     <div className="flex items-center gap-3 py-0.5">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1b3c73] text-[11px] font-bold text-white">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-base">
         {initials}
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <span className="truncate font-medium text-slate-800">{fullName}</span>
+          <span className="truncate font-medium text-foreground">{fullName}</span>
           {isAdmin && (
-            <span className="shrink-0 rounded bg-[#e8f0fd] px-1.5 py-0.5 text-[10px] font-semibold text-[#1b3c73]">
+            <span className="shrink-0 rounded bg-accent/20 px-1.5 py-0.5 text-[10px] font-semibold text-accent">
               Admin
             </span>
           )}
         </div>
-        <span className="block truncate text-xs text-slate-500">{staff.user?.email}</span>
-        {staff.location && <span className="text-xs text-slate-400">{staff.location}</span>}
+        <span className="block truncate text-xs text-muted-foreground">{staff.user?.email}</span>
+        {staff.location && <span className="text-xs text-muted-foreground/70">{staff.location}</span>}
       </div>
     </div>
   );
@@ -196,7 +196,7 @@ export default function NewDeviceModal({
                 name="underPaymentPlan"
                 render={({ field }) => (
                   <div className="space-y-3">
-                    <label className="text-sm font-medium text-slate-700">Is this device under a payment plan?</label>
+                    <label className="text-sm font-medium text-foreground">Is this device under a payment plan?</label>
                     <div className="flex items-center gap-6">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <Checkbox
@@ -204,7 +204,7 @@ export default function NewDeviceModal({
                           onCheckedChange={() => field.onChange(false)}
                           className="rounded-sm"
                         />
-                        <span className="text-sm text-slate-700">No</span>
+                        <span className="text-sm text-foreground">No</span>
                       </label>
                       <label className="flex items-center gap-2 cursor-pointer">
                         <Checkbox
@@ -212,7 +212,7 @@ export default function NewDeviceModal({
                           onCheckedChange={() => field.onChange(true)}
                           className="rounded-sm"
                         />
-                        <span className="text-sm text-slate-700">Yes</span>
+                        <span className="text-sm text-foreground">Yes</span>
                       </label>
                     </div>
                   </div>
@@ -277,7 +277,7 @@ export default function NewDeviceModal({
                               <Button
                                 variant={"outline"}
                                 className={cn(
-                                  "w-full justify-start text-left font-normal bg-[#fafafa] border-[#E5E7EB] h-12 rounded-xl text-slate-800 hover:bg-[#fafafa] overflow-hidden",
+                                  "w-full justify-start text-left font-normal bg-white/5 border-card-line h-12 rounded-xl text-foreground hover:bg-white/10 overflow-hidden",
                                   !field.value && "text-muted-foreground"
                                 )}
                               >
@@ -287,7 +287,7 @@ export default function NewDeviceModal({
                                 </span>
                               </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0 bg-white" align="start">
+                            <PopoverContent className="w-auto p-0 border-card-line bg-card" align="start">
                               <Calendar
                                 mode="single"
                                 selected={field.value ? new Date(field.value) : undefined}
@@ -316,7 +316,7 @@ export default function NewDeviceModal({
                           onCheckedChange={field.onChange}
                           className="rounded-sm"
                         />
-                        <label htmlFor="transfer-profile-new" className="text-sm text-slate-700 cursor-pointer">
+                        <label htmlFor="transfer-profile-new" className="text-sm text-foreground cursor-pointer">
                           Transfer user profile to flentra after payment is completed
                         </label>
                       </div>
@@ -324,7 +324,7 @@ export default function NewDeviceModal({
                   />
 
                   {transFer && (
-                    <div className="grid grid-cols-2 gap-4 border-t border-slate-200 pt-4">
+                    <div className="grid grid-cols-2 gap-4 border-t border-card-line pt-4">
                       <Controller
                         control={control}
                         name="gender"

@@ -11,8 +11,7 @@ export default function AppManagement() {
     control,
     formState: { errors },
   } = useFormContext();
-  const { user } = useAuth()
-
+  const { user } = useAuth();
 
   return (
     <CardWrapper variant="outline">
@@ -32,19 +31,19 @@ export default function AppManagement() {
                 type="radio"
                 error={errors.appInstallationApproval?.message as string}
                 {...field}
-                wrapperClassName="divide-y divide-neutral-100"
+                wrapperClassName="divide-y divide-[var(--card-line)]"
                 options={[
                   {
-                    label: `Require ${user?.appRole === 'PARENT' ? 'parent' : 'admin'} approval before new apps are installed`,
+                    label: `Require ${user?.appRole === "PARENT" ? "parent" : "admin"} approval before new apps are installed`,
                     value: "REQUIRE_APPROVAL",
                     containerClassName: "py-3",
-                    labelClassName: "cursor-pointer text-slate-700",
+                    labelClassName: "cursor-pointer text-[var(--text-1)]",
                   },
                   {
                     label: "Allow installations without approval",
                     value: "ALLOW_WITHOUT_APPROVAL",
                     containerClassName: "py-3",
-                    labelClassName: "cursor-pointer text-slate-700",
+                    labelClassName: "cursor-pointer text-[var(--text-1)]",
                   },
                 ]}
               />
@@ -53,7 +52,7 @@ export default function AppManagement() {
         </div>
         <div className="space-y-2">
           <SubHeading title="Restrict app categories" subtitle="Multiple selections allowed" />
-          <div className="divide-y divide-neutral-100">
+          <div className="divide-y divide-[var(--card-line)]">
             <div className="py-4">
               <Controller
                 control={control}

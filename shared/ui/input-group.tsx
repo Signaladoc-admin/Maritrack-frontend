@@ -108,7 +108,7 @@ export const InputGroup = React.forwardRef<HTMLInputElement, InputGroupProps>(
                 : textareaProps.onChange
             }
             className={cn(
-              "ring-offset-background placeholder:text-muted-foreground w-full resize-y rounded-xl border border-[#E5E7EB] bg-[#fafafa] px-4 py-3 text-base transition-colors focus-within:ring-[1.5px] focus-within:ring-[#1b3c73] focus-within:ring-offset-0 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+              "border-card-line text-foreground focus-within:border-accent-border focus-within:ring-accent-border/40 placeholder:text-muted-foreground w-full resize-y rounded-sm border bg-[var(--card-fill)] px-4 py-3 text-sm transition-colors focus-within:ring-1 focus:bg-transparent focus-visible:outline-none active:bg-transparent disabled:cursor-not-allowed disabled:opacity-50",
               error && "border-destructive"
             )}
           />
