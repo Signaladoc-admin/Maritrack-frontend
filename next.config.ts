@@ -4,6 +4,10 @@ const nextConfig: NextConfig = {
   /* config options here */
   output: "standalone",
   reactCompiler: true,
+  // Skip TypeScript type checking during production builds (handled in CI separately)
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 
   experimental: {
     serverActions: {
