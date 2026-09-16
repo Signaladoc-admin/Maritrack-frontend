@@ -29,10 +29,10 @@ export function SettingsToggle({
     >
       <div className={cn("flex items-center justify-between space-x-2 py-4", className)}>
         <div className="space-y-0.5">
-          <Label htmlFor={id} className="text-base font-medium">
+          <Label htmlFor={id} className="cursor-pointer text-base font-medium text-[var(--text-1)]">
             {label}
           </Label>
-          {description && <p className="text-muted-foreground text-sm">{description}</p>}
+          {description && <p className="text-sm text-[var(--text-2)]">{description}</p>}
         </div>
         <Switch id={id} checked={checked} onCheckedChange={onCheckedChange} disabled={disabled} />
       </div>

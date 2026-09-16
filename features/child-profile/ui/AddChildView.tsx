@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import CreateChildProfileForm from "@/features/onboarding/personal/ui/CreateChildProfileForm";
 import { useParentStore } from "@/shared/stores/user.store";
 import { useCreateChild } from "@/entities/children/model/useChildren";
@@ -83,17 +84,15 @@ export default function AddChildView() {
 
   if (!activeSubscriptionRes?.data?.active) {
     return (
-      <>
-        <div className="flex min-h-[70vh] flex-col items-center justify-center gap-4">
-          <h3 className="text-xl font-bold">No active subscription</h3>
-          <p className="text-muted-foreground text-center">
-            You need an active subscription to add a child.
-          </p>
-          <Button href="/plans/subscribe" className="mt-4">
-            Upgrade
-          </Button>
-        </div>
-      </>
+      <div className="surface flex flex-col items-center justify-center gap-3 rounded-[var(--radius-lg)] p-10 text-center">
+        <h3 className="text-lg font-bold text-[var(--text-1)]">No active subscription</h3>
+        <p className="mx-auto max-w-sm text-sm text-[var(--text-2)]">
+          You need an active subscription to add and monitor a child profile.
+        </p>
+        <Link href="/plans/subscribe" className="btn-primary mt-2">
+          Upgrade Plan
+        </Link>
+      </div>
     );
   }
 

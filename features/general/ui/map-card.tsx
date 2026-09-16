@@ -2,7 +2,6 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/Card/Card";
 import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 
 const MapContainer = dynamic(() => import("react-leaflet").then((m) => m.MapContainer), {
@@ -14,7 +13,12 @@ const Popup = dynamic(() => import("react-leaflet").then((m) => m.Popup), { ssr:
 
 const DEFAULT_CENTER: [number, number] = [6.4281, 3.4219]; // Victoria Island, Lagos
 
-export function MapCard({ deviceId }: { deviceId: string }) {
+interface MapCardProps {
+  deviceId: string;
+  className?: string;
+}
+
+export function MapCard({ deviceId, className }: MapCardProps) {
   const [isClient, setIsClient] = React.useState(false);
 
   const { data: hardwareData, isPending: isHardwarePending } = useDeviceDetail(
@@ -36,56 +40,77 @@ export function MapCard({ deviceId }: { deviceId: string }) {
     });
   }, []);
 
-  if (!isClient) return null;
+  if (!isClient) {
+    return (
+      <div className="flex h-full min-h-[280px] w-full items-center justify-center bg-[var(--card-fill)] text-xs text-[var(--text-3)]">
+        Loading map...
+      </div>
+    );
+  }
 
   const location = hardwareData?.deviceDetails?.lastKnownLocation;
   const lat =
-    typeof location?.latitude === "number" && !isNaN(location.latitude) ? location.latitude : null;
+    typeof (location as any)?.latitude === "number" && !isNaN((location as any).latitude)
+      ? (location as any).latitude
+      : null;
   const lng =
-    typeof location?.longitude === "number" && !isNaN(location.longitude)
-      ? location.longitude
+    typeof (location as any)?.longitude === "number" && !isNaN((location as any).longitude)
+      ? (location as any).longitude
       : null;
   const hasValidLocation = lat !== null && lng !== null && (lat !== 0 || lng !== 0);
-
   const center: [number, number] = hasValidLocation ? [lat!, lng!] : DEFAULT_CENTER;
 
+  const address =
+    (location as any)?.address ||
+    (typeof location === "string" ? location : null) ||
+    (hasValidLocation ? `${lat!.toFixed(4)}, ${lng!.toFixed(4)}` : "No GPS fix");
+
   return (
-    <Card className="flex h-full w-full flex-col overflow-hidden">
-      <CardHeader>
-        <CardTitle>Location History</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-1 flex-col p-6!">
-        <div className="w-full flex-1 min-h-[400px]">
-          {!isHardwarePending && (
-            <MapContainer
-              center={center}
-              zoom={13}
-              scrollWheelZoom={false}
-              style={{ height: "100%", width: "100%" }}
-              className="z-0"
-            >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              {hasValidLocation ? (
-                <Marker position={center}>
-                  <Popup>Last known location</Popup>
-                </Marker>
-              ) : (
-                <Marker position={DEFAULT_CENTER}>
-                  <Popup>No GPS data available for this device</Popup>
-                </Marker>
-              )}
-            </MapContainer>
-          )}
-          {!isHardwarePending && !hasValidLocation && (
-            <p className="mt-2 text-center text-xs text-[#667085]">
-              No location data has been reported for this device yet.
-            </p>
-          )}
+    <div className={`flex h-full w-full flex-col ${className || ""}`}>
+      <div className="flex items-center justify-between border-b border-[var(--card-line)] bg-[var(--card-fill)] px-5 py-3.5">
+        <div>
+          <h4 className="text-[13.5px] font-bold text-[var(--text-1)]">Current location</h4>
+          <p className="max-w-[280px] truncate text-[11.5px] text-[var(--text-3)]">{address}</p>
         </div>
-      </CardContent>
-    </Card>
+        <span
+          className={`rounded-full border px-2 py-0.5 text-[11px] font-bold ${
+            hasValidLocation
+              ? "border-[var(--accent-border)] bg-[var(--accent-tint)] text-[var(--green)]"
+              : "border-[var(--card-line)] bg-[var(--card-hover)] text-[var(--text-3)]"
+          }`}
+        >
+          {hasValidLocation ? "GPS Active" : "No GPS"}
+        </span>
+      </div>
+
+      <div className="relative min-h-[260px] w-full flex-1 bg-[var(--base)]">
+        {!isHardwarePending && (
+          <MapContainer
+            center={center}
+            zoom={13}
+            scrollWheelZoom={false}
+            zoomControl={false}
+            style={{ height: "100%", width: "100%" }}
+            className="z-0"
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <Marker position={center}>
+              <Popup>
+                <div className="text-xs font-semibold text-slate-900">
+                  {hasValidLocation ? address : "Default location (no GPS data)"}
+                </div>
+              </Popup>
+            </Marker>
+          </MapContainer>
+        )}
+
+        <div className="absolute bottom-3 left-3 z-[400] rounded-lg border border-[var(--card-line)] bg-[var(--surface)]/90 px-2.5 py-1 text-[11px] font-medium text-[var(--text-1)] backdrop-blur-md">
+          {address}
+        </div>
+      </div>
+    </div>
   );
 }

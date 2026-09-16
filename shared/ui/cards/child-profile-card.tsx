@@ -1,6 +1,6 @@
 import { Button } from "@/shared/ui/button";
 import { FilledUserIcon } from "@/shared/ui/icons";
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/shared/lib/utils";
 import { Edit2, QrCode } from "lucide-react";
 import { IChildProfile } from "@/features/onboarding/personal/types";
 import { Skeleton } from "@/shared/ui/skeleton";
@@ -20,18 +20,18 @@ interface ChildProfileCardProps {
 
 export function ChildProfileCardSkeleton() {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-slate-100 bg-white px-6 py-8">
+    <div className="surface relative overflow-hidden rounded-2xl border border-[var(--card-line)] bg-[var(--card-fill)] px-5 py-4">
       <div className="relative z-10 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-5">
-          <Skeleton className="h-14 w-14 shrink-0 rounded-full" />
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-12 w-12 shrink-0 rounded-2xl" />
           <div className="space-y-2">
-            <Skeleton className="h-5 w-28" />
-            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-3.5 w-20" />
           </div>
         </div>
-        <div className="flex items-center gap-1">
-          <Skeleton className="h-12 w-12 rounded-full" />
-          <Skeleton className="h-10 w-10 rounded-full" />
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-9 w-9 rounded-lg" />
+          <Skeleton className="h-9 w-9 rounded-lg" />
         </div>
       </div>
     </div>
@@ -55,63 +55,52 @@ export function ChildProfileCard({
   return (
     <div
       className={cn(
-        "bg-primary relative overflow-hidden rounded-2xl px-6 py-8 text-white shadow-sm",
+        "surface relative overflow-hidden rounded-2xl border border-[var(--card-line)] bg-[var(--card-fill)] px-5 py-4 text-left text-[var(--text-1)] shadow-none",
         className
       )}
     >
-      {/* Topographic Background Pattern */}
-      <div className="pointer-events-none absolute inset-0 opacity-20">
-        <svg
-          className="h-full w-full"
-          preserveAspectRatio="none"
-          viewBox="0 0 100 100"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M-10 20 Q 20 10, 50 30 T 110 20 M-10 40 Q 30 30, 60 50 T 110 40 M-10 60 Q 20 50, 50 70 T 110 60 M-10 80 Q 30 70, 60 90 T 110 80"
-            stroke="white"
-            strokeWidth="0.5"
-            strokeLinecap="round"
-          />
-        </svg>
-      </div>
-
       <div className="relative z-10 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-5">
-          <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-white/20 bg-white">
+        <div className="flex items-center gap-4">
+          <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[var(--card-line)] bg-[var(--surface)] text-sm font-bold text-[var(--accent)]">
             {imageUrl ? (
               <img src={imageUrl} alt={name} className="h-full w-full object-cover" />
             ) : (
-              <FilledUserIcon className="text-primary h-6 w-6" />
+              getInitials(name)
             )}
           </div>
-          <div className="space-y-1">
-            <h3 className="text-lg font-medium tracking-tight">{name}</h3>
-            <p className="text-sm font-medium text-blue-100/80">
-              {relation}, {age}
+          <div className="space-y-0.5">
+            <h3 className="text-sm font-bold tracking-tight text-[var(--text-1)]">{name}</h3>
+            <p className="text-xs font-medium text-[var(--text-3)]">
+              {relation}
+              {age ? `, ${age} years old` : ""}
             </p>
           </div>
         </div>
 
         {showActions && (
-          <div className="flex items-center gap-1">
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-12 w-12 text-white hover:bg-white/10"
-              onClick={onViewQR}
-            >
-              <QrCode className="h-10! w-10! stroke-[1.5]" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-10 w-10 rounded-full bg-white/40 text-white hover:bg-white/30"
-              onClick={() => onEdit?.({ id, name, age, gender, imageUrl, status })}
-            >
-              <Edit2 className="h-5 w-5" />
-            </Button>
+          <div className="flex items-center gap-2">
+            {onViewQR && (
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-8 w-8 cursor-pointer text-[var(--text-2)] hover:bg-[var(--card-hover)] hover:text-[var(--text-1)]"
+                onClick={onViewQR}
+                title="View QR Code"
+              >
+                <QrCode className="h-4 w-4" />
+              </Button>
+            )}
+            {onEdit && (
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-8 w-8 cursor-pointer text-[var(--text-2)] hover:bg-[var(--card-hover)] hover:text-[var(--text-1)]"
+                onClick={() => onEdit?.({ id, name, age, gender, imageUrl, status })}
+                title="Edit profile"
+              >
+                <Edit2 className="h-3.5 w-3.5" />
+              </Button>
+            )}
           </div>
         )}
       </div>

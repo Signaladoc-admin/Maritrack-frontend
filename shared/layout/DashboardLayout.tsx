@@ -22,16 +22,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 }
 
 function ParentLayout({ children }: { children: ReactNode }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
-    <div className="flex min-h-screen bg-background text-foreground w-full">
-      <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0">
-        <div className="flex w-full items-center justify-end p-6 lg:p-8 md:hidden">
-           <ProfilePopover />
-        </div>
-        <main className="mx-auto w-full max-w-[1360px] p-4 sm:p-6 lg:p-10 flex-1">
-          {children}
-        </main>
+    <div className="bg-background text-foreground flex min-h-screen w-full">
+      <Sidebar mobileOpen={mobileMenuOpen} setMobileOpen={setMobileMenuOpen} />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <TopNavbar onMenuClick={() => setMobileMenuOpen(true)} />
+        <main className="mx-auto w-full max-w-[1360px] flex-1 p-4 sm:p-6 lg:p-10">{children}</main>
       </div>
     </div>
   );
@@ -41,13 +39,11 @@ function BusinessLayout({ children }: { children: ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground w-full">
+    <div className="bg-background text-foreground flex min-h-screen w-full">
       <BusinessSidebar mobileOpen={mobileMenuOpen} setMobileOpen={setMobileMenuOpen} />
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex min-w-0 flex-1 flex-col">
         <TopNavbar onMenuClick={() => setMobileMenuOpen(true)} />
-        <main className="mx-auto w-full max-w-[1360px] p-4 sm:p-6 lg:p-10 flex-1">
-          {children}
-        </main>
+        <main className="mx-auto w-full max-w-[1360px] flex-1 p-4 sm:p-6 lg:p-10">{children}</main>
       </div>
     </div>
   );
