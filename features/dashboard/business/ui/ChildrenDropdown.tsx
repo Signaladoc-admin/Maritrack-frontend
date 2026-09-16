@@ -42,35 +42,33 @@ export function ChildrenDropdown() {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="flex h-auto cursor-pointer items-center gap-4 rounded-[60px] border-none bg-[#F8F9FA] py-2 pr-6 pl-2 shadow-none transition-all hover:bg-neutral-100/50 focus:ring-0 focus:outline-hidden"
+          className="flex h-auto cursor-pointer items-center gap-3 rounded-full border border-[var(--card-line)] bg-[var(--card-fill)] py-1.5 pr-4 pl-1.5 shadow-none transition-all hover:border-[var(--card-line-strong)] hover:bg-[var(--card-hover)] focus:outline-none"
         >
-          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#1B3C73]">
+          <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-[var(--accent-border)] bg-[var(--accent-tint)]">
             <Avatar className="h-full w-full">
-              <AvatarImage
-                src={selectedChild?.imageUrl || ''}
-                alt={selectedChild?.name}
-              />
-              <AvatarFallback className="bg-[#1B3C73] text-white">
+              <AvatarImage src={selectedChild?.imageUrl || ""} alt={selectedChild?.name} />
+              <AvatarFallback className="bg-[var(--accent-tint)] text-xs font-bold text-[var(--accent)]">
                 {selectedChild?.name?.charAt(0)}
               </AvatarFallback>
             </Avatar>
           </div>
-          <div className="flex flex-1 items-center justify-between gap-2">
-            <span className="text-lg font-bold text-[#1B3C73]">
+          <div className="flex flex-1 items-center justify-between gap-2.5">
+            <span className="text-sm font-bold text-[var(--text-1)]">
               {isFetchingChildren
                 ? "Loading..."
-                : (isAllSelected
-                  ? (children?.[0]?.name || "No Children")
-                  : (selectedChild?.name || "Select Child"))}
+                : isAllSelected
+                  ? children?.[0]?.name || "No Children"
+                  : selectedChild?.name || "Select Child"}
             </span>
-            <ChevronDown className="h-5 w-5 text-[#1B3C73] transition-transform duration-200" />
+            <ChevronDown className="h-4 w-4 text-[var(--text-2)] transition-transform duration-200" />
           </div>
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="w-72 rounded-3xl p-2 shadow-2xl">
-        {/* Removed All Children option */}
-
+      <DropdownMenuContent
+        align="end"
+        className="w-64 rounded-xl border border-[var(--card-line-strong)] bg-[var(--surface)] p-1.5 shadow-none"
+      >
         {children?.map((child) => {
           const isSelected = selectedChildId === child.id;
           return (
@@ -78,21 +76,21 @@ export function ChildrenDropdown() {
               key={child.id}
               onSelect={() => handleSelect(child.id)}
               className={cn(
-                "flex w-full cursor-pointer items-center gap-4 rounded-2xl px-4 py-3 transition-colors hover:bg-neutral-50 focus:bg-neutral-50",
-                isSelected && "bg-[#ECF1F9] focus:bg-[#ECF1F9]"
+                "flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-[var(--card-hover)] focus:bg-[var(--card-hover)]",
+                isSelected && "bg-[var(--accent-tint)] focus:bg-[var(--accent-tint)]"
               )}
             >
-              <div className="flex items-center gap-4">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={child.imageUrl || ''} alt={child.name} />
-                  <AvatarFallback className="bg-[#1B3C73] text-white">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={child.imageUrl || ""} alt={child.name} />
+                  <AvatarFallback className="bg-[var(--accent-tint)] text-xs font-bold text-[var(--accent)]">
                     {child.name?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
                 <span
                   className={cn(
-                    "text-base font-bold",
-                    isSelected ? "text-[#1B3C73]" : "text-slate-700"
+                    "text-sm font-semibold",
+                    isSelected ? "font-bold text-[var(--accent)]" : "text-[var(--text-1)]"
                   )}
                 >
                   {child.name}

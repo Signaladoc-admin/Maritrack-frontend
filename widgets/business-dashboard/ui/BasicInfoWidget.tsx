@@ -17,15 +17,15 @@ function MetricStatCard({
   return (
     <CardWrapper variant="outline" padding="default">
       <div className="flex h-full items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-500">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent-tint text-accent">
           <BarChart2 className="h-5 w-5" strokeWidth={2.5} />
         </div>
         <div className="flex h-full min-w-0 flex-col justify-between gap-0.5">
-          <p className="text-sm leading-snug font-medium text-[#667085]">{title}</p>
+          <p className="text-[13px] font-semibold text-muted-foreground">{title}</p>
           {isLoading ? (
             <Skeleton className="mt-1 h-7 w-20" />
           ) : (
-            <h4 className="text-2xl leading-tight font-bold text-slate-900">{value}</h4>
+            <h4 className="text-[28px] leading-tight font-extrabold text-foreground">{value}</h4>
           )}
         </div>
       </div>

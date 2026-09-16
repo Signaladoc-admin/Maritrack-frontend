@@ -20,7 +20,7 @@ export default function MonitoringPermissionsSetup() {
         />
         <div className="space-y-3">
           <SubHeading title="What do you want to monitor?" />
-          <div className="divide-y divide-neutral-100">
+          <div className="divide-y divide-[rgba(255,255,255,0.08)]">
             <Controller
               name="monitorScreenTime"
               control={control}

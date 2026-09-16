@@ -6,39 +6,41 @@ import { H4, P } from "./typography";
 // We will import Card components after creating them, or define them locally if simple.
 // For now, I'll assume standard Card structure.
 
-const cardWrapperVariants = cva("w-full rounded-2xl bg-card text-card-foreground transition-all", {
-  variants: {
-    variant: {
-      default: "bg-[#f7f7f7] text-slate-950 dark:bg-slate-950 dark:text-slate-50",
-      primary:
-        "bg-[#F7F7F7] text-slate-50 dark:bg-slate-50 dark:text-slate-900 border-slate-900 dark:border-slate-50",
-      destructive: "bg-red-500 text-white border-red-500",
-      warning: "bg-[#f87171] text-white",
-      outline: "bg-transparent border-1 border-[#efefef]",
-      ghost: "border-none shadow-none bg-transparent",
+const cardWrapperVariants = cva(
+  "w-full bg-card-fill border border-card-line text-foreground transition-all shadow-none",
+  {
+    variants: {
+      variant: {
+        default: "bg-card-fill text-foreground border-card-line",
+        primary: "bg-accent text-background border-accent",
+        destructive: "bg-destructive text-white border-destructive",
+        warning: "bg-[#f87171] text-white",
+        outline: "bg-[var(--card-fill)] border border-card-line",
+        ghost: "border-none shadow-none bg-transparent",
+      },
+      padding: {
+        none: "p-0",
+        xs: "p-1",
+        sm: "p-3",
+        default: "p-5",
+        lg: "p-6",
+        xl: "p-8",
+      },
+      radius: {
+        none: "rounded-none",
+        sm: "rounded-sm",
+        default: "rounded-[var(--radius-lg)]",
+        lg: "rounded-[var(--radius-lg)]",
+        full: "rounded-full",
+      },
     },
-    padding: {
-      none: "p-0",
-      xs: "p-1",
-      sm: "p-3",
-      default: "p-4",
-      lg: "p-6",
-      xl: "p-8",
+    defaultVariants: {
+      variant: "default",
+      padding: "default",
+      radius: "default",
     },
-    radius: {
-      none: "rounded-none",
-      sm: "rounded-sm",
-      default: "rounded-2xl",
-      lg: "rounded-3xl",
-      full: "rounded-full",
-    },
-  },
-  defaultVariants: {
-    variant: "default",
-    padding: "default",
-    radius: "default",
-  },
-});
+  }
+);
 
 export interface CardWrapperProps
   extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof cardWrapperVariants> {
@@ -58,9 +60,12 @@ function CardWrapper({
   ...props
 }: CardWrapperProps) {
   return (
-    <div className={cn(cardWrapperVariants({ variant, padding, radius, className }), "flex flex-col")} {...props}>
+    <div
+      className={cn(cardWrapperVariants({ variant, padding, radius, className }), "flex flex-col")}
+      {...props}
+    >
       {header && <div className="mb-4">{header}</div>}
-      <div className="flex-1 min-h-0 flex flex-col">{children}</div>
+      <div className="flex min-h-0 flex-1 flex-col">{children}</div>
       {footer && <div className="mt-4">{footer}</div>}
     </div>
   );

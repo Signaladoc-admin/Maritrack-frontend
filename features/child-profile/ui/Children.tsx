@@ -4,44 +4,59 @@ import { useParentChildren } from "@/entities/children/model/useChildren";
 import ChildCard from "./ChildCard";
 import { Child } from "../model/types";
 import Link from "next/link";
-import { CardWrapper } from "@/shared/ui/card-wrapper";
 import NewChildProfileButton from "./NewChildProfileButton";
 import { useRouter } from "next/navigation";
+import { Skeleton } from "@/shared/ui/skeleton";
 
 export default function Children() {
-  const { data: children, isLoading: isFetchingChildren } = useParentChildren();
+  const { data: childrenRes, isLoading: isFetchingChildren } = useParentChildren();
+  const children: Child[] = childrenRes?.data ?? [];
   const router = useRouter();
 
   return (
-    <>
-      <div>
-        {isFetchingChildren && (
-          <div className="grid animate-pulse grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <CardWrapper key={index} variant="default" className="px-4 py-6">
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-200"></div>
-                <div className="h-6 w-24 rounded bg-gray-200 text-lg font-medium"></div>
-              </CardWrapper>
-            ))}
-          </div>
-        )}
+    <div className="space-y-6">
+      {/* Loading Skeletons */}
+      {isFetchingChildren && (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map((index) => (
+            <div
+              key={index}
+              className="surface flex h-[210px] flex-col justify-between rounded-[var(--radius-lg)] p-5"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-13 w-13 rounded-2xl" />
+                  <Skeleton className="h-6 w-24 rounded-full" />
+                </div>
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-4 w-20" />
+              </div>
+              <Skeleton className="h-8 w-full rounded-lg" />
+            </div>
+          ))}
+        </div>
+      )}
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {children?.data?.map((child: Child) => (
-            <Link href={`/child/${child.id}`} key={child.id}>
+      {/* Children Grid */}
+      {!isFetchingChildren && (
+        <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {children.map((child: Child) => (
+            <Link href={`/child/${child.id}`} key={child.id} className="h-full">
               <ChildCard child={child} />
             </Link>
           ))}
-        </div>
 
-        <div className="mt-4 max-w-lg">
-          <NewChildProfileButton
-            onClick={() => router.push("/children/add")}
-            text="New Child Profile"
-            variant="vertical"
-          />
+          {/* Add Child Profile Button as part of the grid */}
+          <div className="h-full">
+            <NewChildProfileButton
+              onClick={() => router.push("/children/add")}
+              text="Add a child profile"
+              variant="vertical"
+              className="h-full"
+            />
+          </div>
         </div>
-      </div>
-    </>
+      )}
+    </div>
   );
 }

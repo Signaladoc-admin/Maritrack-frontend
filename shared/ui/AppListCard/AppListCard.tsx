@@ -21,6 +21,15 @@ export function InfoListCard({
     <Card className={cn("h-full w-full", className)}>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>{title}</CardTitle>
+        {onActionClick && (
+          <button
+            type="button"
+            onClick={onActionClick}
+            className="text-primary cursor-pointer text-xs font-semibold hover:underline"
+          >
+            {actionText}
+          </button>
+        )}
       </CardHeader>
 
       <CardContent className="flex flex-col gap-3">

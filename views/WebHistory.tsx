@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { Search, Globe, Loader2 } from "lucide-react";
-import { Button } from "@/shared/ui/button";
+import { Search, Globe, Plus } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useToast } from "@/shared/ui/toast";
 import { useGetRestrictions, useSetRestrictions } from "@/features/mdm-sync/model/useRestrictions";
+import { Skeleton } from "@/shared/ui/skeleton";
 
 const WebHistory = () => {
   const { toast } = useToast();
@@ -22,21 +22,24 @@ const WebHistory = () => {
     : [];
 
   const isValidDomain = (domain: string) => {
-    // Basic domain validation: expects format like example.com or sub.example.com
     const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
     return domainRegex.test(domain.trim());
   };
 
   const handleAddWebsite = () => {
     const trimmedDomain = newDomain.trim().toLowerCase();
-    
+
     if (!trimmedDomain) {
       toast({ title: "Error", message: "Please enter a website URL", type: "error" });
       return;
     }
 
     if (!isValidDomain(trimmedDomain)) {
-      toast({ title: "Error", message: "Please enter a valid domain format (e.g., example.com)", type: "error" });
+      toast({
+        title: "Error",
+        message: "Please enter a valid domain format (e.g. facebook.com)",
+        type: "error",
+      });
       return;
     }
 
@@ -47,17 +50,20 @@ const WebHistory = () => {
 
     const updatedDomains = [...blockedDomains, trimmedDomain];
 
-    updateRestrictions({
-      mdmDeviceId: deviceId,
-      restrictions: { domains: updatedDomains },
-    }, {
-      onSuccess: () => setNewDomain("")
-    });
+    updateRestrictions(
+      {
+        mdmDeviceId: deviceId,
+        restrictions: { domains: updatedDomains },
+      },
+      {
+        onSuccess: () => setNewDomain(""),
+      }
+    );
   };
 
   const handleUnblock = (domainToUnblock: string) => {
     const updatedDomains = blockedDomains.filter((d) => d !== domainToUnblock);
-    
+
     updateRestrictions({
       mdmDeviceId: deviceId,
       restrictions: { domains: updatedDomains },
@@ -65,82 +71,103 @@ const WebHistory = () => {
   };
 
   return (
-    <div className="w-full space-y-8 bg-white p-6 sm:p-8 rounded-[32px] border border-gray-200">
-      <div>
-        <h2 className="text-2xl font-bold text-[#1b3c73] mb-2">Blocked websites</h2>
-        <p className="text-sm text-slate-500">
-          Manage the list of websites that are blocked on this device.
-        </p>
-      </div>
-
-      {/* Add Website Input */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <input
-            className="flex h-12 w-full rounded-xl border border-gray-200 bg-gray-50 pr-4 pl-11 text-sm focus:ring-2 focus:ring-[#1B3C73]/20 focus:border-[#1b3c73] focus:outline-none transition-all"
-            placeholder="Enter website url to block (e.g. facebook.com)"
-            value={newDomain}
-            onChange={(e) => setNewDomain(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !isUpdating) handleAddWebsite();
-            }}
-            disabled={isUpdating}
-          />
-        </div>
-        <Button 
-          onClick={handleAddWebsite}
-          disabled={isUpdating}
-          className="h-12 bg-[#D95D55] px-8 hover:bg-[#c04d45] rounded-xl text-white font-medium min-w-[160px] transition-colors"
-        >
-          {isUpdating ? <Loader2 className="h-5 w-5 animate-spin" /> : "Add Website"}
-        </Button>
-      </div>
-
-      {/* List of Websites */}
-      <div className="space-y-3 pt-2">
-        {isPending ? (
-          <div className="flex flex-col gap-4 py-16 items-center justify-center text-slate-400">
-            <Loader2 className="h-8 w-8 animate-spin text-[#1B3C73]" />
-            <p className="text-sm font-medium">Loading blocked websites...</p>
-          </div>
-        ) : blockedDomains.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-            <div className="h-14 w-14 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center mb-4">
-              <Globe className="h-6 w-6 text-slate-400" />
+    <div className="detail-tab-panel animate-in fade-in-0 w-full duration-300">
+      {/* Block new website section */}
+      <div className="dd-section">
+        <div className="dd-section-title">Add website restriction</div>
+        <div className="surface p-5">
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="search-wrap flex-1">
+              <Search className="h-4 w-4 shrink-0 text-[var(--text-3)]" />
+              <input
+                placeholder="Enter website domain to block (e.g. facebook.com, tiktok.com)"
+                value={newDomain}
+                onChange={(e) => setNewDomain(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !isUpdating) handleAddWebsite();
+                }}
+                disabled={isUpdating}
+              />
             </div>
-            <h3 className="text-base font-semibold text-slate-700 mb-1">No blocked websites</h3>
-            <p className="text-sm text-slate-500 max-w-sm">
-              You haven't added any websites to the blocklist yet. 
-              Enter a domain above to start restricting access.
-            </p>
+            <button
+              type="button"
+              onClick={handleAddWebsite}
+              disabled={isUpdating || !newDomain.trim()}
+              className="dd-action-btn primary flex h-[42px] shrink-0 cursor-pointer items-center gap-1.5 rounded-lg px-5 text-xs font-bold disabled:opacity-50"
+              style={{ width: "auto" }}
+            >
+              <Plus className="h-4 w-4" />
+              <span>{isUpdating ? "Blocking..." : "Block domain"}</span>
+            </button>
           </div>
-        ) : (
-          <div className="max-h-[500px] overflow-y-auto space-y-3 pr-2">
-            {blockedDomains.map((site, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between rounded-2xl bg-gray-50 p-4 border border-gray-100 transition-all hover:border-gray-200 hover:bg-gray-100/50"
-              >
-                <div className="flex items-center gap-4 overflow-hidden">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm border border-gray-100">
-                    <Globe className="h-5 w-5 text-[#1B3C73]" />
+        </div>
+      </div>
+
+      {/* Blocked websites list */}
+      <div className="dd-section">
+        <div className="dd-section-title">
+          <span>Blocked domains</span>
+          {!isPending && (
+            <span className="text-[11px] font-bold tracking-wider text-[var(--text-3)] uppercase">
+              {blockedDomains.length} blocked
+            </span>
+          )}
+        </div>
+
+        <div className="surface p-5">
+          {isPending ? (
+            <div className="flex flex-col divide-y divide-[rgba(255,255,255,0.07)]">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex items-center justify-between py-3.5">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-8 w-8 rounded-lg bg-[rgba(255,255,255,0.08)]" />
+                    <Skeleton className="h-4 w-44 bg-[rgba(255,255,255,0.08)]" />
                   </div>
-                  <span className="font-medium text-slate-700 truncate" title={site}>
-                    {site}
-                  </span>
+                  <Skeleton className="h-7 w-20 rounded-md bg-[rgba(255,255,255,0.08)]" />
                 </div>
-                <button 
-                  onClick={() => handleUnblock(site)}
-                  disabled={isUpdating}
-                  className="text-sm font-semibold text-[#1B3C73] hover:text-[#D95D55] transition-colors ml-4 shrink-0 disabled:opacity-50 px-4 py-2 rounded-lg hover:bg-[#D95D55]/10"
-                >
-                  Unblock
-                </button>
+              ))}
+            </div>
+          ) : blockedDomains.length === 0 ? (
+            <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl border border-[var(--card-line)] bg-[var(--card-fill)]">
+                <Globe className="h-5 w-5 text-[var(--text-3)]" />
               </div>
-            ))}
-          </div>
-        )}
+              <h4 className="mb-1 text-[14px] font-bold text-[var(--text-1)]">
+                No blocked websites
+              </h4>
+              <p className="max-w-sm text-[12px] text-[var(--text-3)]">
+                No domain restrictions have been configured on this device yet. Enter a website
+                domain above to restrict access.
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col divide-y divide-[rgba(255,255,255,0.07)]">
+              {blockedDomains.map((site) => (
+                <div
+                  key={site}
+                  className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0"
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--card-line)] bg-[var(--card-fill)]">
+                      <Globe className="h-4 w-4 text-[var(--cyan)]" />
+                    </div>
+                    <span className="truncate font-mono text-[13.5px] font-semibold text-[var(--text-1)]">
+                      {site}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleUnblock(site)}
+                    disabled={isUpdating}
+                    className="shrink-0 cursor-pointer rounded-md border border-[var(--coral-border)] px-3 py-1.5 text-[12px] font-bold text-[var(--coral)] transition-colors hover:bg-[var(--coral-soft)]"
+                  >
+                    Unblock
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

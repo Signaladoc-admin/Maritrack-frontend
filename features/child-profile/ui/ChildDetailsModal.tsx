@@ -47,9 +47,9 @@ export function AddEditChildModal({ open, onOpenChange, initialData }: AddEditCh
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[400px]">
+      <DialogContent className="rounded-2xl border border-[var(--card-line-strong)] bg-[var(--surface)] p-6 shadow-none sm:max-w-[420px]">
         <DialogHeader>
-          <DialogTitle className="text-lg font-bold text-[#1B3C73]">
+          <DialogTitle className="text-lg font-bold text-[var(--text-1)]">
             {initialData
               ? `Edit ${initialData?.name || "Child"}'s Details`
               : `Create Child Profile`}
@@ -70,7 +70,7 @@ export function AddEditChildModal({ open, onOpenChange, initialData }: AddEditCh
                   className="h-18 w-18 rounded-full"
                   previewClassName="h-full w-full rounded-full object-cover"
                 >
-                  <div className="bg-muted flex h-full w-full items-center justify-center rounded-full border-gray-300 transition-colors hover:bg-gray-200">
+                  <div className="flex h-full w-full items-center justify-center rounded-full border border-[var(--card-line)] bg-[var(--card-fill)] transition-colors hover:border-[var(--card-line-strong)]">
                     {initialData?.imageUrl ? (
                       <img
                         src={initialData?.imageUrl}
@@ -78,7 +78,7 @@ export function AddEditChildModal({ open, onOpenChange, initialData }: AddEditCh
                         className="h-full w-full rounded-full object-cover"
                       />
                     ) : (
-                      <FilledUserIcon className="h-8 w-8 text-[#1b3c73]" />
+                      <FilledUserIcon className="h-8 w-8 text-[var(--accent)]" />
                     )}
                   </div>
                 </FileUpload>
@@ -132,7 +132,7 @@ export function AddEditChildModal({ open, onOpenChange, initialData }: AddEditCh
             </div>
           </div>
           <DialogFooter>
-            <Button className="w-full bg-[#1B3C73]" disabled={isPending}>
+            <Button className="btn-primary w-full cursor-pointer" disabled={isPending}>
               {isPending ? "Saving..." : initialData ? "Save Changes" : "Create Profile"}
             </Button>
           </DialogFooter>

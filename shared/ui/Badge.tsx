@@ -22,3 +22,6 @@ export default function Badge({
 }) {
   return <div className={badgeVariants({ variant })}>{content}</div>;
 }
+
+export { Badge };
+

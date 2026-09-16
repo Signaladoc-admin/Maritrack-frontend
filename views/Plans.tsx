@@ -14,18 +14,15 @@ import { useQueryState } from "nuqs";
 import { ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/shared/ui/skeleton";
 
-// Mirrors PlanCard exactly: same rounded-xl, px-6 py-5, inline border styles
+// Mirrors PlanCard exactly: same rounded-[var(--radius-lg)], p-6, border border-[var(--card-line)]
 function PlanCardSkeleton() {
   return (
-    <div
-      className="flex items-start justify-between rounded-xl bg-white px-6 py-5"
-      style={{ border: "3.5px solid #eeeeee", borderBottom: "20px solid #eeeeee" }}
-    >
+    <div className="surface flex items-start justify-between rounded-[var(--radius-lg)] border border-[var(--card-line)] p-6">
       <div className="space-y-2">
         <Skeleton className="h-8 w-28" />
         <Skeleton className="h-4 w-52" />
       </div>
-      <Skeleton className="h-8 w-24 rounded-lg" />
+      <Skeleton className="h-8 w-24 rounded-full" />
     </div>
   );
 }
@@ -45,7 +42,7 @@ export default function Plans() {
   const otherSubscriptions = Array.isArray(allSubscriptions)
     ? allSubscriptions.filter((s: Subscription) => s.id !== activeSubscription?.id)
     : [];
-    
+
   // Stay in skeleton until zones resolve AND (if a zone exists) subscription resolves
   const isResolving = zoneId && (isLoadingSubscription || isLoadingAllSubscriptions);
 
@@ -62,9 +59,9 @@ export default function Plans() {
   return (
     <div className="w-full">
       <div className="mb-8 flex items-center justify-start">
-        <button 
-          onClick={() => router.push("/dashboard")} 
-          className="flex items-center text-sm font-medium text-slate-500 transition-colors hover:text-slate-700"
+        <button
+          onClick={() => router.push("/dashboard")}
+          className="flex cursor-pointer items-center text-sm font-medium text-[var(--text-2)] transition-colors hover:text-[var(--text-1)]"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to dashboard
@@ -81,14 +78,16 @@ export default function Plans() {
           </div>
         ) : !activeSubscription ? (
           <div className="mx-auto flex w-fit flex-col gap-4">
-            <p className="text-center text-muted-foreground">No active subscription found</p>
+            <p className="text-muted-foreground text-center">No active subscription found</p>
             <Button onClick={handleUpgrade}>Upgrade</Button>
           </div>
         ) : (
           <div className="space-y-4">
             <PlanCard
               key={crypto.randomUUID()}
-              price={formatCurrency(formatPaystackKoboAmount(activeSubscription.plan?.priceNGN) || 0)}
+              price={formatCurrency(
+                formatPaystackKoboAmount(activeSubscription.plan?.priceNGN) || 0
+              )}
               name={activeSubscription.plan?.name || ""}
               billingCycle={activeSubscription.plan?.billingCycle || ""}
               isCurrent={activeSubscriptionRes?.data?.active}

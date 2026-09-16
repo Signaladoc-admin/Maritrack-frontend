@@ -15,12 +15,12 @@ export default function UserAccountTypeSelectionCard({
   return (
     <Link
       href={href}
-      className="hover:border-primary transition-border block space-y-3 rounded-lg border border-transparent bg-neutral-100 p-5 duration-100 hover:border"
+      className="hover:border-accent-border transition-colors block space-y-3 rounded-lg border border-border bg-card-fill p-5 duration-100 hover:bg-card-hover"
     >
-      <div className="bg-primary inline-flex rounded-full p-3 text-white">
+      <div className="bg-accent-tint inline-flex rounded-full p-3 text-accent">
         <Icon className="size-6" />
       </div>
-      <h3 className="font-semibold text-neutral-700">{label}</h3>
+      <h3 className="font-semibold text-foreground">{label}</h3>
       <p className="text-muted-foreground">{description}</p>
     </Link>
   );

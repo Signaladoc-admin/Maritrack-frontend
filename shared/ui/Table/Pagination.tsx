@@ -13,29 +13,23 @@ export default function Pagination({
   className?: string;
 }) {
   return (
-    <div
-      className={cn("flex items-center justify-between rounded-b-2xl border border-gray-200 bg-[#f7f7f7] px-6 py-3", className)}
-    >
-      <span className="text-sm text-gray-600">
+    <div className={cn("table-foot", className)}>
+      <span>
         Page {currentPage} of {totalPages}
       </span>
-      <div className="flex space-x-3">
-        <Button
+      <div className="pager">
+        <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          variant="outline"
-          size="sm"
         >
           Previous
-        </Button>
-        <Button
+        </button>
+        <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= totalPages}
-          variant="outline"
-          size="sm"
         >
           Next
-        </Button>
+        </button>
       </div>
     </div>
   );

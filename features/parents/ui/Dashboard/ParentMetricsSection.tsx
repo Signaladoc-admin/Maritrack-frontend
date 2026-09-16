@@ -12,21 +12,21 @@ export function ParentMetricsSection({ hardwareData, isPending }: ParentMetricsS
   if (isPending) {
     return (
       <div className="grid gap-6 md:grid-cols-2">
-        <Skeleton className="h-48 rounded-[32px]" />
-        <Skeleton className="h-48 rounded-[32px]" />
+        <Skeleton className="h-36 rounded-[var(--radius-lg)]" />
+        <Skeleton className="h-36 rounded-[var(--radius-lg)]" />
       </div>
     );
   }
 
-  const hardwareInfo = hardwareData?.data?.hardwareInfo || {};
-  const realTimeStats = hardwareData?.data?.realTimeStats || {};
-  
+  const hardwareInfo = hardwareData?.hardwareInfo || hardwareData?.data?.hardwareInfo || {};
+  const realTimeStats = hardwareData?.realTimeStats || hardwareData?.data?.realTimeStats || {};
+
   const batteryLevel = realTimeStats?.batteryLevel ?? 0;
 
   // Storage calculation
   const storageUsed = realTimeStats?.internalStorageUsed ?? 0;
   const storageFree = realTimeStats?.internalStorageFree ?? 0;
-  const totalStorage = hardwareInfo?.internalStorageSize ?? (storageUsed + storageFree);
+  const totalStorage = hardwareInfo?.internalStorageSize ?? storageUsed + storageFree;
 
   // Convert to GB (assuming bytes)
   const toGB = (bytes: number) => (bytes / (1024 * 1024 * 1024)).toFixed(1);

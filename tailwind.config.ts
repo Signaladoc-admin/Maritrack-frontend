@@ -13,7 +13,8 @@ const config: Config = {
         primary: "#1b3c73",
       },
       fontFamily: {
-        roboto: ["var(--font-roboto)", "sans-serif"],
+        sans: ["var(--font-inter)", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+        roboto: ["var(--font-inter)", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {

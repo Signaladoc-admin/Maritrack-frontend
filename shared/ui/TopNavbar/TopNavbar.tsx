@@ -5,8 +5,9 @@ import { Gauge, Menu, Smartphone, User, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ProfilePopover } from "../Sidebar/ProfilePopover";
-import { cn } from "@/shared/lib/utils";
-import RefreshTokenTest from "@/components/ui/RefreshTokenTest";
+import { ThemeToggle } from "../ThemeToggle/ThemeToggle";
+import { cn, getInitials } from "@/shared/lib/utils";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 const businessNavLinks = [
   { label: "Dashboard", href: "/dashboard", icon: Gauge },
@@ -14,101 +15,102 @@ const businessNavLinks = [
   { label: "Users", href: "/users", icon: User },
 ];
 
-export default function TopNavbar() {
+export default function TopNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const pathname = usePathname();
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const { user } = useAuth();
+  const isParent = user?.appRole === "PARENT";
+  const userInitials = user
+    ? getInitials(`${user.firstName || ""} ${user.lastName || ""}`) || "U"
+    : "U";
 
   return (
     <>
-      {/* Top bar */}
-      <div className="fixed z-9999 w-screen">
-        <div className="relative flex items-center border-b-[1.5px] border-[#eee] bg-[#f7f7f7] px-5 py-4 text-sm md:py-6">
-          {/* Small screens — hamburger */}
-          <button
-            className="p-1 text-[#1B3C73] md:hidden"
-            onClick={() => setDrawerOpen(true)}
-            aria-label="Open menu"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
+      {/* Top bar (Desktop & Mobile) */}
+      <div className="topbar sticky top-0 z-50">
+        {/* Mobile menu button */}
+        <button
+          className={cn(
+            "text-muted-foreground hover:text-foreground mr-2 cursor-pointer p-1 md:hidden",
+            searchOpen && "hidden"
+          )}
+          onClick={onMenuClick}
+          aria-label="Open menu"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
 
-          {/* Large screens — centred nav links */}
-          <div className="hidden w-full items-center justify-center gap-16 md:flex">
-            {businessNavLinks.map((link) => {
-              const isActive = pathname === link.href;
-              const Icon = link.icon;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={cn(
-                    "flex items-center gap-2 font-semibold transition-all",
-                    isActive ? "text-[#1B3C73]" : "text-[#999]"
-                  )}
-                >
-                  <Icon />
-                  <span>{link.label}</span>
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* Avatar — flow on small screens, absolute on large so nav links stay centred */}
-          <div className="absolute right-10 bottom-1/2 ml-0 translate-y-1/2">
-            <ProfilePopover />
-          </div>
-        </div>
-      </div>
-
-      {/* Backdrop */}
-      <div
-        className={cn(
-          "fixed inset-0 z-10001 bg-black/40 transition-opacity duration-300 md:hidden",
-          drawerOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
-        )}
-        onClick={() => setDrawerOpen(false)}
-      />
-
-      {/* Slide-out drawer */}
-      <div
-        className={cn(
-          "fixed top-0 left-0 z-10002 h-full w-64 bg-[#f7f7f7] shadow-xl transition-transform duration-300 md:hidden",
-          drawerOpen ? "translate-x-0" : "-translate-x-full"
-        )}
-      >
-        <div className="flex items-center justify-between border-b border-[#eee] px-5 py-6">
-          <span className="font-semibold text-[#1B3C73]">Menu</span>
-          <button
-            onClick={() => setDrawerOpen(false)}
-            aria-label="Close menu"
-            className="text-[#999] hover:text-[#1B3C73]"
-          >
-            <X className="h-5 w-5" />
-          </button>
+        {/* Search bar */}
+        <div
+          className={cn(
+            "search-wrap transition-all",
+            searchOpen ? "flex w-full" : "hidden sm:flex",
+            "sm:w-auto"
+          )}
+        >
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8" />
+            <path
+              d="M21 21l-4.3-4.3"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            />
+          </svg>
+          <input type="text" placeholder="Search by serial number, IMEI, MAC, or alias" />
+          {searchOpen && (
+            <button
+              className="ml-1 cursor-pointer p-1 sm:hidden"
+              onClick={() => setSearchOpen(false)}
+            >
+              <X className="text-muted-foreground hover:text-foreground h-4 w-4" />
+            </button>
+          )}
         </div>
 
-        <nav className="flex flex-col gap-1 p-4">
-          {businessNavLinks.map((link) => {
-            const isActive = pathname === link.href;
-            const Icon = link.icon;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setDrawerOpen(false)}
-                className={cn(
-                  "flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition-all",
-                  isActive
-                    ? "bg-[#1B3C73] text-white"
-                    : "text-[#999] hover:bg-[#eee] hover:text-[#1B3C73]"
-                )}
-              >
-                <Icon className="h-5 w-5" />
-                <span>{link.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
+        {/* Mobile Search Icon (when search is closed) */}
+        {!searchOpen && (
+          <button
+            className="text-muted-foreground hover:text-foreground ml-auto cursor-pointer p-1 sm:hidden"
+            onClick={() => setSearchOpen(true)}
+            aria-label="Open search"
+          >
+            <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+              <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8" />
+              <path
+                d="M21 21l-4.3-4.3"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+        )}
+
+        {/* OS Filters (Business accounts only) */}
+        {!isParent && (
+          <div className={cn("os-pills hidden sm:flex")}>
+            <button className="os-pill active">Android</button>
+            <button className="os-pill">Windows</button>
+            <button className="os-pill">iOS</button>
+          </div>
+        )}
+
+        {/* Theme Toggle */}
+        <div className={cn("flex items-center gap-2", searchOpen && "hidden sm:flex")}>
+          <ThemeToggle variant="pill" className="hidden sm:inline-flex" />
+          <ThemeToggle variant="icon" className="sm:hidden" />
+        </div>
+
+        {/* Avatar */}
+        <Link
+          href="/profile"
+          className={cn(
+            "topbar-avatar hidden cursor-pointer transition-opacity hover:opacity-80 sm:flex"
+          )}
+        >
+          {userInitials}
+        </Link>
       </div>
     </>
   );

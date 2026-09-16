@@ -21,7 +21,10 @@ export function TabNavigation({
       variant="default"
       padding="none"
       radius="full"
-      className={cn("hide-scrollbar flex items-center overflow-x-auto bg-[#F7F7F7] p-1", className)}
+      className={cn(
+        "hide-scrollbar flex items-center overflow-x-auto border border-[var(--card-line)] bg-[var(--card-fill)] p-1",
+        className
+      )}
     >
       <div className="flex w-full items-center justify-between whitespace-nowrap">
         {tabs.map((tab) => (
@@ -29,11 +32,11 @@ export function TabNavigation({
             key={tab.value}
             onClick={() => onTabChange(tab.value)}
             className={cn(
-              "cursor-pointer rounded-full px-6 py-2.5 text-sm font-medium transition-all",
+              "cursor-pointer rounded-full px-6 py-2 text-sm font-medium transition-all",
               itemClassName,
               activeTab === tab.value
-                ? "font-bold text-[#1b3c73]"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-[var(--accent-tint)] font-bold text-[var(--accent)] shadow-xs"
+                : "text-[var(--text-2)] hover:text-[var(--text-1)]"
             )}
           >
             {tab.label}

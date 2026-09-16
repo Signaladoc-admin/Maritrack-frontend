@@ -22,8 +22,8 @@ export default function BillingHistoryTable() {
   if (isLoading) {
     return (
       <div className="flex flex-col gap-4 py-10">
-        <h3 className="font-semibold text-slate-500">Billing history</h3>
-        <div className="space-y-4 bg-white md:max-w-xl">
+        <h3 className="text-base font-bold text-[var(--text-1)]">Billing history</h3>
+        <div className="space-y-4 md:max-w-xl">
           <div className="overflow-x-auto pb-2">
             <div className="flex gap-14 *:min-w-[100px]">
               <Skeleton className="h-[30px] w-full" />
@@ -43,13 +43,8 @@ export default function BillingHistoryTable() {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="font-semibold text-slate-500">Billing history</h3>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={exportSubscriptions}
-          disabled={isExporting}
-        >
+        <h3 className="text-base font-bold text-[var(--text-1)]">Billing history</h3>
+        <Button variant="secondary" size="sm" onClick={exportSubscriptions} disabled={isExporting}>
           {isExporting ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (

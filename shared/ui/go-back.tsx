@@ -1,16 +1,14 @@
 "use client";
 
 import React from "react";
-import { Button } from "../ui/button";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
-
 import { useUIStore } from "../stores/ui.store";
 import { useIsMobile } from "../hooks/use-mobile";
 
 interface BackProps {
   label: string;
-  href?: string; // Optional specific href to go back to
+  href?: string;
 }
 
 const Back = ({ label, href }: BackProps) => {
@@ -30,29 +28,38 @@ const Back = ({ label, href }: BackProps) => {
     }
   }, [isMobile, label, href, setMobileBack, mounted]);
 
-  if (!mounted)
+  const handleClick = () => {
+    if (href) {
+      router.push(href);
+    } else {
+      router.back();
+    }
+  };
+
+  if (!mounted) {
     return (
-      <Button
-        variant="link"
-        className="px-0 text-[16px] text-[#667085]"
-        onClick={() => (href ? router.push(href) : router.back())}
+      <button
+        type="button"
+        className="dd-back-link mb-4 inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-[var(--text-2)] transition-colors hover:text-[var(--text-1)]"
+        onClick={handleClick}
       >
-        <ChevronLeft className="h-4 w-4 text-[#FF736A]" size={16} />
+        <ChevronLeft className="h-4 w-4" />
         {label}
-      </Button>
+      </button>
     );
+  }
 
   if (isMobile) return null;
 
   return (
-    <Button
-      variant="link"
-      className="px-0 text-[16px] text-[#667085]"
-      onClick={() => (href ? router.push(href) : router.back())}
+    <button
+      type="button"
+      className="dd-back-link mb-4 inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-[var(--text-2)] transition-colors hover:text-[var(--text-1)]"
+      onClick={handleClick}
     >
-      <ChevronLeft className="h-4 w-4 text-[#FF736A]" size={16} />
+      <ChevronLeft className="h-4 w-4" />
       {label}
-    </Button>
+    </button>
   );
 };
 

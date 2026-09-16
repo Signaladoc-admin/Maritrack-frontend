@@ -17,7 +17,7 @@ export default function ScreenTimeRules() {
     formState: { errors },
   } = useFormContext();
 
-  const { user } = useAuth()
+  const { user } = useAuth();
 
   return (
     <CardWrapper variant="outline">
@@ -43,7 +43,7 @@ export default function ScreenTimeRules() {
         <div className="space-y-5">
           <SubHeading title="Downtime / Bedtime" />
           <div className="space-y-4">
-            <p className="text-sm font-medium text-slate-600">Restrict usage between</p>
+            <p className="text-sm font-medium text-[var(--text-2)]">Restrict usage between</p>
             <div className="flex gap-4">
               <div className="flex-1">
                 <Controller
@@ -53,7 +53,7 @@ export default function ScreenTimeRules() {
                     <TimePicker
                       {...field}
                       placeholder="10:30pm"
-                      className="h-14 bg-neutral-50/50"
+                      className="h-14 border border-[var(--card-line)] bg-[var(--card-fill)] text-[var(--text-1)]"
                     />
                   )}
                 />
@@ -63,7 +63,11 @@ export default function ScreenTimeRules() {
                   control={control}
                   name="downtimeEnd"
                   render={({ field }) => (
-                    <TimePicker {...field} placeholder="5:00am" className="h-14 bg-neutral-50/50" />
+                    <TimePicker
+                      {...field}
+                      placeholder="5:00am"
+                      className="h-14 border border-[var(--card-line)] bg-[var(--card-fill)] text-[var(--text-1)]"
+                    />
                   )}
                 />
               </div>
@@ -72,7 +76,9 @@ export default function ScreenTimeRules() {
         </div>
 
         <div className="space-y-5">
-          <SubHeading title={`${user?.appRole === 'PARENT' ? 'School' : 'Work'} hours restriction`} />
+          <SubHeading
+            title={`${user?.appRole === "PARENT" ? "School" : "Work"} hours restriction`}
+          />
           <Controller
             control={control}
             name="schoolHoursRestriction"
@@ -84,12 +90,14 @@ export default function ScreenTimeRules() {
                 <div
                   className={cn(
                     "flex h-5 w-5 items-center justify-center rounded-full border transition-all",
-                    field.value ? "border-primary border-[6px]" : "border-neutral-300",
+                    field.value
+                      ? "border-primary border-[6px]"
+                      : "border-[var(--card-line-strong)]",
                     fieldState.error && "border-red-500"
                   )}
                 />
-                <span className="text-base font-normal text-slate-700">
-                  Limit phone use during {user?.appRole === 'PARENT' ? 'school' : 'work'} hours
+                <span className="text-base font-normal text-[var(--text-1)]">
+                  Limit phone use during {user?.appRole === "PARENT" ? "school" : "work"} hours
                 </span>
               </div>
             )}

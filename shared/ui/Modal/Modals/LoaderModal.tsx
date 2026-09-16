@@ -37,7 +37,7 @@ export function LoaderModal({
         </div>
 
         {/* Loading Text */}
-        <p className="animate-pulse text-sm font-bold text-[#1B3C73]">{text}</p>
+        <p className="animate-pulse text-sm font-semibold text-accent">{text}</p>
       </DialogContent>
     </Dialog>
   );

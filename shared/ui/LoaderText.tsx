@@ -14,10 +14,10 @@ export default function LoaderText({
     subTextSize?: number
 }) {
     return (
-        <div className={`flex h-[400px] flex-col items-center justify-center gap-4 ${className}`}>
-            <div className={`h-${iconSize || 10} w-${iconSize || 10} animate-spin rounded-full border-4 border-[#E5E7EB] border-t-[#1B3C73]`} />
-            <p className={`text-${textSize || 500} font-medium text-slate-500`}>{text}</p>
-            {subText && <p className={`text-${subTextSize || 500} font-medium text-slate-500`}>{subText}</p>}
+        <div className={`flex h-[400px] flex-col items-center justify-center gap-4 ${className || ""}`}>
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-accent will-change-transform" />
+            <p className="text-sm font-medium text-foreground">{text}</p>
+            {subText && <p className="text-xs text-muted-foreground">{subText}</p>}
         </div>
     );
 }

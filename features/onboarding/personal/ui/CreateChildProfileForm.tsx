@@ -50,8 +50,12 @@ export default function CreateChildProfileForm({
 
   return (
     <div className="space-y-7">
-      <Button variant="link" onClick={onCancel} className="flex items-center gap-1! px-0">
-        <ChevronLeft className="h-6! w-6! text-orange-500" /> Go back
+      <Button
+        variant="link"
+        onClick={onCancel}
+        className="flex items-center gap-1.5 px-0 text-[var(--text-2)] hover:text-white"
+      >
+        <ChevronLeft className="h-5 w-5 text-[var(--coral)]" /> Go back
       </Button>
       <Header title="Create your child's profile" subtitle="Set up a child account" />
       <form className="space-y-7" onSubmit={form.handleSubmit(onSubmit)}>
@@ -73,8 +77,8 @@ export default function CreateChildProfileForm({
                 className="h-full w-full rounded-full object-cover"
               />
             ) : (
-              <div className="bg-muted flex h-full w-full items-center justify-center rounded-full border-gray-300 transition-colors hover:bg-gray-200">
-                <FilledUserIcon className="h-12 w-12 text-[#1b3c73]" />
+              <div className="flex h-full w-full items-center justify-center rounded-full border border-[var(--card-line)] bg-[var(--card-fill)] transition-colors hover:border-[var(--card-line-strong)]">
+                <FilledUserIcon className="h-10 w-10 text-[var(--accent)]" />
               </div>
             )}
           </FileUpload>

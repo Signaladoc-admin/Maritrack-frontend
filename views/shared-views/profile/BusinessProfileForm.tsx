@@ -226,8 +226,8 @@ function BusinessProfileFormInner({
                   className="h-28 w-28 rounded-full border-none shadow-sm"
                   previewClassName="h-28 w-28 rounded-full"
                 >
-                  <div className="flex h-full w-full items-center justify-center rounded-full bg-[#F3F4F6] text-[#1B3C73]">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
+                  <div className="flex h-full w-full items-center justify-center rounded-full bg-[var(--card-fill)] text-[var(--text-1)] border border-[var(--card-line)]">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--surface)] border border-[var(--card-line-strong)]">
                       <span className="text-xl">👤</span>
                     </div>
                   </div>
@@ -260,15 +260,15 @@ function BusinessProfileFormInner({
         </div>
 
         <div className="w-full">
-          <div className="flex w-full items-center gap-6 rounded-2xl bg-[#F9FAFB] p-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm">
-              <LockKeyhole className="h-6 w-6 text-[#1B3C73]" />
+          <div className="flex w-full items-center gap-6 rounded-2xl bg-[var(--card-fill)] border border-[var(--card-line)] p-6">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--surface)] border border-[var(--card-line-strong)]">
+              <LockKeyhole className="h-6 w-6 text-[var(--text-1)]" />
             </div>
             <div className="flex-1">
-              <h3 className="text-base font-semibold text-[#1B3C73]">Your password is secured</h3>
+              <h3 className="text-base font-semibold text-[var(--text-1)]">Your password is secured</h3>
               <Button
                 type="button"
-                className="mt-2 h-9 bg-[#1B3C73] px-4 text-xs font-medium text-white hover:bg-[#1B3C73]/90"
+                className="mt-2 h-9 px-4 text-xs font-medium"
                 onClick={() => setShowChangePassword(true)}
               >
                 Change password
@@ -280,24 +280,24 @@ function BusinessProfileFormInner({
         <div className="w-full">
           <Button
             type="submit"
-            className="h-14 w-full rounded-2xl bg-[#1B3C73] text-lg font-semibold text-white transition-all hover:bg-[#1B3C73]/90 active:scale-[0.98]"
+            className="h-14 w-full rounded-2xl text-lg font-semibold transition-all active:scale-[0.98]"
             disabled={isUpdating}
           >
-            {isUpdating ? <Loader size="sm" className="[&_svg]:text-white" /> : "Save Changes"}
+            {isUpdating ? <Loader size="sm" className="[&_svg]:text-background" /> : "Save Changes"}
           </Button>
         </div>
       </form>
 
       <Button
         variant="ghost"
-        className="group px-0 transition-colors duration-300 hover:bg-transparent"
+        className="group px-0 transition-colors duration-300 hover:bg-transparent text-destructive hover:text-destructive"
         onClick={() => setShowSignOut(true)}
         disabled={isLoggingOut}
       >
-        <div className="flex items-center justify-center rounded-full bg-neutral-100 p-2.5 transition-colors duration-300 group-hover:bg-red-500">
-          <LogOut className="h-4 w-4 text-red-500 transition-colors duration-300 group-hover:text-white" />
+        <div className="flex items-center justify-center rounded-full bg-destructive/10 p-2.5 transition-colors duration-300 group-hover:bg-destructive">
+          <LogOut className="h-4 w-4 text-destructive transition-colors duration-300 group-hover:text-destructive-foreground" />
         </div>
-        <span className="font-medium transition-colors duration-300 group-hover:text-red-500">
+        <span className="font-medium transition-colors duration-300">
           {isLoggingOut ? "Signing out..." : "Sign out"}
         </span>
       </Button>

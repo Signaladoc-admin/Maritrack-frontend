@@ -45,8 +45,8 @@ export const TimePicker = React.forwardRef<HTMLButtonElement, TimePickerProps>(
             ref={ref}
             variant="outline"
             className={cn(
-              "border-input ring-offset-background flex h-14 w-full items-center justify-between rounded border-[1.5px] bg-neutral-50/50 px-3 text-base transition-colors focus-within:ring-[1.5px] focus-within:ring-[#1b3c73] focus-within:ring-offset-0 focus-within:outline-none hover:bg-neutral-100/50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-              !value && "text-muted-foreground",
+              "border-card-line ring-offset-background focus-within:ring-primary flex h-14 w-full items-center justify-between rounded border bg-[var(--card-fill)] px-3 text-base text-[var(--text-1)] transition-colors focus-within:ring-[1.5px] focus-within:ring-offset-0 focus-within:outline-none hover:bg-[var(--card-hover)] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+              !value && "text-[var(--text-3)]",
               className
             )}
           >
@@ -54,18 +54,21 @@ export const TimePicker = React.forwardRef<HTMLButtonElement, TimePickerProps>(
             <Clock className="text-primary ml-2 h-5 w-5" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[280px] p-0" align="start">
+        <PopoverContent
+          className="border-card-line w-[280px] border bg-[var(--surface)] p-0"
+          align="start"
+        >
           <div className="flex h-64">
             {/* Hours Column */}
-            <div className="scroll-bar-hide flex-1 overflow-y-auto border-r p-2">
-              <div className="text-muted-foreground mb-2 px-2 text-xs font-semibold">Hours</div>
+            <div className="scroll-bar-hide flex-1 overflow-y-auto border-r border-[var(--card-line)] p-2">
+              <div className="mb-2 px-2 text-xs font-semibold text-[var(--text-2)]">Hours</div>
               <div className="flex flex-col gap-1">
                 {hourOptions.map((h) => (
                   <Button
                     key={h}
                     variant={hours === h ? "default" : "ghost"}
                     size="sm"
-                    className="h-8 justify-center"
+                    className="h-8 justify-center text-[var(--text-1)]"
                     onClick={() => handleHourSelect(h)}
                   >
                     {h}
@@ -75,14 +78,14 @@ export const TimePicker = React.forwardRef<HTMLButtonElement, TimePickerProps>(
             </div>
             {/* Minutes Column */}
             <div className="scroll-bar-hide flex-1 overflow-y-auto p-2">
-              <div className="text-muted-foreground mb-2 px-2 text-xs font-semibold">Minutes</div>
+              <div className="mb-2 px-2 text-xs font-semibold text-[var(--text-2)]">Minutes</div>
               <div className="flex flex-col gap-1">
                 {minuteOptions.map((m) => (
                   <Button
                     key={m}
                     variant={minutes === m ? "default" : "ghost"}
                     size="sm"
-                    className="h-8 justify-center"
+                    className="h-8 justify-center text-[var(--text-1)]"
                     onClick={() => handleMinuteSelect(m)}
                   >
                     {m}
@@ -91,8 +94,13 @@ export const TimePicker = React.forwardRef<HTMLButtonElement, TimePickerProps>(
               </div>
             </div>
           </div>
-          <div className="flex justify-end border-t p-2">
-            <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
+          <div className="flex justify-end border-t border-[var(--card-line)] p-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="hover:text-primary text-[var(--text-1)]"
+              onClick={() => setOpen(false)}
+            >
               Done
             </Button>
           </div>
