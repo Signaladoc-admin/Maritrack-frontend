@@ -1,10 +1,18 @@
+"use client";
+
 import React from "react";
-import { Dialog, DialogContent } from "@/shared/ui/dialog";
-import { Button } from "@/shared/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/shared/ui/Modal/dialog";
 import { useBulkActionDevices } from "@/entities/device";
 import { useToast } from "@/shared/ui/toast";
-import { Loader } from "@/shared/ui/loader";
-import { TriangleAlert } from "lucide-react";
+import { Trash2, Lock, Unlock, Loader2, AlertCircle, Smartphone } from "lucide-react";
+import { cn } from "@/shared/lib/utils";
 
 interface BulkActionConfirmModalProps {
   open: boolean;
@@ -14,27 +22,48 @@ interface BulkActionConfirmModalProps {
   actionType: "wipe" | "lock" | "unlock";
 }
 
-const ACTION_CONFIG = {
+interface ActionDetail {
+  actionId: number;
+  title: string;
+  description: string;
+  warningNote?: string;
+  buttonText: string;
+  successMessage: string;
+  isDestructive: boolean;
+  icon: React.ReactNode;
+}
+
+const ACTION_CONFIGS: Record<"wipe" | "lock" | "unlock", ActionDetail> = {
   wipe: {
     actionId: 8,
-    title: "Are you sure you want to wipe these devices?",
+    title: "Wipe Selected Devices",
+    description:
+      "A remote MDM command will be dispatched to initiate a complete factory reset. All installed applications, local storage, and enrolled credentials will be permanently erased.",
+    warningNote: "This action is irreversible. The selected devices must be re-enrolled manually to be managed again.",
     buttonText: "Wipe Devices",
-    successMessage: "Devices wiped successfully",
+    successMessage: "Wipe command dispatched successfully",
     isDestructive: true,
+    icon: <Trash2 className="h-6 w-6" />,
   },
   lock: {
     actionId: 401,
-    title: "Are you sure you want to lock these devices?",
-    buttonText: "Lock devices",
-    successMessage: "Devices locked successfully",
+    title: "Lock Selected Devices",
+    description:
+      "An MDM lock command will be dispatched immediately. Device users will be locked out and cannot access apps, system settings, or local data until unlocked.",
+    buttonText: "Lock Devices",
+    successMessage: "Lock command dispatched successfully",
     isDestructive: true,
+    icon: <Lock className="h-6 w-6" />,
   },
   unlock: {
     actionId: 201,
-    title: "Are you sure you want to unlock these devices?",
+    title: "Unlock Selected Devices",
+    description:
+      "An MDM unlock command will be dispatched to remove the lock screen restriction. Standard device access will be restored immediately.",
     buttonText: "Unlock Devices",
-    successMessage: "Devices unlocked successfully",
+    successMessage: "Unlock command dispatched successfully",
     isDestructive: false,
+    icon: <Unlock className="h-6 w-6" />,
   },
 };
 
@@ -46,7 +75,7 @@ export default function BulkActionConfirmModal({
   actionType,
 }: BulkActionConfirmModalProps) {
   const { toast } = useToast();
-  const config = ACTION_CONFIG[actionType];
+  const config = ACTION_CONFIGS[actionType];
 
   const { mutate: sendBulkAction, isPending } = useBulkActionDevices({
     onSuccess: () => {
@@ -58,16 +87,27 @@ export default function BulkActionConfirmModal({
       if (onSuccess) onSuccess();
       onOpenChange(false);
     },
+    onError: (err: any) => {
+      toast({
+        title: "Action Failed",
+        message: err?.message || "Failed to execute bulk action",
+        type: "error",
+      });
+    },
   });
 
-  const handleAction = () => {
+  const getValidIds = () => {
     const ids = selectedDevices.map((d) => d.mdmDeviceId || d.device?.mdmDeviceId || d.id);
-    const validIds = ids.filter(Boolean);
+    return ids.filter(Boolean);
+  };
+
+  const handleAction = () => {
+    const validIds = getValidIds();
 
     if (validIds.length === 0) {
       toast({
-        title: "Error",
-        message: "No valid devices selected",
+        title: "Validation Error",
+        message: "No valid devices selected for this operation",
         type: "error",
       });
       return;
@@ -79,35 +119,138 @@ export default function BulkActionConfirmModal({
     });
   };
 
-  const iconColor = config.isDestructive ? "text-[#d9534f] fill-[#d9534f]/10" : "text-[#1b3c73] fill-[#1b3c73]/10";
-  const buttonColor = config.isDestructive ? "bg-[#d9534f] hover:bg-[#c9302c]" : "bg-[#1b3c73] hover:bg-[#142d57]";
+  const getDevicePreviews = () => {
+    const names: string[] = [];
+    selectedDevices.forEach((device) => {
+      const name =
+        device.possessorName ||
+        (device.currentUser
+          ? `${device.currentUser.firstName || ""} ${device.currentUser.lastName || ""}`.trim()
+          : null) ||
+        device.name ||
+        device.model ||
+        device.imei ||
+        (device.id ? `ID #${String(device.id).slice(-4)}` : null);
+      if (name && !names.includes(name)) {
+        names.push(name);
+      }
+    });
+    return names;
+  };
+
+  const devicePreviews = getDevicePreviews();
+  const visibleDevices = devicePreviews.slice(0, 3);
+  const remainingCount = devicePreviews.length - visibleDevices.length;
+  const count = selectedDevices.length;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] p-6 sm:p-8 gap-6 border-none shadow-xl">
-        <div className="flex flex-col items-center text-center gap-6 py-4">
-          <TriangleAlert className={`size-16 ${iconColor}`} strokeWidth={1.5} />
-          <h2 className="text-2xl font-semibold text-[#1b3c73] max-w-[350px]">
+      <DialogContent className="rounded-2xl border border-[var(--card-line-strong)] bg-[var(--surface)] p-6 sm:p-7 text-center shadow-2xl sm:max-w-[440px]">
+        {/* Top Icon Badge */}
+        <div
+          className={cn(
+            "mx-auto mb-3.5 flex h-13 w-13 items-center justify-center rounded-2xl border shadow-xs transition-colors",
+            config.isDestructive
+              ? "border-[var(--coral-border)] bg-[var(--coral-soft)] text-[var(--coral)]"
+              : "border-[var(--accent-border)] bg-[var(--accent-tint)] text-[var(--accent)]"
+          )}
+        >
+          {config.icon}
+        </div>
+
+        <DialogHeader className="space-y-1.5 text-center sm:text-center">
+          <DialogTitle className="text-lg font-bold text-[var(--text-1)]">
             {config.title}
-          </h2>
-          <div className="flex w-full gap-4 mt-4">
-            <Button
-              variant="secondary"
-              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 h-12 text-base font-medium"
-              onClick={() => onOpenChange(false)}
-              disabled={isPending}
+          </DialogTitle>
+          <DialogDescription className="text-xs leading-relaxed text-[var(--text-2)]">
+            {config.description}
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Selected Devices Preview Card */}
+        <div className="my-3 rounded-xl border border-[var(--card-line)] bg-[var(--card-fill)] p-3.5 text-left">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-[var(--text-2)] flex items-center gap-1.5">
+              <Smartphone className="h-3.5 w-3.5 text-[var(--text-3)]" />
+              Target Fleet
+            </span>
+            <span
+              className={cn(
+                "rounded-full border px-2 py-0.5 text-[10px] font-bold",
+                config.isDestructive
+                  ? "border-[var(--coral-border)] bg-[var(--coral-soft)] text-[var(--coral)]"
+                  : "border-[var(--accent-border)] bg-[var(--accent-tint)] text-[var(--accent)]"
+              )}
             >
-              Cancel
-            </Button>
-            <Button
-              className={`flex-1 text-white h-12 text-base font-medium ${buttonColor}`}
-              onClick={handleAction}
-              disabled={isPending}
-            >
-              {isPending ? <Loader className="text-white" /> : config.buttonText}
-            </Button>
+              {count} device{count !== 1 ? "s" : ""}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {visibleDevices.map((name, idx) => (
+              <span
+                key={idx}
+                className="inline-flex items-center rounded-lg border border-[var(--card-line)] bg-[var(--card-raised)] px-2 py-1 text-[11px] font-medium text-[var(--text-1)] truncate max-w-[180px]"
+              >
+                {name}
+              </span>
+            ))}
+            {remainingCount > 0 && (
+              <span className="inline-flex items-center rounded-lg border border-[var(--card-line)] bg-[var(--card-raised)] px-2 py-1 text-[11px] font-medium text-[var(--text-3)]">
+                +{remainingCount} more
+              </span>
+            )}
+            {devicePreviews.length === 0 && (
+              <span className="text-[11px] text-[var(--text-3)]">
+                {count} selected device{count !== 1 ? "s" : ""}
+              </span>
+            )}
           </div>
         </div>
+
+        {/* Caution Callout (if destructive) */}
+        {config.warningNote && (
+          <div className="flex items-start gap-2.5 rounded-xl border border-[var(--coral-border)] bg-[var(--coral-soft)]/40 p-3 text-left">
+            <AlertCircle className="h-4 w-4 shrink-0 text-[var(--coral)] mt-0.5" />
+            <p className="text-[11px] leading-relaxed text-[var(--coral)]">
+              {config.warningNote}
+            </p>
+          </div>
+        )}
+
+        {/* Action Footer */}
+        <DialogFooter className="mt-4 flex flex-row gap-3 sm:justify-center">
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            disabled={isPending}
+            className="flex-1 cursor-pointer rounded-xl border border-[var(--card-line)] bg-[var(--card-fill)] py-2.5 px-4 text-xs font-semibold text-[var(--text-1)] transition-colors hover:bg-[var(--card-hover)] disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleAction}
+            disabled={isPending}
+            className={cn(
+              "inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl py-2.5 px-4 text-xs font-bold transition-all shadow-xs disabled:cursor-not-allowed disabled:opacity-50",
+              config.isDestructive
+                ? "bg-[var(--coral)] text-white hover:opacity-90 active:scale-[0.99]"
+                : "bg-[var(--accent)] text-[var(--primary-fg)] hover:opacity-90 active:scale-[0.99]"
+            )}
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <span>Processing...</span>
+              </>
+            ) : (
+              <>
+                {config.buttonText}
+              </>
+            )}
+          </button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

@@ -3,8 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
-import { useBlockApp, useUnblockApp } from "@/features/mdm-sync/model/useMdmSync";
+import { useBlockApp, useUnblockApp, useUninstallApp } from "@/features/mdm-sync/model/useMdmSync";
 import { Skeleton } from "@/shared/ui/skeleton";
+import { Trash2 } from "lucide-react";
+import { UninstallAppModal } from "@/features/app-control/ui/UninstallAppModal";
 
 interface InstalledApp {
   id: string;
@@ -27,8 +29,11 @@ const AppControl = () => {
 
   const blockAppMutation = useBlockApp();
   const unblockAppMutation = useUnblockApp();
+  const uninstallAppMutation = useUninstallApp();
 
   const [apps, setApps] = useState<InstalledApp[]>([]);
+  const [appToUninstall, setAppToUninstall] = useState<InstalledApp | null>(null);
+  const [isUninstallModalOpen, setIsUninstallModalOpen] = useState(false);
 
   useEffect(() => {
     if (data?.data?.apps && Array.isArray(data.data.apps)) {
@@ -52,6 +57,21 @@ const AppControl = () => {
       setApps(mapped);
     }
   }, [data]);
+
+  const handleConfirmUninstall = async () => {
+    if (!appToUninstall || !deviceId) return;
+    try {
+      await uninstallAppMutation.mutateAsync({
+        deviceId,
+        packageName: appToUninstall.packageName,
+      });
+      setApps((prev) => prev.filter((a) => a.id !== appToUninstall.id));
+      setIsUninstallModalOpen(false);
+      setAppToUninstall(null);
+    } catch {
+      // Error toast is handled by hook
+    }
+  };
 
   const toggleApp = (app: InstalledApp) => {
     if (app.disabled) return;
@@ -109,15 +129,39 @@ const AppControl = () => {
                   <div className="app-name">{app.name}</div>
                   <div className="app-cat">{app.category}</div>
                 </div>
-                <label className="switch">
-                  <input
-                    type="checkbox"
-                    checked={app.enabled}
-                    disabled={app.disabled}
-                    onChange={() => toggleApp(app)}
-                  />
-                  <span className="track"></span>
-                </label>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="hidden text-[11px] font-medium text-[var(--text-3)] md:inline">
+                      {app.enabled ? "Active" : "Blocked"}
+                    </span>
+                    <label
+                      className="switch"
+                      title={app.enabled ? "Active (click to block)" : "Blocked (click to allow)"}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={app.enabled}
+                        disabled={app.disabled}
+                        onChange={() => toggleApp(app)}
+                      />
+                      <span className="track"></span>
+                    </label>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAppToUninstall(app);
+                      setIsUninstallModalOpen(true);
+                    }}
+                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-[var(--card-line)] bg-[var(--card-fill)] px-2.5 py-1.5 text-xs font-semibold text-[var(--text-2)] transition-colors hover:border-[var(--coral-border)] hover:bg-[var(--coral-soft)] hover:text-[var(--coral)]"
+                    title={`Uninstall ${app.name}`}
+                    aria-label={`Uninstall ${app.name}`}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Uninstall</span>
+                  </button>
+                </div>
               </div>
             ))
           )}
@@ -152,6 +196,15 @@ const AppControl = () => {
           </div>
         </div>
       </div>
+
+      {/* Uninstall Confirmation Modal */}
+      <UninstallAppModal
+        open={isUninstallModalOpen}
+        onOpenChange={setIsUninstallModalOpen}
+        app={appToUninstall}
+        onConfirm={handleConfirmUninstall}
+        isLoading={uninstallAppMutation.isPending}
+      />
     </div>
   );
 };

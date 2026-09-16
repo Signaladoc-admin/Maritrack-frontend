@@ -12,7 +12,19 @@ import {
 } from "@/shared/ui/dropdown-menu";
 import { Header } from "@/shared/ui/layout/header";
 import { TabNavigation } from "@/shared/ui/tab-navigation";
-import { DownloadCloud, ListFilter, Plus, SearchIcon, MoreHorizontal } from "lucide-react";
+import {
+  DownloadCloud,
+  ListFilter,
+  Plus,
+  SearchIcon,
+  MoreHorizontal,
+  MessageSquare,
+  Trash2,
+  Lock,
+  Unlock,
+  Ban,
+  Layers,
+} from "lucide-react";
 import { useDebounce } from "use-debounce";
 import { getDevicesColumns } from "@/features/device/columns";
 import { useRouter } from "next/navigation";
@@ -286,56 +298,62 @@ export default function DevicesList() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 p-2">
                   <DropdownMenuGroup>
-                    <DropdownMenuLabel className="text-xs font-semibold tracking-wider text-gray-500 uppercase">
+                    <DropdownMenuLabel className="text-[11px] font-semibold tracking-wider text-[var(--text-3)] uppercase">
                       Messaging
                     </DropdownMenuLabel>
                     <DropdownMenuItem
-                      className="cursor-pointer py-2"
+                      className="cursor-pointer py-2 flex items-center gap-2 text-xs"
                       onClick={handleBulkMessageClick}
                     >
-                      Bulk message
+                      <MessageSquare className="h-4 w-4 text-[var(--text-2)]" />
+                      <span>Bulk message</span>
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
-                  <DropdownMenuSeparator className="my-1" />
+                  <DropdownMenuSeparator className="my-1 border-[var(--card-line)]" />
                   <DropdownMenuGroup>
-                    <DropdownMenuLabel className="mt-1 text-xs font-semibold tracking-wider text-gray-500 uppercase">
+                    <DropdownMenuLabel className="mt-1 text-[11px] font-semibold tracking-wider text-[var(--text-3)] uppercase">
                       General Actions
                     </DropdownMenuLabel>
                     <DropdownMenuItem
-                      className="cursor-pointer py-2"
-                      onClick={handleWipeDeviceClick}
-                    >
-                      Wipe device
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="cursor-pointer py-2"
+                      className="cursor-pointer py-2 flex items-center gap-2 text-xs"
                       onClick={handleLockDeviceClick}
                     >
-                      Lock device
+                      <Lock className="h-4 w-4 text-[var(--text-2)]" />
+                      <span>Lock device</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      className="cursor-pointer py-2"
+                      className="cursor-pointer py-2 flex items-center gap-2 text-xs"
                       onClick={handleUnlockDeviceClick}
                     >
-                      Unlock device
+                      <Unlock className="h-4 w-4 text-[var(--text-2)]" />
+                      <span>Unlock device</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer py-2 flex items-center gap-2 text-xs text-[var(--coral)] focus:text-[var(--coral)]"
+                      onClick={handleWipeDeviceClick}
+                    >
+                      <Trash2 className="h-4 w-4 text-[var(--coral)]" />
+                      <span>Wipe device</span>
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
-                  <DropdownMenuSeparator className="my-1" />
+                  <DropdownMenuSeparator className="my-1 border-[var(--card-line)]" />
                   <DropdownMenuGroup>
-                    <DropdownMenuLabel className="mt-1 text-xs font-semibold tracking-wider text-gray-500 uppercase">
+                    <DropdownMenuLabel className="mt-1 text-[11px] font-semibold tracking-wider text-[var(--text-3)] uppercase">
                       App Management
                     </DropdownMenuLabel>
                     <DropdownMenuItem
-                      className="cursor-pointer py-2"
+                      className="cursor-pointer py-2 flex items-center gap-2 text-xs"
                       onClick={handleSuspendAppsClick}
                     >
-                      Suspend apps
+                      <Ban className="h-4 w-4 text-[var(--text-2)]" />
+                      <span>Suspend apps</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      className="cursor-pointer py-2"
+                      className="cursor-pointer py-2 flex items-center gap-2 text-xs"
                       onClick={handleUnsuspendAppsClick}
                     >
-                      Unsuspend apps
+                      <Layers className="h-4 w-4 text-[var(--text-2)]" />
+                      <span>Unsuspend apps</span>
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
                 </DropdownMenuContent>

@@ -53,8 +53,8 @@ export default function PairingQRStep({
 
   return (
     <div className="space-y-7">
-      <Button variant="link" onClick={onBack} className="flex items-center gap-1! px-0">
-        <ChevronLeft className="h-6! w-6! text-orange-500" /> Go back
+      <Button variant="link" onClick={onBack} className="flex items-center gap-1! px-0 text-[var(--text-1)]">
+        <ChevronLeft className="h-5 w-5 text-[var(--accent)]" /> Go back
       </Button>
 
       <Header

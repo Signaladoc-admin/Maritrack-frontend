@@ -156,8 +156,12 @@ export default function NewDeviceModal({
     <Modal
       isOpen={open}
       onClose={handleClose}
-      title={isPairStep ? "" : "New Device"}
-      className={isPairStep ? "h-auto rounded-4xl p-10 md:max-w-[1100px] lg:p-20" : undefined}
+      title={isPairStep ? undefined : "New Device"}
+      className={
+        isPairStep
+          ? "h-auto w-full max-w-[1050px] sm:max-w-[1050px] md:max-w-[1050px] p-6 sm:p-8 md:p-10 rounded-3xl"
+          : undefined
+      }
       {...(!isPairStep && {
         confirmText: "Next",
         onConfirm: handleSubmit(onSubmit),

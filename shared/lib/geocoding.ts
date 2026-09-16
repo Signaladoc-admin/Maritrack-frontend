@@ -2,7 +2,9 @@
  * Geocoding utilities using Mapbox API.
  */
 
-const MAPBOX_ACCESS_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "";
+const MAPBOX_ACCESS_TOKEN =
+  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ||
+  "pk.eyJ1IjoibWFyaW1heDEyMyIsImEiOiJjbXBtbnExMmswNHgxMnJwb3Vhem1vZWdyIn0.xsRuLrhv17wFzJvW3pvBjg";
 
 interface MapboxFeature {
   place_name: string;
@@ -26,12 +28,24 @@ interface MapboxV6ReverseResponse {
   features: MapboxV6Feature[];
 }
 
+const geocodeCache = new Map<string, string>();
+
 /**
  * Reverse Geocoding: Converts coordinates (lat, lon) into a human-readable address.
  */
 export async function getAddressFromCoords(lat: number, lon: number): Promise<string> {
-  if (!lat || !lon) return "Unknown coordinates";
+  if (typeof lat !== "number" || typeof lon !== "number" || isNaN(lat) || isNaN(lon)) {
+    return "Unknown coordinates";
+  }
+  if (lat === 0 && lon === 0) {
+    return "No GPS fix";
+  }
   if (!MAPBOX_ACCESS_TOKEN) return "Mapbox token missing";
+
+  const cacheKey = `${lat.toFixed(5)},${lon.toFixed(5)}`;
+  if (geocodeCache.has(cacheKey)) {
+    return geocodeCache.get(cacheKey)!;
+  }
 
   try {
     const response = await fetch(
@@ -46,11 +60,14 @@ export async function getAddressFromCoords(lat: number, lon: number): Promise<st
 
     if (data.features && data.features.length > 0) {
       const props = data.features[0].properties;
-      return (
+      const resolved =
         props.full_address ||
-        [props.name_preferred, props.place_formatted].filter(Boolean).join(", ") ||
-        "Address not found"
-      );
+        [props.name_preferred || (props as any).name, props.place_formatted]
+          .filter(Boolean)
+          .join(", ") ||
+        "Address not found";
+      geocodeCache.set(cacheKey, resolved);
+      return resolved;
     }
     return "Address not found";
   } catch (error) {
