@@ -6,26 +6,26 @@ import { cn } from "@/shared/lib/utils";
 import Link from "next/link";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl cursor-pointer font-semibold transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-5 [&_svg]:shrink-0 ring-ring/10 dark:ring-ring/20 dark:outline-ring/40 outline-ring/50 focus-visible:ring-4 focus-visible:outline-1 aria-invalid:focus-visible:ring-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm cursor-pointer font-bold transition-[color,background-color,border-color] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-5 [&_svg]:shrink-0 ring-ring/10 dark:ring-ring/20 dark:outline-ring/40 outline-ring/50 focus-visible:ring-4 focus-visible:outline-1 aria-invalid:focus-visible:ring-0",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90",
-        destructive: "bg-[#D95D55] text-white shadow-xs hover:bg-[#C84D45]",
+        default: "bg-primary text-primary-foreground hover:bg-[#00c452]",
+        destructive: "bg-destructive text-white hover:bg-[#e05244]",
         outline:
-          "border border-[1.2px] border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground",
+          "border border-border bg-card-fill hover:bg-card-hover hover:border-card-line-strong text-foreground",
         outlinePrimary:
-          "border border-1 border-primary bg-background shadow-xs hover:bg-accent text-primary",
+          "border border-primary bg-card-fill hover:bg-accent-tint text-primary hover:border-accent-border",
         secondary:
-          "bg-secondary text-secondary-foreground text-primary shadow-xs hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+          "bg-secondary text-secondary-foreground hover:bg-card-hover border border-border",
+        ghost: "hover:bg-card-hover hover:text-foreground",
         link: "font-medium text-primary underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-[50px] py-2.5 px-6 rounded-xl text-base",
-        sm: "py-2.5 px-4 rounded-lg text-sm",
-        lg: "py-3 px-10 rounded-xl text-lg",
-        icon: "size-10 rounded-xl text-base shrink-0",
+        default: "h-[44px] py-2.5 px-6 rounded-sm text-sm",
+        sm: "h-[36px] py-2 px-4 rounded-sm text-xs",
+        lg: "h-[54px] py-3 px-10 rounded-sm text-base",
+        icon: "size-[34px] rounded-sm shrink-0",
       },
     },
     defaultVariants: {

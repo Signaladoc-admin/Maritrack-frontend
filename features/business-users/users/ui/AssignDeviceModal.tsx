@@ -99,8 +99,12 @@ export default function AssignDeviceModal({
     <Modal
       isOpen={open}
       onClose={handleClose}
-      title={isPairStep ? "" : "Assign device to user"}
-      className={isPairStep ? "sm:max-w-3xl" : undefined}
+      title={isPairStep ? undefined : "Assign device to user"}
+      className={
+        isPairStep
+          ? "h-auto w-full max-w-[1050px] sm:max-w-[1050px] md:max-w-[1050px] p-6 sm:p-8 md:p-10 rounded-3xl"
+          : undefined
+      }
       {...(!isPairStep && {
         confirmText: "Next",
         onConfirm: handleSubmit(onSubmit),

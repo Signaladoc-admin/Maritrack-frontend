@@ -12,7 +12,9 @@
     "test": "vitest run",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "prepare": "git config core.hooksPath .githooks || true",
+    "check-injection": "node scripts/check-injection.mjs"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -40,7 +42,7 @@
     "jwt-decode": "^4.0.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.562.0",
-    "next": "16.1.4",
+    "next": "^16.3.4",
     "nuqs": "^2.8.9",
     "radix-ui": "^1.4.3",
     "react": "19.2.3",
@@ -78,7 +80,7 @@
     "@vitest/coverage-v8": "^4.0.17",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
-    "eslint-config-next": "16.1.4",
+    "eslint-config-next": "^16.3.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-storybook": "^10.2.7",
     "jsdom": "^27.4.0",

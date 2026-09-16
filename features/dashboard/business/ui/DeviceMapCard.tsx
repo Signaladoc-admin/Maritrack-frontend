@@ -10,7 +10,7 @@ const Map = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-[200px] bg-[#f5f6f8] rounded-md animate-pulse flex items-center justify-center">
+      <div className="w-full h-[200px] bg-[var(--card-line)] rounded-md animate-pulse flex items-center justify-center">
         <span className="text-neutral-400 text-sm">Loading map...</span>
       </div>
     ),

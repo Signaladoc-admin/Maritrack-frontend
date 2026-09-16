@@ -8,7 +8,7 @@ import { cn } from "@/shared/lib/utils";
 import Link from "next/link";
 import { Skeleton } from "@/shared/ui/skeleton";
 
-const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
+function Table<T extends { id: string | number }>(props: TableProps<T>) {
   // Destructure props
   const {
     variant = "default",
@@ -121,37 +121,56 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
 
   if (loading) {
     return (
-      <div
-        className={cn(
-          "grid w-full max-w-full min-w-0 grid-cols-1 overflow-hidden rounded-2xl bg-gray-50",
-          className
-        )}
-      >
+      <div className={className}>
         <div className="w-full overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 border border-gray-200">
+          <table className="min-w-full">
             {hasHeaders && (
-              <thead className="bg-[#deeaff]">
+              <thead>
                 <tr>
+                  {selectable && (
+                    <th>
+                      <div className="flex h-5 w-5 rounded-sm border border-card-line bg-transparent" />
+                    </th>
+                  )}
                   {columns.map((column) => (
                     <th
                       key={column.label ?? column.key}
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium tracking-wider"
+                      className={column.className || ""}
+                      style={{ width: column.width }}
                     >
                       {column.label}
                     </th>
                   ))}
+                  {actions.length > 0 && (
+                    <th scope="col" className="relative">
+                      <span className="sr-only">Actions</span>
+                    </th>
+                  )}
                 </tr>
               </thead>
             )}
-            <tbody className="divide-y divide-gray-200 bg-white">
+            <tbody>
               {Array.from({ length: 5 }).map((_, rowIdx) => (
                 <tr key={rowIdx}>
+                  {selectable && (
+                    <td>
+                      <div className="flex h-5 w-5 rounded-sm border border-card-line bg-transparent" />
+                    </td>
+                  )}
                   {columns.map((column) => (
-                    <td key={column.label ?? column.key} className="px-6 py-4">
+                    <td
+                      key={column.label ?? column.key}
+                      className={cn("whitespace-nowrap px-6 py-4", column.className || "")}
+                    >
                       <Skeleton className="h-4 w-full rounded" />
                     </td>
                   ))}
+                  {actions.length > 0 && (
+                    <td>
+                      <Skeleton className="h-6 w-6 rounded-full" />
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -166,162 +185,142 @@ const Table = <T extends { id: string | number }>(props: TableProps<T>) => {
   }
 
   return (
-    <div>
-      <div
-        className={cn(
-          `grid w-full max-w-full min-w-0 grid-cols-1 overflow-hidden bg-gray-50`,
-          isPaginated ? "rounded-t-2xl" : "rounded-2xl",
-          className
-        )}
-      >
-        <div className="w-full overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 border border-gray-200">
-            {hasHeaders && (
-              <thead className="bg-[#deeaff]">
-                <tr>
-                  {selectable && (
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+    <div className={className}>
+      <div className="w-full overflow-x-auto">
+        <table className="min-w-full">
+          {hasHeaders && (
+            <thead>
+              <tr>
+                {selectable && (
+                  <th>
+                    <div
+                      role="button"
+                      aria-label="Select all rows"
+                      onClick={handleHeaderToggle}
+                      className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-sm border border-card-line bg-transparent hover:border-accent"
                     >
+                      {allSelected ? (
+                        <CheckIcon className="h-4 w-4 stroke-3 text-accent" />
+                      ) : someSelected ? (
+                        <MinusIcon className="h-4 w-4 stroke-3 text-accent" />
+                      ) : null}
+                    </div>
+                  </th>
+                )}
+                {columns.map((column) => (
+                  <th
+                    key={column.label ?? column.key}
+                    scope="col"
+                    className={column.className || ""}
+                    style={{ width: column.width }}
+                  >
+                    {column.label}
+                  </th>
+                ))}
+                {actions.length > 0 && (
+                  <th scope="col" className="relative">
+                    <span className="sr-only">Actions</span>
+                  </th>
+                )}
+              </tr>
+            </thead>
+          )}
+          <tbody>
+            {data?.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={columns.length + (selectable ? 1 : 0) + (actions.length > 0 ? 1 : 0)}
+                  className="text-center text-sm text-muted-foreground py-10"
+                >
+                  {emptyMessage}
+                </td>
+              </tr>
+            ) : (
+              data?.map((item, index) => (
+                <tr
+                  key={item.id}
+                  className={cn(
+                    rowClassName ? rowClassName(item, index) : "",
+                    onItemClick || getRowHref ? "cursor-pointer" : ""
+                  )}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onItemClick && onItemClick(item);
+                  }}
+                >
+                  {selectable && (
+                    <td>
                       <div
                         role="button"
-                        aria-label="Select all rows"
-                        onClick={handleHeaderToggle}
-                        className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-sm border border-gray-400 bg-transparent hover:border-[#7f56d9]"
+                        aria-label="Select row"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectItem(item.id);
+                        }}
+                        className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-sm border border-card-line bg-transparent hover:border-accent"
                       >
-                        {allSelected ? (
-                          <CheckIcon className="h-4 w-4 stroke-3 text-[#7f56d9]" />
-                        ) : someSelected ? (
-                          <MinusIcon className="h-4 w-4 stroke-3 text-[#7f56d9]" />
-                        ) : null}
+                        {selectedItems.has(item.id) && (
+                          <CheckIcon className="h-4 w-4 stroke-3 text-accent" />
+                        )}
                       </div>
-                    </th>
+                    </td>
                   )}
-                  {columns.map((column) => (
-                    <th
+                  {columns.map((column, colIndex) => (
+                    <td
                       key={column.label ?? column.key}
-                      scope="col"
-                      className={`px-6 py-3 text-left text-xs font-medium tracking-wider ${column.className || ""
-                        }`}
-                      style={{ width: column.width }}
+                      className={cn(
+                        column.className || "",
+                        colIndex === 0 && getRowHref ? "relative" : ""
+                      )}
                     >
-                      {column.label}
-                    </th>
+                      {colIndex === 0 && getRowHref && (
+                        <Link
+                          href={getRowHref(item)}
+                          className="absolute inset-0"
+                          aria-label="View row"
+                        />
+                      )}
+                      {renderCellContent(column, item, index)}
+                    </td>
                   ))}
                   {actions.length > 0 && (
-                    <th scope="col" className="relative px-6 py-3">
-                      <span className="sr-only">Actions</span>
-                    </th>
+                    <td className="text-right">
+                      <div className="relative inline-block text-left" ref={dropdownRef}>
+                        <button
+                          type="button"
+                          className="dd-action-btn flex items-center justify-center"
+                          onClick={(e) => { e.stopPropagation(); toggleDropdown(item.id); }}
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="h-[15px] w-[15px]"><circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/></svg>
+                        </button>
+                        {openDropdownId === item.id && (
+                          <div className="dropdown-menu align-left open" style={{ right: 0, left: 'auto', minWidth: '160px' }}>
+                            {actions
+                              .filter((action) => !action.condition || action.condition(item))
+                              .map((action, actionIndex) => (
+                                <button
+                                  key={actionIndex}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    action.onClick(item);
+                                    setOpenDropdownId(null);
+                                  }}
+                                  className={cn("dropdown-item", action.className)}
+                                >
+                                  {action.label}
+                                </button>
+                              ))}
+                          </div>
+                        )}
+                      </div>
+                    </td>
                   )}
                 </tr>
-              </thead>
+              ))
             )}
-            <tbody className="divide-y divide-gray-200 bg-white">
-              {data?.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={columns.length + (selectable ? 1 : 0) + (actions.length > 0 ? 1 : 0)}
-                    className="px-6 py-4 text-center text-sm whitespace-nowrap text-gray-500"
-                  >
-                    {emptyMessage}
-                  </td>
-                </tr>
-              ) : (
-                data?.map((item, index) => (
-                  <tr
-                    key={item.id}
-                    className={cn(
-                      rowClassName ? rowClassName(item, index) : "",
-                      onItemClick || getRowHref ? "cursor-pointer" : ""
-                    )}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onItemClick && onItemClick(item);
-                    }}
-                  >
-                    {selectable && (
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div
-                          role="button"
-                          aria-label="Select row"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSelectItem(item.id);
-                          }}
-                          className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-sm border border-gray-400 bg-transparent hover:border-[#7f56d9]"
-                        >
-                          {selectedItems.has(item.id) && (
-                            <CheckIcon className="h-4 w-4 stroke-3 text-[#7f56d9]" />
-                          )}
-                        </div>
-                      </td>
-                    )}
-                    {columns.map((column, colIndex) => (
-                      <td
-                        key={column.label ?? column.key}
-                        className={cn(
-                          "px-6 py-4 text-sm whitespace-nowrap",
-                          column.className || "text-gray-500",
-                          colIndex === 0 && getRowHref ? "relative" : ""
-                        )}
-                      >
-                        {colIndex === 0 && getRowHref && (
-                          <Link
-                            href={getRowHref(item)}
-                            className="absolute inset-0"
-                            aria-label="View row"
-                          />
-                        )}
-                        {renderCellContent(column, item, index)}
-                      </td>
-                    ))}
-                    {actions.length > 0 && (
-                      <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
-                        <div className="relative inline-block text-left" ref={dropdownRef}>
-                          <button
-                            type="button"
-                            className="focus:ring-primary inline-flex w-full cursor-pointer justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-offset-2 focus:outline-none"
-                            onClick={() => toggleDropdown(item.id)}
-                          >
-                            Actions
-                            <ChevronDownIcon
-                              className={`-mr-1 ml-2 h-5 w-5 transition-transform duration-200 ${openDropdownId === item.id ? "rotate-180" : ""
-                                }`}
-                            />
-                          </button>
-                          {openDropdownId === item.id && (
-                            <div className="ring-opacity-5 absolute right-0 z-10 mt-2 w-40 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black focus:outline-none">
-                              <div className="py-1">
-                                {actions
-                                  .filter((action) => !action.condition || action.condition(item))
-                                  .map((action, actionIndex) => (
-                                    <button
-                                      key={actionIndex}
-                                      onClick={() => {
-                                        action.onClick(item);
-                                        setOpenDropdownId(null);
-                                      }}
-                                      className={`block w-full px-4 py-2 text-left text-sm hover:bg-gray-100 ${action.className || "text-gray-700"
-                                        }`}
-                                    >
-                                      {action.label}
-                                    </button>
-                                  ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    )}
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+          </tbody>
+        </table>
       </div>
-
       {isPaginated && (
         <Pagination
           className={paginationClassName}
