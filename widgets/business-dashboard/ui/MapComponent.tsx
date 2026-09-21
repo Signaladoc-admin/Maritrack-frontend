@@ -97,11 +97,14 @@ export default function MapComponent({ locations = [] }: MapComponentProps) {
         center={center}
         zoom={13}
         scrollWheelZoom={false}
-        attributionControl={false}
+        attributionControl={true}
         style={{ height: "100%", width: "100%", zIndex: 0 }}
       >
         <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          subdomains="abcd"
+          maxZoom={20}
         />
 
         <FitBounds positionKey={positionKey} positions={positions} />
@@ -126,6 +129,19 @@ export default function MapComponent({ locations = [] }: MapComponentProps) {
           No location data has been reported for any device yet.
         </p>
       )}
+
+      <style jsx global>{`
+        .leaflet-control-attribution {
+          font-size: 8px !important;
+          color: #64748b !important;
+          background: rgba(255, 255, 255, 0.75) !important;
+          padding: 1px 4px !important;
+        }
+        .leaflet-control-attribution a {
+          color: #64748b !important;
+          text-decoration: none !important;
+        }
+      `}</style>
     </div>
   );
 }
