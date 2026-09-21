@@ -96,17 +96,25 @@ export default function ParentDashboard() {
               <AvatarFallback>{getInitials(typedChild.name)}</AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="text-2xl font-bold tracking-tight text-[#1B3C73]">{typedChild.name}</h3>
+              <h3 className="text-2xl font-bold tracking-tight text-[#1B3C73]">
+                {typedChild.name}
+              </h3>
               <p className="text-sm font-medium text-slate-400">
                 {typedChild.age ? `Daughter, ${typedChild.age}` : "Daughter"}
               </p>
             </div>
           </div>
           <div className="flex gap-4">
-            <button onClick={() => setShowEdit(true)} className="flex h-[52px] w-[52px] cursor-pointer items-center justify-center rounded-full bg-[#F8F9FA] transition-colors hover:bg-slate-200">
+            <button
+              onClick={() => setShowEdit(true)}
+              className="flex h-[52px] w-[52px] cursor-pointer items-center justify-center rounded-full bg-[#F8F9FA] transition-colors hover:bg-slate-200"
+            >
               <Edit2Icon className="h-[22px] w-[22px] text-[#1B3C73]" />
             </button>
-            <button onClick={() => setShowDelete(true)} className="flex h-[52px] w-[52px] cursor-pointer items-center justify-center rounded-full bg-[#FEF2F2] transition-colors hover:bg-red-100">
+            <button
+              onClick={() => setShowDelete(true)}
+              className="flex h-[52px] w-[52px] cursor-pointer items-center justify-center rounded-full bg-[#FEF2F2] transition-colors hover:bg-red-100"
+            >
               <Trash2Icon className="h-[22px] w-[22px] text-[#EF4444]" />
             </button>
           </div>
@@ -115,13 +123,13 @@ export default function ParentDashboard() {
 
       {typedChild && !device ? (
         <div className="pt-4">
-          <EmptyDeviceCard 
-            onClick={() => setIsPairNewDeviceModalOpen(true)} 
-            className="h-[350px] rounded-[32px]" 
+          <EmptyDeviceCard
+            onClick={() => setIsPairNewDeviceModalOpen(true)}
+            className="h-[350px] rounded-[32px]"
           />
-          <PairDeviceModal 
-            open={isPairNewDeviceModalOpen} 
-            onOpenChange={setIsPairNewDeviceModalOpen} 
+          <PairDeviceModal
+            open={isPairNewDeviceModalOpen}
+            onOpenChange={setIsPairNewDeviceModalOpen}
             childId={typedChild.id}
           />
         </div>
