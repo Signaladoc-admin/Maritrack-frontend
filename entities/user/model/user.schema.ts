@@ -105,20 +105,34 @@ export const businessUserDetailsSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   department: z.string().optional(),
-  businessRole: z.enum([BUSINESS_ROLES[1], BUSINESS_ROLES[2]], {
-    error: (el: any) => ({
-      message: `Select a valid business role from ${el.values
-        .map((value: any) => value.replace("_", " "))
-        .map((value: any) => value.charAt(0).toUpperCase() + value.slice(1).toLowerCase())
-        .join(", ")}`,
-    }),
-  }).optional(),
+  businessRole: z
+    .enum([BUSINESS_ROLES[1], BUSINESS_ROLES[2]], {
+      error: (el: any) => ({
+        message: `Select a valid business role from ${el.values
+          .map((value: any) => value.replace("_", " "))
+          .map((value: any) => value.charAt(0).toUpperCase() + value.slice(1).toLowerCase())
+          .join(", ")}`,
+      }),
+    })
+    .optional(),
   position: z.string().optional(),
   email: z.string().email("Invalid email address"),
   phone: z.string().min(1, "Phone number is required"),
   address: z.string().min(1, "Address is required"),
 });
 export type BusinessUserDetailsValues = z.infer<typeof businessUserDetailsSchema>;
+
+export const getBusinessUserDetailsSchema = (isDeviceFinance = false) => {
+  return businessUserDetailsSchema.superRefine((data, ctx) => {
+    if (!isDeviceFinance && (!data.department || data.department.trim() === "")) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Department is required",
+        path: ["department"],
+      });
+    }
+  });
+};
 
 export const departmentSchema = z.object({
   name: z.string().min(1, "Department name is required"),
