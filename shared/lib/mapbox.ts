@@ -5,14 +5,13 @@ import mapboxgl from "mapbox-gl";
  * even if environment variables are not injected during Docker/CI builds.
  */
 export const DEFAULT_MAPBOX_TOKEN =
-  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ||
-  "pk.eyJ1IjoibWFyaW1heDEyMyIsImEiOiJjbXBtbnExMmswNHgxMnJwb3Vhem1vZWdyIn0.xsRuLrhv17wFzJvW3pvBjg";
+  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "";
 
 // Set default accessToken globally on mapboxgl instance in client environments
 if (typeof window !== "undefined") {
   try {
     mapboxgl.accessToken = DEFAULT_MAPBOX_TOKEN;
-  } catch {}
+  } catch { }
 }
 
 /**
@@ -30,7 +29,7 @@ export function checkWebGLSupport(): boolean {
       canvas.getContext("experimental-webgl");
     if (!gl) return false;
     if (typeof mapboxgl.supported === "function") {
-      return mapboxgl.supported({ failIfMajorPerformanceCaveat: false });
+      return mapboxgl.supported(false);
     }
     return true;
   } catch {
