@@ -15,7 +15,7 @@ export interface PaginatedDepartments {
 
 export interface CreateDepartmentDto {
   name: string;
-  businessId: string;
+  businessId?: string;
   mdmDepartmentId?: string;
   zone?: string;
   description?: string;

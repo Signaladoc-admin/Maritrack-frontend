@@ -15,12 +15,17 @@ export default function DepartmentsList({
   setSelectedTabTotalPages: (totalPages: number) => void;
 }) {
   const { user } = useAuth();
-  const { data: departmentData, isLoading } = useGetDepartments({
-    businessId: user?.businessId!,
-    search: searchTerm,
-    page: currentPage,
-    limit: 5,
-  });
+  const { data: departmentData, isLoading } = useGetDepartments(
+    {
+      businessId: user?.businessId || "",
+      search: searchTerm,
+      page: currentPage,
+      limit: 5,
+    },
+    {
+      enabled: !!user?.businessId,
+    }
+  );
   const departments = departmentData?.departments || [];
 
   useEffect(() => {
