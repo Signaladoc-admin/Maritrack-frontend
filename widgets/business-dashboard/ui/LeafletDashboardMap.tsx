@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { getMapboxRasterTileUrl } from "@/shared/lib/mapbox";
 import type { DeviceLocation } from "./MapComponent";
 
 if (typeof window !== "undefined") {
@@ -62,7 +63,12 @@ export default function LeafletDashboardMap({
         attributionControl={false}
         style={{ height: "100%", width: "100%" }}
       >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" maxZoom={19} />
+        <TileLayer
+          url={getMapboxRasterTileUrl("streets-v12")}
+          tileSize={256}
+          maxZoom={19}
+          attribution='&copy; <a href="https://www.mapbox.com/">Mapbox</a>'
+        />
         <FitBounds positions={positions} />
 
         {validLocations.map((loc) => (

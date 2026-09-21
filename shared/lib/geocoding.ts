@@ -2,7 +2,9 @@
  * Geocoding utilities using Mapbox API.
  */
 
-const MAPBOX_ACCESS_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "";
+import { DEFAULT_MAPBOX_TOKEN } from "./mapbox";
+
+const MAPBOX_ACCESS_TOKEN = DEFAULT_MAPBOX_TOKEN;
 
 interface MapboxFeature {
   place_name: string;

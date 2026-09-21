@@ -4,6 +4,7 @@ import React from "react";
 import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { getMapboxRasterTileUrl } from "@/shared/lib/mapbox";
 
 if (typeof window !== "undefined") {
   delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -30,7 +31,12 @@ export default function LeafletDeviceFallback({
         attributionControl={false}
         style={{ height: "100%", width: "100%" }}
       >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" maxZoom={19} />
+        <TileLayer
+          url={getMapboxRasterTileUrl("streets-v12")}
+          tileSize={256}
+          maxZoom={19}
+          attribution='&copy; <a href="https://www.mapbox.com/">Mapbox</a>'
+        />
         {markers.map((m) => (
           <Marker key={m.id} position={[m.lat, m.lng]}>
             {m.popup && (

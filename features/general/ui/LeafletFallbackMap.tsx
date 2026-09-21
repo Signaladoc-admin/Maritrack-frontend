@@ -4,6 +4,7 @@ import React, { useEffect, useMemo } from "react";
 import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { getMapboxRasterTileUrl } from "@/shared/lib/mapbox";
 
 // Configure default marker icons
 if (typeof window !== "undefined") {
@@ -80,8 +81,10 @@ export default function LeafletFallbackMap({
         className="z-0 h-full w-full"
       >
         <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url={getMapboxRasterTileUrl("streets-v12")}
+          tileSize={256}
           maxZoom={19}
+          attribution='&copy; <a href="https://www.mapbox.com/">Mapbox</a>'
         />
 
         <MapViewController center={center} zoom={zoom} />

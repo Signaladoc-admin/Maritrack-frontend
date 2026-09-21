@@ -20,20 +20,7 @@ const LeafletFallbackMap = dynamic(() => import("./LeafletFallbackMap"), {
   ),
 });
 
-function checkWebGLSupport(): boolean {
-  if (typeof window === "undefined") return false;
-  try {
-    const canvas = document.createElement("canvas");
-    const gl =
-      canvas.getContext("webgl") ||
-      canvas.getContext("experimental-webgl") ||
-      canvas.getContext("webgl2");
-    if (!gl) return false;
-    return typeof mapboxgl.supported === "function" ? mapboxgl.supported() : true;
-  } catch {
-    return false;
-  }
-}
+import { DEFAULT_MAPBOX_TOKEN, checkWebGLSupport } from "@/shared/lib/mapbox";
 
 interface ErrorBoundaryProps {
   fallback: React.ReactNode;
@@ -196,7 +183,7 @@ export function MapCard({ deviceId, className, resolvedAddress }: MapCardProps) 
             <WebGLErrorBoundary fallback={renderFallback}>
               <Map
                 ref={mapRef}
-                mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
+                mapboxAccessToken={DEFAULT_MAPBOX_TOKEN}
                 initialViewState={{
                   longitude: center.longitude,
                   latitude: center.latitude,

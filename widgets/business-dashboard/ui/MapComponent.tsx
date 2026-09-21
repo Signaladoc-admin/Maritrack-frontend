@@ -11,20 +11,7 @@ const LeafletDashboardMap = dynamic(() => import("./LeafletDashboardMap"), {
   ssr: false,
 });
 
-function checkWebGLSupport(): boolean {
-  if (typeof window === "undefined") return false;
-  try {
-    const canvas = document.createElement("canvas");
-    const gl =
-      canvas.getContext("webgl") ||
-      canvas.getContext("experimental-webgl") ||
-      canvas.getContext("webgl2");
-    if (!gl) return false;
-    return typeof mapboxgl.supported === "function" ? mapboxgl.supported() : true;
-  } catch {
-    return false;
-  }
-}
+import { DEFAULT_MAPBOX_TOKEN, checkWebGLSupport } from "@/shared/lib/mapbox";
 
 class WebGLErrorBoundary extends React.Component<
   { fallback: React.ReactNode; children: React.ReactNode },
@@ -144,7 +131,7 @@ export default function MapComponent({ locations = [] }: MapComponentProps) {
         <WebGLErrorBoundary fallback={fallback}>
           <Map
             ref={mapRef}
-            mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
+            mapboxAccessToken={DEFAULT_MAPBOX_TOKEN}
             initialViewState={{
               longitude: center.longitude,
               latitude: center.latitude,
