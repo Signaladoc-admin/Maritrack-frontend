@@ -19,10 +19,9 @@ export function SidebarSkeleton() {
         <Skeleton className="h-12 w-12 rounded-full" />
       </div>
 
-      {/* Bottom: Actions skeleton */}
-      <div className="flex flex-col gap-6">
-        <Skeleton className="h-6 w-6" />
-        <Skeleton className="h-6 w-6" />
+      {/* Bottom: Profile popover skeleton */}
+      <div className="mt-auto mb-10 flex flex-col items-center">
+        <Skeleton className="h-10 w-10 rounded-full" />
       </div>
     </div>
   );

@@ -22,6 +22,7 @@ import DevicesConfigurationSetup from "@/features/parents/ui/DeviceConfiguration
 import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 import { MDMDeviceDetailsResponse } from "@/features/device/types";
 import ReassignDeviceModal from "@/features/business-users/users/ui/ReassignDeviceModal";
+import { useParentStore } from "@/shared/stores/user.store";
 import { DeviceHeaderSkeleton } from "./DeviceHeaderSkeleton";
 import DeviceActions from "./DeviceActions";
 import Messages from "./Messages";
@@ -31,6 +32,9 @@ const Device = () => {
   const params = useParams<{ device: string }>();
   const searchParams = useSearchParams();
   const { user } = useAuth();
+  const { selectedChildId } = useParentStore();
+
+  const isParent = user?.appRole === "PARENT";
 
   const mdmDeviceId = params.device;
   const { data: hardwareData, isLoading: isLoadingHardwareData } = useDeviceDetail(
@@ -44,6 +48,14 @@ const Device = () => {
 
   const deviceDetails = deviceResponse?.deviceDetails;
 
+  const childId =
+    searchParams?.get("childId") ||
+    deviceDetails?.childId ||
+    (selectedChildId && selectedChildId !== "all" ? selectedChildId : "");
+
+  const backLabel = isParent ? "Back to Child" : "Back to devices";
+  const backHref = isParent ? (childId ? `/child/${childId}` : "/dashboard") : "/devices";
+
   const activeTab = searchParams?.get("tab") || "general";
   const [showDelete, setShowDelete] = useState(false);
   const [showMarkAsReturned, setShowMarkAsReturned] = useState(false);
@@ -51,7 +63,8 @@ const Device = () => {
 
   const handleTabChange = (tab: string) => {
     const deviceId = params?.device || "device-id";
-    router.push(`/devices/${deviceId}?tab=${tab}`);
+    const childIdParam = searchParams?.get("childId") || (isParent && childId ? childId : "");
+    router.push(`/devices/${deviceId}?tab=${tab}${childIdParam ? `&childId=${childIdParam}` : ""}`);
   };
 
   const isMobile = useIsMobile();
@@ -62,11 +75,9 @@ const Device = () => {
         <DeviceHeaderSkeleton isMobile={isMobile} />
       ) : (
         <div className="mb-10 flex w-full flex-col gap-6">
-          {!isMobile && (
-            <div className="flex justify-start">
-              <Back label="Back to devices" href="/devices" />
-            </div>
-          )}
+          <div className="flex justify-start">
+            <Back label={backLabel} href={backHref} />
+          </div>
 
           <div className="flex w-full flex-col items-center justify-center gap-6 lg:flex-row">
             <div className="w-full lg:w-auto flex justify-center">

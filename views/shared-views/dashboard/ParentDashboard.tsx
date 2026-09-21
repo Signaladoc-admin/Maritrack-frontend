@@ -147,6 +147,8 @@ export default function ParentDashboard() {
               device={device}
               deviceId={deviceId}
               childName={typedChild?.name}
+              childId={typedChild?.id}
+              hardwareData={hardwareData}
               isLoadingChild={isLoadingChild && !!selectedChildId && selectedChildId !== "all"}
             />
 

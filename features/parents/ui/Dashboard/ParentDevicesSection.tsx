@@ -9,10 +9,19 @@ interface ParentDevicesSectionProps {
   device: any;
   deviceId: string;
   childName?: string;
+  childId?: string;
   isLoadingChild: boolean;
+  hardwareData?: any;
 }
 
-export function ParentDevicesSection({ device, deviceId, childName, isLoadingChild }: ParentDevicesSectionProps) {
+export function ParentDevicesSection({
+  device,
+  deviceId,
+  childName,
+  childId,
+  isLoadingChild,
+  hardwareData,
+}: ParentDevicesSectionProps) {
   const { scrollContainerRef, events } = useDragScroll();
   const router = useRouter();
 
@@ -34,7 +43,10 @@ export function ParentDevicesSection({ device, deviceId, childName, isLoadingChi
         <DeviceCard
           device={{ ...device, deviceId }}
           childName={childName}
-          onClick={() => router.push(`/devices/${deviceId}`)}
+          hardwareData={hardwareData}
+          onClick={() =>
+            router.push(childId ? `/devices/${deviceId}?childId=${childId}` : `/devices/${deviceId}`)
+          }
         />
       ) : (
         <div className="flex h-40 w-full items-center justify-center rounded-[24px] border border-dashed border-[#1B3C73] bg-[#081223] text-[#8198BF]">

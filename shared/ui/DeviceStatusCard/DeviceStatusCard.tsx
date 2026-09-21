@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { BatteryCharging, BatteryFullIcon, Plus, Zap } from "lucide-react";
-import { FaApple } from "react-icons/fa";
+import { FaApple, FaAndroid } from "react-icons/fa";
 import { cn } from "@/shared/lib/utils";
 
 export type DeviceUsageStatus = "active" | "locked";
@@ -15,6 +15,7 @@ interface DeviceUsageCardProps {
   device: string;
   isRow?: boolean;
   onClick?: () => void;
+  osType?: string;
 }
 
 export function DeviceUsageCard({
@@ -25,8 +26,17 @@ export function DeviceUsageCard({
   device = "Iphone 14",
   isRow = false,
   onClick,
+  osType,
 }: DeviceUsageCardProps) {
   const isActive = status === "active";
+
+  const normalizedOs = osType?.toUpperCase()?.trim();
+  const isAndroid =
+    normalizedOs === "DRX" ||
+    normalizedOs === "ANDROID" ||
+    Boolean(normalizedOs?.startsWith("DRX"));
+
+  const OsIcon = isAndroid ? FaAndroid : FaApple;
 
   /** Battery-level-based accent: red when low (≤20%), green otherwise */
   const isLowBattery = percentage <= 20;
@@ -52,7 +62,12 @@ export function DeviceUsageCard({
       <div className={cn("z-10 flex flex-col gap-1", isRow ? "h-full justify-start text-left" : "mt-2 justify-start text-center")}>
         {!isRow && (
           <div className="mb-2 flex justify-center text-[#8198BF]">
-            <FaApple className="h-6 w-6" />
+            <OsIcon className="h-6 w-6" />
+          </div>
+        )}
+        {isRow && (
+          <div className="mb-1 flex justify-start text-[#8198BF]">
+            <OsIcon className="h-5 w-5" />
           </div>
         )}
         <h3 className="text-[18px] font-bold tracking-wide text-white lg:text-[22px]">

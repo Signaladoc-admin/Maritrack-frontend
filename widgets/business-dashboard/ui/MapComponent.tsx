@@ -2,17 +2,57 @@
 
 import * as React from "react";
 import dynamic from "next/dynamic";
-import { useMap } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
+import Map, { Marker, Popup, NavigationControl, MapRef } from "react-map-gl/mapbox";
+import mapboxgl from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
+import { MapPin } from "lucide-react";
 
-const MapContainer = dynamic(() => import("react-leaflet").then((m) => m.MapContainer), {
+const LeafletDashboardMap = dynamic(() => import("./LeafletDashboardMap"), {
   ssr: false,
 });
-const TileLayer = dynamic(() => import("react-leaflet").then((m) => m.TileLayer), { ssr: false });
-const Marker = dynamic(() => import("react-leaflet").then((m) => m.Marker), { ssr: false });
-const Popup = dynamic(() => import("react-leaflet").then((m) => m.Popup), { ssr: false });
 
-const DEFAULT_CENTER: [number, number] = [6.4281, 3.4219]; // Victoria Island, Lagos
+function checkWebGLSupport(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const canvas = document.createElement("canvas");
+    const gl =
+      canvas.getContext("webgl") ||
+      canvas.getContext("experimental-webgl") ||
+      canvas.getContext("webgl2");
+    if (!gl) return false;
+    return typeof mapboxgl.supported === "function" ? mapboxgl.supported() : true;
+  } catch {
+    return false;
+  }
+}
+
+class WebGLErrorBoundary extends React.Component<
+  { fallback: React.ReactNode; children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error) {
+    console.warn("MapComponent WebGL error, using fallback:", error.message);
+  }
+
+  render() {
+    if (this.state.hasError) return this.props.fallback;
+    return this.props.children;
+  }
+}
+
+const DEFAULT_CENTER = {
+  latitude: 6.4281,
+  longitude: 3.4219, // Victoria Island, Lagos
+};
 
 export interface DeviceLocation {
   id: string;
@@ -25,52 +65,15 @@ interface MapComponentProps {
   locations?: DeviceLocation[];
 }
 
-// Adjusts the viewport whenever positions change — handles the single-marker
-// case with setView and the multi-marker case with fitBounds.
-// MapContainer.center is only used for initialization, so this is the only
-// way to keep the viewport in sync after async data arrives.
-function FitBounds({
-  positionKey,
-  positions,
-}: {
-  positionKey: string;
-  positions: [number, number][];
-}) {
-  const map = useMap();
-
-  React.useEffect(() => {
-    if (positions.length === 0) return;
-    if (positions.length === 1) {
-      map.setView(positions[0], 13);
-      return;
-    }
-    import("leaflet").then((L) => {
-      map.fitBounds(L.latLngBounds(positions), { padding: [30, 30] });
-    });
-    // positionKey is a stable string serialisation — avoids re-running when the
-    // array gets a new reference but carries the same coordinates.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, positionKey]);
-
-  return null;
-}
-
 export default function MapComponent({ locations = [] }: MapComponentProps) {
   const [isClient, setIsClient] = React.useState(false);
+  const [isWebGLAvailable, setIsWebGLAvailable] = React.useState<boolean | null>(null);
+  const [selectedLoc, setSelectedLoc] = React.useState<DeviceLocation | null>(null);
+  const mapRef = React.useRef<MapRef>(null);
 
-  // Mirror map-card.tsx: fix Leaflet's default marker icons using CDN URLs so
-  // webpack/Next.js doesn't break the PNG resolution.
   React.useEffect(() => {
     setIsClient(true);
-    import("leaflet").then((L) => {
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl:
-          "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-        iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-        shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-      });
-    });
+    setIsWebGLAvailable(checkWebGLSupport());
   }, []);
 
   const validLocations = React.useMemo(
@@ -78,53 +81,130 @@ export default function MapComponent({ locations = [] }: MapComponentProps) {
     [locations]
   );
 
-  const positions = React.useMemo<[number, number][]>(
-    () => validLocations.map((loc) => [loc.lat, loc.lng]),
-    [validLocations]
-  );
+  const center = React.useMemo(() => {
+    if (validLocations.length > 0) {
+      return { latitude: validLocations[0].lat, longitude: validLocations[0].lng };
+    }
+    return DEFAULT_CENTER;
+  }, [validLocations]);
 
-  const positionKey = React.useMemo(() => positions.map((p) => p.join(",")).join("|"), [positions]);
+  // Adjust viewport to fit multiple markers or center single marker
+  React.useEffect(() => {
+    if (!mapRef.current || validLocations.length === 0) return;
 
-  // Mirror map-card.tsx: always start at zoom 13 (city level).
-  // FitBounds zooms out to fit multiple pins when needed.
-  const center: [number, number] = positions.length > 0 ? positions[0] : DEFAULT_CENTER;
+    if (validLocations.length === 1) {
+      try {
+        mapRef.current.flyTo({
+          center: [validLocations[0].lng, validLocations[0].lat],
+          zoom: 13,
+          duration: 1000,
+        });
+      } catch {}
+      return;
+    }
 
-  if (!isClient) return null;
+    let minLng = validLocations[0].lng;
+    let maxLng = validLocations[0].lng;
+    let minLat = validLocations[0].lat;
+    let maxLat = validLocations[0].lat;
+
+    for (const loc of validLocations) {
+      if (loc.lng < minLng) minLng = loc.lng;
+      if (loc.lng > maxLng) maxLng = loc.lng;
+      if (loc.lat < minLat) minLat = loc.lat;
+      if (loc.lat > maxLat) maxLat = loc.lat;
+    }
+
+    try {
+      mapRef.current.fitBounds(
+        [
+          [minLng, minLat],
+          [maxLng, maxLat],
+        ],
+        { padding: 40, duration: 1000, maxZoom: 15 }
+      );
+    } catch {}
+  }, [validLocations]);
+
+  if (!isClient) {
+    return (
+      <div className="flex h-[250px] w-full items-center justify-center rounded-lg border border-gray-100 bg-slate-50 text-xs text-slate-400">
+        Loading map...
+      </div>
+    );
+  }
+
+  const fallback = <LeafletDashboardMap locations={locations} center={center} />;
 
   return (
-    <div className="z-0 h-[250px] w-full overflow-hidden rounded-lg border border-gray-100">
-      <MapContainer
-        center={center}
-        zoom={13}
-        scrollWheelZoom={false}
-        style={{ height: "100%", width: "100%", zIndex: 0 }}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+    <div className="relative h-[250px] w-full overflow-hidden rounded-lg border border-gray-100">
+      {isWebGLAvailable === false ? (
+        fallback
+      ) : (
+        <WebGLErrorBoundary fallback={fallback}>
+          <Map
+            ref={mapRef}
+            mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
+            initialViewState={{
+              longitude: center.longitude,
+              latitude: center.latitude,
+              zoom: 12,
+            }}
+            style={{ width: "100%", height: "100%" }}
+            mapStyle="mapbox://styles/mapbox/streets-v12"
+          >
+            <NavigationControl position="bottom-right" />
 
-        <FitBounds positionKey={positionKey} positions={positions} />
+            {validLocations.map((loc) => (
+              <Marker
+                key={loc.id}
+                longitude={loc.lng}
+                latitude={loc.lat}
+                anchor="bottom"
+                onClick={(e) => {
+                  e.originalEvent.stopPropagation();
+                  setSelectedLoc(loc);
+                }}
+              >
+                <div className="group relative flex cursor-pointer flex-col items-center">
+                  <div className="relative flex h-6 w-6 items-center justify-center">
+                    <span className="absolute h-6 w-6 animate-ping rounded-full bg-[#1B3C73] opacity-25" />
+                    <div className="relative flex h-5 w-5 items-center justify-center rounded-full border border-white bg-[#1B3C73] shadow-md">
+                      <MapPin className="h-3 w-3 text-white" />
+                    </div>
+                  </div>
+                </div>
+              </Marker>
+            ))}
 
-        {validLocations.length > 0 ? (
-          validLocations.map((loc) => (
-            <Marker key={loc.id} position={[loc.lat, loc.lng]}>
-              <Popup>
-                <span className="text-sm font-medium">{loc.label || `Device ${loc.id}`}</span>
+            {selectedLoc && (
+              <Popup
+                longitude={selectedLoc.lng}
+                latitude={selectedLoc.lat}
+                anchor="top"
+                offset={[0, 8]}
+                onClose={() => setSelectedLoc(null)}
+                closeButton={true}
+                closeOnClick={false}
+              >
+                <div className="p-1 text-xs">
+                  <span className="font-semibold text-slate-800">
+                    {selectedLoc.label || `Device ${selectedLoc.id}`}
+                  </span>
+                  <div className="font-mono text-[10px] text-slate-400">
+                    {selectedLoc.lat.toFixed(5)}, {selectedLoc.lng.toFixed(5)}
+                  </div>
+                </div>
               </Popup>
-            </Marker>
-          ))
-        ) : (
-          <Marker position={DEFAULT_CENTER}>
-            <Popup>No GPS data available for any device</Popup>
-          </Marker>
-        )}
-      </MapContainer>
+            )}
+          </Map>
+        </WebGLErrorBoundary>
+      )}
 
       {validLocations.length === 0 && (
-        <p className="mt-2 text-center text-xs text-[#667085]">
+        <div className="pointer-events-none absolute bottom-2 left-1/2 z-10 -translate-x-1/2 rounded bg-white/90 px-2 py-0.5 text-center text-xs text-[#667085] shadow-xs">
           No location data has been reported for any device yet.
-        </p>
+        </div>
       )}
     </div>
   );

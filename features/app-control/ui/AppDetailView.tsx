@@ -226,7 +226,7 @@ export function AppDetailView({ app, onBack }: { app: any; onBack: () => void })
         </div>
 
         {/* Usage History Card */}
-        <Card className="rounded-[32px] border-none bg-slate-50">
+        {/* <Card className="rounded-[32px] border-none bg-slate-50">
           <CardContent className="pt-6">
             <h2 className="mb-6 text-[32px] font-bold text-[#1B3C73]">4h 20</h2>
             <div className="h-[250px] w-full">
@@ -272,7 +272,7 @@ export function AppDetailView({ app, onBack }: { app: any; onBack: () => void })
               </ResponsiveContainer>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Limits Section */}
         <div className="space-y-4 pt-4">

@@ -3,7 +3,7 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Roboto } from "next/font/google";
 import "./globals.css";
-import "leaflet/dist/leaflet.css";
+import "mapbox-gl/dist/mapbox-gl.css";
 import Providers from "./providers";
 import { ToastProvider } from "@/shared/ui/toast";
 import { Sidebar } from "@/shared/ui/Sidebar/Sidebar";

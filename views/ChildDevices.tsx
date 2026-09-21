@@ -46,6 +46,11 @@ const ChildDevices = () => {
     enabled: !!device?.mdmId,
   });
   const batteryLevel = hardwareData?.data?.realTimeStats?.batteryLevel ?? 0;
+  const osType =
+    hardwareData?.data?.osType ||
+    (hardwareData?.deviceDetails as any)?.osType ||
+    (device as any)?.osType ||
+    device?.operatingSystem;
 
   const handleDelete = async () => {
     if (!child) return;
@@ -99,6 +104,7 @@ const ChildDevices = () => {
               percentage={batteryLevel}
               device={device.model || device.mdmId}
               isRow={false}
+              osType={osType}
               onClick={() => router.push(`/devices/${device.mdmId}?childId=${typedChild?.id}`)}
             />
           ) : (

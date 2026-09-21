@@ -21,9 +21,9 @@ const AppControl = () => {
   const selectedApp = fetchedApps.find((a: any) => a.id === selectedAppId);
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-1">
       {/* Left Column */}
-      <div className="flex flex-col gap-6 lg:col-span-1">
+      {/* <div className="flex flex-col gap-6 lg:col-span-1">
         {isPending ? (
           <>
             <Skeleton className="h-48 rounded-[32px]" />
@@ -41,10 +41,10 @@ const AppControl = () => {
             </div>
           </>
         )}
-      </div>
+      </div> */}
 
       {/* Right Column - Swappable */}
-      <div className="lg:col-span-2">
+      <div className="lg:w-full">
         {view === "detail" && selectedApp ? (
           <AppDetailView app={selectedApp} onBack={() => setView("list")} />
         ) : (
