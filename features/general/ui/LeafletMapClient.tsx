@@ -77,18 +77,20 @@ export default function LeafletMapClient({
   }, [hasValidLocation]);
 
   return (
-    <div className="relative h-full w-full min-h-[400px]">
+    <div className="relative h-full min-h-[400px] w-full">
       <MapContainer
         center={center}
         zoom={zoom}
         scrollWheelZoom={false}
-        attributionControl={false}
+        attributionControl={true}
         style={{ height: "100%", width: "100%", minHeight: "400px" }}
         className="z-0 h-full w-full"
       >
         <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          maxZoom={19}
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          subdomains="abcd"
+          maxZoom={20}
         />
 
         <MapViewController center={center} zoom={zoom} />
@@ -96,7 +98,8 @@ export default function LeafletMapClient({
         <Marker position={center} icon={markerIcon}>
           <Popup>
             <div className="p-1 text-xs font-semibold text-slate-800">
-              {popupText || (hasValidLocation ? "Last known location" : "Default location (no GPS data)")}
+              {popupText ||
+                (hasValidLocation ? "Last known location" : "Default location (no GPS data)")}
             </div>
           </Popup>
         </Marker>
@@ -111,7 +114,15 @@ export default function LeafletMapClient({
           }
         }
         .leaflet-control-attribution {
-          display: none !important;
+          font-size: 9px !important;
+          color: #64748b !important;
+          background: rgba(255, 255, 255, 0.7) !important;
+          padding: 1px 5px !important;
+          border-radius: 3px 0 0 0;
+        }
+        .leaflet-control-attribution a {
+          color: #64748b !important;
+          text-decoration: none !important;
         }
       `}</style>
     </div>
