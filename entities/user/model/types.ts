@@ -38,6 +38,9 @@ export interface AuthUserProfile {
   email: string;
   role: "USER" | "ADMIN";
   businessRole: BusinessRole | null;
+  businessType?: string | null;
+  isDefaultPasswordChanged?: boolean;
+  isInvited?: boolean;
   parentId: string | null;
   businessId: string | null;
   zoneId: string | null;
