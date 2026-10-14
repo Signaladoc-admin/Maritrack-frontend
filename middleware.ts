@@ -125,6 +125,20 @@ export async function middleware(req: NextRequest) {
         const isEmailVerified = req.cookies.get("isEmailVerified")?.value === "true";
         if (!isEmailVerified) return NextResponse.next();
 
+        // Check if RETAILER_ADMIN must change default password
+        const businessRole =
+          ((payload as any).businessRole as string | null | undefined) ||
+          req.cookies.get("businessRole")?.value;
+        const cookiePasswordChanged = req.cookies.get("isDefaultPasswordChanged")?.value;
+        const isDefaultPasswordChanged =
+          cookiePasswordChanged !== undefined
+            ? cookiePasswordChanged === "true"
+            : Boolean((payload as any).isDefaultPasswordChanged);
+
+        if (businessRole === "RETAILER_ADMIN" && !isDefaultPasswordChanged) {
+          return NextResponse.redirect(new URL("/change-password", req.url));
+        }
+
         // Redirect back to the page the user came from, if it's a safe same-origin route
         const referer = req.headers.get("referer");
         if (referer) {
@@ -167,7 +181,9 @@ export async function middleware(req: NextRequest) {
   try {
     const payload = decodeJwt(token);
     const userRole = (payload as any).role as string | undefined;
-    const businessRole = (payload as any).businessRole as string | null | undefined;
+    const businessRole =
+      ((payload as any).businessRole as string | null | undefined) ||
+      req.cookies.get("businessRole")?.value;
     const appRole = businessRole ? "BUSINESS" : "PARENT";
     const isOnboarded = req.cookies.get("isOnboarded")?.value === "true";
     const isEmailVerified = req.cookies.get("isEmailVerified")?.value === "true";
@@ -187,6 +203,20 @@ export async function middleware(req: NextRequest) {
       }
 
       return NextResponse.redirect(new URL(confirmEmailPath, req.url));
+    }
+
+    // 5b. Default password change gate for RETAILER_ADMIN
+    const cookiePasswordChanged = req.cookies.get("isDefaultPasswordChanged")?.value;
+    const isDefaultPasswordChanged =
+      cookiePasswordChanged !== undefined
+        ? cookiePasswordChanged === "true"
+        : Boolean((payload as any).isDefaultPasswordChanged);
+
+    if (businessRole === "RETAILER_ADMIN" && !isDefaultPasswordChanged) {
+      if (pathname === "/change-password") {
+        return NextResponse.next();
+      }
+      return NextResponse.redirect(new URL("/change-password", req.url));
     }
 
     // 5. Onboarding routing — skip entirely for invited business staff
