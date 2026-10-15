@@ -7,10 +7,16 @@ import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
 import { useState } from "react";
 import { toast } from "sonner";
 import ReassignDeviceModal from "@/features/business-users/users/ui/ReassignDeviceModal";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 const DeviceActions = () => {
+  const { user } = useAuth();
   const params = useParams<{ device: string }>();
   const deviceId = params?.device || "";
+
+  if (user?.businessRole === "RETAILER_ADMIN") {
+    return null;
+  }
 
   const lockDeviceMutation = useLockDevice();
   const unlockDeviceMutation = useUnlockDevice();

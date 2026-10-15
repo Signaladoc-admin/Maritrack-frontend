@@ -90,14 +90,17 @@ const Device = () => {
   });
   const zoneName = (deviceDetails as any)?.zone?.name || businessZone?.name || "-";
 
+  const isRetailerAdmin = user?.businessRole === "RETAILER_ADMIN";
   const initialTab = searchParams?.get("tab") || "general";
-  const normalizedInitialTab = initialTab === "app-control" ? "appcontrol" : initialTab;
+  const rawInitialTab = initialTab === "app-control" ? "appcontrol" : initialTab;
+  const normalizedInitialTab = isRetailerAdmin && rawInitialTab === "actions" ? "general" : rawInitialTab;
   const [activeTab, setActiveTab] = useState(normalizedInitialTab);
   const [showDelete, setShowDelete] = useState(false);
   const [showMarkAsReturned, setShowMarkAsReturned] = useState(false);
   const [showReassign, setShowReassign] = useState(false);
 
   const handleTabChange = (tab: string) => {
+    if (isRetailerAdmin && tab === "actions") return;
     setActiveTab(tab);
     const deviceId = params?.device || "device-id";
     try {
@@ -182,7 +185,7 @@ const Device = () => {
                 <path d="M3.5 9a9 9 0 0114.85-3.36L23 10M1 14l4.65 4.36A9 9 0 0020.5 15" />
               </svg>
             </button>
-            {user?.appRole === "BUSINESS" && (
+            {user?.appRole === "BUSINESS" && !isRetailerAdmin && (
               <>
                 {deviceDetails?.assignmentStatus === "RETURNED" ? (
                   <button
@@ -422,22 +425,24 @@ const Device = () => {
           </svg>
           Configuration
         </button>
-        <button
-          className={cn("dd-tab-item", activeTab === "actions" && "active")}
-          onClick={() => handleTabChange("actions")}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+        {!isRetailerAdmin && (
+          <button
+            className={cn("dd-tab-item", activeTab === "actions" && "active")}
+            onClick={() => handleTabChange("actions")}
           >
-            <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" />
-          </svg>
-          Actions
-        </button>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" />
+            </svg>
+            Actions
+          </button>
+        )}
       </div>
 
       <div className="dd-content">
@@ -460,7 +465,7 @@ const Device = () => {
             />
           </div>
         )}
-        {activeTab === "actions" && <DeviceActions />}
+        {!isRetailerAdmin && activeTab === "actions" && <DeviceActions />}
       </div>
 
       <ConfirmationModal

@@ -389,6 +389,102 @@ textarea {
   height: 15px;
 }
 
+/* Chip buttons (used on card actions like Reports Generate and table headers) */
+.btn-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm, 8px);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid var(--card-line);
+  background: var(--card-fill);
+  color: var(--text-1);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root .btn-chip,
+.dark .btn-chip {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+:root .btn-chip:hover:not(:disabled),
+.dark .btn-chip:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+}
+
+:root .btn-chip:active:not(:disabled),
+.dark .btn-chip:active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(1px);
+}
+
+.light .btn-chip {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.light .btn-chip:hover:not(:disabled) {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+  color: #020617;
+}
+
+.light .btn-chip:active:not(:disabled) {
+  background: #cbd5e1;
+  transform: translateY(1px);
+}
+
+.btn-chip:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-chip-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm, 8px);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  background: var(--accent);
+  color: var(--primary-fg, #ffffff);
+  border: 1px solid transparent;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-chip-primary:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-chip-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-chip-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-chip-primary svg {
+  width: 14px;
+  height: 14px;
+}
+
 /* card surface, used everywhere: stat cards, panels, table.
      Elevation comes from a tonal fill + a crisp hairline border — no shadow. */
 .surface {
