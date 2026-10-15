@@ -8,6 +8,8 @@ import { useGetStaffMember } from "@/entities/business/model/useStaffMembers";
 import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 import { DeviceHardwareDetails, MDMDeviceDetailsResponse } from "@/features/device/types";
 import { BusinessStaff } from "@/entities/business/types";
+import { useAuth } from "@/shared/auth/AuthProvider";
+import { BusinessRole } from "@/entities/user/model/user.schema";
 
 export type AssociatedDevice = DeviceHardwareDetails & {
   mdmLastSyncAt: string;
@@ -15,6 +17,7 @@ export type AssociatedDevice = DeviceHardwareDetails & {
 };
 
 export default function AssociatedDevicesTable({ staffId }: { staffId?: string }) {
+  const { user } = useAuth();
   const {
     data: staffMember,
     isPending: isStaffMemberPending,
@@ -59,7 +62,10 @@ export default function AssociatedDevicesTable({ staffId }: { staffId?: string }
   return (
     <>
       <DevicesTable
-        columns={getAssociatedDevicesColumns(handleOpenReassignDeviceModal)}
+        columns={getAssociatedDevicesColumns(
+          handleOpenReassignDeviceModal,
+          user?.businessRole as BusinessRole
+        )}
         data={staffHasDevice ? [device] : []}
         isLoading={isStaffMemberPending || isHardwarePending}
       />

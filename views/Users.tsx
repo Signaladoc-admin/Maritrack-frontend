@@ -30,6 +30,7 @@ import { Dialog, DialogContent } from "@/shared/ui/Modal/dialog";
 import { useIsOrganizationAdmin } from "@/features/business-users/users/model/useIsOrganizationAdmin";
 import Pagination from "@/shared/ui/Table/Pagination";
 import { useGetFullBusinessDetails } from "@/features/onboarding/business/model/useGetBusinessDetails";
+import { useAuth } from "@/shared/auth/AuthProvider";
 
 function ActionButtons({
   onOpenQrPairing,
@@ -55,6 +56,8 @@ function ActionButtons({
 }
 
 export default function Users() {
+  const { user } = useAuth();
+  const isRetailerAdmin = user?.businessRole === "RETAILER_ADMIN";
   const [search, setSearch] = useQueryState("search", { defaultValue: "" });
   const [currentPage, setCurrentPage] = useQueryState("currentPage", {
     defaultValue: 1,
@@ -149,37 +152,39 @@ export default function Users() {
             <h1>Device users</h1>
             <p>Assign devices to staff, departments, or specific locations.</p>
           </div>
-          <div className="actions">
-            <button className="btn-secondary cursor-pointer">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Import
-            </button>
-            <button
-              className="btn-primary cursor-pointer"
-              onClick={() => {
-                setIsAddEditModalOpen(true);
-                setSelectedId("");
-              }}
-            >
-              <svg viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 5v14M5 12h14"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                />
-              </svg>
-              New user
-            </button>
-          </div>
+          {!isRetailerAdmin && (
+            <div className="actions">
+              <button className="btn-secondary cursor-pointer">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                Import
+              </button>
+              <button
+                className="btn-primary cursor-pointer"
+                onClick={() => {
+                  setIsAddEditModalOpen(true);
+                  setSelectedId("");
+                }}
+              >
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 5v14M5 12h14"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                New user
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -257,11 +262,13 @@ export default function Users() {
                     onTabChange={setSelectedUserSubTab}
                     itemClassName="px-4"
                   />
-                  <ActionButtons
-                    onOpenQrPairing={() => setShowQrPairing(true)}
-                    onEdit={() => setIsAddEditModalOpen(true)}
-                    onDelete={() => setIsConfirmationModalOpen(true)}
-                  />
+                  {!isRetailerAdmin && (
+                    <ActionButtons
+                      onOpenQrPairing={() => setShowQrPairing(true)}
+                      onEdit={() => setIsAddEditModalOpen(true)}
+                      onDelete={() => setIsConfirmationModalOpen(true)}
+                    />
+                  )}
                 </div>
                 <div>
                   {selectedUserSubTab === "user-details" && (
@@ -275,23 +282,27 @@ export default function Users() {
             )}
             {selectedTab === "departments" && (
               <div className="space-y-4">
-                <div className="flex justify-end">
-                  <ActionButtons
-                    onEdit={() => setIsAddEditModalOpen(true)}
-                    onDelete={() => setIsConfirmationModalOpen(true)}
-                  />
-                </div>
+                {!isRetailerAdmin && (
+                  <div className="flex justify-end">
+                    <ActionButtons
+                      onEdit={() => setIsAddEditModalOpen(true)}
+                      onDelete={() => setIsConfirmationModalOpen(true)}
+                    />
+                  </div>
+                )}
                 <DepartmentDetails departmentId={selectedId} />
               </div>
             )}
             {selectedTab === "locations" && (
               <div className="space-y-4">
-                <div className="flex justify-end">
-                  <ActionButtons
-                    onEdit={() => setIsAddEditModalOpen(true)}
-                    onDelete={() => setIsConfirmationModalOpen(true)}
-                  />
-                </div>
+                {!isRetailerAdmin && (
+                  <div className="flex justify-end">
+                    <ActionButtons
+                      onEdit={() => setIsAddEditModalOpen(true)}
+                      onDelete={() => setIsConfirmationModalOpen(true)}
+                    />
+                  </div>
+                )}
                 <LocationDetails locationId={selectedId!} />
               </div>
             )}
@@ -300,17 +311,17 @@ export default function Users() {
       )}
 
       <AddEditUserDetailsModal
-        open={selectedTab === "users" && isAddEditModalOpen}
+        open={!isRetailerAdmin && selectedTab === "users" && isAddEditModalOpen}
         onOpenChange={setIsAddEditModalOpen}
         selectedId={selectedId}
       />
       <AddEditDepartmentModal
-        open={selectedTab === "departments" && isAddEditModalOpen}
+        open={!isRetailerAdmin && selectedTab === "departments" && isAddEditModalOpen}
         onOpenChange={setIsAddEditModalOpen}
         selectedId={selectedId}
       />
       <AddEditLocationModal
-        open={selectedTab === "locations" && isAddEditModalOpen}
+        open={!isRetailerAdmin && selectedTab === "locations" && isAddEditModalOpen}
         onOpenChange={setIsAddEditModalOpen}
         selectedId={selectedId}
       />

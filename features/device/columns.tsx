@@ -39,6 +39,10 @@ export function getDevicesColumns(
             <div className="who">{`${item.currentUser?.firstName} ${item.currentUser?.lastName}`}</div>
             <div className="email">{item.currentUser?.email}</div>
           </>
+        ) : businessRole === "RETAILER_ADMIN" ? (
+          <span className="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
+            Unassigned
+          </span>
         ) : (
           <Button
             type="button"
@@ -100,7 +104,8 @@ export function getDevicesColumns(
   return devicesColumns;
 }
 export function getAssociatedDevicesColumns(
-  handleOpenReassignDeviceModal: (device: DeviceHardwareDetails & { mdmLastSyncAt: string }) => void
+  handleOpenReassignDeviceModal: (device: DeviceHardwareDetails & { mdmLastSyncAt: string }) => void,
+  businessRole?: BusinessRole
 ) {
   const devicesColumns: TableColumn<DeviceHardwareDetails & { mdmLastSyncAt: string }>[] = [
     {
@@ -130,7 +135,10 @@ export function getAssociatedDevicesColumns(
       label: "Last synced",
       render: (item) => <p>{formatDate(new Date(item.mdmLastSyncAt))}</p>,
     },
-    {
+  ];
+
+  if (businessRole !== "RETAILER_ADMIN") {
+    devicesColumns.push({
       key: "",
       label: "Action",
       render: (item) => (
@@ -145,8 +153,8 @@ export function getAssociatedDevicesColumns(
           Reassign
         </Button>
       ),
-    },
-  ];
+    });
+  }
 
   return devicesColumns;
 }

@@ -22,6 +22,8 @@ const roleAccessMap: Record<string, string[]> = {
     "/devices/*",
     "/plans",
     "/plans/*",
+    "/reports",
+    "/reports/*",
   ],
   PARENT: [
     "/dashboard",
@@ -157,7 +159,8 @@ export async function middleware(req: NextRequest) {
           }
         }
 
-        return NextResponse.redirect(new URL("/dashboard", req.url));
+        const targetDashboard = businessRole === "RETAILER_ADMIN" ? "/devices" : "/dashboard";
+        return NextResponse.redirect(new URL(targetDashboard, req.url));
       } catch {
         // Invalid/expired token — let the user through to the auth page
         return NextResponse.next();
@@ -240,7 +243,8 @@ export async function middleware(req: NextRequest) {
     }
 
     if (isOnboarded && pathname.startsWith("/onboarding")) {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
+      const targetDashboard = businessRole === "RETAILER_ADMIN" ? "/devices" : "/dashboard";
+      return NextResponse.redirect(new URL(targetDashboard, req.url));
     }
 
     // 6. Business-only route guard
@@ -252,6 +256,33 @@ export async function middleware(req: NextRequest) {
     }
 
     // 7. Role-based access
+    if (businessRole === "RETAILER_ADMIN") {
+      const retailerAdminAllowedRoutes = [
+        "/devices",
+        "/devices/*",
+        "/reports",
+        "/reports/*",
+        "/users",
+        "/users/*",
+        "/change-password",
+        "/profile",
+      ];
+
+      const isAllowed = retailerAdminAllowedRoutes.some((route) => {
+        if (route.endsWith("/*")) {
+          const baseRoute = route.slice(0, -2);
+          return pathname === baseRoute || pathname.startsWith(baseRoute + "/");
+        }
+        return pathname === route;
+      });
+
+      if (!isAllowed) {
+        return NextResponse.redirect(new URL("/devices", req.url));
+      }
+
+      return NextResponse.next();
+    }
+
     if (!canAccess(appRole, pathname)) {
       const otherRole = appRole === "BUSINESS" ? "PARENT" : "BUSINESS";
       if (canAccess(otherRole, pathname)) {

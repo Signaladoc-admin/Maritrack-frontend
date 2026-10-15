@@ -328,7 +328,7 @@ const General = ({
               <div className="tk">Restrictions</div>
               <div className="tv">Standard Policy</div>
             </div>
-            {onOpenReassign && (
+            {onOpenReassign && user?.businessRole !== "RETAILER_ADMIN" && (
               <button
                 type="button"
                 className="dd-action-btn primary"

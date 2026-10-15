@@ -82,6 +82,7 @@ export default function DevicesList() {
   const { refetch: refetchExport, isFetching: exporting } = useExportDevices({ enabled: false });
 
   const { user } = useAuth();
+  const isRetailerAdmin = user?.businessRole === "RETAILER_ADMIN";
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -162,7 +163,14 @@ export default function DevicesList() {
       <div className="page-head">
         <div className="page-head-row">
           <div>
-            <h1>Devices</h1>
+            <div className="flex items-center gap-3">
+              <h1>Devices</h1>
+              {devicesRes?.total !== undefined && (
+                <span className="rounded-full bg-[var(--accent-tint)] px-2.5 py-0.5 text-xs font-bold text-[var(--accent)]">
+                  {devicesRes.total} total
+                </span>
+              )}
+            </div>
             <p>Manage every device financed, leased, or issued to your fleet.</p>
           </div>
           <button className="btn-primary cursor-pointer" onClick={handleNewDevice}>
@@ -186,7 +194,7 @@ export default function DevicesList() {
               className={cn("tab", selectedTab === "ALL" && "active")}
               onClick={() => setSelectedTab("ALL")}
             >
-              All assets
+              All assets{devicesRes?.total !== undefined ? ` (${devicesRes.total})` : ""}
             </button>
             <button
               className={cn("tab", selectedTab === "RETURNED" && "active")}
@@ -279,90 +287,92 @@ export default function DevicesList() {
               {exporting ? <Loader /> : <DownloadCloud size={16} />}
             </button>
 
-            <div className="dropdown-wrap">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="icon-btn-square cursor-pointer" aria-label="Bulk actions">
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                    >
-                      <circle cx="12" cy="5" r="1.4" />
-                      <circle cx="12" cy="12" r="1.4" />
-                      <circle cx="12" cy="19" r="1.4" />
-                    </svg>
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 p-2">
-                  <DropdownMenuGroup>
-                    <DropdownMenuLabel className="text-[11px] font-semibold tracking-wider text-[var(--text-3)] uppercase">
-                      Messaging
-                    </DropdownMenuLabel>
-                    <DropdownMenuItem
-                      className="cursor-pointer py-2 flex items-center gap-2 text-xs"
-                      onClick={handleBulkMessageClick}
-                    >
-                      <MessageSquare className="h-4 w-4 text-[var(--text-2)]" />
-                      <span>Bulk message</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                  <DropdownMenuSeparator className="my-1 border-[var(--card-line)]" />
-                  <DropdownMenuGroup>
-                    <DropdownMenuLabel className="mt-1 text-[11px] font-semibold tracking-wider text-[var(--text-3)] uppercase">
-                      General Actions
-                    </DropdownMenuLabel>
-                    <DropdownMenuItem
-                      className="cursor-pointer py-2 flex items-center gap-2 text-xs"
-                      onClick={handleLockDeviceClick}
-                    >
-                      <Lock className="h-4 w-4 text-[var(--text-2)]" />
-                      <span>Lock device</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="cursor-pointer py-2 flex items-center gap-2 text-xs"
-                      onClick={handleUnlockDeviceClick}
-                    >
-                      <Unlock className="h-4 w-4 text-[var(--text-2)]" />
-                      <span>Unlock device</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="cursor-pointer py-2 flex items-center gap-2 text-xs text-[var(--coral)] focus:text-[var(--coral)]"
-                      onClick={handleWipeDeviceClick}
-                    >
-                      <Trash2 className="h-4 w-4 text-[var(--coral)]" />
-                      <span>Wipe device</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                  <DropdownMenuSeparator className="my-1 border-[var(--card-line)]" />
-                  <DropdownMenuGroup>
-                    <DropdownMenuLabel className="mt-1 text-[11px] font-semibold tracking-wider text-[var(--text-3)] uppercase">
-                      App Management
-                    </DropdownMenuLabel>
-                    <DropdownMenuItem
-                      className="cursor-pointer py-2 flex items-center gap-2 text-xs"
-                      onClick={handleSuspendAppsClick}
-                    >
-                      <Ban className="h-4 w-4 text-[var(--text-2)]" />
-                      <span>Suspend apps</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="cursor-pointer py-2 flex items-center gap-2 text-xs"
-                      onClick={handleUnsuspendAppsClick}
-                    >
-                      <Layers className="h-4 w-4 text-[var(--text-2)]" />
-                      <span>Unsuspend apps</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            {!isRetailerAdmin && (
+              <div className="dropdown-wrap">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="icon-btn-square cursor-pointer" aria-label="Bulk actions">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                      >
+                        <circle cx="12" cy="5" r="1.4" />
+                        <circle cx="12" cy="12" r="1.4" />
+                        <circle cx="12" cy="19" r="1.4" />
+                      </svg>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 p-2">
+                    <DropdownMenuGroup>
+                      <DropdownMenuLabel className="text-[11px] font-semibold tracking-wider text-[var(--text-3)] uppercase">
+                        Messaging
+                      </DropdownMenuLabel>
+                      <DropdownMenuItem
+                        className="cursor-pointer py-2 flex items-center gap-2 text-xs"
+                        onClick={handleBulkMessageClick}
+                      >
+                        <MessageSquare className="h-4 w-4 text-[var(--text-2)]" />
+                        <span>Bulk message</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator className="my-1 border-[var(--card-line)]" />
+                    <DropdownMenuGroup>
+                      <DropdownMenuLabel className="mt-1 text-[11px] font-semibold tracking-wider text-[var(--text-3)] uppercase">
+                        General Actions
+                      </DropdownMenuLabel>
+                      <DropdownMenuItem
+                        className="cursor-pointer py-2 flex items-center gap-2 text-xs"
+                        onClick={handleLockDeviceClick}
+                      >
+                        <Lock className="h-4 w-4 text-[var(--text-2)]" />
+                        <span>Lock device</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="cursor-pointer py-2 flex items-center gap-2 text-xs"
+                        onClick={handleUnlockDeviceClick}
+                      >
+                        <Unlock className="h-4 w-4 text-[var(--text-2)]" />
+                        <span>Unlock device</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="cursor-pointer py-2 flex items-center gap-2 text-xs text-[var(--coral)] focus:text-[var(--coral)]"
+                        onClick={handleWipeDeviceClick}
+                      >
+                        <Trash2 className="h-4 w-4 text-[var(--coral)]" />
+                        <span>Wipe device</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator className="my-1 border-[var(--card-line)]" />
+                    <DropdownMenuGroup>
+                      <DropdownMenuLabel className="mt-1 text-[11px] font-semibold tracking-wider text-[var(--text-3)] uppercase">
+                        App Management
+                      </DropdownMenuLabel>
+                      <DropdownMenuItem
+                        className="cursor-pointer py-2 flex items-center gap-2 text-xs"
+                        onClick={handleSuspendAppsClick}
+                      >
+                        <Ban className="h-4 w-4 text-[var(--text-2)]" />
+                        <span>Suspend apps</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="cursor-pointer py-2 flex items-center gap-2 text-xs"
+                        onClick={handleUnsuspendAppsClick}
+                      >
+                        <Layers className="h-4 w-4 text-[var(--text-2)]" />
+                        <span>Unsuspend apps</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
           </div>
         </div>
 
-        {bulkActionMode && (
+        {!isRetailerAdmin && bulkActionMode && (
           <BulkActionBar
             selectedCount={selectedDevices.length}
             totalCount={devices.length}
@@ -422,7 +432,7 @@ export default function DevicesList() {
           totalPages={totalPages}
           onPageChange={handlePageChange}
           isLoading={isDevicesPending}
-          selectable={true}
+          selectable={!isRetailerAdmin}
           onRowSelect={(selected) => setSelectedDevices(selected as StaffDevice[])}
           clearSelectionTrigger={clearSelectionTrigger}
         />

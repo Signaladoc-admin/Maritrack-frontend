@@ -60,6 +60,8 @@ export default function LoginForm() {
 
       if (isRetailerAdmin && !isDefaultPasswordChanged) {
         router.push("/change-password");
+      } else if (isRetailerAdmin) {
+        router.push("/devices");
       } else if (user?.isFirstLogin && user?.isInvited) {
         router.push("/change-password");
       } else {
