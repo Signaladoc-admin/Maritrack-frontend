@@ -54,9 +54,13 @@ export default function LoginForm() {
       clearCredentials();
       if (user?.parentId) setParentId(user.parentId);
 
-      // First-login invited staff are on a default password — send them to change it first.
-      // They can still skip via "Sign out"; on their next login `isFirstLogin` is false.
-      if (user?.isFirstLogin && user?.isInvited) {
+      // RETAILER_ADMIN must change their default password before accessing the dashboard
+      const isRetailerAdmin = user?.businessRole === "RETAILER_ADMIN";
+      const isDefaultPasswordChanged = user?.isDefaultPasswordChanged ?? true;
+
+      if (isRetailerAdmin && !isDefaultPasswordChanged) {
+        router.push("/change-password");
+      } else if (user?.isFirstLogin && user?.isInvited) {
         router.push("/change-password");
       } else {
         router.push("/dashboard");

@@ -13,7 +13,11 @@ export function ChangePasswordView() {
 
   return (
     <div className="mx-auto max-w-md">
-      <ChangePasswordForm onSuccess={() => router.push("/dashboard")} />
+      <ChangePasswordForm
+        onSuccess={() => {
+          window.location.href = "/dashboard";
+        }}
+      />
     </div>
   );
 }

@@ -12,12 +12,14 @@ export const BUSINESS_ROLES = [
   "ORGANIZATION_ADMIN",
   "DEVICE_MANAGER",
   "DEPARTMENT_MANAGER",
+  "RETAILER_ADMIN",
 ] as const;
 
 export const BusinessRoleEnum = {
   ORGANIZATION_ADMIN: "ORGANIZATION_ADMIN",
   DEVICE_MANAGER: "DEVICE_MANAGER",
   DEPARTMENT_MANAGER: "DEPARTMENT_MANAGER",
+  RETAILER_ADMIN: "RETAILER_ADMIN",
 } as const;
 
 export type BusinessRoleEnum = (typeof BusinessRoleEnum)[keyof typeof BusinessRoleEnum];
