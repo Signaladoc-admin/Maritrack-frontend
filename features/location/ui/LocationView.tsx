@@ -37,6 +37,8 @@ export function LocationView({ deviceId }: { deviceId: string }) {
   let lat: number | undefined = undefined;
   let lon: number | undefined = undefined;
 
+  console.log('location: ', hardwareData)
+
   if (location && typeof location === "object") {
     const rawLat = (location as any).latitude ?? (location as any).lat;
     const rawLon = (location as any).longitude ?? (location as any).lng ?? (location as any).lon;
@@ -49,7 +51,7 @@ export function LocationView({ deviceId }: { deviceId: string }) {
       const rawLon = parsed.longitude ?? parsed.lng ?? parsed.lon;
       if (typeof rawLat === "number" && !isNaN(rawLat)) lat = rawLat;
       if (typeof rawLon === "number" && !isNaN(rawLon)) lon = rawLon;
-    } catch {}
+    } catch { }
   }
 
   // organizationName: business name for business accounts, child's name for parent accounts.
