@@ -41,13 +41,13 @@ ENV HOSTNAME=0.0.0.0
 RUN addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 nextjs
 
-# Copy standalone server + static assets
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/.next/cache ./.next/cache
+# Set the correct permission for prerender cache
+RUN mkdir -p /app/.next/cache && chown -R nextjs:nodejs /app/.next
 
-RUN chown -R nextjs:nodejs /app/.next
+# Copy standalone server + static assets
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 EXPOSE 3000
