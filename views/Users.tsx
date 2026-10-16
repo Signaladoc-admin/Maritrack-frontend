@@ -24,6 +24,7 @@ import AddEditLocationModal from "@/features/business-users/locations/ui/AddEdit
 import { useDeleteLocation } from "@/features/business-users/locations/model/useLocations";
 import { useDebounce } from "use-debounce";
 import AssociatedDevicesTable from "@/features/business-users/users/ui/AssociatedDevicesTable";
+import InstallmentsTable from "@/features/business-users/users/ui/InstallmentsTable";
 import { useSearchParams } from "next/navigation";
 import BusinessUserPairingQR from "@/features/business-users/users/ui/BusinessUserPairingQR";
 import { Dialog, DialogContent } from "@/shared/ui/Modal/dialog";
@@ -31,6 +32,7 @@ import { useIsOrganizationAdmin } from "@/features/business-users/users/model/us
 import Pagination from "@/shared/ui/Table/Pagination";
 import { useGetFullBusinessDetails } from "@/features/onboarding/business/model/useGetBusinessDetails";
 import { useAuth } from "@/shared/auth/AuthProvider";
+import { isDeviceFinancingOrRetailerRole } from "@/entities/user/model/user.schema";
 
 function ActionButtons({
   onOpenQrPairing,
@@ -83,7 +85,9 @@ export default function Users() {
     setShowQrPairing(false);
   }, [selectedId, selectedUserSubTab]);
 
-  const isDeviceFinance = (business?.profile as any)?.type === "DEVICE_FINANCING";
+  const isDeviceFinance =
+    isDeviceFinancingOrRetailerRole(user?.businessRole) ||
+    (business?.profile as any)?.type === "DEVICE_FINANCING";
 
   const availableTabs = isDeviceFinance
     ? [{ label: "Users", value: "users" }]
@@ -254,10 +258,18 @@ export default function Users() {
                 <div className="flex items-center justify-between">
                   <TabNavigation
                     className="w-fit"
-                    tabs={[
-                      { label: "User details", value: "user-details" },
-                      { label: "Associated device", value: "associated-device" },
-                    ]}
+                    tabs={
+                      isDeviceFinance
+                        ? [
+                            { label: "User details", value: "user-details" },
+                            { label: "Installment schedule", value: "installments" },
+                            { label: "Associated device", value: "associated-device" },
+                          ]
+                        : [
+                            { label: "User details", value: "user-details" },
+                            { label: "Associated device", value: "associated-device" },
+                          ]
+                    }
                     activeTab={selectedUserSubTab}
                     onTabChange={setSelectedUserSubTab}
                     itemClassName="px-4"
@@ -273,6 +285,9 @@ export default function Users() {
                 <div>
                   {selectedUserSubTab === "user-details" && (
                     <UserDetails selectedId={selectedId!} />
+                  )}
+                  {selectedUserSubTab === "installments" && (
+                    <InstallmentsTable staffId={selectedId!} />
                   )}
                   {selectedUserSubTab === "associated-device" && (
                     <AssociatedDevicesTable staffId={selectedId!} />

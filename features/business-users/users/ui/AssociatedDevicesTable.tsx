@@ -10,6 +10,7 @@ import { DeviceHardwareDetails, MDMDeviceDetailsResponse } from "@/features/devi
 import { BusinessStaff } from "@/entities/business/types";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { BusinessRole } from "@/entities/user/model/user.schema";
+import { Smartphone } from "lucide-react";
 
 export type AssociatedDevice = DeviceHardwareDetails & {
   mdmLastSyncAt: string;
@@ -59,8 +60,48 @@ export default function AssociatedDevicesTable({ staffId }: { staffId?: string }
     await Promise.all([refetchStaffMember(), refetchDeviceDetail()]);
   }
 
+  const financing = staffMember?.onDeviceFinancing || staffMember?.deviceFinancing;
+
   return (
     <>
+      {!staffHasDevice && financing && (
+        <div className="rounded-2xl border border-[var(--card-line)] bg-[var(--card-fill)] p-5 space-y-4 mb-5">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Smartphone className="size-5" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-foreground text-sm">
+                Financed Device Assigned ({financing.deviceBrand} {financing.deviceModel})
+              </h4>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {[financing.deviceType, financing.deviceColour, financing.deviceMemory, financing.deviceRam]
+                  .filter(Boolean)
+                  .join(" • ")}
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs pt-3 border-t border-[var(--card-line)]">
+            <div>
+              <span className="text-muted-foreground block text-[11px]">Enrollment Status</span>
+              <span className="font-semibold text-amber-400">Pending Agent Enrolment</span>
+            </div>
+            <div>
+              <span className="text-muted-foreground block text-[11px]">Activation Code</span>
+              <span className="font-mono font-medium text-foreground">
+                {staffMember?.activationCode?.code || "N/A"}
+              </span>
+            </div>
+            <div>
+              <span className="text-muted-foreground block text-[11px]">Financing Plan</span>
+              <span className="font-medium text-foreground">
+                {financing.paymentPlanDuration} Months ({financing.paymentStatus || "PENDING"})
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <DevicesTable
         columns={getAssociatedDevicesColumns(
           handleOpenReassignDeviceModal,
