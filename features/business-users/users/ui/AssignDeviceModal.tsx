@@ -58,7 +58,10 @@ export default function AssignDeviceModal({
     search: debouncedSearchTerm,
   });
 
-  const staffMembers: BusinessStaff[] = staffMembersData?.data?.staff ?? [];
+  const dataPayload = staffMembersData?.data as any;
+  const staffMembers: BusinessStaff[] = Array.isArray(dataPayload)
+    ? dataPayload
+    : (dataPayload?.staff || dataPayload?.deviceFinanceUsers || []);
 
   const staffMemberOptions = staffMembers.map((s) => ({
     value: s.id,
