@@ -151,6 +151,7 @@ export default function BusinessPairingQR({
             isError={isError}
             statusLabel="Live Enrollment Key"
             className="h-full justify-center p-6"
+            allowEnlarge
           />
 
           {/* Action buttons */}
