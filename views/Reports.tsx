@@ -232,65 +232,6 @@ export default function Reports() {
           </button>
         </div>
       </div>
-
-      <div className="surface table-panel overflow-x-auto">
-        <div className="table-head-row flex items-center justify-between p-4">
-          <h3 className="text-base font-semibold text-[var(--text-1)]">Scheduled reports</h3>
-          <button
-            className="btn-chip-primary inline-flex cursor-pointer items-center gap-1.5 font-medium"
-            onClick={() => {
-              toast({
-                title: "Scheduled Reports",
-                message: "Configuring custom schedules is managed by organization admin.",
-                type: "info",
-              });
-            }}
-          >
-            <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
-              <path
-                d="M12 5v14M5 12h14"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-              />
-            </svg>
-            New schedule
-          </button>
-        </div>
-        <table className="w-full">
-          <thead>
-            <tr>
-              <th className="text-left font-medium">Report</th>
-              <th className="text-left font-medium">Frequency</th>
-              <th className="text-left font-medium">Recipients</th>
-              <th className="text-left font-medium">Last run</th>
-              <th className="text-left font-medium">Active</th>
-            </tr>
-          </thead>
-          <tbody>
-            {scheduledReports.map((report) => (
-              <tr key={report.id}>
-                <td>
-                  <div className="name font-medium text-[var(--text-1)]">{report.name}</div>
-                </td>
-                <td className="mono text-sm text-[var(--text-2)]">{report.frequency}</td>
-                <td className="mono text-sm text-[var(--text-2)]">{report.recipients}</td>
-                <td className="mono text-sm text-[var(--text-2)]">{report.lastRun}</td>
-                <td>
-                  <label className="switch cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={report.active}
-                      onChange={() => toggleSchedule(report.id)}
-                    />
-                    <span className="track"></span>
-                  </label>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
     </section>
   );
 }

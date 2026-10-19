@@ -95,6 +95,7 @@ export function PairDeviceModal({
               description="Scan this QR Code on your child’s device to pair"
               statusLabel="Ready to pair"
               className="h-full justify-center p-6"
+              allowEnlarge
             />
 
             {/* Action Buttons */}
