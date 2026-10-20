@@ -3131,3 +3131,10 @@ tbody tr:hover {
     grid-column: span 1;
   }
 }
+
+.qr-crisp-image {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+

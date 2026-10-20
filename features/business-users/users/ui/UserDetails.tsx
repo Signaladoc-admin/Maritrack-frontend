@@ -14,11 +14,22 @@ import {
   Building2,
   Calendar,
   ShieldCheck,
+  QrCode,
 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
+import { QRCodeCard } from "@/shared/ui/cards/qr-code-card";
+import { useQrCode } from "@/features/mdm-sync/model/useQrCode";
 
 export default function UserDetails({ selectedId }: { selectedId: string }) {
   const { data: staffMember, isLoading } = useGetStaffMember(selectedId!);
+  const {
+    qrCodeSrc,
+    isLoading: isQrLoading,
+    isPending: isQrPending,
+    isError: isQrError,
+    refetch: refetchQr,
+  } = useQrCode(selectedId!);
+  const isGeneratingQr = isQrLoading || isQrPending;
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   function getValue(value: string | undefined | null) {
@@ -184,8 +195,8 @@ export default function UserDetails({ selectedId }: { selectedId: string }) {
           </div>
         </div>
 
-        {/* Financed Device & Retailer Row */}
-        <div className="grid md:grid-cols-2 gap-4">
+        {/* Financed Device, Retailer & Pairing QR Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Financed Device Card */}
           <div className="rounded-2xl border border-[var(--card-line)] bg-[var(--card-fill)] p-5 space-y-4">
             <div className="flex items-center gap-2 pb-3 border-b border-[var(--card-line)]">
@@ -270,6 +281,30 @@ export default function UserDetails({ selectedId }: { selectedId: string }) {
             ) : (
               <p className="text-xs text-muted-foreground">No retailer assigned.</p>
             )}
+          </div>
+
+          {/* Device Pairing QR Card */}
+          <div className="rounded-2xl border border-[var(--card-line)] bg-[var(--card-fill)] p-5 flex flex-col justify-between space-y-4 md:col-span-2 lg:col-span-1">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--card-line)]">
+              <div className="flex items-center gap-2">
+                <QrCode className="size-4 text-primary shrink-0" />
+                <h3 className="text-sm font-semibold text-foreground">Device Pairing QR</h3>
+              </div>
+              <span className="text-[10px] text-muted-foreground uppercase font-medium">MDM Enrollment</span>
+            </div>
+
+            <div className="flex flex-1 items-center justify-center py-2">
+              <QRCodeCard
+                src={qrCodeSrc || ""}
+                isLoading={isGeneratingQr}
+                isError={isQrError}
+                statusLabel="Live Enrollment Key"
+                description="Scan with Flentra MDM Companion app on the device to pair."
+                allowEnlarge
+                onRefresh={refetchQr}
+                className="w-full border-none bg-transparent p-0 shadow-none"
+              />
+            </div>
           </div>
         </div>
 
@@ -364,38 +399,78 @@ export default function UserDetails({ selectedId }: { selectedId: string }) {
 
   // Regular staff view (fallback for non-device-financing users)
   return (
-    <div className="grid gap-2 md:grid-cols-2">
-      <DisplayField
-        orientation="horizontal"
-        label="User ID"
-        value={formatID(getValue(staffMember?.userId))}
-        className="col-span-2"
-      />
-      <DisplayField
-        orientation="vertical"
-        label="First name"
-        value={getValue(staffMember?.user?.firstName)}
-      />
-      <DisplayField
-        orientation="vertical"
-        label="Last name"
-        value={getValue(staffMember?.user?.lastName)}
-      />
-      <DisplayField
-        orientation="vertical"
-        label="Email"
-        value={getValue(staffMember?.user?.email)}
-      />
-      <DisplayField
-        orientation="vertical"
-        label="Phone"
-        value={getValue(staffMember?.user?.phone)}
-      />
-      <DisplayField
-        orientation="vertical"
-        label="Address"
-        value={getValue(staffMember?.location)}
-      />
+    <div className="grid gap-6 lg:grid-cols-[1.3fr_0.9fr]">
+      <div className="rounded-2xl border border-[var(--card-line)] bg-[var(--card-fill)] p-5 space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-[var(--card-line)]">
+          <h3 className="text-sm font-semibold text-foreground">Staff Details</h3>
+          <span className="text-xs text-muted-foreground">{staffMember?.user?.email}</span>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          <DisplayField
+            orientation="horizontal"
+            label="User ID"
+            value={formatID(getValue(staffMember?.userId))}
+            className="col-span-2"
+          />
+          <DisplayField
+            orientation="vertical"
+            label="First name"
+            value={getValue(staffMember?.user?.firstName)}
+          />
+          <DisplayField
+            orientation="vertical"
+            label="Last name"
+            value={getValue(staffMember?.user?.lastName)}
+          />
+          <DisplayField
+            orientation="vertical"
+            label="Email"
+            value={getValue(staffMember?.user?.email)}
+          />
+          <DisplayField
+            orientation="vertical"
+            label="Phone"
+            value={getValue(staffMember?.user?.phone)}
+          />
+          <DisplayField
+            orientation="vertical"
+            label="Address"
+            value={getValue(staffMember?.location)}
+            className="col-span-2"
+          />
+          {((staffMember as any)?.onboardingCode || (staffMember as any)?.activationCode) && (
+            <DisplayField
+              orientation="horizontal"
+              label="Onboarding Code"
+              value={(staffMember as any)?.onboardingCode || (staffMember as any)?.activationCode?.code || "N/A"}
+              className="col-span-2"
+            />
+          )}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-[var(--card-line)] bg-[var(--card-fill)] p-5 flex flex-col justify-between space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-[var(--card-line)]">
+          <div className="flex items-center gap-2">
+            <QrCode className="size-4 text-primary shrink-0" />
+            <h3 className="text-sm font-semibold text-foreground">Device Pairing QR</h3>
+          </div>
+          <span className="text-[10px] text-muted-foreground uppercase font-medium">MDM Enrollment</span>
+        </div>
+
+        <div className="flex flex-1 items-center justify-center py-2">
+          <QRCodeCard
+            src={qrCodeSrc || ""}
+            isLoading={isGeneratingQr}
+            isError={isQrError}
+            statusLabel="Live Enrollment Key"
+            description="Scan this QR code with the Flentra MDM Companion app on the device to pair."
+            allowEnlarge
+            onRefresh={refetchQr}
+            className="w-full border-none bg-transparent p-0 shadow-none"
+          />
+        </div>
+      </div>
     </div>
   );
 }

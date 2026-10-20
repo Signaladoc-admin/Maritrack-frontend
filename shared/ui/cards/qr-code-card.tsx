@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, type SyntheticEvent } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { QrCode, AlertCircle, RefreshCw, Maximize2, X } from "lucide-react";
+import { QrCode, AlertCircle, RefreshCw, Maximize2, X, Download } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 
 interface QRCodeCardProps {
@@ -15,72 +15,41 @@ interface QRCodeCardProps {
   onRefresh?: () => void;
   /** Show an "Enlarge" button that opens the QR code full-screen. Don't enable when the card is nested inside a <button>. */
   allowEnlarge?: boolean;
+  /** Max on-screen size (CSS px) of the inline QR code. Defaults to 400. */
+  maxCssPx?: number;
+  /** Enable download button for high-res offline/screen-glare fallback */
+  allowDownload?: boolean;
+  /** Custom download filename */
+  downloadFileName?: string;
+  /** Version or provider label shown under QR code (e.g. "v4.1.0 - Flentra") */
+  versionLabel?: string;
 }
 
-/** Max on-screen size (CSS px) of the inline QR code. */
-const INLINE_MAX_CSS_PX = 280;
+/** Default max on-screen size (CSS px) of the inline QR code to ensure legibility on all cameras. */
+const DEFAULT_INLINE_MAX_CSS_PX = 400;
 
-/**
- * Returns a CSS size for the QR image such that every source pixel maps to an
- * integer number of *device* pixels (or an integer fraction when downscaling).
- *
- * Dense QR codes (e.g. Android provisioning payloads) break when the browser
- * resamples them at a fractional ratio: module edges become grey/blurred and
- * module widths become uneven, which weaker phone cameras can't decode.
- */
-function getCrispSize(naturalPx: number, dpr: number, maxCssPx: number): number {
-  const nativeCss = naturalPx / dpr;
-
-  if (nativeCss <= maxCssPx) {
-    const scale = Math.max(1, Math.floor(maxCssPx / nativeCss));
-    return nativeCss * scale;
-  }
-
-  const divisor = Math.ceil(nativeCss / maxCssPx);
-  return nativeCss / divisor;
-}
-
-function useCrispQrSize(maxCssPx: number) {
-  const [naturalPx, setNaturalPx] = useState<number | null>(null);
-  const [dpr, setDpr] = useState(() =>
-    typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1
-  );
-
-  useEffect(() => {
-    // devicePixelRatio changes on browser zoom or when moving between monitors
-    const onResize = () => setDpr(window.devicePixelRatio || 1);
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
-
-  const onLoad = useCallback((e: SyntheticEvent<HTMLImageElement>) => {
-    setNaturalPx(e.currentTarget.naturalWidth || null);
-    setDpr(window.devicePixelRatio || 1);
-  }, []);
-
-  const size = naturalPx ? getCrispSize(naturalPx, dpr, maxCssPx) : null;
-  const isUpscaledOrNative = !!naturalPx && !!size && size * dpr >= naturalPx;
-
-  return { size, onLoad, isUpscaledOrNative };
-}
-
-function CrispQrImage({ src, maxCssPx, className }: { src: string; maxCssPx: number; className?: string }) {
-  const { size, onLoad, isUpscaledOrNative } = useCrispQrSize(maxCssPx);
-
+function CrispQrImage({
+  src,
+  maxCssPx,
+  className,
+}: {
+  src: string;
+  maxCssPx: number;
+  className?: string;
+}) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}
       alt="Pairing QR Code"
-      onLoad={onLoad}
       draggable={false}
       loading="eager"
       decoding="sync"
-      className={cn("block h-auto max-w-full select-none", className)}
+      className={cn("qr-crisp-image block h-auto w-full select-none", className)}
       style={{
-        width: size ?? maxCssPx,
-        // Nearest-neighbour keeps module edges hard black/white instead of anti-aliased grey
-        imageRendering: isUpscaledOrNative ? "pixelated" : "auto",
+        maxWidth: maxCssPx,
+        // Nearest-neighbour keeps module edges sharp black/white instead of blurred grey
+        imageRendering: "pixelated",
       }}
     />
   );
@@ -95,8 +64,22 @@ export function QRCodeCard({
   statusLabel,
   onRefresh,
   allowEnlarge = false,
+  maxCssPx = DEFAULT_INLINE_MAX_CSS_PX,
+  allowDownload = false,
+  downloadFileName = "pairing-qr-code.png",
+  versionLabel,
 }: QRCodeCardProps) {
   const [isEnlarged, setIsEnlarged] = useState(false);
+
+  const handleDownload = useCallback(() => {
+    if (!src) return;
+    const a = document.createElement("a");
+    a.href = src;
+    a.download = downloadFileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }, [src, downloadFileName]);
 
   return (
     <div
@@ -130,32 +113,63 @@ export function QRCodeCard({
         )}
       </div>
 
-      {/* QR Code Canvas Frame: Pure white with subtle hairline border ensures instant, error-free camera detection */}
-      <div className="relative flex w-full max-w-fit items-center justify-center overflow-hidden rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+      {/* QR Code Canvas Frame: Pure white with generous quiet zone ensures instant, error-free camera detection */}
+      <div className="relative flex w-full flex-col items-center justify-center overflow-hidden rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
         {isLoading ? (
-          <div className="flex aspect-square w-full max-w-[240px] flex-col items-center justify-center gap-3 rounded-xl bg-slate-100/90 animate-pulse">
-            <QrCode className="h-14 w-14 text-slate-300 animate-pulse" />
+          <div
+            className="flex aspect-square w-full flex-col items-center justify-center gap-3 rounded-xl bg-slate-100/90 animate-pulse"
+            style={{ maxWidth: maxCssPx }}
+          >
+            <QrCode className="h-16 w-16 text-slate-300 animate-pulse" />
             <span className="text-xs font-medium text-slate-400">Encrypting pairing key...</span>
           </div>
         ) : isError ? (
-          <div className="flex aspect-square w-full max-w-[240px] flex-col items-center justify-center gap-2.5 p-4 text-center">
+          <div
+            className="flex aspect-square w-full flex-col items-center justify-center gap-2.5 p-4 text-center"
+            style={{ maxWidth: maxCssPx }}
+          >
             <AlertCircle className="h-10 w-10 text-[var(--coral)]" />
             <p className="text-xs font-semibold text-slate-700">Failed to load QR code</p>
             {onRefresh && (
               <button
                 type="button"
                 onClick={onRefresh}
-                className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-800 hover:bg-slate-200 transition-colors"
+                className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-800 hover:bg-slate-200 transition-colors cursor-pointer"
               >
                 <RefreshCw className="h-3 w-3" /> Try again
               </button>
             )}
           </div>
         ) : src ? (
-          <CrispQrImage src={src} maxCssPx={INLINE_MAX_CSS_PX} />
+          <div className="flex w-full flex-col items-center">
+            <CrispQrImage src={src} maxCssPx={maxCssPx} />
+
+            {(versionLabel || allowDownload) && (
+              <div className="mt-3.5 flex w-full items-center justify-between border-t border-slate-100 pt-3 text-[11px] text-slate-500">
+                {versionLabel ? (
+                  <span className="font-mono text-[11px] font-medium text-slate-600">{versionLabel}</span>
+                ) : (
+                  <span />
+                )}
+                {allowDownload && (
+                  <button
+                    type="button"
+                    onClick={handleDownload}
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:underline cursor-pointer"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    Download Simplified QR
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         ) : (
-          <div className="flex aspect-square w-full max-w-[240px] items-center justify-center">
-            <QrCode className="h-28 w-28 text-slate-300" />
+          <div
+            className="flex aspect-square w-full items-center justify-center"
+            style={{ maxWidth: maxCssPx }}
+          >
+            <QrCode className="h-32 w-32 text-slate-300" />
           </div>
         )}
       </div>
@@ -176,12 +190,11 @@ export function QRCodeCard({
         </button>
       )}
 
-      {/* Full-screen view: nested Radix dialog so it doesn't dismiss the parent modal.
-          Centered with flexbox (no translate/scale transforms) so the image lands on whole pixels. */}
+      {/* Full-screen view: nested Radix dialog so it doesn't dismiss the parent modal */}
       {allowEnlarge && src && (
         <DialogPrimitive.Root open={isEnlarged} onOpenChange={setIsEnlarged}>
           <DialogPrimitive.Portal>
-            <DialogPrimitive.Overlay className="fixed inset-0 z-[100000] bg-black/80" />
+            <DialogPrimitive.Overlay className="fixed inset-0 z-[100000] bg-black/85 backdrop-blur-xs" />
             <DialogPrimitive.Content
               aria-describedby={undefined}
               className="fixed inset-0 z-[100001] flex items-center justify-center p-4 outline-none"
@@ -189,15 +202,28 @@ export function QRCodeCard({
             >
               <DialogPrimitive.Title className="sr-only">Enlarged pairing QR code</DialogPrimitive.Title>
               <div
-                className="relative rounded-2xl bg-white p-8"
+                className="relative flex flex-col items-center rounded-3xl bg-white p-8 sm:p-10 shadow-2xl max-w-[95vw] max-h-[90vh]"
                 onClick={(e) => e.stopPropagation()}
               >
                 <CrispQrImage
                   src={src}
-                  maxCssPx={Math.min(560, window.innerHeight - 160, window.innerWidth - 96)}
+                  maxCssPx={Math.min(640, window.innerHeight - 180, window.innerWidth - 80)}
                 />
-                <DialogPrimitive.Close className="absolute top-2 right-2 rounded-full p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 cursor-pointer">
-                  <X className="h-4 w-4" />
+                <div className="mt-4 flex w-full items-center justify-between border-t border-slate-100 pt-3 text-xs text-slate-600">
+                  <span className="font-mono text-xs font-semibold">{versionLabel || "Flentra MDM Enrollment"}</span>
+                  {allowDownload && (
+                    <button
+                      type="button"
+                      onClick={handleDownload}
+                      className="inline-flex items-center gap-1.5 font-semibold text-blue-600 hover:underline cursor-pointer"
+                    >
+                      <Download className="h-4 w-4" />
+                      Download Image
+                    </button>
+                  )}
+                </div>
+                <DialogPrimitive.Close className="absolute top-3 right-3 rounded-full p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800 cursor-pointer">
+                  <X className="h-5 w-5" />
                   <span className="sr-only">Close</span>
                 </DialogPrimitive.Close>
               </div>

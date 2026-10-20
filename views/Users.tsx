@@ -45,6 +45,17 @@ function ActionButtons({
 }) {
   return (
     <div className="flex items-center gap-3">
+      {onOpenQrPairing && (
+        <Button
+          onClick={onOpenQrPairing}
+          variant="secondary"
+          size="icon"
+          className="rounded-full p-5"
+          title="Pair device QR code"
+        >
+          <QrCode className="text-primary size-4.5" />
+        </Button>
+      )}
       <Button onClick={onEdit} variant="secondary" size="icon" className="rounded-full p-5">
         <SquarePen className="text-primary size-4.5" />
       </Button>
@@ -341,7 +352,7 @@ export default function Users() {
         selectedId={selectedId}
       />
       <Dialog open={showQrPairing} onOpenChange={setShowQrPairing}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="w-full max-w-[1050px] sm:max-w-[1050px] md:max-w-[1050px] p-6 sm:p-8 md:p-10 rounded-3xl bg-[var(--surface)] border border-[var(--card-line-strong)]">
           {selectedId && (
             <BusinessUserPairingQR
               staffId={selectedId}
