@@ -2,11 +2,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import "./landing.css";
 
 export default function LandingHeader() {
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
+  const isBlogActive = pathname === "/blog" || pathname.startsWith("/blog/");
+  const isAboutActive = pathname === "/about";
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -47,9 +51,27 @@ export default function LandingHeader() {
         <div className="hidden md:flex items-center gap-3">
           <Link
             href="/about"
-            className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-colors duration-200"
+            aria-current={isAboutActive ? "page" : undefined}
+            className={`relative px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+              isAboutActive ? "text-white" : "text-white/70 hover:text-white"
+            }`}
           >
             About
+            {isAboutActive && (
+              <span className="absolute inset-x-4 -bottom-0.5 h-0.5 rounded-full bg-[#05E0E4]" />
+            )}
+          </Link>
+          <Link
+            href="/blog"
+            aria-current={isBlogActive ? "page" : undefined}
+            className={`relative px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+              isBlogActive ? "text-white" : "text-white/70 hover:text-white"
+            }`}
+          >
+            Blog
+            {isBlogActive && (
+              <span className="absolute inset-x-4 -bottom-0.5 h-0.5 rounded-full bg-[#05E0E4]" />
+            )}
           </Link>
           <Link
             href="/login"
