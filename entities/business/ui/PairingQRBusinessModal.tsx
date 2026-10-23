@@ -21,6 +21,8 @@ export default function BusinessPairingQR({
   const { toast } = useToast();
   const { qrCodeSrc, isLoading, isPending, isError, error, refetch } = useQrCode(staffMember.id!);
 
+
+
   const isGenerating = isLoading || isPending;
 
   useEffect(() => {
