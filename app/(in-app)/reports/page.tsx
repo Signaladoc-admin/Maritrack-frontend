@@ -4,7 +4,7 @@ import Reports from "@/views/Reports";
 
 export const metadata: Metadata = {
   title: "Reports — Flentra",
-  description: "Export recovery, financing, and compliance reports.",
+  description: "User and device reports, plus recovery, financing, and compliance reporting.",
 };
 
 export default function ReportsPage() {
