@@ -60,6 +60,18 @@ export async function exportDevicesAction() {
   }, "Failed to export devices");
 }
 
+export async function exportRetailerDeviceReportAction(type: "CSV" | "XLSX" | "csv" | "xlxs" = "CSV") {
+  return withSafeAction(async () => {
+    const format = type.toUpperCase() === "XLXS" || type.toUpperCase() === "XLSX" ? "XLSX" : "CSV";
+    const res = await apiClient(`/devices/export/retailer`, {
+      method: "GET",
+      params: { type: format },
+    });
+    return res;
+  }, "Failed to export retailer device report");
+}
+
+
 export async function bulkActionDevicesAction(
   ids: string[],
   actionId: number,
