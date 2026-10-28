@@ -8,7 +8,8 @@ import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
 import { TabNavigation } from "@/shared/ui/tab-navigation";
 import { Smartphone, Trash2Icon, X } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { isRetailerRole } from "@/entities/user/model/user.schema";
 import General from "./General";
 import WebHistory from "./WebHistory";
 import AppControl from "./AppControl";
@@ -37,8 +38,15 @@ const Device = () => {
   const params = useParams<{ device: string }>();
   const searchParams = useSearchParams();
   const { user } = useAuth();
+  const isRetailer = isRetailerRole(user?.businessRole);
 
-  const isParent = user?.appRole === "PARENT";
+  useEffect(() => {
+    if (isRetailer) {
+      router.replace("/devices");
+    }
+  }, [isRetailer, router]);
+
+  const isParent = !isRetailer && user?.appRole === "PARENT";
   const mdmDeviceId = params.device;
   const { data: parentChildrenRes } = useParentChildren({
     enabled: isParent,
@@ -111,6 +119,10 @@ const Device = () => {
   };
 
   const isMobile = useIsMobile();
+
+  if (isRetailer) {
+    return null;
+  }
 
   if (isLoadingHardwareData) {
     return <DeviceHeaderSkeleton isMobile={isMobile} />;
