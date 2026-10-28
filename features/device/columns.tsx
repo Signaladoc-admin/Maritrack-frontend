@@ -4,7 +4,7 @@ import { Button } from "@/shared/ui/button";
 import { StaffDevice } from "@/entities/device";
 import { DeviceHardwareDetails } from "./types";
 import Badge2 from "@/shared/ui/Badge2";
-import { BusinessRole } from "@/entities/user/model/user.schema";
+import { BusinessRole, isRetailerRole } from "@/entities/user/model/user.schema";
 import { cn } from "@/lib/utils";
 
 export function getDevicesColumns(
@@ -39,7 +39,7 @@ export function getDevicesColumns(
             <div className="who">{`${item.currentUser?.firstName} ${item.currentUser?.lastName}`}</div>
             <div className="email">{item.currentUser?.email}</div>
           </>
-        ) : businessRole === "RETAILER_ADMIN" ? (
+        ) : isRetailerRole(businessRole) ? (
           <span className="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
             Unassigned
           </span>
@@ -137,7 +137,7 @@ export function getAssociatedDevicesColumns(
     },
   ];
 
-  if (businessRole !== "RETAILER_ADMIN") {
+  if (!isRetailerRole(businessRole)) {
     devicesColumns.push({
       key: "",
       label: "Action",

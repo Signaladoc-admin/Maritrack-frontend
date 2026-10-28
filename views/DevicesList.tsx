@@ -46,7 +46,7 @@ import NewDeviceModal from "@/features/business-users/users/ui/NewDeviceModal";
 import { Loader } from "@/shared/ui/loader";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { useToast } from "@/shared/ui/toast";
-import { BusinessRole } from "@/entities/user/model/user.schema";
+import { BusinessRole, isRetailerRole } from "@/entities/user/model/user.schema";
 import ReassignDeviceModal from "@/features/business-users/users/ui/ReassignDeviceModal";
 import BulkActionBar from "@/features/business-users/users/ui/BulkActionBar";
 import BulkMessageModal from "@/features/business-users/users/ui/BulkMessageModal";
@@ -82,7 +82,8 @@ export default function DevicesList() {
   const { refetch: refetchExport, isFetching: exporting } = useExportDevices({ enabled: false });
 
   const { user } = useAuth();
-  const isRetailerAdmin = user?.businessRole === "RETAILER_ADMIN";
+  const isRetailer = isRetailerRole(user?.businessRole);
+  const isRetailerAdmin = isRetailer;
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -173,17 +174,19 @@ export default function DevicesList() {
             </div>
             <p>Manage every device financed, leased, or issued to your fleet.</p>
           </div>
-          <button className="btn-primary cursor-pointer" onClick={handleNewDevice}>
-            <svg viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 5v14M5 12h14"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-              />
-            </svg>
-            New device
-          </button>
+          {!isRetailer && (
+            <button className="btn-primary cursor-pointer" onClick={handleNewDevice}>
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 5v14M5 12h14"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                />
+              </svg>
+              New device
+            </button>
+          )}
         </div>
       </div>
 
@@ -432,7 +435,8 @@ export default function DevicesList() {
           totalPages={totalPages}
           onPageChange={handlePageChange}
           isLoading={isDevicesPending}
-          selectable={!isRetailerAdmin}
+          selectable={!isRetailer}
+          disableRowClick={isRetailer}
           onRowSelect={(selected) => setSelectedDevices(selected as StaffDevice[])}
           clearSelectionTrigger={clearSelectionTrigger}
         />

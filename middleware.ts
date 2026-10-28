@@ -256,10 +256,14 @@ export async function middleware(req: NextRequest) {
     }
 
     // 7. Role-based access
-    if (businessRole === "RETAILER_ADMIN") {
+    const isRetailer =
+      businessRole === "RETAILER_ADMIN" ||
+      businessRole === "RETAILER_STAFF" ||
+      (businessRole ? businessRole.includes("RETAILER") : false);
+
+    if (isRetailer) {
       const retailerAdminAllowedRoutes = [
         "/devices",
-        "/devices/*",
         "/reports",
         "/reports/*",
         "/users",

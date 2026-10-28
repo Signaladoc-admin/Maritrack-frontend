@@ -45,6 +45,17 @@ export const DEVICE_FINANCING_ROLES = [
   "DEVICE_FINANCING_USER",
 ] as const;
 
+export function isRetailerRole(role?: string | null): boolean {
+  if (!role) return false;
+  const upper = role.toUpperCase();
+  return (
+    upper === "RETAILER_ADMIN" ||
+    upper === "RETAILER_STAFF" ||
+    upper === "RETAILER_USER" ||
+    upper.includes("RETAILER")
+  );
+}
+
 export function isDeviceFinancingOrRetailerRole(role?: string | null): boolean {
   if (!role) return false;
   const upper = role.toUpperCase();
