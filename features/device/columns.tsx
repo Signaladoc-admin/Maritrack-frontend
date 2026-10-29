@@ -20,10 +20,10 @@ export function getDevicesColumns(
       render: (item) => (
         <div className="asset-cell">
           <div className="asset-swatch">
-            <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8"><rect x="7" y="2" width="10" height="20" rx="2"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8"><rect x="7" y="2" width="10" height="20" rx="2" /></svg>
           </div>
           <div>
-            <div className="name">{[item.manufacturer, item.model].filter(Boolean).join(" ") || "N/A"}</div>
+            <div className="name capitalize">{[item.manufacturer, item.model].filter(Boolean).join(" ") || "N/A"}</div>
             <div className="id">{item?.serialNumber ? formatID(item?.serialNumber) : "N/A"}</div>
           </div>
         </div>

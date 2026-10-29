@@ -33,6 +33,7 @@ import Pagination from "@/shared/ui/Table/Pagination";
 import { useGetFullBusinessDetails } from "@/features/onboarding/business/model/useGetBusinessDetails";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { isDeviceFinancingOrRetailerRole } from "@/entities/user/model/user.schema";
+import { useGetStaffMember } from "@/entities/business/model/useStaffMembers";
 
 function ActionButtons({
   onOpenQrPairing,
@@ -91,6 +92,25 @@ export default function Users() {
   const [showQrPairing, setShowQrPairing] = useState(false);
 
   const { business, isLoadingBusiness, isLoadingBusinessProfile } = useGetFullBusinessDetails();
+  const { data: selectedStaffMember } = useGetStaffMember(selectedId, {
+    enabled: !!selectedId && selectedTab === "users",
+  });
+  const hasAssignedDevice = Boolean(
+    (selectedStaffMember?.device &&
+      selectedStaffMember.device.assignmentStatus !== "UNASSIGNED" &&
+      selectedStaffMember.device.assignmentStatus !== "RETURNED" &&
+      (selectedStaffMember.device.id ||
+        selectedStaffMember.device.mdmDeviceId ||
+        selectedStaffMember.device.serialNumber ||
+        Object.keys(selectedStaffMember.device).length > 0)) ||
+      (selectedStaffMember as any)?.deviceId ||
+      (Array.isArray((selectedStaffMember as any)?.devices) &&
+        (selectedStaffMember as any).devices.some(
+          (d: any) => d.assignmentStatus !== "UNASSIGNED" && d.assignmentStatus !== "RETURNED"
+        )) ||
+      selectedStaffMember?.activationCode?.status === "USED"
+  );
+
   // Reset QR view whenever the selected user or sub-tab changes
   useEffect(() => {
     setShowQrPairing(false);
@@ -287,7 +307,7 @@ export default function Users() {
                   />
                   {!isRetailerAdmin && (
                     <ActionButtons
-                      onOpenQrPairing={() => setShowQrPairing(true)}
+                      onOpenQrPairing={!hasAssignedDevice ? () => setShowQrPairing(true) : undefined}
                       onEdit={() => setIsAddEditModalOpen(true)}
                       onDelete={() => setIsConfirmationModalOpen(true)}
                     />
