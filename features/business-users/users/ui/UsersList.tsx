@@ -30,8 +30,8 @@ export default function UsersList({
     limit: 10,
   });
   const dataPayload = usersData?.data as any;
-  const staffMembers = Array.isArray(dataPayload) 
-    ? dataPayload 
+  const staffMembers = Array.isArray(dataPayload)
+    ? dataPayload
     : (dataPayload?.staff || dataPayload?.deviceFinanceUsers || []);
 
   const isDeviceFinance = useMemo(() => {
@@ -93,19 +93,22 @@ export default function UsersList({
           },
         },
         {
-          key: "retailer",
-          label: "Retailer",
+          key: "activationCode.status",
+          label: "Activation Status",
           render: (item) => {
-            const retailer = item?.retailer;
-            const legalName = retailer?.legalName || "N/A";
-            const branch = retailer?.branchName ? `(${retailer.branchName})` : "";
             return (
-              <div className="space-y-0.5">
-                <div className="font-medium text-foreground">{`${legalName} ${branch}`.trim()}</div>
-                {retailer?.referenceNumber && (
-                  <div className="text-xs text-muted-foreground">{retailer.referenceNumber}</div>
+              <span
+                className={cn(
+                  "inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold",
+                  item?.activationCode?.status === "USED"
+                    ? "bg-green-500/20 text-green-400"
+                    : item?.activationCode?.status === "ACTIVE"
+                      ? "bg-amber-500/20 text-amber-400"
+                      : "bg-red-500/20 text-red-400"
                 )}
-              </div>
+              >
+                {item?.activationCode?.status}
+              </span>
             );
           },
         },
@@ -134,8 +137,8 @@ export default function UsersList({
                     planStatus === "PAID"
                       ? "bg-green-500/20 text-green-400"
                       : planStatus === "PENDING"
-                      ? "bg-amber-500/20 text-amber-400"
-                      : "bg-red-500/20 text-red-400"
+                        ? "bg-amber-500/20 text-amber-400"
+                        : "bg-red-500/20 text-red-400"
                   )}
                 >
                   {planStatus}
