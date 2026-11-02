@@ -79,9 +79,8 @@ export default function LandingHeader() {
           <Link
             href="/about"
             aria-current={isAboutActive ? "page" : undefined}
-            className={`relative px-4 py-2 text-sm font-medium transition-colors duration-200 ${
-              isAboutActive ? "text-white" : "text-white/70 hover:text-white"
-            }`}
+            className={`relative px-4 py-2 text-sm font-medium transition-colors duration-200 ${isAboutActive ? "text-white" : "text-white/70 hover:text-white"
+              }`}
           >
             About
             {isAboutActive && (
@@ -91,9 +90,8 @@ export default function LandingHeader() {
           <Link
             href="/blog"
             aria-current={isBlogActive ? "page" : undefined}
-            className={`relative px-4 py-2 text-sm font-medium transition-colors duration-200 ${
-              isBlogActive ? "text-white" : "text-white/70 hover:text-white"
-            }`}
+            className={`relative px-4 py-2 text-sm font-medium transition-colors duration-200 ${isBlogActive ? "text-white" : "text-white/70 hover:text-white"
+              }`}
           >
             Blog
             {isBlogActive && (
@@ -124,20 +122,18 @@ export default function LandingHeader() {
       {/* Mobile navigation dropdown */}
       <div
         id="landing-mobile-menu"
-        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-          mobileMenuOpen ? "max-h-72 opacity-100 border-t border-white/10" : "max-h-0 opacity-0"
-        }`}
+        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${mobileMenuOpen ? "max-h-72 opacity-100 border-t border-white/10" : "max-h-0 opacity-0"
+          }`}
       >
         <nav aria-label="Mobile navigation" className="container mx-auto px-6 py-4 flex flex-col gap-2">
           <Link
             href="/about"
             aria-current={isAboutActive ? "page" : undefined}
             onClick={() => setMobileMenuOpen(false)}
-            className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-colors duration-200 ${
-              isAboutActive
-                ? "bg-white/10 text-white"
-                : "text-white/75 hover:bg-white/5 hover:text-white"
-            }`}
+            className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-colors duration-200 ${isAboutActive
+              ? "bg-white/10 text-white"
+              : "text-white/75 hover:bg-white/5 hover:text-white"
+              }`}
           >
             <span>About</span>
             {isAboutActive && <span className="h-2 w-2 rounded-full bg-[#05E0E4]" />}
@@ -146,11 +142,10 @@ export default function LandingHeader() {
             href="/blog"
             aria-current={isBlogActive ? "page" : undefined}
             onClick={() => setMobileMenuOpen(false)}
-            className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-colors duration-200 ${
-              isBlogActive
-                ? "bg-white/10 text-white"
-                : "text-white/75 hover:bg-white/5 hover:text-white"
-            }`}
+            className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-colors duration-200 ${isBlogActive
+              ? "bg-white/10 text-white"
+              : "text-white/75 hover:bg-white/5 hover:text-white"
+              }`}
           >
             <span>Blog</span>
             {isBlogActive && <span className="h-2 w-2 rounded-full bg-[#05E0E4]" />}

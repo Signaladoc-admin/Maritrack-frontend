@@ -22,6 +22,13 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        // Blog cover images
+        protocol: "https",
+        hostname: "r2.signaladoc-bucket.signaladoc.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
 };

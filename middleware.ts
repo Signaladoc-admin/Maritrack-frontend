@@ -66,6 +66,19 @@ const publicRoutes = [
   "/components-showcase",
 ];
 
+// Public route *sections*: the base path AND everything beneath it (e.g. /blog and /blog/<slug>).
+// `publicRoutes` above is exact-match only, so dynamic pages must be listed here instead.
+const publicRoutePrefixes = ["/blog"];
+
+function isPublicRoute(pathname: string): boolean {
+  if (publicRoutes.includes(pathname)) return true;
+
+  // Match on a path-segment boundary so "/blog" allows "/blog/x" but not "/blogger".
+  return publicRoutePrefixes.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+}
+
 const authRoutes = [
   // Personal auth routes
   "/login",
@@ -148,8 +161,7 @@ export async function middleware(req: NextRequest) {
             const refererUrl = new URL(referer);
             const refererPath = refererUrl.pathname;
             const isSameOrigin = refererUrl.origin === req.nextUrl.origin;
-            const isAuthOrPublic =
-              authRoutes.includes(refererPath) || publicRoutes.includes(refererPath);
+            const isAuthOrPublic = authRoutes.includes(refererPath) || isPublicRoute(refererPath);
 
             if (isSameOrigin && !isAuthOrPublic) {
               return NextResponse.redirect(new URL(refererPath, req.url));
@@ -170,7 +182,7 @@ export async function middleware(req: NextRequest) {
   }
 
   // 3. Handle public routes
-  if (publicRoutes.includes(pathname)) {
+  if (isPublicRoute(pathname)) {
     return NextResponse.next();
   }
 
