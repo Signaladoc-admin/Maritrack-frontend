@@ -29,14 +29,11 @@ export default function HeroSection() {
           </div>
 
           <h1 className="m-0 text-[38px] leading-[1.04] font-extrabold tracking-[-0.03em] text-white min-[721px]:text-[60px] fl-v2-enter-title">
-            Every device you finance or issue. Always in sight, always in
-            control.
+            Every Device. Always Visible. Always in Control.
           </h1>
 
           <p className="m-0 max-w-[560px] text-[19px] leading-[1.6] text-text-muted fl-v2-enter-desc">
-            Flentra tracks, manages and protects every device you finance or
-            issue, in one place. Act the moment a device goes missing or a
-            payment slips.
+            Flentra gives businesses, financial institutions and device financiers real-time visibility, intelligent device management and control over every device they finance, deploy or manage.
           </p>
 
           <div className="flex flex-wrap gap-3 pt-1.5 fl-v2-enter-actions">
