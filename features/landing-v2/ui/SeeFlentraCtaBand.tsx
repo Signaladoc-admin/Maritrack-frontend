@@ -19,7 +19,7 @@ export default function SeeFlentraCtaBand({
 }: SeeFlentraCtaBandProps) {
   return (
     <section className="bg-navy px-6 py-[72px] font-sans text-white min-[721px]:py-[88px]">
-      <div className="mx-auto flex max-w-site flex-wrap items-center justify-between gap-7 rounded-lg border border-line bg-deep p-8 min-[721px]:p-12">
+      <div className="mx-auto flex max-w-site flex-wrap items-center justify-between gap-7 rounded-lg border border-line bg-deep p-5 min-[721px]:p-12">
         <div className="flex min-w-0 flex-[1_1_520px] flex-col gap-3">
           <h2 className="m-0 text-[30px] leading-[1.12] font-extrabold tracking-[-0.025em] text-white min-[721px]:text-[36px]">
             {title}
