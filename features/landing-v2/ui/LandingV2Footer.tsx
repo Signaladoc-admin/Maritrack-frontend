@@ -3,11 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { footerColumns } from "@/features/landing-v2/data";
+import { footerColumns, trustBadges } from "@/features/landing-v2/data";
 import {
   REVEAL_PENDING_CLASS,
   REVEAL_VISIBLE_CLASS,
 } from "@/features/landing-v2/model/useScrollReveal";
+import { ShieldTrustIcon } from "@/features/landing-v2/ui/LandingV2Icons";
 import "./landing-v2.css";
 
 export default function LandingV2Footer() {
@@ -129,13 +130,34 @@ export default function LandingV2Footer() {
           </div>
         </div>
 
-        <p
+        <div
           data-footer-reveal
-          style={{ transitionDelay: "0.28s" }}
-          className="m-0 border-t border-divider pt-[22px] text-[13px] text-text-dim"
+          style={{ transitionDelay: "0.24s" }}
+          aria-label="Trust and compliance"
+          className="flex flex-wrap items-center justify-between gap-4 border-t border-divider pt-7"
+        >
+          <p
+          data-footer-reveal
+          style={{ transitionDelay: "0.3s" }}
+          className="m-0 text-[13px] text-text-dim"
         >
           © 2026 Marimax Global Concepts Limited. All rights reserved.
         </p>
+          <div className="flex flex-wrap gap-2.5">
+            {trustBadges.map((badge) => (
+              <span
+                key={badge}
+                className="inline-flex items-center gap-2 rounded-badge border border-line bg-surface px-3.5 py-2 text-[13px] font-semibold text-text-soft"
+              >
+                <ShieldTrustIcon />
+                {badge}
+              </span>
+            ))}
+          </div>
+        </div>
+
+       
+        
       </div>
     </footer>
   );

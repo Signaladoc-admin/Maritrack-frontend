@@ -6,7 +6,6 @@ import DemoCtaSection from "@/features/landing-v2/ui/DemoCtaSection";
 import GettingStartedSection from "@/features/landing-v2/ui/GettingStartedSection";
 import HeroSection from "@/features/landing-v2/ui/HeroSection";
 import LandingV2PageShell from "@/features/landing-v2/ui/LandingV2PageShell";
-import PartnersSection from "@/features/landing-v2/ui/PartnersSection";
 import PlatformSection from "@/features/landing-v2/ui/PlatformSection";
 import PricingSection from "@/features/landing-v2/ui/PricingSection";
 import SolutionsSection from "@/features/landing-v2/ui/SolutionsSection";
@@ -17,7 +16,6 @@ export default function LandingV2() {
   return (
     <LandingV2PageShell revealSections>
       <HeroSection />
-      <PartnersSection />
       <ChallengeSection />
       <TwoWaysSection />
       <GettingStartedSection />

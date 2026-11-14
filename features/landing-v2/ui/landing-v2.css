@@ -103,17 +103,26 @@
 /* =============================================
    Comparison table in Why Flentra
    ============================================= */
+.flentra-v2 .fl-comparison-container {
+  container-type: inline-size;
+}
+
 .flentra-v2 .fl-comparison-card {
   border-radius: var(--radius-lg, 16px);
   border: 1px solid var(--color-line);
   background-color: var(--color-surface);
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 .flentra-v2 table.fl-comparison-table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
+  --label-standard: "Standard";
+}
+
+.flentra-v2 table.fl-comparison-table .fl-flentra-mobile {
+  display: none;
 }
 
 .flentra-v2 table.fl-comparison-table thead tr {
@@ -121,7 +130,7 @@
   border-bottom: 1px solid var(--color-line) !important;
 }
 
-.flentra-v2 table.fl-comparison-table th {
+.flentra-v2 table.fl-comparison-table thead th {
   padding: 18px 24px !important;
   font-size: 12.5px !important;
   font-weight: 700 !important;
@@ -133,10 +142,11 @@
   background: transparent !important;
 }
 
-.flentra-v2 table.fl-comparison-table th.fl-col-flentra {
+.flentra-v2 table.fl-comparison-table thead th.fl-col-flentra {
   color: var(--color-green-light) !important;
 }
 
+.flentra-v2 table.fl-comparison-table tbody th,
 .flentra-v2 table.fl-comparison-table tbody td {
   padding: 18px 24px !important;
   vertical-align: middle !important;
@@ -147,6 +157,7 @@
   background: transparent !important;
 }
 
+.flentra-v2 table.fl-comparison-table tbody tr:last-child th,
 .flentra-v2 table.fl-comparison-table tbody tr:last-child td {
   border-bottom: none !important;
 }
@@ -159,9 +170,10 @@
   background-color: rgba(255, 255, 255, 0.02) !important;
 }
 
-.flentra-v2 table.fl-comparison-table tbody td.fl-col-need {
+.flentra-v2 table.fl-comparison-table tbody th.fl-col-need {
   color: #ffffff !important;
   font-weight: 500 !important;
+  text-align: left;
 }
 
 .flentra-v2 table.fl-comparison-table tbody td.fl-col-standard {
@@ -175,6 +187,112 @@
 .flentra-v2 table.fl-comparison-table tbody td.fl-col-flentra {
   color: var(--color-green-light) !important;
   font-weight: 700 !important;
+}
+
+@container (width < 620px) {
+  .flentra-v2 .fl-comparison-card {
+    border: none;
+    border-radius: 0;
+    background-color: transparent;
+    overflow: visible;
+  }
+
+  .flentra-v2 table.fl-comparison-table,
+  .flentra-v2 table.fl-comparison-table tbody {
+    display: block;
+  }
+
+  .flentra-v2 table.fl-comparison-table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .flentra-v2 table.fl-comparison-table thead {
+    /* Hide column header row from layout and screen readers; labels are injected per cell. */
+    display: none;
+  }
+
+  .flentra-v2 table.fl-comparison-table tbody tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 8px;
+    padding: 16px 18px;
+    border-radius: 14px;
+    border: 1px solid var(--color-line);
+    background-color: var(--color-surface);
+  }
+
+  .flentra-v2 table.fl-comparison-table tbody tr:hover {
+    background-color: var(--color-surface-hover) !important;
+  }
+
+  .flentra-v2 table.fl-comparison-table tbody th.fl-col-need {
+    flex: 1 0 100%;
+    display: block;
+    padding: 0 !important;
+    border-bottom: none !important;
+    font-size: 15px !important;
+    line-height: 1.45 !important;
+  }
+
+  .flentra-v2 table.fl-comparison-table tbody td {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px !important;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    background-color: rgba(255, 255, 255, 0.07) !important;
+    font-size: 12.5px !important;
+    font-weight: 500 !important;
+    line-height: 1.4 !important;
+  }
+
+  .flentra-v2 table.fl-comparison-table tbody tr:last-child td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .flentra-v2 table.fl-comparison-table tbody td.fl-col-standard {
+    color: var(--color-text-soft) !important;
+  }
+
+  .flentra-v2 table.fl-comparison-table tbody td.fl-col-standard-dim {
+    color: var(--color-text-muted) !important;
+  }
+
+  .flentra-v2 table.fl-comparison-table tbody td.fl-col-flentra,
+  .flentra-v2 table.fl-comparison-table tbody tr:last-child td.fl-col-flentra {
+    position: relative;
+    gap: 5px;
+    border: 1px solid rgba(1, 219, 94, 0.24) !important;
+    background-color: var(--color-green-tint) !important;
+    color: var(--color-green-light) !important;
+    font-weight: 600 !important;
+  }
+
+  .flentra-v2 table.fl-comparison-table tbody td.fl-col-standard::before,
+  .flentra-v2 table.fl-comparison-table tbody td.fl-col-standard-dim::before {
+    content: var(--label-standard) ":\00a0";
+  }
+
+  .flentra-v2 table.fl-comparison-table .fl-flentra-mobile {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .flentra-v2 table.fl-comparison-table .fl-flentra-desktop {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
 }
 
 
