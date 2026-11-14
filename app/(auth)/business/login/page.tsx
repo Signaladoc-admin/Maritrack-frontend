@@ -1,18 +1,13 @@
-import { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Business Login — Flentra",
-  description: "Sign in to your Flentra business account to manage your organisation's enrolled devices, monitor team activity, enforce security compliance policies, track company assets, and administer your MDM zone.",
-};
-
-import { Header } from "@/shared/ui/layout/header";
-import LoginForm from "@/features/auth-login/ui/LoginForm";
-
-export default function LoginPage() {
-  return (
-    <div className="space-y-6">
-      <Header title="Welcome back" subtitle="Log in to manage your session" />
-      <LoginForm />
-    </div>
-  );
+export default async function BusinessLoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string }>;
+}) {
+  const { callbackUrl } = await searchParams;
+  const target = callbackUrl
+    ? `/sign-in?callbackUrl=${encodeURIComponent(callbackUrl)}`
+    : "/sign-in";
+  redirect(target);
 }

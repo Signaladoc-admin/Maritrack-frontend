@@ -6,7 +6,7 @@ import { cn } from "@/shared/lib/utils";
 import Link from "next/link";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm cursor-pointer font-bold transition-[color,background-color,border-color] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-5 [&_svg]:shrink-0 ring-ring/10 dark:ring-ring/20 dark:outline-ring/40 outline-ring/50 focus-visible:ring-4 focus-visible:outline-1 aria-invalid:focus-visible:ring-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl cursor-pointer font-bold transition-[color,background-color,border-color] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-5 [&_svg]:shrink-0 ring-ring/10 dark:ring-ring/20 dark:outline-ring/40 outline-ring/50 focus-visible:ring-4 focus-visible:outline-1 aria-invalid:focus-visible:ring-0",
   {
     variants: {
       variant: {
@@ -22,10 +22,10 @@ const buttonVariants = cva(
         link: "font-medium text-primary underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-[44px] py-2.5 px-6 rounded-sm text-sm",
-        sm: "h-[36px] py-2 px-4 rounded-sm text-xs",
-        lg: "h-[54px] py-3 px-10 rounded-sm text-base",
-        icon: "size-[34px] rounded-sm shrink-0",
+        default: "h-[44px] py-2.5 px-6 rounded-xl text-sm",
+        sm: "h-[36px] py-2 px-4 rounded-lg text-xs",
+        lg: "h-[54px] py-3 px-10 rounded-xl text-base",
+        icon: "size-[34px] rounded-lg shrink-0",
       },
     },
     defaultVariants: {

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import Blog from "@/views/Blog";
+import ResourcesBlogV2 from "@/views/ResourcesBlogV2";
+import { getBlogPosts } from "@/features/blog/api/blog.api";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
@@ -49,5 +50,7 @@ export async function generateMetadata({
 
 export default async function BlogPage({ searchParams }: { searchParams: SearchParams }) {
   const { search, page } = parseParams(await searchParams);
-  return <Blog search={search} page={page} />;
+  const result = await getBlogPosts({ page, search, perPage: 24 });
+  const posts = result.ok ? result.posts : [];
+  return <ResourcesBlogV2 posts={posts} />;
 }

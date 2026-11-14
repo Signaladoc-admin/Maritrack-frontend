@@ -1,18 +1,12 @@
-import LandingHeader from "@/features/landing/ui/LandingHeader";
-import LandingFooter from "@/features/landing/ui/LandingFooter";
-import BlogArticle from "@/features/blog/ui/BlogArticle";
-import RelatedPosts from "@/features/blog/ui/RelatedPosts";
-import BlogCta from "@/features/blog/ui/BlogCta";
+import BlogPostV2 from "@/views/BlogPostV2";
 import type { BlogPost } from "@/features/blog/types";
 
-export default function BlogPostView({ post }: { post: BlogPost }) {
-  return (
-    <div className="min-h-screen overflow-hidden bg-[#0A0E1A] text-white">
-      <LandingHeader />
-      <BlogArticle post={post} />
-      <RelatedPosts currentSlug={post.slug} />
-      <BlogCta />
-      <LandingFooter />
-    </div>
-  );
+export default function BlogPostView({
+  post,
+  relatedPosts,
+}: {
+  post: BlogPost;
+  relatedPosts?: BlogPost[];
+}) {
+  return <BlogPostV2 post={post} relatedPosts={relatedPosts} />;
 }

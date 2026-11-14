@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import BlogPostView from "@/views/BlogPost";
-import { getBlogPost } from "@/features/blog/api/blog.api";
+import { getBlogPost, getBlogPosts } from "@/features/blog/api/blog.api";
 import { BlogErrorState } from "@/features/blog/ui/BlogStates";
 import LandingHeader from "@/features/landing/ui/LandingHeader";
 import LandingFooter from "@/features/landing/ui/LandingFooter";
@@ -50,14 +50,17 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
 export default async function BlogPostPage({ params }: { params: Params }) {
   const { slug } = await params;
-  const result = await getBlogPost(slug);
+  const [result, relatedResult] = await Promise.all([
+    getBlogPost(slug),
+    getBlogPosts({ page: 1, perPage: 4 }),
+  ]);
 
   if (!result.ok) {
     if (result.notFound) notFound();
 
     // Transient failure (network / 5xx): show a retryable state rather than a hard 404.
     return (
-      <div className="min-h-screen overflow-hidden bg-[#0A0E1A] text-white">
+      <div className="min-h-screen overflow-hidden bg-navy text-white">
         <LandingHeader />
         <div className="container mx-auto px-6 py-24 md:px-10">
           <BlogErrorState message={result.error} retryHref={`/blog/${encodeURIComponent(slug)}`} />
@@ -67,5 +70,7 @@ export default async function BlogPostPage({ params }: { params: Params }) {
     );
   }
 
-  return <BlogPostView post={result.post} />;
+  const relatedPosts = relatedResult.ok ? relatedResult.posts : [];
+
+  return <BlogPostView post={result.post} relatedPosts={relatedPosts} />;
 }
