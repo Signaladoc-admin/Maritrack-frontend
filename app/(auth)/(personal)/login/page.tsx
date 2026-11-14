@@ -1,18 +1,13 @@
-import { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Parent Login — Flentra",
-  description: "Sign in to your Flentra parent account to monitor and manage your child's digital activity, configure parental controls, track device usage, and ensure your family's online safety.",
-};
-
-import { Header } from "@/shared/ui/layout/header";
-import LoginForm from "@/features/auth-login/ui/LoginForm";
-
-export default function LoginPage() {
-  return (
-    <div className="space-y-6">
-      <Header title="Welcome back" subtitle="Log in to manage your session" />
-      <LoginForm />
-    </div>
-  );
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string }>;
+}) {
+  const { callbackUrl } = await searchParams;
+  const target = callbackUrl
+    ? `/sign-in?callbackUrl=${encodeURIComponent(callbackUrl)}`
+    : "/sign-in";
+  redirect(target);
 }

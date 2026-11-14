@@ -49,6 +49,10 @@ const publicRoutes = [
   "/",
   "/landing",
   "/about",
+  "/company",
+  "/book-a-demo",
+  "/family",
+  "/sign-in",
   "/unauthorized",
   "/privacy-policy",
   "/terms-of-service",
@@ -68,7 +72,7 @@ const publicRoutes = [
 
 // Public route *sections*: the base path AND everything beneath it (e.g. /blog and /blog/<slug>).
 // `publicRoutes` above is exact-match only, so dynamic pages must be listed here instead.
-const publicRoutePrefixes = ["/blog"];
+const publicRoutePrefixes = ["/blog", "/platform", "/solutions", "/resources"];
 
 function isPublicRoute(pathname: string): boolean {
   if (publicRoutes.includes(pathname)) return true;
@@ -80,6 +84,7 @@ function isPublicRoute(pathname: string): boolean {
 }
 
 const authRoutes = [
+  "/sign-in",
   // Personal auth routes
   "/login",
   "/register",
@@ -188,7 +193,7 @@ export async function middleware(req: NextRequest) {
 
   // 4. Protect all other routes
   if (!token) {
-    const loginUrl = new URL("/login", req.url);
+    const loginUrl = new URL("/sign-in", req.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
   }
