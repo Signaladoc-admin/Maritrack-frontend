@@ -24,6 +24,8 @@ const roleAccessMap: Record<string, string[]> = {
     "/plans/*",
     "/reports",
     "/reports/*",
+    "/logs",
+    "/logs/*",
   ],
   PARENT: [
     "/dashboard",
