@@ -90,7 +90,22 @@ export function MapCard({ deviceId, className, resolvedAddress }: MapCardProps) 
     resolvedAddress ||
     (location as any)?.address ||
     (typeof location === "string" ? location : null) ||
-    (hasValidLocation ? `${lat!.toFixed(5)}, ${lng!.toFixed(5)}` : "No GPS data reported");
+    (hasValidLocation ? `${lat!.toFixed(5)},${lng!.toFixed(5)}` : "No GPS data reported");
+
+  function handleMapError() {
+    setMapError(true);
+  }
+
+  function handleMarkerClick(e: any) {
+    if (e && e.originalEvent) {
+      e.originalEvent.stopPropagation();
+    }
+    setShowPopup(true);
+  }
+
+  function handlePopupClose() {
+    setShowPopup(false);
+  }
 
   if (!isClient) {
     return (
@@ -143,25 +158,13 @@ export function MapCard({ deviceId, className, resolvedAddress }: MapCardProps) 
               popupText={displayAddress}
             />
           ) : (
-             setMapError(true)}
-              initialViewState={{
-                longitude: center.longitude,
-                latitude: center.latitude,
-                zoom: hasValidLocation ? 14 : 12,
-              }}
-              style={{ width: "100%", height: "100%", minHeight: "400px" }}
-              mapStyle="mapbox://styles/mapbox/streets-v12"
-            >
               <NavigationControl position="bottom-right" />
 
               <Marker
                 longitude={center.longitude}
                 latitude={center.latitude}
                 anchor="bottom"
-                onClick={(e) => {
-                  e.originalEvent.stopPropagation();
-                  setShowPopup(true);
-                }}
+                onClick={handleMarkerClick}
               >
                 <div className="group relative flex cursor-pointer flex-col items-center">
                   <div className="relative flex h-8 w-8 items-center justify-center">
@@ -180,7 +183,7 @@ export function MapCard({ deviceId, className, resolvedAddress }: MapCardProps) 
                   latitude={center.latitude}
                   anchor="top"
                   offset={[0, 10]}
-                  onClose={() => setShowPopup(false)}
+                  onClose={handlePopupClose}
                   closeButton={true}
                   closeOnClick={false}
                   className="rounded-lg shadow-xl"
