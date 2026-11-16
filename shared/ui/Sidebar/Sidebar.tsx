@@ -51,3 +51,122 @@ export function Sidebar(_props?: SidebarProps) {
     } else if (!pathname.startsWith("/child/")) {
       e.preventDefault();
       router.push("/dashboard");
+    }
+  };
+
+  if (isFetchingChildren) {
+    return <SidebarSkeleton />;
+  }
+
+  return (
+    <TooltipProvider delayDuration={0}>
+      <aside className="fixed top-0 left-0 z-40 flex h-screen w-[100px] flex-col items-center justify-between bg-[#F7F7F7] py-10">
+        {/* Top: Dashboard Link */}
+        <div className="flex w-full flex-col items-center">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link
+                href="/dashboard"
+                className={cn(
+                  "cursor-pointer rounded-full p-3 transition-all",
+                  pathname === "/dashboard"
+                    ? "bg-[#1B3C73] text-white shadow-sm"
+                    : "bg-[#EEEEEE] text-[#1B3C73] hover:bg-[#1B3C73] hover:text-white"
+                )}
+              >
+                <Home className="h-5 w-5" />
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="ml-2">
+              <p>Dashboard</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
+        {/* Middle: Children List & Add Child Button */}
+        <div className="flex w-full flex-1 flex-col items-center justify-center gap-8">
+          <div className="flex flex-col items-center gap-6">
+            {visibleChildren.map((child) => {
+              const isChildSelected = selectedChildId === child.id;
+              return (
+                <Tooltip key={child.id}>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href={`/child/${child.id}`}
+                      onClick={(e) => handleChildClick(e, child.id)}
+                      className="group relative cursor-pointer"
+                    >
+                      <div
+                        className={cn(
+                          "rounded-full p-[2px] transition-all duration-300 group-hover:scale-110",
+                          isChildSelected && "ring-2 ring-[#1B3C73] ring-offset-2"
+                        )}
+                      >
+                        <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#EEEEEE]">
+                          {child.imageUrl ? (
+                            <img
+                              src={child.imageUrl}
+                              alt={child.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <User className="h-6 w-6 text-[#1B3C73]" />
+                          )}
+                        </div>
+                      </div>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="ml-2">
+                    <p>{child.name}</p>
+                  </TooltipContent>
+                </Tooltip>
+              );
+            })}
+
+            {hasMore && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/children"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EEEEEE] text-xs font-medium text-[#1B3C73] transition-all hover:scale-110"
+                  >
+                    +{(parentChildren?.data?.length ?? 0) - 5}
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="ml-2">
+                  <p>View all children</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link href="/children/add">
+                <button
+                  type="button"
+                  aria-label="Add a new child"
+                  className="group flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-[#EEEEEE] text-[#1B3C73] transition-all hover:scale-105 hover:bg-[#1B3C73] hover:text-white"
+                >
+                  <Plus className="h-5 w-5 transition-transform group-hover:scale-110" />
+                </button>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="ml-2">
+              <p>Add a new child</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
+        {/* Footer */}
+        <div className="sidebar-footer">
+          <div className="account-row flex w-full items-center justify-center gap-2">
+            <ProfilePopover />
+          </div>
+        </div>
+      </aside>
+    </TooltipProvider>
+  );
+}
+
+export default Sidebar;
