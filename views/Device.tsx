@@ -1,12 +1,8 @@
 "use client";
 
-import IconWrapper from "@/features/child-profile/ui/IconWrapper";
-import DateDropdown from "@/features/device/ui/date-dropdown";
-import { TABS } from "@/shared/lib/constants";
 import Back from "@/shared/ui/go-back";
 import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
-import { TabNavigation } from "@/shared/ui/tab-navigation";
-import { Smartphone, Trash2Icon, X } from "lucide-react";
+import { Trash2Icon, X } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { isRetailerRole } from "@/entities/user/model/user.schema";
@@ -16,8 +12,7 @@ import AppControl from "./AppControl";
 import { MarkAsReturnedModal } from "@/features/device/ui/MarkAsReturnedModal";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { useAuth } from "@/shared/auth/AuthProvider";
-import { Button } from "@/shared/ui/button";
-import { useDevice, useDeviceMessages } from "@/entities/device";
+import { useDeviceMessages } from "@/entities/device";
 import LocationPage from "./Location";
 import DevicesConfigurationSetup from "@/features/parents/ui/DeviceConfigurationSetup";
 import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
@@ -41,10 +36,11 @@ const Device = () => {
   const { user } = useAuth();
   const { selectedChildId } = useParentStore();
 
-  const isParent = user?.appRole === "PARENT";
-
+  const isRetailer = isRetailerRole(user?.role);
+  const isRetailerAdmin = user?.role === "RETAILER_ADMIN";
   const isParent = !isRetailer && user?.appRole === "PARENT";
   const mdmDeviceId = params.device;
+
   const { data: parentChildrenRes } = useParentChildren({
     enabled: isParent,
   });
@@ -59,20 +55,6 @@ const Device = () => {
         c.device?.id === mdmDeviceId
     ) || null;
 
-  const handleBack = () => {
-    if (isParent) {
-      if (linkedChild?.id) {
-        router.push(`/child/${linkedChild.id}`);
-      } else if (queryChildId) {
-        router.push(`/child/${queryChildId}`);
-      } else {
-        router.push("/children");
-      }
-    } else {
-      router.push("/devices");
-    }
-  };
-
   const { data: hardwareData, isLoading: isLoadingHardwareData } = useDeviceDetail(
     mdmDeviceId,
     "hardware",
@@ -83,15 +65,38 @@ const Device = () => {
   const deviceResponse: MDMDeviceDetailsResponse = hardwareData;
   const deviceDetails = deviceResponse?.deviceDetails;
 
+  const { data: businessZoneData } = useBusinessZone({
+    enabled: user?.appRole === "BUSINESS",
+  });
+  const zoneName =
+    (deviceDetails as any)?.zoneName ||
+    (businessZoneData as any)?.data?.name ||
+    (businessZoneData as any)?.name ||
+    "Default";
+
+  const { data: messagesData } = useDeviceMessages(deviceDetails?.id || mdmDeviceId);
+  const messageCount = Array.isArray((messagesData as any)?.data)
+    ? (messagesData as any).data.length
+    : Array.isArray(messagesData)
+      ? messagesData.length
+      : 0;
+
   const childId =
     searchParams?.get("childId") ||
+    linkedChild?.id ||
     deviceDetails?.childId ||
     (selectedChildId && selectedChildId !== "all" ? selectedChildId : "");
 
   const backLabel = isParent ? "Back to Child" : "Back to devices";
   const backHref = isParent ? (childId ? `/child/${childId}` : "/dashboard") : "/devices";
 
-  const activeTab = searchParams?.get("tab") || "general";
+  const tabFromUrl = searchParams?.get("tab") || "general";
+  const [activeTab, setActiveTab] = useState(tabFromUrl);
+
+  useEffect(() => {
+    setActiveTab(tabFromUrl);
+  }, [tabFromUrl]);
+
   const [showDelete, setShowDelete] = useState(false);
   const [showMarkAsReturned, setShowMarkAsReturned] = useState(false);
   const [showReassign, setShowReassign] = useState(false);
@@ -118,7 +123,7 @@ const Device = () => {
     if (!dateStr) return "-";
     try {
       return format(new Date(dateStr), "dd MMM yyyy, h:mm a");
-    } catch (e) {
+    } catch {
       return "-";
     }
   };
@@ -130,14 +135,10 @@ const Device = () => {
   const isStatusPending = deviceStatus === "PENDING" || deviceStatus === "UNASSIGNED";
 
   return (
-    <div>
-      {isLoadingHardwareData ? (
-        <DeviceHeaderSkeleton isMobile={isMobile} />
-      ) : (
-        <div className="mb-10 flex w-full flex-col gap-6">
-          <div className="flex justify-start">
-            <Back label={backLabel} href={backHref} />
-          </div>
+    <div className="mb-10 flex w-full flex-col gap-6">
+      <div className="flex justify-start">
+        <Back label={backLabel} href={backHref} />
+      </div>
 
       <div className="surface dd-hero">
         <div className="dd-hero-top">
