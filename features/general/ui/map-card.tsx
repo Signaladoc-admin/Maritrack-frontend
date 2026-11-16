@@ -3,10 +3,10 @@
 import React, { useEffect, useRef, useState, Component } from "react";
 import dynamic from "next/dynamic";
 import Map, { Marker, Popup, NavigationControl, MapRef } from "react-map-gl/mapbox";
-import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/Card/Card";
 import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
+import { DEFAULT_MAPBOX_TOKEN, checkWebGLSupport } from "@/shared/lib/mapbox";
 import { MapPin } from "lucide-react";
 
 // Fallback map for environments where WebGL is disabled or unsupported (e.g. Brave shields, hardware acceleration off)
@@ -19,8 +19,6 @@ const LeafletFallbackMap = dynamic(() => import("./LeafletFallbackMap"), {
     </div>
   ),
 });
-
-import { DEFAULT_MAPBOX_TOKEN, checkWebGLSupport } from "@/shared/lib/mapbox";
 
 interface ErrorBoundaryProps {
   fallback: React.ReactNode;
@@ -70,7 +68,6 @@ export function MapCard({ deviceId, className, resolvedAddress }: MapCardProps) 
   const [showPopup, setShowPopup] = useState(false);
   const mapRef = useRef<MapRef>(null);
 
-export function MapCard({ deviceId, className, resolvedAddress }: MapCardProps) {
   const { data: hardwareData, isPending: isHardwarePending } = useDeviceDetail(
     deviceId,
     "hardware",
@@ -153,12 +150,6 @@ export function MapCard({ deviceId, className, resolvedAddress }: MapCardProps) 
     />
   );
 
-  const displayAddress =
-    resolvedAddress ||
-    (location as any)?.address ||
-    (typeof location === "string" ? location : null) ||
-    (hasValidLocation ? `${lat!.toFixed(5)}, ${lng!.toFixed(5)}` : "No GPS data reported");
-
   return (
     <Card className={`flex h-full w-full min-h-[460px] flex-col overflow-hidden ${className || ""}`}>
       <CardHeader>
@@ -188,17 +179,6 @@ export function MapCard({ deviceId, className, resolvedAddress }: MapCardProps) 
             renderFallback
           ) : (
             <WebGLErrorBoundary fallback={renderFallback}>
-              <Map
-                ref={mapRef}
-                mapboxAccessToken={DEFAULT_MAPBOX_TOKEN}
-                initialViewState={{
-                  longitude: center.longitude,
-                  latitude: center.latitude,
-                  zoom: hasValidLocation ? 14 : 12,
-                }}
-                style={{ width: "100%", height: "100%", minHeight: "400px" }}
-                mapStyle="mapbox://styles/mapbox/streets-v12"
-              >
                 <NavigationControl position="bottom-right" />
 
                 <Marker
@@ -253,7 +233,7 @@ export function MapCard({ deviceId, className, resolvedAddress }: MapCardProps) 
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
