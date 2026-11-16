@@ -85,116 +85,38 @@ const AppControl = () => {
   };
 
   return (
-    <div className="detail-tab-panel animate-in fade-in-0 w-full duration-300">
-      <div className="dd-section">
-        <div className="dd-section-title">
-          <span>Installed user apps</span>
-          {!isPending && (
-            <span className="text-[11px] font-bold tracking-wider text-[var(--text-3)] uppercase">
-              {apps.length} apps
-            </span>
-          )}
-        </div>
-
-        <div className="surface" style={{ padding: "6px 22px" }}>
-          {isPending ? (
-            <div className="flex flex-col divide-y divide-[var(--card-line)] py-2">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0"
-                >
-                  <div className="flex items-center gap-3.5">
-                    <Skeleton className="h-9 w-9 rounded-lg" />
-                    <div className="space-y-1.5">
-                      <Skeleton className="h-4 w-40" />
-                      <Skeleton className="h-3 w-24" />
-                    </div>
-                  </div>
-                  <Skeleton className="h-5 w-10 rounded-full" />
-                </div>
-              ))}
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-1">
+      {/* Left Column */}
+      {/* <div className="flex flex-col gap-6 lg:col-span-1">
+        {isPending ? (
+          <>
+            <Skeleton className="h-48 rounded-[32px]" />
+            <div className="space-y-4">
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-64 rounded-[32px]" />
             </div>
           ) : apps.length === 0 ? (
             <div className="py-12 text-center text-xs text-[var(--text-3)]">
               No user applications installed on this device.
             </div>
-          ) : (
-            apps.map((app) => (
-              <div className="app-row" key={app.id}>
-                <div className="app-icon" style={{ background: app.iconBg, color: "#FFFFFF" }}>
-                  {app.iconLetter}
-                </div>
-                <div className="app-body">
-                  <div className="app-name">{app.name}</div>
-                  <div className="app-cat">{app.category}</div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <span className="hidden text-[11px] font-medium text-[var(--text-3)] md:inline">
-                      {app.enabled ? "Active" : "Blocked"}
-                    </span>
-                    <label
-                      className="switch"
-                      title={app.enabled ? "Active (click to block)" : "Blocked (click to allow)"}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={app.enabled}
-                        disabled={app.disabled}
-                        onChange={() => toggleApp(app)}
-                      />
-                      <span className="track"></span>
-                    </label>
-                  </div>
+          </>
+        )}
+      </div> */}
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAppToUninstall(app);
-                      setIsUninstallModalOpen(true);
-                    }}
-                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-[var(--card-line)] bg-[var(--card-fill)] px-2.5 py-1.5 text-xs font-semibold text-[var(--text-2)] transition-colors hover:border-[var(--coral-border)] hover:bg-[var(--coral-soft)] hover:text-[var(--coral)]"
-                    title={`Uninstall ${app.name}`}
-                    aria-label={`Uninstall ${app.name}`}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Uninstall</span>
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      <div className="dd-section">
-        <div className="dd-section-title">App limits</div>
-        <div className="surface" style={{ padding: "6px 22px" }}>
-          <div className="config-row">
-            <div className="config-body">
-              <div className="config-title">Daily screen time cap</div>
-              <div className="config-desc">Restrict total non-essential app usage per day.</div>
-            </div>
-            <select className="form-select config-select" defaultValue="4 hours / day">
-              <option>No limit</option>
-              <option>4 hours / day</option>
-              <option>6 hours / day</option>
-              <option>8 hours / day</option>
-            </select>
-          </div>
-          <div className="config-row" style={{ borderBottom: "none" }}>
-            <div className="config-body">
-              <div className="config-title">Social &amp; entertainment apps</div>
-              <div className="config-desc">Limit access to non-essential apps.</div>
-            </div>
-            <select className="form-select config-select" defaultValue="Blocked">
-              <option>Blocked</option>
-              <option>1 hour / day</option>
-              <option>Unrestricted</option>
-            </select>
-          </div>
-        </div>
+      {/* Right Column - Swappable */}
+      <div className="lg:w-full">
+        {view === "detail" && selectedApp ? (
+          <AppDetailView app={selectedApp} onBack={() => setView("list")} />
+        ) : (
+          <AllAppsCard
+            apps={fetchedApps}
+            isLoading={isPending}
+            onViewApp={(appId) => {
+              setSelectedAppId(appId);
+              setView("detail");
+            }}
+          />
+        )}
       </div>
 
       {/* Uninstall Confirmation Modal */}

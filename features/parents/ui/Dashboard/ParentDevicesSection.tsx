@@ -11,7 +11,7 @@ interface ParentDevicesSectionProps {
   childName?: string;
   childId?: string;
   isLoadingChild: boolean;
-  onPairDevice?: () => void;
+  hardwareData?: any;
 }
 
 export function ParentDevicesSection({
@@ -20,8 +20,9 @@ export function ParentDevicesSection({
   childName,
   childId,
   isLoadingChild,
-  onPairDevice,
+  hardwareData,
 }: ParentDevicesSectionProps) {
+  const { scrollContainerRef, events } = useDragScroll();
   const router = useRouter();
 
   if (isLoadingChild) {
@@ -39,9 +40,9 @@ export function ParentDevicesSection({
         <DeviceCard
           device={{ ...device, deviceId: targetDeviceId }}
           childName={childName}
-          childId={childId}
+          hardwareData={hardwareData}
           onClick={() =>
-            router.push(`/devices/${targetDeviceId}${childId ? `?childId=${childId}` : ""}`)
+            router.push(childId ? `/devices/${deviceId}?childId=${childId}` : `/devices/${deviceId}`)
           }
         />
       </div>

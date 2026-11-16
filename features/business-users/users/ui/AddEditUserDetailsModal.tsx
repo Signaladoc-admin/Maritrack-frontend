@@ -7,6 +7,7 @@ import {
   BusinessRole,
   businessUserDetailsSchema,
   BusinessUserDetailsValues,
+  getBusinessUserDetailsSchema,
 } from "@/entities/user/model/user.schema";
 import { InputGroup } from "@/shared/ui/input-group";
 import Modal from "@/shared/ui/modal";
@@ -29,6 +30,9 @@ export default function AddEditUserDetailsModal({
   onOpenChange: (open: boolean) => void;
   selectedId: string | null;
 }) {
+  const { business } = useGetFullBusinessDetails();
+  const isDeviceFinance = (business?.profile as any)?.type === "DEVICE_FINANCING";
+
   const { register, formState, handleSubmit, control, setValue, reset } =
     useForm<BusinessUserDetailsValues>({
       defaultValues: {
@@ -41,7 +45,9 @@ export default function AddEditUserDetailsModal({
         phone: "",
         address: "",
       },
-      resolver: zodResolver(businessUserDetailsSchema),
+      resolver: (values, context, options) => {
+        return zodResolver(getBusinessUserDetailsSchema(isDeviceFinance))(values, context, options);
+      },
     });
 
   const { mutateAsync: createStaffMember, isPending: isCreatingStaffMember } =
@@ -59,9 +65,6 @@ export default function AddEditUserDetailsModal({
     value: department.id,
     label: department.name,
   }));
-
-  const { business } = useGetFullBusinessDetails();
-  const isDeviceFinance = (business?.profile as any)?.type === "DEVICE_FINANCING";
 
   const { toast } = useToast();
 
@@ -142,7 +145,7 @@ export default function AddEditUserDetailsModal({
               error={formState.errors.lastName?.message}
             />
           </div>
-          
+
           {!isDeviceFinance && (
             <>
               <Controller

@@ -22,6 +22,7 @@ import { GeofenceLocation, GeofencesRequest } from "@/features/mdm-sync/types";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { useGetBusiness } from "@/entities/business/model/useBusiness";
 import { useChild } from "@/entities/children/model/useChildren";
+import { DEFAULT_MAPBOX_TOKEN } from "@/shared/lib/mapbox";
 
 // ---------------------------------------------------------------------------
 // Schema & Types
@@ -354,7 +355,7 @@ export function GeofencingModal({
 
   const organizationName = isBusinessUser ? business?.name : child?.name;
 
-  const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "";
+  const accessToken = DEFAULT_MAPBOX_TOKEN;
 
   /** All committed entries */
   const [locations, setLocations] = React.useState<LocationEntry[]>([]);

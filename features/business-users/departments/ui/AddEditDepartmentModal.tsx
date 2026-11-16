@@ -45,17 +45,10 @@ export default function AddEditDepartmentModal({
   async function onSubmit(data: DepartmentValues) {
     try {
       if (initialData) {
-        await updateDepartment({ id: initialData.id, ...data });
+        await updateDepartment({ id: initialData.id, name: data.name });
       } else {
-        if (!businessId) {
-          throw new Error("Business ID is required to create a department");
-        }
         await createDepartment({
-          ...data,
-          businessId,
-          zone: user?.zoneId || "",
-          mdmDepartmentId: "",
-          description: ""
+          name: data.name,
         });
       }
 

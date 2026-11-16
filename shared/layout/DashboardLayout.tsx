@@ -5,7 +5,6 @@ import { useAuth } from "../auth/AuthProvider";
 import { Sidebar } from "../ui/Sidebar/Sidebar";
 import { MobileNavbar } from "../ui/layout/mobile-navbar";
 import TopNavbar from "../ui/TopNavbar/TopNavbar";
-import { ProfilePopover } from "@/shared/ui/Sidebar/ProfilePopover";
 
 import { BusinessSidebar } from "../ui/Sidebar/BusinessSidebar";
 
@@ -25,12 +24,14 @@ function ParentLayout({ children }: { children: ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="bg-background text-foreground flex min-h-screen w-full">
-      <Sidebar mobileOpen={mobileMenuOpen} setMobileOpen={setMobileMenuOpen} />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <TopNavbar onMenuClick={() => setMobileMenuOpen(true)} />
-        <main className="mx-auto w-full max-w-[1360px] flex-1 p-4 sm:p-6 lg:p-10">{children}</main>
+    <div className="flex min-h-screen flex-col bg-[#F7F7F7] lg:flex-row lg:bg-white">
+      <div className="hidden lg:block">
+        <Sidebar />
       </div>
+      <MobileNavbar />
+      <main className="min-w-0 flex-1 lg:ml-[100px]">
+        <div className="mx-auto max-w-6xl p-6 lg:p-12">{children}</div>
+      </main>
     </div>
   );
 }
