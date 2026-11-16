@@ -87,7 +87,9 @@ export function useExportDevices(options: { enabled?: boolean } = {}) {
   });
 }
 
-export function useBulkActionDevices(options: { onSuccess?: () => void } = {}) {
+export function useBulkActionDevices(
+  options: { onSuccess?: () => void; onError?: (error: any) => void } = {}
+) {
   const queryClient = useQueryClient();
   return useServerActionMutation(
     ({ ids, actionId, messageText }: { ids: string[]; actionId: number; messageText?: string }) =>
@@ -99,11 +101,18 @@ export function useBulkActionDevices(options: { onSuccess?: () => void } = {}) {
           options.onSuccess();
         }
       },
+      onError: (err) => {
+        if (options.onError) {
+          options.onError(err);
+        }
+      },
     }
   );
 }
 
-export function useBulkMessageDevices(options: { onSuccess?: () => void } = {}) {
+export function useBulkMessageDevices(
+  options: { onSuccess?: () => void; onError?: (error: any) => void } = {}
+) {
   const queryClient = useQueryClient();
   return useServerActionMutation(
     ({ ids, messageType, message }: { ids: string[]; messageType: string; message: string }) =>
@@ -115,6 +124,12 @@ export function useBulkMessageDevices(options: { onSuccess?: () => void } = {}) 
           options.onSuccess();
         }
       },
+      onError: (err) => {
+        if (options.onError) {
+          options.onError(err);
+        }
+      },
     }
   );
 }
+

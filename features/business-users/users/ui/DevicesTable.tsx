@@ -2,6 +2,8 @@ import { Device, DeviceHardwareInfo, StaffDevice } from "@/entities/device";
 import { DeviceHardwareDetails } from "@/features/device/types";
 import Table from "@/shared/ui/Table/Table";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/shared/auth/AuthProvider";
+import { isRetailerRole } from "@/entities/user/model/user.schema";
 
 interface DevicesTableProps<T extends { id: string | number }> {
   columns: any;
@@ -14,6 +16,7 @@ interface DevicesTableProps<T extends { id: string | number }> {
   selectable?: boolean;
   onRowSelect?: (items: T[]) => void;
   clearSelectionTrigger?: number;
+  disableRowClick?: boolean;
 }
 
 export default function DevicesTable<T extends { id: string | number }>({
@@ -27,10 +30,14 @@ export default function DevicesTable<T extends { id: string | number }>({
   selectable,
   onRowSelect,
   clearSelectionTrigger,
+  disableRowClick,
 }: DevicesTableProps<T>) {
   const router = useRouter();
+  const { user } = useAuth();
+  const isRetailer = disableRowClick ?? isRetailerRole(user?.businessRole);
 
   function handleRowSelection(device: any) {
+    if (isRetailer) return;
     router.push(`/devices/${device?.mdmDeviceId || device?.device?.mdmDeviceId}?tab=general`);
   }
 
@@ -38,7 +45,7 @@ export default function DevicesTable<T extends { id: string | number }>({
     <Table
       data={data as any}
       columns={columns}
-      onItemClick={handleRowSelection}
+      onItemClick={isRetailer ? undefined : handleRowSelection}
       isPaginated={!!onPageChange}
       currentPage={currentPage}
       totalPages={totalPages}

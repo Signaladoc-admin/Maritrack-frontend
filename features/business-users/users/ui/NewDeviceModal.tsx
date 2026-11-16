@@ -22,6 +22,8 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Country, State } from "country-state-city";
+import { useAuth } from "@/shared/auth/AuthProvider";
+import { useEffect } from "react";
 
 function StaffOptionContent({ staff }: { staff: BusinessStaff }) {
   const firstName = staff.user?.firstName ?? "";
@@ -30,22 +32,35 @@ function StaffOptionContent({ staff }: { staff: BusinessStaff }) {
   const fullName = `${firstName} ${lastName}`.trim() || staff.user?.email;
   const isAdmin = staff.businessRole === "ORGANIZATION_ADMIN";
 
+  const financing = staff.onDeviceFinancing || staff.deviceFinancing;
+  const deviceName = financing ? `${financing.deviceBrand || ""} ${financing.deviceModel || ""}`.trim() : null;
+  const retailer = staff.retailer;
+
   return (
     <div className="flex items-center gap-3 py-0.5">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1b3c73] text-[11px] font-bold text-white">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-base">
         {initials}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-1.5">
-          <span className="truncate font-medium text-slate-800">{fullName}</span>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="truncate font-medium text-foreground">{fullName}</span>
           {isAdmin && (
-            <span className="shrink-0 rounded bg-[#e8f0fd] px-1.5 py-0.5 text-[10px] font-semibold text-[#1b3c73]">
+            <span className="shrink-0 rounded bg-accent/20 px-1.5 py-0.5 text-[10px] font-semibold text-accent">
               Admin
             </span>
           )}
+          {deviceName && (
+            <span className="shrink-0 rounded bg-primary/20 text-primary px-1.5 py-0.5 text-[10px] font-semibold">
+              {deviceName}
+            </span>
+          )}
         </div>
-        <span className="block truncate text-xs text-slate-500">{staff.user?.email}</span>
-        {staff.location && <span className="text-xs text-slate-400">{staff.location}</span>}
+        <span className="block truncate text-xs text-muted-foreground">{staff.user?.email}</span>
+        {(staff.location || retailer?.branchName) && (
+          <span className="text-xs text-muted-foreground/70">
+            {[staff.location, retailer?.branchName ? `Retailer: ${retailer.legalName || retailer.branchName}` : ""].filter(Boolean).join(" • ")}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -58,6 +73,7 @@ export default function NewDeviceModal({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { user } = useAuth();
   const [step, setStep] = useState<"select-staff" | "pair-device">("select-staff");
   const [selectedStaff, setSelectedStaff] = useState<BusinessStaff | null>(null);
 
@@ -67,7 +83,7 @@ export default function NewDeviceModal({
   const [debouncedSearchTerm] = useDebounce(searchTerm, 400);
 
   const { staffMembers, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useStaffMembersInfinite({ search: debouncedSearchTerm });
+    useStaffMembersInfinite({ businessId: user?.businessId || undefined, search: debouncedSearchTerm });
 
   const staffMemberOptions = (staffMembers as BusinessStaff[]).map((s) => ({
     value: s.id,
@@ -91,6 +107,7 @@ export default function NewDeviceModal({
   const underPaymentPlan = watch("underPaymentPlan");
   const transFer = watch("transFer");
   const watchCountry = watch("country");
+  const watchStaffId = watch("staffId");
 
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
@@ -100,6 +117,62 @@ export default function NewDeviceModal({
 
   const { business } = useGetFullBusinessDetails();
   const isDeviceFinance = (business?.profile as any)?.type === "DEVICE_FINANCING";
+
+  // Auto-populate device finance terms and user profile when user selects a staff member
+  useEffect(() => {
+    if (!watchStaffId) return;
+    const staff = staffById.get(watchStaffId);
+    if (!staff) return;
+
+    if (isDeviceFinance) {
+      setValue("underPaymentPlan", true);
+
+      const financing = staff.onDeviceFinancing || staff.deviceFinancing;
+      if (financing) {
+        if (financing.devicePriceInKobo) {
+          setValue("devicePriceInKobo", String(Number(financing.devicePriceInKobo) / 100));
+        }
+        if (financing.downPaymentInKobo) {
+          setValue("downPaymentInKobo", String(Number(financing.downPaymentInKobo) / 100));
+        }
+        if (financing.monthlyPaymentInKobo) {
+          setValue("monthlyPaymentInKobo", String(Number(financing.monthlyPaymentInKobo) / 100));
+        }
+        if (financing.paymentPlanDuration) {
+          setValue("paymentPlanDuration", String(financing.paymentPlanDuration));
+        }
+        if (financing.gracePeriodInDays !== undefined) {
+          setValue("gracePeriodInDays", String(financing.gracePeriodInDays));
+        }
+        if (financing.paymentStartDate) {
+          setValue("paymentStartDate", new Date(financing.paymentStartDate).toISOString());
+        }
+      } else if (staff.business) {
+        if ((staff.business as any).gracePeriodInDays !== undefined) {
+          setValue("gracePeriodInDays", String((staff.business as any).gracePeriodInDays));
+        }
+        if ((staff.business as any).paymentDuration !== undefined) {
+          setValue("paymentPlanDuration", String((staff.business as any).paymentDuration));
+        }
+      }
+
+      if (staff.transFer !== undefined) {
+        setValue("transFer", Boolean(staff.transFer));
+      }
+      if (staff.gender === "MALE" || staff.gender === "FEMALE") {
+        setValue("gender", staff.gender);
+      }
+      if (staff.address || staff.location) {
+        setValue("address", staff.address || staff.location || "");
+      }
+      if (staff.country) {
+        setValue("country", staff.country);
+      }
+      if (staff.state) {
+        setValue("state", staff.state);
+      }
+    }
+  }, [watchStaffId, staffById, isDeviceFinance, setValue]);
 
   const { mutateAsync: createDeviceFinance, isPending: isFinancing } = useCreateDeviceFinance();
 
@@ -141,7 +214,7 @@ export default function NewDeviceModal({
           country: data.country,
         });
 
-        
+
         toast({ type: "success", title: "Payment plan initiated successfully" });
       } catch (error: any) {
         toast({ type: "error", title: error?.message || "Failed to initiate payment plan" });
@@ -156,8 +229,12 @@ export default function NewDeviceModal({
     <Modal
       isOpen={open}
       onClose={handleClose}
-      title={isPairStep ? "" : "New Device"}
-      className={isPairStep ? "h-auto rounded-4xl p-10 md:max-w-[1100px] lg:p-20" : undefined}
+      title={isPairStep ? undefined : "New Device"}
+      className={
+        isPairStep
+          ? "h-auto w-full max-w-[1050px] sm:max-w-[1050px] md:max-w-[1050px] p-6 sm:p-8 md:p-10 rounded-3xl"
+          : undefined
+      }
       {...(!isPairStep && {
         confirmText: "Next",
         onConfirm: handleSubmit(onSubmit),
@@ -169,7 +246,7 @@ export default function NewDeviceModal({
             control={control}
             name="staffId"
             render={({ field }) => (
-              <InputGroup label={isDeviceFinance ? "User" : "Staff member"} error={formState.errors.staffId?.message}>
+              <InputGroup label={isDeviceFinance ? "User" : "Customer"} error={formState.errors.staffId?.message}>
                 <SearchableSelect
                   options={staffMemberOptions}
                   placeholder="Search by name, email or location"
@@ -196,7 +273,7 @@ export default function NewDeviceModal({
                 name="underPaymentPlan"
                 render={({ field }) => (
                   <div className="space-y-3">
-                    <label className="text-sm font-medium text-slate-700">Is this device under a payment plan?</label>
+                    <label className="text-sm font-medium text-foreground">Is this device under a payment plan?</label>
                     <div className="flex items-center gap-6">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <Checkbox
@@ -204,7 +281,7 @@ export default function NewDeviceModal({
                           onCheckedChange={() => field.onChange(false)}
                           className="rounded-sm"
                         />
-                        <span className="text-sm text-slate-700">No</span>
+                        <span className="text-sm text-foreground">No</span>
                       </label>
                       <label className="flex items-center gap-2 cursor-pointer">
                         <Checkbox
@@ -212,7 +289,7 @@ export default function NewDeviceModal({
                           onCheckedChange={() => field.onChange(true)}
                           className="rounded-sm"
                         />
-                        <span className="text-sm text-slate-700">Yes</span>
+                        <span className="text-sm text-foreground">Yes</span>
                       </label>
                     </div>
                   </div>
@@ -277,7 +354,7 @@ export default function NewDeviceModal({
                               <Button
                                 variant={"outline"}
                                 className={cn(
-                                  "w-full justify-start text-left font-normal bg-[#fafafa] border-[#E5E7EB] h-12 rounded-xl text-slate-800 hover:bg-[#fafafa] overflow-hidden",
+                                  "w-full justify-start text-left font-normal bg-white/5 border-card-line h-12 rounded-xl text-foreground hover:bg-white/10 overflow-hidden",
                                   !field.value && "text-muted-foreground"
                                 )}
                               >
@@ -287,7 +364,7 @@ export default function NewDeviceModal({
                                 </span>
                               </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0 bg-white" align="start">
+                            <PopoverContent className="w-auto p-0 border-card-line bg-card" align="start">
                               <Calendar
                                 mode="single"
                                 selected={field.value ? new Date(field.value) : undefined}
@@ -316,7 +393,7 @@ export default function NewDeviceModal({
                           onCheckedChange={field.onChange}
                           className="rounded-sm"
                         />
-                        <label htmlFor="transfer-profile-new" className="text-sm text-slate-700 cursor-pointer">
+                        <label htmlFor="transfer-profile-new" className="text-sm text-foreground cursor-pointer">
                           Transfer user profile to flentra after payment is completed
                         </label>
                       </div>
@@ -324,7 +401,7 @@ export default function NewDeviceModal({
                   />
 
                   {transFer && (
-                    <div className="grid grid-cols-2 gap-4 border-t border-slate-200 pt-4">
+                    <div className="grid grid-cols-2 gap-4 border-t border-card-line pt-4">
                       <Controller
                         control={control}
                         name="gender"

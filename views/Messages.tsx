@@ -1,81 +1,135 @@
 "use client";
 
-import { useDeviceMessages } from "@/entities/device/model/useDevices";
-import { useState, useMemo } from "react";
-import Pagination from "@/shared/ui/Table/Pagination";
-import { format, parseISO } from "date-fns";
-import { DeviceMessage } from "@/entities/device/model/types";
+import React, { useState } from "react";
+import { format } from "date-fns";
+import { toast } from "sonner";
+import { useDeviceMessages, bulkMessageDevicesAction } from "@/entities/device";
 
 interface MessagesProps {
   deviceId?: string;
 }
 
 export default function Messages({ deviceId }: MessagesProps) {
-  const [page, setPage] = useState(1);
-  const limit = 10;
+  const [inputText, setInputText] = useState("");
+  const [isSending, setIsSending] = useState(false);
 
-  const { data: responseData, isLoading, error } = useDeviceMessages(deviceId || "", { page, limit });
+  const {
+    data: messagesData,
+    isLoading,
+    refetch,
+  } = useDeviceMessages(deviceId || "", {
+    limit: 50,
+  });
 
-  // grouped by month
-  const groupedMessages = useMemo(() => {
-    const messages = responseData?.messages || [];
-    if (!messages.length) return {};
-    
-    return messages.reduce((acc, msg) => {
-      // Use fallback date if createdAt is missing
-      const date = msg.createdAt ? parseISO(msg.createdAt) : new Date();
-      const monthYear = format(date, "MMMM yyyy");
-      if (!acc[monthYear]) acc[monthYear] = [];
-      acc[monthYear].push(msg);
-      return acc;
-    }, {} as Record<string, DeviceMessage[]>);
-  }, [responseData?.messages]);
+  const messages = Array.isArray(messagesData?.messages) ? messagesData.messages : [];
 
-  const totalPages = responseData?.totalPages || 0;
+  const handleSend = async () => {
+    const trimmed = inputText.trim();
+    if (!trimmed) return;
+    if (!deviceId) {
+      toast.error("Device ID is required to send messages");
+      return;
+    }
+
+    setIsSending(true);
+    try {
+      const res = await bulkMessageDevicesAction([deviceId], "GENERAL", trimmed);
+      if (res && (res as any).success === false) {
+        toast.error((res as any).error || "Failed to send message");
+      } else {
+        toast.success("Message dispatched to device");
+        setInputText("");
+        refetch();
+      }
+    } catch {
+      toast.error("Failed to send message");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const formatMetaTime = (dateStr?: string) => {
+    if (!dateStr) return "-";
+    try {
+      return format(new Date(dateStr), "dd MMM, h:mm a");
+    } catch {
+      return "-";
+    }
+  };
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col space-y-8 pb-10">
-      <h2 className="text-3xl font-medium text-[#0a2540]">Messages sent to this device</h2>
-      
-      {isLoading && <div className="text-gray-500">Loading messages...</div>}
-      {error && <div className="text-red-500">Error loading messages.</div>}
-      
-      {!isLoading && !responseData?.messages?.length && !error && (
-        <div className="text-gray-500">No messages have been sent to this device.</div>
-      )}
+    <div className="detail-tab-panel animate-in fade-in-0 w-full duration-300">
+      <div className="message-composer">
+        <textarea
+          placeholder="Send a message to this device..."
+          id="ddMessageInput"
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          onKeyDown={handleKeyDown}
+          disabled={isSending}
+        ></textarea>
+        <button
+          className="btn-primary"
+          style={{ alignSelf: "flex-end" }}
+          id="ddSendMessageBtn"
+          onClick={handleSend}
+          disabled={isSending}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#002147"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
+          </svg>
+          {isSending ? "Sending..." : "Send"}
+        </button>
+      </div>
 
-      {Object.entries(groupedMessages).map(([monthYear, msgs]) => (
-        <div key={monthYear} className="space-y-4">
-          <h3 className="text-base font-medium text-gray-500">{monthYear}</h3>
-          <div className="space-y-4">
-            {msgs.map((msg) => (
-              <div
-                key={msg.id}
-                className="rounded-xl border border-gray-200 bg-white p-6"
-              >
-                <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-[#1e3a5f]">
-                  {msg.message}
-                </p>
-                <div className="mt-4 text-[13px] text-gray-400">
-                  {format(msg.createdAt ? parseISO(msg.createdAt) : new Date(), "MMMM d, yyyy")} • Sent by{" "}
-                  {msg.sentByUser ? `${msg.sentByUser.firstName} ${msg.sentByUser.lastName}` : "System"}
+      <div className="surface" style={{ padding: "6px 22px" }}>
+        {isLoading ? (
+          <div className="py-8 text-center text-sm text-[#667085]">Loading messages...</div>
+        ) : messages.length === 0 ? (
+          <div className="py-8 text-center text-sm text-[#667085]">
+            No messages sent to this device yet.
+          </div>
+        ) : (
+          <div className="message-list" id="ddMessageList">
+            {messages.map((msg) => (
+              <div className="message-row" key={msg.id}>
+                <div className="msg-icon">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                  </svg>
+                </div>
+                <div className="msg-body">
+                  <div className="msg-text">{msg.message}</div>
+                  <div className="msg-meta">
+                    {formatMetaTime(msg.createdAt)} ·{" "}
+                    <span className="msg-status delivered">Delivered</span>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
-      ))}
-
-      {totalPages > 1 && (
-        <div className="pt-4">
-          <Pagination
-            currentPage={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
-            className="border-none bg-transparent px-0"
-          />
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

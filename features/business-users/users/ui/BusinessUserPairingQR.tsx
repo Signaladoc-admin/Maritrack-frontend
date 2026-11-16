@@ -1,7 +1,8 @@
 "use client";
 
-import PairingQRStep from "@/features/onboarding/personal/ui/PairingQRStep";
+import BusinessPairingQRContent from "@/entities/business/ui/PairingQRBusinessModal";
 import { useGetStaffMember } from "@/entities/business/model/useStaffMembers";
+import { Skeleton } from "@/shared/ui/skeleton";
 
 export default function BusinessUserPairingQR({
   staffId,
@@ -12,17 +13,19 @@ export default function BusinessUserPairingQR({
   onBack: () => void;
   onComplete: () => void;
 }) {
-  const { data: staffMember } = useGetStaffMember(staffId);
+  const { data: staffMember, isLoading } = useGetStaffMember(staffId);
 
-  const userName =
-    staffMember?.user?.firstName || staffMember?.user?.lastName
-      ? `${staffMember.user.firstName ?? ""} ${staffMember.user.lastName ?? ""}`.trim()
-      : (staffMember?.user?.email ?? "Team member");
+  if (isLoading || !staffMember) {
+    return (
+      <div className="flex h-72 items-center justify-center">
+        <Skeleton className="h-64 w-full rounded-2xl" />
+      </div>
+    );
+  }
 
   return (
-    <PairingQRStep
-      entityId={staffId}
-      entityName={userName}
+    <BusinessPairingQRContent
+      staffMember={staffMember}
       onBack={onBack}
       onComplete={onComplete}
     />

@@ -2,7 +2,10 @@
 
 import React, { useState } from "react";
 import { format } from "date-fns";
-import { useDeviceFinanceDetails, useMarkPlanAsPaid } from "@/entities/device/model/useDeviceFinance";
+import {
+  useDeviceFinanceDetails,
+  useMarkPlanAsPaid,
+} from "@/entities/device/model/useDeviceFinance";
 import { Button } from "@/shared/ui/button";
 import CardHeader from "@/shared/ui/card-header";
 import { CardWrapper } from "@/shared/ui/card-wrapper";
@@ -10,7 +13,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 export function RepaymentPlans({ mdmDeviceId }: { mdmDeviceId?: string }) {
-  // We use mdmDeviceId to fetch the device finance details. 
+  // We use mdmDeviceId to fetch the device finance details.
   const { data: financeData, isLoading, refetch } = useDeviceFinanceDetails(mdmDeviceId);
 
   const { mutateAsync: markAsPaid, isPending: isPaying } = useMarkPlanAsPaid();
@@ -49,13 +52,10 @@ export function RepaymentPlans({ mdmDeviceId }: { mdmDeviceId?: string }) {
   if (installments.length === 0) {
     return (
       <CardWrapper variant="outline">
-        <CardHeader
-          title="Repayment Plans"
-          description="Manage the user's repayment plans here"
-        />
-        <div className="mt-6 border-t pt-6 text-sm text-gray-500">
+        <CardHeader title="Repayment Plans" description="Manage the user's repayment plans here" />
+        <div className="mt-6 border-t border-[var(--card-line)] pt-6 text-sm text-[var(--text-2)]">
           No repayment plans found for this device.
-          <pre className="mt-4 max-h-64 overflow-auto rounded bg-gray-100 p-4 text-xs text-gray-800">
+          <pre className="mt-4 max-h-64 overflow-auto rounded border border-[var(--card-line)] bg-[var(--card-fill)] p-4 text-xs text-[var(--text-2)]">
             {JSON.stringify(financeData, null, 2)}
           </pre>
         </div>
@@ -88,12 +88,9 @@ export function RepaymentPlans({ mdmDeviceId }: { mdmDeviceId?: string }) {
 
   return (
     <CardWrapper variant="outline" className="mb-6">
-      <CardHeader
-        title="Repayment Plans"
-        description="Manage the user's repayment plans here"
-      />
+      <CardHeader title="Repayment Plans" description="Manage the user's repayment plans here" />
 
-      <div className="mt-0 flex flex-col gap-0 divide-y border-t px-6">
+      <div className="mt-0 flex flex-col gap-0 divide-y divide-[var(--card-line)] border-t border-[var(--card-line)] px-6">
         {installments.map((plan: any, index: number) => {
           // Standardizing assumed fields, handling multiple possible backend naming conventions
           const id = plan.id;
@@ -103,10 +100,10 @@ export function RepaymentPlans({ mdmDeviceId }: { mdmDeviceId?: string }) {
           const isPaid = status === "PAID" || plan.isPaid;
           const lockedDate = plan.lockedDate;
 
-          let titleColor = isPaid ? "text-gray-400" : "text-[#1A2C4D]";
-          let amountColor = isPaid ? "text-gray-400" : "text-gray-500";
+          let titleColor = isPaid ? "text-[var(--text-3)]" : "text-[var(--text-1)]";
+          let amountColor = isPaid ? "text-[var(--text-3)]" : "text-[var(--text-2)]";
           let statusText = "";
-          let statusColor = "text-gray-500";
+          let statusColor = "text-[var(--text-2)]";
 
           if (date && !isPaid) {
             const due = new Date(date);
@@ -115,8 +112,8 @@ export function RepaymentPlans({ mdmDeviceId }: { mdmDeviceId?: string }) {
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
             if (diffDays < 0) {
-              amountColor = "text-[#D95D55]";
-              statusColor = "text-[#D95D55]";
+              amountColor = "text-[#FF6857]";
+              statusColor = "text-[#FF6857]";
               statusText = `Due ${Math.abs(diffDays)} days ago`;
               if (lockedDate) {
                 statusText += ` • Locked ${format(new Date(lockedDate), "MMMM d")}`;
@@ -127,7 +124,10 @@ export function RepaymentPlans({ mdmDeviceId }: { mdmDeviceId?: string }) {
           }
 
           return (
-            <div key={id || index} className="flex items-center justify-between py-5 first:pt-6 last:pb-6">
+            <div
+              key={id || index}
+              className="flex items-center justify-between py-5 first:pt-6 last:pb-6"
+            >
               <div className="flex flex-col gap-1.5">
                 <span className={`text-[15px] font-medium ${titleColor}`}>
                   {date ? format(new Date(date), "MMMM d, yyyy") : "Unknown Date"}
@@ -149,17 +149,18 @@ export function RepaymentPlans({ mdmDeviceId }: { mdmDeviceId?: string }) {
                   <Button
                     variant="outline"
                     disabled
-                    className="rounded-full border-gray-200 text-gray-400 disabled:opacity-100 font-normal h-8 px-4 text-[13px]"
+                    className="h-8 rounded-full border-[rgba(255,255,255,0.14)] px-4 text-[13px] font-normal text-[var(--text-3)] disabled:opacity-100"
                   >
                     Paid
                   </Button>
                 ) : (
                   <Button
                     variant="outline"
-                    className={`rounded-full h-8 px-4 text-[13px] ${id === firstUnpaidId
-                      ? "border-gray-300 font-medium text-gray-700 hover:bg-gray-50"
-                      : "border-gray-200 text-gray-400 opacity-60 cursor-not-allowed font-normal"
-                      }`}
+                    className={`h-8 rounded-full px-4 text-[13px] ${
+                      id === firstUnpaidId
+                        ? "border-primary text-primary hover:bg-accent-tint font-medium"
+                        : "cursor-not-allowed border-[rgba(255,255,255,0.14)] font-normal text-[var(--text-3)] opacity-60"
+                    }`}
                     onClick={(e) => {
                       e.preventDefault();
                       if (id === firstUnpaidId) handleMarkAsPaid(id, Number(amountKobo));

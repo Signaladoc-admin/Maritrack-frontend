@@ -178,13 +178,11 @@ export async function blockAppAction({
   return withSafeAction(
     async () => {
       const payload = { actionId: 27, message: packageName };
-      console.log("blockAppAction Payload:", payload);
       try {
         const response = await apiClient(`/mdm-sync/${deviceId}/action`, {
           method: "POST",
           body: JSON.stringify(payload),
         });
-        console.log("blockAppAction Response:", response);
         return response;
       } catch (error: any) {
         const source = error?.isBackendError ? "BACKEND" : error?.isNetworkError ? "NETWORK" : "FRONTEND";
@@ -203,13 +201,11 @@ export async function unblockAppAction({
   return withSafeAction(
     async () => {
       const payload = { actionId: 28, message: packageName };
-      console.log("unblockAppAction Payload:", payload);
       try {
         const response = await apiClient(`/mdm-sync/${deviceId}/action`, {
           method: "POST",
           body: JSON.stringify(payload),
         });
-        console.log("unblockAppAction Response:", response);
         return response;
       } catch (error: any) {
         const source = error?.isBackendError ? "BACKEND" : error?.isNetworkError ? "NETWORK" : "FRONTEND";
@@ -233,13 +229,11 @@ export async function uninstallAppAction({
   return withSafeAction(
     async () => {
       const payload = { actionId: 20, message: packageName };
-      console.log("uninstallAppAction Payload:", payload);
       try {
         const response = await apiClient(`/mdm-sync/${deviceId}/action`, {
           method: "POST",
           body: JSON.stringify(payload),
         });
-        console.log("uninstallAppAction Response:", response);
         return response;
       } catch (error: any) {
         const source = error?.isBackendError ? "BACKEND" : error?.isNetworkError ? "NETWORK" : "FRONTEND";

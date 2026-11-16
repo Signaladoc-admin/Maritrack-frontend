@@ -1,26 +1,34 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/Avatar/Avatar";
-import { DeviceUsageCard } from "@/shared/ui/DeviceStatusCard/DeviceStatusCard";
-import { EmptyDeviceCard } from "@/shared/ui/DeviceStatusCard/EmptyDevice";
-import Back from "@/shared/ui/go-back";
-import IconWrapper from "@/features/child-profile/ui/IconWrapper";
-import { AddEditChildModal } from "@/features/child-profile/ui/ChildDetailsModal";
-import { H3, P } from "@/shared/ui/typography";
-import { Edit2Icon, Trash2Icon } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useRecentChildren } from "@/shared/hooks/useRecentChildren";
-import { DeleteChildModal } from "@/features/child-profile/ui/ChildDeleteModal";
-import { IChildProfile } from "@/features/onboarding/personal/types";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { useGetChild, useDeleteChild } from "@/features/child-profile/model/useGetChildrenProfile";
 import { Child } from "@/features/child-profile/model/types";
 import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
-
-import { ChildDevicesSkeleton } from "./ChildDevicesSkeleton";
-
-import { getInitials } from "@/shared/lib/utils";
+import { useRecentChildren } from "@/shared/hooks/useRecentChildren";
+import { AddEditChildModal } from "@/features/child-profile/ui/ChildDetailsModal";
+import { DeleteChildModal } from "@/features/child-profile/ui/ChildDeleteModal";
 import { PairDeviceModal } from "@/shared/ui/Modal/Modals/PairDeviceModal";
+import { IChildProfile } from "@/features/onboarding/personal/types";
+import { ParentMetricsSection } from "@/features/parents/ui/Dashboard/ParentMetricsSection";
+import { ParentDevicesSection } from "@/features/parents/ui/Dashboard/ParentDevicesSection";
+import { ParentAppsSection } from "@/features/parents/ui/Dashboard/ParentAppsSection";
+import { ParentQuickControls } from "@/features/parents/ui/Dashboard/ParentQuickControls";
+import { ChildDevicesSkeleton } from "./ChildDevicesSkeleton";
+import { getInitials } from "@/shared/lib/utils";
+import {
+  Edit2Icon,
+  Trash2Icon,
+  Smartphone,
+  Plus,
+  ArrowLeft,
+  ShieldAlert,
+  Globe,
+  MapPin,
+  Sliders,
+  ChevronRight,
+} from "lucide-react";
 
 const ChildDevices = () => {
   const [showEdit, setShowEdit] = useState<boolean>(false);
@@ -28,28 +36,38 @@ const ChildDevices = () => {
   const [isPairNewDeviceModalOpen, setIsPairNewDeviceModalOpen] = useState(false);
 
   const params = useParams<{ child: string }>();
-  const child = params?.child;
+  const childId = params?.child;
   const router = useRouter();
   const { push: pushRecentChild } = useRecentChildren();
 
   useEffect(() => {
-    if (child) pushRecentChild(child);
-  }, [child]);
+    if (childId) pushRecentChild(childId);
+  }, [childId, pushRecentChild]);
 
-  const { data: childData, isLoading } = useGetChild(child as string);
+  const { data: childData, isLoading } = useGetChild(childId as string);
   const { mutateAsync: deleteChild, isPending: isDeleting } = useDeleteChild();
 
   const typedChild = childData as Child | undefined;
   const device = typedChild?.device ?? null;
+  const deviceId = device?.mdmId || device?.mdmDeviceId || device?.id || "";
 
-  const { data: hardwareData } = useDeviceDetail(device?.mdmId || "", "hardware", {
-    enabled: !!device?.mdmId,
+  // Device telemetry
+  const { data: hardwareData, isPending: isHardwarePending } = useDeviceDetail(
+    deviceId,
+    "hardware",
+    {
+      enabled: !!deviceId,
+    }
+  );
+
+  // Device installed apps
+  const { data: appsData, isPending: isAppsPending } = useDeviceDetail(deviceId, "apps", {
+    enabled: !!deviceId,
   });
-  const batteryLevel = hardwareData?.data?.realTimeStats?.batteryLevel ?? 0;
 
   const handleDelete = async () => {
-    if (!child) return;
-    await deleteChild(child);
+    if (!childId) return;
+    await deleteChild(childId);
     setShowDelete(false);
     router.push("/children");
   };
@@ -58,74 +76,171 @@ const ChildDevices = () => {
     return <ChildDevicesSkeleton />;
   }
 
+  if (!typedChild) {
+    return (
+      <div className="content">
+        <button className="dd-back-link" onClick={() => router.push("/children")}>
+          <ArrowLeft className="h-4 w-4" /> Back to children
+        </button>
+        <div className="surface flex flex-col items-center justify-center gap-4 rounded-[var(--radius-lg)] p-12 text-center">
+          <h3 className="text-lg font-bold text-[var(--text-1)]">Child Profile Not Found</h3>
+          <p className="max-w-sm text-sm text-[var(--text-2)]">
+            The child profile you are looking for does not exist or has been removed.
+          </p>
+          <button
+            type="button"
+            onClick={() => router.push("/children")}
+            className="btn-primary mt-2 cursor-pointer"
+          >
+            Go to children
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const relationshipLabel =
+    typedChild.gender === "FEMALE" ? "Daughter" : typedChild.gender === "MALE" ? "Son" : "Child";
+
   return (
-    <div>
-      <div className="">
-        <Back label="Go back" href="/dashboard" />
+    <div className="content">
+      {/* Back button */}
+      <button className="dd-back-link" onClick={() => router.push("/children")}>
+        <ArrowLeft className="h-4 w-4" /> Back to children
+      </button>
 
-        <div className="my-12 flex items-center justify-between">
-          <div className="flex items-center gap-5">
-            <Avatar className="h-[80px] w-[80px]">
-              <AvatarImage src={typedChild?.imageUrl ?? undefined} alt={typedChild?.name} />
-              <AvatarFallback>{getInitials(typedChild?.name)}</AvatarFallback>
-            </Avatar>
-
-            <div className="">
-              <H3 className="text-[#1B3C73]">{typedChild?.name}</H3>
-              <P className="leading-0 text-slate-400">
-                {typedChild?.age ? `${typedChild.age} years old` : ""}
-              </P>
+      {/* Child Hero Banner */}
+      <div className="surface dd-hero mb-6">
+        <div className="dd-hero-top">
+          <div className="dd-hero-id">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[var(--card-line)] bg-[var(--card-fill)] text-lg font-bold text-[var(--accent)]">
+              {typedChild.imageUrl ? (
+                <img
+                  src={typedChild.imageUrl}
+                  alt={typedChild.name}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                getInitials(typedChild.name)
+              )}
+            </div>
+            <div>
+              <div className="mb-0.5 text-xl font-bold text-[var(--text-1)]">{typedChild.name}</div>
+              <div className="text-xs font-medium text-[var(--text-3)]">
+                {relationshipLabel}
+                {typedChild.age ? ` · ${typedChild.age} years old` : ""}
+                {device
+                  ? ` · Enrolled Device: ${device.manufacturer || ""} ${device.model || ""}`
+                  : " · No device paired"}
+              </div>
             </div>
           </div>
-
-          <div className="flex gap-4">
-            <IconWrapper
-              action={() => setShowEdit(true)}
-              icon={<Edit2Icon className="h-7 w-7" />}
-            />
-            <IconWrapper
-              action={() => setShowDelete(true)}
-              icon={<Trash2Icon className="h-7 w-7 text-[#B34740]" />}
-            />
+          <div className="dd-hero-actions">
+            <button
+              type="button"
+              onClick={() => setShowEdit(true)}
+              className="dd-action-btn"
+              title="Edit child profile"
+            >
+              <Edit2Icon className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowDelete(true)}
+              className="dd-action-btn hover:text-[var(--coral)]"
+              title="Delete child profile"
+            >
+              <Trash2Icon className="h-4 w-4" />
+            </button>
           </div>
-        </div>
-
-        <P className="mb-4 font-medium">Select a device to view</P>
-        <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
-          {device ? (
-            <DeviceUsageCard
-              deviceName={device.manufacturer || "Device"}
-              status={device.deviceStatus === "ACTIVE" ? "active" : "locked"}
-              percentage={batteryLevel}
-              device={device.model || device.mdmId}
-              isRow={false}
-              onClick={() => router.push(`/devices/${device.mdmId}?childId=${typedChild?.id}`)}
-            />
-          ) : (
-            <EmptyDeviceCard onClick={() => setIsPairNewDeviceModalOpen(true)} />
-          )}
         </div>
       </div>
 
+      {/* When Child has NO device paired */}
+      {!device && (
+        <div className="surface flex flex-col items-center justify-center gap-4 rounded-[var(--radius-lg)] border-dashed border-[var(--card-line-strong)] p-10 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[var(--card-line)] bg-[var(--card-fill)] text-[var(--text-3)]">
+            <Smartphone className="h-8 w-8" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-base font-bold text-[var(--text-1)]">
+              No device paired to {typedChild.name}
+            </h3>
+            <p className="mx-auto max-w-sm text-xs text-[var(--text-2)]">
+              Pair an Android or iOS device to monitor usage, enforce bedtime rules, and track
+              location.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsPairNewDeviceModalOpen(true)}
+            className="btn-primary mt-2 cursor-pointer"
+          >
+            <Plus className="h-4 w-4" /> Pair new device
+          </button>
+        </div>
+      )}
+
+      {/* When Child has an enrolled device */}
+      {device && (
+        <div className="space-y-6">
+          {/* Telemetry Metrics: Memory & Battery */}
+          <ParentMetricsSection
+            hardwareData={hardwareData}
+            isPending={isHardwarePending && !!deviceId}
+          />
+
+          {/* Main Grid: Device Card + Top Apps */}
+          <div className="grid items-stretch gap-6 lg:grid-cols-2">
+            <ParentDevicesSection
+              device={device}
+              deviceId={deviceId}
+              childName={typedChild.name}
+              childId={typedChild.id}
+              isLoadingChild={false}
+              onPairDevice={() => setIsPairNewDeviceModalOpen(true)}
+            />
+
+            {/* Top Apps Section */}
+            <ParentAppsSection
+              appsData={appsData}
+              isPending={isAppsPending && !!deviceId}
+              deviceId={deviceId}
+              childId={typedChild.id}
+            />
+          </div>
+
+          {/* Quick Controls Section (Full width, increased height and spacious actions) */}
+          <ParentQuickControls deviceId={deviceId} childId={typedChild.id} />
+        </div>
+      )}
+
+      {/* Edit Child Profile Modal */}
       <AddEditChildModal
         open={showEdit}
         onOpenChange={setShowEdit}
         initialData={childData as IChildProfile}
       />
 
+      {/* Delete Child Profile Modal */}
       <DeleteChildModal
         open={showDelete}
         onOpenChange={setShowDelete}
         data={childData as IChildProfile}
         title="Are you sure you want to delete this child profile?"
-        description={`Deleting ${typedChild?.name || "this child"}'s profile cannot be reverted. Are you sure?`}
+        description={`Deleting ${typedChild.name}'s profile cannot be reverted. Are you sure?`}
         confirmText={isDeleting ? "Deleting..." : "Delete"}
         cancelText="Cancel"
         onConfirm={handleDelete}
         variant="destructive"
       />
 
-      <PairDeviceModal open={isPairNewDeviceModalOpen} onOpenChange={setIsPairNewDeviceModalOpen} />
+      {/* Pair Device Modal */}
+      <PairDeviceModal
+        open={isPairNewDeviceModalOpen}
+        onOpenChange={setIsPairNewDeviceModalOpen}
+        childId={typedChild.id}
+      />
     </div>
   );
 };

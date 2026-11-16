@@ -59,13 +59,16 @@ export default function DailyScreenTimeRadioInputs({
 
   return (
     <div className={cn("space-y-4", className)}>
-      <h3 className="text-primary text-lg font-medium">Daily screen time limit</h3>
+      <h3 className="text-base font-bold text-[var(--text-1)]">Daily screen time limit</h3>
       <RadioGroup value={currentRadioValue} onValueChange={handleRadioChange}>
-        <div className="divide-y divide-neutral-100">
+        <div className="divide-y divide-[var(--card-line)]">
           {PREDEFINED_OPTIONS.map((option) => (
             <div key={option.value} className="flex items-center gap-3 py-4">
               <RadioGroupItem value={option.value} id={`st-${option.value}`} />
-              <Label htmlFor={`st-${option.value}`} className="cursor-pointer font-normal">
+              <Label
+                htmlFor={`st-${option.value}`}
+                className="cursor-pointer font-normal text-[var(--text-1)]"
+              >
                 {option.label}
               </Label>
             </div>
@@ -74,7 +77,10 @@ export default function DailyScreenTimeRadioInputs({
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-3">
               <RadioGroupItem value="CUSTOM" id="st-custom" />
-              <Label htmlFor="st-custom" className="cursor-pointer font-normal">
+              <Label
+                htmlFor="st-custom"
+                className="cursor-pointer font-normal text-[var(--text-1)]"
+              >
                 Custom
               </Label>
             </div>
@@ -83,16 +89,16 @@ export default function DailyScreenTimeRadioInputs({
                 type="number"
                 value={customHours}
                 onChange={handleCustomInputChange}
-                className="h-10 w-16 bg-neutral-50 text-center"
+                className="h-10 w-16 rounded-md border border-[var(--card-line)] bg-[var(--card-fill)] text-center text-[var(--text-1)]"
                 min="0"
               />
-              <span className="text-foreground text-sm font-medium">Hours</span>
+              <span className="text-sm font-medium text-[var(--text-2)]">Hours</span>
             </div>
           </div>
 
           <div className="flex items-center gap-3 py-4">
             <RadioGroupItem value="NONE" id="st-none" />
-            <Label htmlFor="st-none" className="cursor-pointer font-normal">
+            <Label htmlFor="st-none" className="cursor-pointer font-normal text-[var(--text-1)]">
               No limit
             </Label>
           </div>

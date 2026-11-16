@@ -1,28 +1,74 @@
 import type { Metadata } from "next";
-import Landing from "@/views/Landing";
+import LandingV2 from "@/views/LandingV2";
 import Script from "next/script";
 
 export const metadata: Metadata = {
-  title: "Flentra — Smart MDM, Device Tracking & Parental Controls",
+  title: {
+    absolute:
+      "Flentra | Device financing and device management software, Nigeria",
+  },
   description:
-    "Flentra is an all-in-one Mobile Device Management (MDM) and parental controls platform. Monitor and control every device in real time — track location, enforce policies, block apps, manage fleets, set geofences, and keep families safe online.",
-  alternates: { canonical: "/" },
+    "Track, manage and protect every device you finance or issue. Flentra helps lenders, BNPL providers, telcos and businesses in Nigeria lock, locate and recover devices.",
+  alternates: { canonical: "https://flentra.io/" },
+  openGraph: {
+    type: "website",
+    siteName: "Flentra",
+    title: "Flentra | Every device you finance or issue. Always in control.",
+    description:
+      "Intelligent device portfolio management for lenders, telcos and businesses across Nigeria. Built and run by Marimax Global.",
+    url: "https://flentra.io/",
+    locale: "en_NG",
+    images: [{ url: "https://flentra.io/og-image.png" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Flentra | Every device you finance or issue. Always in control.",
+    description:
+      "Track, manage and protect every device you finance or issue, in one place.",
+    images: ["https://flentra.io/og-image.png"],
+  },
 };
 
 const softwareSchema = {
   "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  name: "Flentra",
-  operatingSystem: "Android, iOS, Windows, macOS",
-  applicationCategory: "BusinessApplication",
-  offers: {
-    "@type": "Offer",
-    price: "0",
-    priceCurrency: "USD",
-    description: "14-day free trial. No credit card required.",
-  },
-  description:
-    "An all-in-one MDM and parental controls platform with real-time device tracking, geofencing, app management, and compliance reporting.",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://flentra.io/#organization",
+      name: "Marimax Global Limited",
+      alternateName: "Flentra",
+      url: "https://flentra.io/",
+      email: "info@flentra.io",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "Lagos",
+        addressCountry: "NG",
+      },
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://flentra.io/#website",
+      url: "https://flentra.io/",
+      name: "Flentra",
+      publisher: { "@id": "https://flentra.io/#organization" },
+      inLanguage: "en-NG",
+    },
+    {
+      "@type": "SoftwareApplication",
+      name: "Flentra",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Android, iOS, iPadOS, Windows",
+      description:
+        "Intelligent device portfolio management software for device financing and corporate device fleets in Nigeria.",
+      provider: { "@id": "https://flentra.io/#organization" },
+      areaServed: { "@type": "Country", name: "Nigeria" },
+      offers: {
+        "@type": "Offer",
+        priceCurrency: "NGN",
+        availability: "https://schema.org/InStock",
+      },
+    },
+  ],
 };
 
 export default function RootPage() {
@@ -34,7 +80,7 @@ export default function RootPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
         strategy="afterInteractive"
       />
-      <Landing />
+      <LandingV2 />
     </>
   );
 }

@@ -62,7 +62,7 @@ export default function ChildTransparency() {
         />
 
         <div className="space-y-4">
-          <div className="divide-y divide-neutral-100 border-neutral-100">
+          <div className="divide-y divide-[var(--card-line)] border-[var(--card-line)]">
             {checkboxOptions[user?.appRole as "PARENT" | "BUSINESS"].map((item, index) => (
               <div className="py-4!" key={index}>
                 <Controller
@@ -83,7 +83,7 @@ export default function ChildTransparency() {
           </div>
         </div>
 
-        <p className="text-muted-foreground mt-6! text-sm font-medium">
+        <p className="mt-6! text-sm font-medium text-[var(--text-2)]">
           {
             devicesControlHeadings.childTransparencyAndRequests[
               user?.appRole as "PARENT" | "BUSINESS"

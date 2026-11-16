@@ -66,14 +66,14 @@ export default function AddEditUserDetailsModal({
   const { toast } = useToast();
 
   useEffect(() => {
-    setValue("firstName", initialData?.user?.firstName!);
-    setValue("lastName", initialData?.user?.lastName!);
-    setValue("department", initialData?.staffDepartmentId!);
+    setValue("firstName", initialData?.user?.firstName || "");
+    setValue("lastName", initialData?.user?.lastName || "");
+    setValue("department", initialData?.staffDepartmentId || "");
     setValue("businessRole", initialData?.businessRole! as any);
-    setValue("position", initialData?.position!);
-    setValue("email", initialData?.user?.email!);
-    setValue("phone", initialData?.user?.phone!);
-    setValue("address", initialData?.location!);
+    setValue("position", initialData?.position || "");
+    setValue("email", initialData?.user?.email || "");
+    setValue("phone", initialData?.user?.phone || "");
+    setValue("address", (initialData as any)?.address || initialData?.location || "");
   }, [initialData, setValue, open]);
 
   async function onSubmit(data: BusinessUserDetailsValues) {

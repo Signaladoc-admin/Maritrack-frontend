@@ -28,8 +28,10 @@ export function useQrCode(
   const { data: child } = useChild(userTypeId, { enabled: isParent });
   const { data: staffMember } = useGetStaffMember(userTypeId, { enabled: !isParent });
 
-  const onboardingCode = isParent ? child?.onboardingCode : staffMember?.onboardingCode;
-  const zoneId = user?.zoneId;
+  const onboardingCode = isParent
+    ? child?.onboardingCode
+    : (staffMember?.onboardingCode || (staffMember as any)?.activationCode?.code || (staffMember as any)?.user?.onboardingCode);
+  const zoneId = user?.zoneId || (staffMember?.user as any)?.zone?.id || (staffMember?.user as any)?.zoneId;
 
   const query = useServerActionQuery(
     mdmSyncKeys.qrcode(zoneId || "", onboardingCode || ""),

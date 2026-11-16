@@ -25,7 +25,7 @@ export default function AlertsAndNotifications() {
 
         <div className="space-y-3">
           <SubHeading title="Notify me when:" />
-          <div className="divide-y divide-neutral-100 border-b border-neutral-100">
+          <div className="divide-y divide-[var(--card-line)] border-b border-[var(--card-line)]">
             <div className="py-4">
               <Controller
                 control={control}
@@ -108,7 +108,7 @@ export default function AlertsAndNotifications() {
         </div>
         <div className="space-y-3">
           <SubHeading title="Notification methods" />
-          <div className="divide-y divide-neutral-100 border-neutral-100">
+          <div className="divide-y divide-[var(--card-line)] border-[var(--card-line)]">
             <div className="py-4">
               <Controller
                 control={control}

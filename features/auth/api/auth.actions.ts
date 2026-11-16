@@ -20,10 +20,21 @@ import { UserProfile } from "@/entities/user";
 
 export async function changePasswordAction(data: ChangePasswordDto) {
   return withSafeAction(async () => {
-    return apiClient("/users/change-password", {
+    const res = await apiClient("/users/change-password", {
       method: "POST",
       body: JSON.stringify(data),
     });
+
+    const cookieStore = await cookies();
+    cookieStore.set("isDefaultPasswordChanged", "true", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    return res;
   }, "Failed to change password");
 }
 
@@ -111,6 +122,8 @@ export async function logoutAction() {
     cookieStore.delete("refreshToken");
     cookieStore.delete("isOnboarded");
     cookieStore.delete("isEmailVerified");
+    cookieStore.delete("isDefaultPasswordChanged");
+    cookieStore.delete("businessRole");
     cookieStore.delete("zoneId");
 
     return { success: true };

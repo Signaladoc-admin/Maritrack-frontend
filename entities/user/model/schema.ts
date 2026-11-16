@@ -10,6 +10,7 @@ export const userSchema = z.object({
   address: z.string().min(1, "Address is required"),
   state: z.string().min(1, "Select a state"),
   country: z.string().min(1, "Select a country"),
+  businessRole: z.string().optional(),
 });
 
 export type UserFormValues = z.infer<typeof userSchema>;

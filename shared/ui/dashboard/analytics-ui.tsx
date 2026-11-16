@@ -68,7 +68,9 @@ export interface DashboardDonutSlice {
 
 const tooltipStyle: React.CSSProperties = {
   borderRadius: "8px",
-  border: "none",
+  border: "1px solid var(--card-line)",
+  backgroundColor: "var(--surface)",
+  color: "var(--text-1)",
   boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
 };
 
@@ -84,7 +86,7 @@ const tooltipStyle: React.CSSProperties = {
 export function DashboardTimeRangeButton() {
   const label = useContext(DashboardFilterContext);
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#f4f7fe] px-4 py-2.5 text-sm font-medium text-[#a3aed0]">
+    <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--card-line)] bg-[var(--card-fill)] px-4 py-2.5 text-sm font-medium text-[var(--text-2)]">
       <Calendar className="h-5 w-5" />
       {label}
     </span>
@@ -97,7 +99,7 @@ export function DashboardDownloadButton() {
     <Button
       variant="ghost"
       size="sm"
-      className="h-auto gap-1.5 px-2 py-1 text-xs font-medium text-[#667085] hover:text-slate-900"
+      className="h-auto gap-1.5 px-2 py-1 text-xs font-medium text-[var(--text-2)] hover:text-[var(--text-1)]"
     >
       <DownloadCloud className="h-3.5 w-3.5" />
       Download
@@ -132,7 +134,7 @@ export function DashboardEmptyState({
 }) {
   return (
     <div
-      className="flex items-center justify-center text-sm text-[#667085]"
+      className="flex items-center justify-center text-sm text-[var(--text-3)]"
       style={{ height: `${height}px` }}
     >
       {message}
@@ -170,7 +172,7 @@ export function DashboardTitledCard({
   return (
     <CardWrapper variant="outline" padding="lg">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
+        <h3 className="text-sm font-semibold text-[var(--text-1)]">{title}</h3>
         <DashboardTimeRangeButton />
       </div>
       {children}
@@ -226,8 +228,8 @@ export function DashboardValueCard({
           ) : (
             <div className="flex flex-col gap-3">
               <div>
-                <h4 className="text-3xl font-bold text-slate-900">{value}</h4>
-                <p className="mt-1 text-sm font-medium text-[#667085]">{label}</p>
+                <h4 className="text-3xl font-bold text-[var(--text-1)]">{value}</h4>
+                <p className="mt-1 text-sm font-medium text-[var(--text-2)]">{label}</p>
                 {trendValue && (
                   <div className="mt-2 flex items-center gap-1 text-xs font-medium">
                     <span
@@ -235,7 +237,7 @@ export function DashboardValueCard({
                     >
                       {trendDirection === "up" ? "↑" : "↓"} {trendValue}
                     </span>
-                    <span className="text-[#667085]">since last month</span>
+                    <span className="text-[var(--text-3)]">since last month</span>
                   </div>
                 )}
               </div>
@@ -243,7 +245,7 @@ export function DashboardValueCard({
               <div className="relative">
                 {chartBadge && (
                   <div
-                    className="absolute left-3 top-3 z-10 rounded-full px-3 py-1 text-xs font-semibold text-white shadow-sm"
+                    className="absolute top-3 left-3 z-10 rounded-full px-3 py-1 text-xs font-semibold text-white shadow-sm"
                     style={{ backgroundColor: color }}
                   >
                     {chartBadge}
@@ -286,7 +288,7 @@ export function DashboardAreaChart({
   const color = useContext(ThemeContext) || initialColor;
 
   return (
-    <div className="min-w-0 w-full" style={{ height: `${height}px` }}>
+    <div className="w-full min-w-0" style={{ height: `${height}px` }}>
       <ResponsiveContainer width="100%" height="100%" minWidth={0}>
         <AreaChart data={data} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
           <defs>
@@ -299,7 +301,7 @@ export function DashboardAreaChart({
             dataKey={xAxisKey}
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "#9CA3AF", fontSize: 10 }}
+            tick={{ fill: "var(--text-3)", fontSize: 10 }}
             dy={10}
           />
           <Tooltip contentStyle={tooltipStyle} />
@@ -335,14 +337,14 @@ export function DashboardLineChart({
   const color = useContext(ThemeContext);
 
   return (
-    <div className="min-w-0 w-full" style={{ height: `${height}px` }}>
+    <div className="w-full min-w-0" style={{ height: `${height}px` }}>
       <ResponsiveContainer width="100%" height="100%" minWidth={0}>
         <LineChart data={data} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
           <XAxis
             dataKey={xAxisKey}
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "#9CA3AF", fontSize: 10 }}
+            tick={{ fill: "var(--text-3)", fontSize: 10 }}
             dy={10}
           />
           <Tooltip contentStyle={tooltipStyle} />
@@ -376,14 +378,14 @@ export function DashboardDonutChart({ data }: { data: DashboardDonutSlice[] }) {
               className="h-3.5 w-3.5 shrink-0 rounded-full"
               style={{ backgroundColor: item.color }}
             />
-            <span className="text-sm font-medium text-slate-700">
+            <span className="text-sm font-medium text-[var(--text-2)]">
               {item.name} ({item.value}%)
             </span>
           </div>
         ))}
       </div>
       {/* Donut */}
-      <div className="flex min-w-0 h-[220px] w-full justify-center sm:w-3/5">
+      <div className="flex h-[220px] w-full min-w-0 justify-center sm:w-3/5">
         <ResponsiveContainer width="100%" height="100%" minWidth={0}>
           <PieChart>
             <Pie
@@ -402,7 +404,7 @@ export function DashboardDonutChart({ data }: { data: DashboardDonutSlice[] }) {
             </Pie>
             <Tooltip
               contentStyle={tooltipStyle}
-              itemStyle={{ color: "#111827", fontSize: "14px", fontWeight: 500 }}
+              itemStyle={{ color: "var(--text-1)", fontSize: "14px", fontWeight: 500 }}
             />
           </PieChart>
         </ResponsiveContainer>

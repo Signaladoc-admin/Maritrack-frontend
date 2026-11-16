@@ -1,16 +1,25 @@
+"use client";
+
 import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
-} from "@/shared/ui/dialog";
-import { Button } from "@/shared/ui/button";
+} from "@/shared/ui/Modal/dialog";
 import { useBulkMessageDevices } from "@/entities/device";
 import { useToast } from "@/shared/ui/toast";
-import { Loader } from "@/shared/ui/loader";
-import { TriangleAlert } from "lucide-react";
+import {
+  MessageSquare,
+  Send,
+  Loader2,
+  Users,
+  ArrowLeft,
+  ChevronDown,
+} from "lucide-react";
+import { cn } from "@/shared/lib/utils";
 
 interface BulkMessageModalProps {
   open: boolean;
@@ -18,6 +27,17 @@ interface BulkMessageModalProps {
   selectedDevices: any[];
   onSuccess?: () => void;
 }
+
+const MESSAGE_TYPE_LABELS: Record<string, string> = {
+  WELCOME: "Welcome",
+  PAYMENT_REMINDER: "Payment Reminder",
+  PAYMENT_DUE: "Payment Due",
+  OVERDUE_NOTICE: "Overdue Notice",
+  FINAL_WARNING: "Final Warning",
+  DEVICE_LOCKED: "Device Locked",
+  DEVICE_UNLOCKED: "Device Unlocked",
+  DEVICE_RESTRICTED: "Device Restricted",
+};
 
 export default function BulkMessageModal({
   open,
@@ -34,7 +54,7 @@ export default function BulkMessageModal({
     onSuccess: () => {
       toast({
         title: "Success",
-        message: "Bulk message sent successfully",
+        message: "Bulk message broadcast dispatched successfully",
         type: "success",
       });
       setMessage("");
@@ -42,22 +62,33 @@ export default function BulkMessageModal({
       if (onSuccess) onSuccess();
       onOpenChange(false);
     },
+    onError: (err: any) => {
+      toast({
+        title: "Broadcast Failed",
+        message: err?.message || "Failed to send broadcast message",
+        type: "error",
+      });
+    },
   });
+
+  const getValidIds = () => {
+    const ids = selectedDevices.map((d) => d.mdmDeviceId || d.device?.mdmDeviceId || d.id);
+    return ids.filter(Boolean);
+  };
 
   const handleConfirmClick = () => {
     if (!message.trim()) {
       toast({
         title: "Validation Error",
-        message: "Message cannot be empty",
+        message: "Message content cannot be empty",
         type: "error",
       });
       return;
     }
-    const ids = selectedDevices.map((d) => d.mdmDeviceId || d.device?.mdmDeviceId || d.id);
-    const validIds = ids.filter(Boolean);
+    const validIds = getValidIds();
     if (validIds.length === 0) {
       toast({
-        title: "Error",
+        title: "Validation Error",
         message: "No valid devices selected",
         type: "error",
       });
@@ -68,17 +99,14 @@ export default function BulkMessageModal({
   };
 
   const handleSend = () => {
-    const ids = selectedDevices.map((d) => d.mdmDeviceId || d.device?.mdmDeviceId || d.id);
-    const validIds = ids.filter(Boolean);
-
+    const validIds = getValidIds();
     sendBulkMessage({
       ids: validIds,
       messageType,
-      message,
+      message: message.trim(),
     });
   };
 
-  // Reset state when closing
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
       setIsConfirming(false);
@@ -92,8 +120,11 @@ export default function BulkMessageModal({
       const name =
         device.possessorName ||
         (device.currentUser
-          ? `${device.currentUser.firstName} ${device.currentUser.lastName}`
-          : null);
+          ? `${device.currentUser.firstName || ""} ${device.currentUser.lastName || ""}`.trim()
+          : null) ||
+        device.name ||
+        device.model ||
+        device.imei;
       if (name && name.trim() !== "undefined undefined") {
         names.add(name.trim());
       }
@@ -101,123 +132,243 @@ export default function BulkMessageModal({
 
     const uniqueNames = Array.from(names);
     if (uniqueNames.length === 0) {
-       uniqueNames.push("Selected Devices");
+      uniqueNames.push("Selected Devices");
     }
 
-    const visibleNames = uniqueNames.slice(0, 1);
-    const remainingCount = uniqueNames.length - 1;
+    const visibleNames = uniqueNames.slice(0, 2);
+    const remainingCount = uniqueNames.length - visibleNames.length;
 
-    return { visibleNames, remainingCount };
+    return { visibleNames, remainingCount, totalUnique: uniqueNames.length };
   };
 
   const { visibleNames, remainingCount } = getPillNames();
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[500px] p-6 sm:p-8 gap-6 border-none shadow-xl">
+      <DialogContent className="rounded-2xl border border-[var(--card-line-strong)] bg-[var(--surface)] p-6 sm:p-7 shadow-2xl sm:max-w-[480px]">
         {!isConfirming ? (
           <>
-            <DialogHeader>
-              <DialogTitle className="text-xl font-bold text-[#1b3c73]">
-                New Bulk Messages
+            {/* Top Icon Badge */}
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--info-border)] bg-[var(--info-tint)] text-[var(--info)] shadow-2xs">
+              <MessageSquare className="h-6 w-6" />
+            </div>
+
+            <DialogHeader className="space-y-1 text-center sm:text-center">
+              <DialogTitle className="text-lg font-bold text-[var(--text-1)]">
+                Send Bulk Message
               </DialogTitle>
+              <DialogDescription className="text-xs text-[var(--text-2)]">
+                Broadcast an MDM alert or push notification to your fleet.
+              </DialogDescription>
             </DialogHeader>
 
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-3 flex-wrap">
-                <span className="text-sm font-medium text-gray-700">Send to:</span>
-                {visibleNames.map((name, idx) => (
-                  <span
-                    key={idx}
-                    className="px-4 py-1.5 bg-gray-100 rounded-full text-sm text-gray-700 font-medium whitespace-nowrap"
-                  >
-                    {name}
+            <div className="flex flex-col gap-4 my-2">
+              {/* Recipients Pill Box */}
+              <div className="rounded-xl border border-[var(--card-line)] bg-[var(--card-fill)] p-3 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-[var(--text-2)] flex items-center gap-1.5">
+                    <Users className="h-3.5 w-3.5 text-[var(--text-3)]" />
+                    Target Recipients
                   </span>
-                ))}
-                {remainingCount > 0 && (
-                  <span className="px-4 py-1.5 bg-gray-100 rounded-full text-sm text-gray-700 font-medium whitespace-nowrap">
-                    +{remainingCount}
+                  <span className="rounded-full border border-[var(--accent-border)] bg-[var(--accent-tint)] px-2 py-0.5 text-[10px] font-bold text-[var(--accent)]">
+                    {selectedDevices.length} device{selectedDevices.length !== 1 ? "s" : ""}
                   </span>
-                )}
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {visibleNames.map((name, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center rounded-lg border border-[var(--card-line)] bg-[var(--card-raised)] px-2.5 py-1 text-xs font-medium text-[var(--text-1)] truncate max-w-[170px]"
+                    >
+                      {name}
+                    </span>
+                  ))}
+                  {remainingCount > 0 && (
+                    <span className="inline-flex items-center rounded-lg border border-[var(--card-line)] bg-[var(--card-raised)] px-2 py-1 text-xs font-medium text-[var(--text-3)]">
+                      +{remainingCount} more
+                    </span>
+                  )}
+                </div>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <span className="text-sm font-medium text-gray-700">Message Type</span>
-                <select
-                  className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm bg-white"
-                  value={messageType}
-                  onChange={(e) => setMessageType(e.target.value)}
-                >
-                  <option value="WELCOME">Welcome</option>
-                  <option value="PAYMENT_REMINDER">Payment Reminder</option>
-                  <option value="PAYMENT_DUE">Payment Due</option>
-                  <option value="OVERDUE_NOTICE">Overdue Notice</option>
-                  <option value="FINAL_WARNING">Final Warning</option>
-                  <option value="DEVICE_LOCKED">Device Locked</option>
-                  <option value="DEVICE_UNLOCKED">Device Unlocked</option>
-                  <option value="DEVICE_RESTRICTED">Device Restricted</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <span className="text-sm font-medium text-gray-700">Message</span>
+              {/* Message Type Selector */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-[var(--text-2)]">
+                  Message Type
+                </label>
                 <div className="relative">
-                  <textarea
-                    className="w-full h-[150px] p-4 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder:text-gray-400 text-sm"
-                    placeholder="Write message..."
-                    maxLength={300}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                  />
-                  <span className="absolute bottom-4 right-4 text-xs font-medium text-gray-500">
+                  <select
+                    className="w-full appearance-none rounded-xl border border-[var(--card-line)] bg-[var(--card-fill)] py-2.5 pl-3.5 pr-9 text-xs font-medium text-[var(--text-1)] focus:border-[var(--accent-border)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none transition-colors"
+                    value={messageType}
+                    onChange={(e) => setMessageType(e.target.value)}
+                  >
+                    <option value="WELCOME" className="bg-[var(--surface)] text-[var(--text-1)]">
+                      Welcome
+                    </option>
+                    <option
+                      value="PAYMENT_REMINDER"
+                      className="bg-[var(--surface)] text-[var(--text-1)]"
+                    >
+                      Payment Reminder
+                    </option>
+                    <option
+                      value="PAYMENT_DUE"
+                      className="bg-[var(--surface)] text-[var(--text-1)]"
+                    >
+                      Payment Due
+                    </option>
+                    <option
+                      value="OVERDUE_NOTICE"
+                      className="bg-[var(--surface)] text-[var(--text-1)]"
+                    >
+                      Overdue Notice
+                    </option>
+                    <option
+                      value="FINAL_WARNING"
+                      className="bg-[var(--surface)] text-[var(--text-1)]"
+                    >
+                      Final Warning
+                    </option>
+                    <option
+                      value="DEVICE_LOCKED"
+                      className="bg-[var(--surface)] text-[var(--text-1)]"
+                    >
+                      Device Locked
+                    </option>
+                    <option
+                      value="DEVICE_UNLOCKED"
+                      className="bg-[var(--surface)] text-[var(--text-1)]"
+                    >
+                      Device Unlocked
+                    </option>
+                    <option
+                      value="DEVICE_RESTRICTED"
+                      className="bg-[var(--surface)] text-[var(--text-1)]"
+                    >
+                      Device Restricted
+                    </option>
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-3)]" />
+                </div>
+              </div>
+
+              {/* Message Input */}
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-[var(--text-2)]">
+                    Message Content
+                  </label>
+                  <span className="text-[11px] font-medium text-[var(--text-3)]">
                     {message.length} / 300
                   </span>
                 </div>
+                <textarea
+                  className="w-full h-[120px] rounded-xl border border-[var(--card-line)] bg-[var(--card-fill)] p-3 text-xs leading-relaxed text-[var(--text-1)] placeholder:text-[var(--text-3)] resize-none focus:border-[var(--accent-border)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none transition-colors"
+                  placeholder="Type your broadcast message here..."
+                  maxLength={300}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                />
               </div>
             </div>
 
-            <DialogFooter className="flex items-center justify-end gap-3 sm:justify-end mt-2">
-              <Button
-                variant="ghost"
+            {/* Footer Buttons */}
+            <DialogFooter className="mt-4 flex flex-row gap-3 sm:justify-end">
+              <button
+                type="button"
                 onClick={() => handleOpenChange(false)}
-                className="text-[#1b3c73] hover:bg-gray-50 bg-[#F3F4F6]"
                 disabled={isPending}
+                className="flex-1 sm:flex-initial cursor-pointer rounded-xl border border-[var(--card-line)] bg-[var(--card-fill)] py-2.5 px-4 text-xs font-semibold text-[var(--text-1)] transition-colors hover:bg-[var(--card-hover)] disabled:opacity-50"
               >
                 Cancel
-              </Button>
-              <Button
+              </button>
+              <button
+                type="button"
                 onClick={handleConfirmClick}
-                className="bg-[#1b3c73] hover:bg-[#142d57] text-white px-8"
-                disabled={isPending}
+                disabled={isPending || !message.trim()}
+                className="inline-flex flex-1 sm:flex-initial cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-[var(--accent)] py-2.5 px-5 text-xs font-bold text-[var(--primary-fg)] transition-all shadow-xs hover:opacity-90 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Send message
-              </Button>
+                <span>Review Broadcast</span>
+                <Send className="h-3.5 w-3.5" />
+              </button>
             </DialogFooter>
           </>
         ) : (
-          <div className="flex flex-col items-center text-center gap-6 py-4">
-            <TriangleAlert className="size-16 text-[#1b3c73] fill-[#1b3c73]/10" strokeWidth={1.5} />
-            <h2 className="text-2xl font-semibold text-[#1b3c73] max-w-[300px]">
-              Are you sure you want to send this message?
-            </h2>
-            <div className="flex w-full gap-4 mt-4">
-              <Button
-                variant="secondary"
-                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 h-12 text-base font-medium"
+          <>
+            {/* Step 2: Confirmation Review */}
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--accent-border)] bg-[var(--accent-tint)] text-[var(--accent)] shadow-2xs">
+              <Send className="h-6 w-6" />
+            </div>
+
+            <DialogHeader className="space-y-1 text-center sm:text-center">
+              <DialogTitle className="text-lg font-bold text-[var(--text-1)]">
+                Confirm Broadcast Message
+              </DialogTitle>
+              <DialogDescription className="text-xs text-[var(--text-2)]">
+                Review message details before sending to {selectedDevices.length} device
+                {selectedDevices.length !== 1 ? "s" : ""}.
+              </DialogDescription>
+            </DialogHeader>
+
+            {/* Message Preview Box */}
+            <div className="my-3 rounded-xl border border-[var(--card-line)] bg-[var(--card-fill)] p-4 text-left space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-3)]">
+                  Category
+                </span>
+                <span className="rounded-full border border-[var(--accent-border)] bg-[var(--accent-tint)] px-2.5 py-0.5 text-[10px] font-bold text-[var(--accent)]">
+                  {MESSAGE_TYPE_LABELS[messageType] || messageType}
+                </span>
+              </div>
+
+              <div>
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-3)] block mb-1">
+                  Message Preview
+                </span>
+                <p className="rounded-lg border border-[var(--card-line)] bg-[var(--card-raised)] p-3 text-xs leading-relaxed text-[var(--text-1)] break-words">
+                  {message}
+                </p>
+              </div>
+
+              <div className="pt-1 flex items-center justify-between text-[11px] text-[var(--text-3)]">
+                <span>Total recipients:</span>
+                <span className="font-semibold text-[var(--text-1)]">
+                  {selectedDevices.length} device{selectedDevices.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+            </div>
+
+            <DialogFooter className="mt-4 flex flex-row gap-3 sm:justify-center">
+              <button
+                type="button"
                 onClick={() => setIsConfirming(false)}
                 disabled={isPending}
+                className="inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-[var(--card-line)] bg-[var(--card-fill)] py-2.5 px-4 text-xs font-semibold text-[var(--text-1)] transition-colors hover:bg-[var(--card-hover)] disabled:opacity-50"
               >
-                Cancel
-              </Button>
-              <Button
-                className="flex-1 bg-[#1b3c73] hover:bg-[#142d57] text-white h-12 text-base font-medium"
+                <ArrowLeft className="h-3.5 w-3.5" />
+                <span>Back to Edit</span>
+              </button>
+              <button
+                type="button"
                 onClick={handleSend}
                 disabled={isPending}
+                className="inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-[var(--accent)] py-2.5 px-5 text-xs font-bold text-[var(--primary-fg)] transition-all shadow-xs hover:opacity-90 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isPending ? <Loader className="text-white" /> : "Send message"}
-              </Button>
-            </div>
-          </div>
+                {isPending ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <span>Sending...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-3.5 w-3.5" />
+                    <span>Send Broadcast</span>
+                  </>
+                )}
+              </button>
+            </DialogFooter>
+          </>
         )}
       </DialogContent>
     </Dialog>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Landing from "@/views/Landing";
+import LandingV2 from "@/views/LandingV2";
 import Script from "next/script";
 
 export const metadata: Metadata = {
@@ -100,7 +100,7 @@ export default function LandingPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
         strategy="afterInteractive"
       />
-      <Landing />
+      <LandingV2 />
     </>
   );
 }

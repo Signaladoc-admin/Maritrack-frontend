@@ -19,10 +19,9 @@ import { CountryStateInput } from "@/shared/ui/inputs/country-state-input";
 import { Country, State } from "country-state-city";
 import { InputGroup } from "@/shared/ui/input-group";
 import { useToast } from "@/shared/ui/toast";
-import { useUpdateProfile } from "@/entities/user/model/useUserProfile";
+import { useUserProfile, useUpdateProfile } from "@/entities/user/model/useUserProfile";
 import { useUpdateBusiness } from "@/entities/business/model/useBusiness";
 import { Business } from "@/entities/business/types";
-import { useGetUserById } from "@/features/user-management/model/useUserManagement";
 import { useAuth } from "@/shared/auth/AuthProvider";
 import { UserProfile } from "@/entities/user";
 import ChangePasswordModal from "@/features/auth/ui/ChangePasswordForm";
@@ -63,13 +62,14 @@ export default function BusinessProfileForm() {
   const { business, isLoadingBusiness, isLoadingBusinessProfile } = useGetFullBusinessDetails();
   const { user } = useAuth();
 
-  const { data: userInfo, isLoading: isLoadingUserInfo } = useGetUserById(user?.id!);
+  // Fetch logged in user profile from /users/user endpoint via useUserProfile
+  const { data: userProfile, isLoading: isLoadingUserProfile } = useUserProfile();
 
-  if (isLoadingBusiness || isLoadingBusinessProfile || isLoadingUserInfo) {
+  if (isLoadingBusiness || isLoadingBusinessProfile || isLoadingUserProfile) {
     return <BusinessProfileFormSkeleton />;
   }
 
-  return <BusinessProfileFormInner business={business} userInfo={userInfo} />;
+  return <BusinessProfileFormInner business={business} userProfile={userProfile} authUser={user} />;
 }
 
 function BusinessProfileFormSkeleton() {
@@ -118,10 +118,12 @@ function BusinessProfileFormSkeleton() {
 
 function BusinessProfileFormInner({
   business,
-  userInfo,
+  userProfile,
+  authUser,
 }: {
   business: Business | null | undefined;
-  userInfo: UserProfile | undefined;
+  userProfile: UserProfile | null | undefined;
+  authUser: any;
 }) {
   const { mutateAsync: updateBusiness, isPending: isUpdatingBusinessDetails } = useUpdateBusiness();
   const { mutateAsync: updateProfileImage, isPending: isUpdatingProfileImage } = useUpdateProfile();
@@ -130,6 +132,14 @@ function BusinessProfileFormInner({
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
   const [showSignOut, setShowSignOut] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
+
+  const initialImageUrl = userProfile?.imageUrl ?? authUser?.imageUrl ?? null;
+  const initialName =
+    business?.name ||
+    [userProfile?.firstName, userProfile?.lastName].filter(Boolean).join(" ") ||
+    "";
+  const initialEmail = userProfile?.email || authUser?.email || business?.email || "";
+  const initialAddress = business?.address || "";
 
   const {
     register,
@@ -140,25 +150,38 @@ function BusinessProfileFormInner({
   } = useForm<BusinessProfileFormValues>({
     resolver: zodResolver(BusinessProfileSchema),
     defaultValues: {
-      profilePicture: userInfo?.imageUrl ?? null,
-      name: "",
-      email: "",
-      address: "",
-      state: "",
-      country: "",
+      profilePicture: initialImageUrl,
+      name: initialName,
+      email: initialEmail,
+      address: initialAddress,
+      state: business?.state || "",
+      country: business?.country || "",
     },
   });
 
   useEffect(() => {
-    if (business) {
-      setValue("name", business?.name || "");
-      setValue("email", business?.email || "");
-      setValue("address", business?.address || "");
+    const emailToSet = userProfile?.email || authUser?.email || business?.email || "";
+    if (emailToSet) {
+      setValue("email", emailToSet);
+    }
 
+    const nameToSet =
+      business?.name ||
+      [userProfile?.firstName, userProfile?.lastName].filter(Boolean).join(" ") ||
+      "";
+    if (nameToSet) {
+      setValue("name", nameToSet);
+    }
+
+    if (business?.address) {
+      setValue("address", business.address);
+    }
+
+    if (business?.country) {
       // SearchableSelect matches options by ISO code (e.g. "NG", "LA").
       // The API may return either an ISO code or a full name — resolve either way.
       const allCountries = Country.getAllCountries();
-      const rawCountry = business?.country || "";
+      const rawCountry = business.country || "";
       const countryIso =
         allCountries.find((c) => c.isoCode === rawCountry)?.isoCode ||
         allCountries.find((c) => c.name.toLowerCase() === rawCountry.toLowerCase())?.isoCode ||
@@ -166,7 +189,7 @@ function BusinessProfileFormInner({
 
       setValue("country", countryIso);
 
-      const rawState = business?.state || "";
+      const rawState = business.state || "";
       const stateIso =
         State.getStatesOfCountry(countryIso).find((s) => s.isoCode === rawState)?.isoCode ||
         State.getStatesOfCountry(countryIso).find(
@@ -176,23 +199,26 @@ function BusinessProfileFormInner({
 
       setValue("state", stateIso);
     }
-  }, [business]);
+  }, [business, userProfile, authUser, setValue]);
 
   // Keep the preview in sync with the persisted `imageUrl` (e.g. after a
   // successful upload refetches the user profile with the new image URL).
   useEffect(() => {
-    setValue("profilePicture", userInfo?.imageUrl ?? null);
-  }, [userInfo?.imageUrl, setValue]);
+    const currentImg = userProfile?.imageUrl ?? authUser?.imageUrl ?? null;
+    setValue("profilePicture", currentImg);
+  }, [userProfile?.imageUrl, authUser?.imageUrl, setValue]);
 
   const onSubmit = async (data: BusinessProfileFormValues) => {
     try {
-      await updateBusiness({
-        id: business?.id!,
-        name: data.name,
-        address: data.address,
-        state: data.state,
-        country: data.country,
-      });
+      if (business?.id) {
+        await updateBusiness({
+          id: business.id,
+          name: data.name,
+          address: data.address,
+          state: data.state,
+          country: data.country,
+        });
+      }
 
       // Only re-upload when the user picked a new file — `profilePicture` holds
       // the existing `imageUrl` string when no new image has been selected.
@@ -226,8 +252,8 @@ function BusinessProfileFormInner({
                   className="h-28 w-28 rounded-full border-none shadow-sm"
                   previewClassName="h-28 w-28 rounded-full"
                 >
-                  <div className="flex h-full w-full items-center justify-center rounded-full bg-[#F3F4F6] text-[#1B3C73]">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
+                  <div className="flex h-full w-full items-center justify-center rounded-full bg-[var(--card-fill)] text-[var(--text-1)] border border-[var(--card-line)]">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--surface)] border border-[var(--card-line-strong)]">
                       <span className="text-xl">👤</span>
                     </div>
                   </div>
@@ -260,15 +286,15 @@ function BusinessProfileFormInner({
         </div>
 
         <div className="w-full">
-          <div className="flex w-full items-center gap-6 rounded-2xl bg-[#F9FAFB] p-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm">
-              <LockKeyhole className="h-6 w-6 text-[#1B3C73]" />
+          <div className="flex w-full items-center gap-6 rounded-2xl bg-[var(--card-fill)] border border-[var(--card-line)] p-6">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--surface)] border border-[var(--card-line-strong)]">
+              <LockKeyhole className="h-6 w-6 text-[var(--text-1)]" />
             </div>
             <div className="flex-1">
-              <h3 className="text-base font-semibold text-[#1B3C73]">Your password is secured</h3>
+              <h3 className="text-base font-semibold text-[var(--text-1)]">Your password is secured</h3>
               <Button
                 type="button"
-                className="mt-2 h-9 bg-[#1B3C73] px-4 text-xs font-medium text-white hover:bg-[#1B3C73]/90"
+                className="mt-2 h-9 px-4 text-xs font-medium"
                 onClick={() => setShowChangePassword(true)}
               >
                 Change password
@@ -280,24 +306,24 @@ function BusinessProfileFormInner({
         <div className="w-full">
           <Button
             type="submit"
-            className="h-14 w-full rounded-2xl bg-[#1B3C73] text-lg font-semibold text-white transition-all hover:bg-[#1B3C73]/90 active:scale-[0.98]"
+            className="h-14 w-full rounded-2xl text-lg font-semibold transition-all active:scale-[0.98]"
             disabled={isUpdating}
           >
-            {isUpdating ? <Loader size="sm" className="[&_svg]:text-white" /> : "Save Changes"}
+            {isUpdating ? <Loader size="sm" className="[&_svg]:text-background" /> : "Save Changes"}
           </Button>
         </div>
       </form>
 
       <Button
         variant="ghost"
-        className="group px-0 transition-colors duration-300 hover:bg-transparent"
+        className="group px-0 transition-colors duration-300 hover:bg-transparent text-destructive hover:text-destructive"
         onClick={() => setShowSignOut(true)}
         disabled={isLoggingOut}
       >
-        <div className="flex items-center justify-center rounded-full bg-neutral-100 p-2.5 transition-colors duration-300 group-hover:bg-red-500">
-          <LogOut className="h-4 w-4 text-red-500 transition-colors duration-300 group-hover:text-white" />
+        <div className="flex items-center justify-center rounded-full bg-destructive/10 p-2.5 transition-colors duration-300 group-hover:bg-destructive">
+          <LogOut className="h-4 w-4 text-destructive transition-colors duration-300 group-hover:text-destructive-foreground" />
         </div>
-        <span className="font-medium transition-colors duration-300 group-hover:text-red-500">
+        <span className="font-medium transition-colors duration-300">
           {isLoggingOut ? "Signing out..." : "Sign out"}
         </span>
       </Button>

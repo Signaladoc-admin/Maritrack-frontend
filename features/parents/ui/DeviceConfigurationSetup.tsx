@@ -429,7 +429,8 @@ export default function DevicesConfigurationSetup({
 
   const isDeviceFinanced = currentDeviceFinanceUser?.isDeviceFinanced;
 
-  const isLoading = isLoadingUser || (parentId && isLoadingSettings) || isLoadingMe || isLoadingFinanceUsers;
+  const isLoading =
+    isLoadingUser || (parentId && isLoadingSettings) || isLoadingMe || isLoadingFinanceUsers;
 
   const isSubmitting = isCreating || isUpdating;
 
@@ -496,9 +497,7 @@ export default function DevicesConfigurationSetup({
         }
       />
 
-      {isDeviceFinanced && (
-        <RepaymentPlans mdmDeviceId={hardwareData?.deviceDetails?.id} />
-      )}
+      {isDeviceFinanced && <RepaymentPlans mdmDeviceId={hardwareData?.deviceDetails?.id} />}
 
       {isOnboardingPath && <LoaderModal open={isSubmitting} text="Setting up your account" />}
 
@@ -542,12 +541,12 @@ function SectionSkeleton({ title, subtitle }: { title: string; subtitle: string 
         {/* Card content */}
         <div className="space-y-6">
           {/* Card subheading */}
-          <div className="h-8 w-full rounded bg-gray-300"></div>
+          <div className="h-8 w-full animate-pulse rounded bg-[var(--card-line)]"></div>
 
           <div className="space-y-3">
-            <div className="h-5 w-full rounded bg-gray-300"></div>
-            <div className="h-5 w-full rounded bg-gray-300"></div>
-            <div className="h-5 w-full rounded bg-gray-300"></div>
+            <div className="h-5 w-full animate-pulse rounded bg-[var(--card-line)]"></div>
+            <div className="h-5 w-full animate-pulse rounded bg-[var(--card-line)]"></div>
+            <div className="h-5 w-full animate-pulse rounded bg-[var(--card-line)]"></div>
           </div>
         </div>
       </div>

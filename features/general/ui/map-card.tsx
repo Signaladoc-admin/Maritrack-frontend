@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/Card/Card";
 import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
+import { getAddressFromCoords } from "@/shared/lib/geocoding";
+import { MapPin, Navigation } from "lucide-react";
 
 const LeafletMapClient = dynamic(() => import("./LeafletMapClient"), {
   ssr: false,
@@ -98,7 +99,7 @@ export function MapCard({ deviceId, className, resolvedAddress }: MapCardProps) 
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

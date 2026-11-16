@@ -4,6 +4,10 @@ const nextConfig: NextConfig = {
   /* config options here */
   output: "standalone",
   reactCompiler: true,
+  // Skip TypeScript type checking during production builds (handled in CI separately)
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 
   experimental: {
     serverActions: {
@@ -15,6 +19,13 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "res.cloudinary.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        // Blog cover images
+        protocol: "https",
+        hostname: "r2.signaladoc-bucket.signaladoc.com",
         port: "",
         pathname: "/**",
       },

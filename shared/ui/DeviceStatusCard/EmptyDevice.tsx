@@ -12,16 +12,15 @@ export function EmptyDeviceCard({ onClick, className }: EmptyDeviceCardProps) {
       type="button"
       onClick={onClick}
       className={cn(
-        "relative flex w-full cursor-pointer flex-col items-center justify-center gap-4 overflow-hidden rounded-[24px] bg-[#EEEEEE] p-8 transition-colors hover:bg-[#e4e4e4]",
+        "surface relative flex w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-[var(--radius-lg)] border-dashed border-[var(--card-line-strong)] p-8 text-center transition-colors hover:border-[var(--accent)] hover:bg-[var(--card-hover)]",
         className
       )}
     >
-      {/* Plus icon in a circle */}
-      <div className="flex h-16 w-16 items-center justify-center rounded-full transition-colors">
-        <Plus className="h-8 w-8 text-[#FF736A]" strokeWidth={1.5} />
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--card-line)] bg-[var(--card-fill)] text-[var(--accent)]">
+        <Plus className="h-6 w-6" />
       </div>
 
-      <span className="text-base font-semibold tracking-wide text-[#1B3C73]">Pair new device</span>
+      <span className="text-sm font-bold text-[var(--text-1)]">Pair new device</span>
     </button>
   );
 }
