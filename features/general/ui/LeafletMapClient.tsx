@@ -4,26 +4,25 @@ import React, { useEffect, useMemo } from "react";
 import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { Crosshair, Plus, Minus, MapPin } from "lucide-react";
 
-// Fix default Leaflet icon paths in browser
+// Configure default marker icons
 if (typeof window !== "undefined") {
   delete (L.Icon.Default.prototype as any)._getIconUrl;
   L.Icon.Default.mergeOptions({
-    iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+    iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
+    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+    shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
   });
 }
 
 interface LeafletMapClientProps {
   center: [number, number];
+  zoom?: number;
   hasValidLocation: boolean;
-  address?: string;
-  deviceName?: string;
+  popupText?: string;
 }
 
-// Controller component to keep Leaflet view in sync with coordinates & fix resize glitches
+// Controller component to keep Leaflet view synchronized and invalidate size on mount/resize
 function MapViewController({ center, zoom }: { center: [number, number]; zoom: number }) {
   const map = useMap();
 
@@ -33,20 +32,10 @@ function MapViewController({ center, zoom }: { center: [number, number]; zoom: n
   }, [map, center, zoom]);
 
   useEffect(() => {
-    // Initial and staggered invalidations to prevent grey tiles inside tab switches and dynamic panels
+    // Invalidate map size to prevent grey/broken tiles inside tab switches and flex containers
     map.invalidateSize();
-    const t1 = setTimeout(() => map.invalidateSize(), 100);
-    const t2 = setTimeout(() => map.invalidateSize(), 300);
-    const t3 = setTimeout(() => map.invalidateSize(), 600);
-
-    const container = map.getContainer();
-    let resizeObserver: ResizeObserver | null = null;
-    if (typeof ResizeObserver !== "undefined" && container) {
-      resizeObserver = new ResizeObserver(() => {
-        map.invalidateSize();
-      });
-      resizeObserver.observe(container);
-    }
+    const t1 = setTimeout(() => map.invalidateSize(), 150);
+    const t2 = setTimeout(() => map.invalidateSize(), 500);
 
     const handleResize = () => {
       map.invalidateSize();
@@ -56,154 +45,84 @@ function MapViewController({ center, zoom }: { center: [number, number]; zoom: n
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
-      clearTimeout(t3);
       window.removeEventListener("resize", handleResize);
-      if (resizeObserver) resizeObserver.disconnect();
     };
   }, [map]);
 
   return null;
 }
 
-// Custom UI controls inside Leaflet context
-function MapControlsOverlay({ onRecenter }: { onRecenter: () => void }) {
-  const map = useMap();
-
-  return (
-    <div className="absolute right-3.5 bottom-3.5 z-[1000] flex flex-col gap-2">
-      {/* Re-center button */}
-      <button
-        type="button"
-        onClick={onRecenter}
-        className="flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--card-line)] bg-[var(--surface)] text-[var(--text-1)] shadow-md transition-all hover:bg-[var(--card-hover)] active:scale-95 cursor-pointer"
-        title="Center on device"
-      >
-        <Crosshair className="h-4 w-4 text-[var(--accent)]" />
-      </button>
-
-      {/* Zoom controls */}
-      <div className="flex flex-col overflow-hidden rounded-xl border border-[var(--card-line)] bg-[var(--surface)] shadow-md">
-        <button
-          type="button"
-          onClick={() => map.zoomIn()}
-          className="flex h-8 w-8 items-center justify-center border-b border-[var(--card-line)] text-[var(--text-1)] transition-colors hover:bg-[var(--card-hover)] cursor-pointer"
-          title="Zoom in"
-        >
-          <Plus className="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          onClick={() => map.zoomOut()}
-          className="flex h-8 w-8 items-center justify-center text-[var(--text-1)] transition-colors hover:bg-[var(--card-hover)] cursor-pointer"
-          title="Zoom out"
-        >
-          <Minus className="h-4 w-4" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
 export default function LeafletMapClient({
   center,
+  zoom = 13,
   hasValidLocation,
-  address,
-  deviceName = "Device",
+  popupText,
 }: LeafletMapClientProps) {
-  // Custom glowing pulse radar marker icon
+  // Custom marker pin with pulse animation
   const markerIcon = useMemo(() => {
-    const color = hasValidLocation ? "#01db5e" : "#ff6857";
+    const color = hasValidLocation ? "#1B3C73" : "#667085";
     return L.divIcon({
-      className: "custom-leaflet-marker",
+      className: "custom-leaflet-pin",
       html: `
-        <div style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
-          <span style="position: absolute; width: 36px; height: 36px; border-radius: 50%; background-color: ${color}; opacity: 0.35; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
-          <span style="position: absolute; width: 22px; height: 22px; border-radius: 50%; background-color: ${color}; opacity: 0.5;"></span>
-          <span style="position: relative; width: 14px; height: 14px; border-radius: 50%; background-color: ${color}; border: 2.5px solid #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.45);"></span>
+        <div style="position: relative; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;">
+          <span style="position: absolute; width: 34px; height: 34px; border-radius: 50%; background-color: ${color}; opacity: 0.22; animation: leaflet-pin-pulse 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
+          <span style="position: absolute; width: 22px; height: 22px; border-radius: 50%; background-color: ${color}; opacity: 0.35;"></span>
+          <span style="position: relative; width: 14px; height: 14px; border-radius: 50%; background-color: ${color}; border: 2.5px solid #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.35);"></span>
         </div>
       `,
-      iconSize: [36, 36],
-      iconAnchor: [18, 18],
-      popupAnchor: [0, -18],
+      iconSize: [34, 34],
+      iconAnchor: [17, 17],
+      popupAnchor: [0, -17],
     });
   }, [hasValidLocation]);
 
-  const [mapRef, setMapRef] = React.useState<L.Map | null>(null);
-
-  const handleRecenter = () => {
-    if (mapRef && center) {
-      mapRef.setView(center, hasValidLocation ? 15 : 12, { animate: true });
-    }
-  };
-
   return (
-    <div className="relative h-full w-full">
+    <div className="relative h-full min-h-[400px] w-full">
       <MapContainer
         center={center}
-        zoom={hasValidLocation ? 15 : 12}
-        scrollWheelZoom={true}
-        zoomControl={false}
-        ref={setMapRef}
-        className="h-full w-full z-0"
-        style={{ height: "100%", width: "100%", background: "var(--base)" }}
+        zoom={zoom}
+        scrollWheelZoom={false}
+        attributionControl={true}
+        style={{ height: "100%", width: "100%", minHeight: "400px" }}
+        className="z-0 h-full w-full"
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          subdomains="abcd"
+          maxZoom={20}
         />
 
-        <MapViewController center={center} zoom={hasValidLocation ? 15 : 12} />
+        <MapViewController center={center} zoom={zoom} />
 
         <Marker position={center} icon={markerIcon}>
-          <Popup className="custom-device-popup" autoPan={false}>
-            <div className="p-1 text-left min-w-[180px]">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--text-1)]">
-                <span
-                  className={`h-2 w-2 rounded-full ${
-                    hasValidLocation ? "bg-[var(--green)]" : "bg-[var(--coral)]"
-                  }`}
-                />
-                <span>{deviceName}</span>
-              </div>
-              <div className="mt-1 text-[11.5px] leading-snug text-[var(--text-2)]">
-                {address || `${center[0].toFixed(5)}, ${center[1].toFixed(5)}`}
-              </div>
-              <div className="mt-1.5 font-mono text-[10px] text-[var(--text-3)]">
-                {center[0].toFixed(6)}, {center[1].toFixed(6)}
-              </div>
+          <Popup>
+            <div className="p-1 text-xs font-semibold text-slate-800">
+              {popupText ||
+                (hasValidLocation ? "Last known location" : "Default location (no GPS data)")}
             </div>
           </Popup>
         </Marker>
-
-        <MapControlsOverlay onRecenter={handleRecenter} />
       </MapContainer>
 
       <style jsx global>{`
-        @keyframes ping {
-          75%,
+        @keyframes leaflet-pin-pulse {
+          70%,
           100% {
             transform: scale(2);
             opacity: 0;
           }
         }
-        .custom-device-popup .leaflet-popup-content-wrapper {
-          background: var(--surface) !important;
-          color: var(--text-1) !important;
-          border: 1px solid var(--card-line) !important;
-          border-radius: 14px !important;
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
-          padding: 6px 10px !important;
+        .leaflet-control-attribution {
+          font-size: 9px !important;
+          color: #64748b !important;
+          background: rgba(255, 255, 255, 0.7) !important;
+          padding: 1px 5px !important;
+          border-radius: 3px 0 0 0;
         }
-        .custom-device-popup .leaflet-popup-tip {
-          background: var(--surface) !important;
-          border: 1px solid var(--card-line) !important;
-        }
-        .custom-device-popup .leaflet-popup-close-button {
-          color: var(--text-3) !important;
-          padding: 6px !important;
-        }
-        .custom-device-popup .leaflet-popup-close-button:hover {
-          color: var(--text-1) !important;
+        .leaflet-control-attribution a {
+          color: #64748b !important;
+          text-decoration: none !important;
         }
       `}</style>
     </div>

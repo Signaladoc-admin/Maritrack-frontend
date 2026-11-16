@@ -23,10 +23,13 @@ export default function DeviceMapClient() {
         zoom={14}
         style={{ height: "100%", width: "100%" }}
         zoomControl={false}
+        attributionControl={true}
       >
         <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          subdomains="abcd"
+          maxZoom={20}
         />
 
         <Marker position={[6.43, 3.42]} icon={customIcon} />
@@ -66,6 +69,17 @@ export default function DeviceMapClient() {
         .custom-popup .leaflet-popup-content {
           margin: 0;
           line-height: normal;
+        }
+        .leaflet-control-attribution {
+          font-size: 8px !important;
+          color: #64748b !important;
+          background: rgba(255, 255, 255, 0.75) !important;
+          padding: 1px 4px !important;
+          margin-right: 32px !important;
+        }
+        .leaflet-control-attribution a {
+          color: #64748b !important;
+          text-decoration: none !important;
         }
       `}</style>
     </div>

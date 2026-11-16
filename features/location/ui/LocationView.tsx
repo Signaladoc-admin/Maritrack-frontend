@@ -34,6 +34,23 @@ export function LocationView({ deviceId }: { deviceId: string }) {
   const { data: restrictionsResponse } = useGetRestrictions(deviceId, { enabled: !!deviceId });
 
   const location = hardwareData?.deviceDetails?.lastKnownLocation;
+  let lat: number | undefined = undefined;
+  let lon: number | undefined = undefined;
+
+  if (location && typeof location === "object") {
+    const rawLat = (location as any).latitude ?? (location as any).lat;
+    const rawLon = (location as any).longitude ?? (location as any).lng ?? (location as any).lon;
+    if (typeof rawLat === "number" && !isNaN(rawLat)) lat = rawLat;
+    if (typeof rawLon === "number" && !isNaN(rawLon)) lon = rawLon;
+  } else if (typeof location === "string") {
+    try {
+      const parsed = JSON.parse(location);
+      const rawLat = parsed.latitude ?? parsed.lat;
+      const rawLon = parsed.longitude ?? parsed.lng ?? parsed.lon;
+      if (typeof rawLat === "number" && !isNaN(rawLat)) lat = rawLat;
+      if (typeof rawLon === "number" && !isNaN(rawLon)) lon = rawLon;
+    } catch {}
+  }
 
   // organizationName: business name for business accounts, child's name for parent accounts.
   const { user } = useAuth();
@@ -51,7 +68,7 @@ export function LocationView({ deviceId }: { deviceId: string }) {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Left Column */}
         <div className="flex flex-col gap-6">
-          <CurrentLocationCard lat={location?.latitude} lon={location?.longitude} />
+          <CurrentLocationCard lat={lat} lon={lon} />
           <GeofencingCard
             locations={geoFencingLocations}
             onSetGeofencing={(locs) => {
