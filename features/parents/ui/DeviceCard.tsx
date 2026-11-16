@@ -15,28 +15,41 @@ const DeviceCard = ({
   onClick: () => void;
   hardwareData?: any;
 }) => {
-  const { data: fetchedHardwareData } = useDeviceDetail(device.deviceId || "", "hardware", {
-    enabled: !!device.deviceId && !initialHardwareData,
+  const deviceId = device?.deviceId || device?.mdmId || device?.mdmDeviceId || device?.id || "";
+
+  const { data: fetchedHardwareData } = useDeviceDetail(deviceId, "hardware", {
+    enabled: !!deviceId && !initialHardwareData,
   });
 
   const hardwareData = initialHardwareData || fetchedHardwareData;
   const batteryLevel = hardwareData?.data?.realTimeStats?.batteryLevel ?? 0;
 
-  // Extract osType from hardwareData or device details
+  const manufacturer =
+    device?.manufacturer ||
+    hardwareData?.deviceDetails?.manufacturer ||
+    (hardwareData?.data as any)?.manufacturer ||
+    "";
+  const modelName =
+    device?.model ||
+    hardwareData?.deviceDetails?.model ||
+    (hardwareData?.data as any)?.model ||
+    "N/A";
+  const status =
+    device?.deviceStatus ||
+    hardwareData?.deviceDetails?.deviceStatus ||
+    (device as any)?.status ||
+    "ACTIVE";
+  const isOnline = status === "ACTIVE";
+
   const osType =
     hardwareData?.data?.osType ||
     (hardwareData?.deviceDetails as any)?.osType ||
     device?.osType ||
-    device?.operatingSystem;
+    device?.operatingSystem ||
+    "Android";
 
   return (
-    <DeviceUsageCard
-      deviceName={childName ? `${childName}'s phone` : device.manufacturer}
-      status="active"
-      percentage={batteryLevel}
-      device={device.model || "N/A"}
-      isRow={false}
-      osType={osType}
+    <div
       onClick={onClick}
       className="surface group flex h-full cursor-pointer flex-col justify-between rounded-[var(--radius-lg)] p-6 transition-all hover:border-[var(--card-line-strong)]"
     >
@@ -82,7 +95,7 @@ const DeviceCard = ({
               Platform
             </div>
             <div className="truncate text-sm font-bold text-[var(--text-1)]">
-              {device?.operatingSystem || "Android"}
+              {osType}
             </div>
           </div>
         </div>
