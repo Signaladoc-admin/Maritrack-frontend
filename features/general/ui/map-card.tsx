@@ -3,7 +3,7 @@
 import React from "react";
 import dynamic from "next/dynamic";
 import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card"; // Adjust path to match your project
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/Card"; // Adjust path to match your project
 
 const LeafletMapClient = dynamic(() => import("./LeafletMapClient"), {
   ssr: false,
