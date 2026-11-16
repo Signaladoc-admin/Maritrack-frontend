@@ -130,49 +130,77 @@ export default function ParentDashboard() {
 
       {/* Selected Child Hero Bar */}
       {typedChild && (
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-5">
-            <Avatar className="h-[80px] w-[80px]">
-              <AvatarImage src={typedChild.imageUrl ?? undefined} alt={typedChild.name} />
-              <AvatarFallback>{getInitials(typedChild.name)}</AvatarFallback>
-            </Avatar>
-            <div>
-              <h3 className="text-2xl font-bold tracking-tight text-[#1B3C73]">
-                {typedChild.name}
-              </h3>
-              <p className="text-sm font-medium text-slate-400">
-                {typedChild.age ? `Daughter, ${typedChild.age}` : "Daughter"}
-              </p>
+        <div className="surface dd-hero mb-6">
+          <div className="dd-hero-top">
+            <div className="dd-hero-id">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[var(--card-line)] bg-[var(--card-fill)] text-lg font-bold text-[var(--accent)]">
+                {typedChild.imageUrl ? (
+                  <img
+                    src={typedChild.imageUrl}
+                    alt={typedChild.name}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  getInitials(typedChild.name)
+                )}
+              </div>
+              <div>
+                <div className="mb-0.5 text-xl font-bold text-[var(--text-1)]">
+                  {typedChild.name}
+                </div>
+                <div className="text-xs font-medium text-[var(--text-3)]">
+                  {relationshipLabel}
+                  {typedChild.age ? ` · ${typedChild.age} years old` : ""}
+                  {device
+                    ? ` · Enrolled Device: ${device.manufacturer || ""} ${device.model || ""}`
+                    : " · No device paired"}
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="flex gap-4">
-            <button
-              onClick={() => setShowEdit(true)}
-              className="flex h-[52px] w-[52px] cursor-pointer items-center justify-center rounded-full bg-[#F8F9FA] transition-colors hover:bg-slate-200"
-            >
-              <Edit2Icon className="h-[22px] w-[22px] text-[#1B3C73]" />
-            </button>
-            <button
-              onClick={() => setShowDelete(true)}
-              className="flex h-[52px] w-[52px] cursor-pointer items-center justify-center rounded-full bg-[#FEF2F2] transition-colors hover:bg-red-100"
-            >
-              <Trash2Icon className="h-[22px] w-[22px] text-[#EF4444]" />
-            </button>
+            <div className="dd-hero-actions">
+              <button
+                type="button"
+                onClick={() => setShowEdit(true)}
+                className="dd-action-btn"
+                title="Edit child profile"
+              >
+                <Edit2Icon className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowDelete(true)}
+                className="dd-action-btn hover:text-[var(--coral)]"
+                title="Delete child profile"
+              >
+                <Trash2Icon className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {typedChild && !device ? (
-        <div className="pt-4">
-          <EmptyDeviceCard
+      {/* When Child has NO device paired */}
+      {typedChild && !device && (
+        <div className="surface flex flex-col items-center justify-center gap-4 rounded-[var(--radius-lg)] border-dashed border-[var(--card-line-strong)] p-10 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[var(--card-line)] bg-[var(--card-fill)] text-[var(--text-3)]">
+            <Smartphone className="h-8 w-8" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-base font-bold text-[var(--text-1)]">
+              No device paired to {typedChild.name}
+            </h3>
+            <p className="mx-auto max-w-sm text-xs text-[var(--text-2)]">
+              Pair an Android or iOS device to monitor usage, enforce bedtime rules, and track
+              location.
+            </p>
+          </div>
+          <button
+            type="button"
             onClick={() => setIsPairNewDeviceModalOpen(true)}
-            className="h-[350px] rounded-[32px]"
-          />
-          <PairDeviceModal
-            open={isPairNewDeviceModalOpen}
-            onOpenChange={setIsPairNewDeviceModalOpen}
-            childId={typedChild.id}
-          />
+            className="btn-primary mt-2 cursor-pointer"
+          >
+            <Plus className="h-4 w-4" /> Pair new device
+          </button>
         </div>
       )}
 
@@ -210,7 +238,7 @@ export default function ParentDashboard() {
         </div>
       )}
 
-      {/* Edit Child Modal */}
+      {/* Modals */}
       {typedChild && (
         <>
           <AddEditChildModal
@@ -228,6 +256,11 @@ export default function ParentDashboard() {
             cancelText="Cancel"
             onConfirm={handleDelete}
             variant="destructive"
+          />
+          <PairDeviceModal
+            open={isPairNewDeviceModalOpen}
+            onOpenChange={setIsPairNewDeviceModalOpen}
+            childId={typedChild.id}
           />
         </>
       )}
