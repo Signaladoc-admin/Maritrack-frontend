@@ -37,8 +37,6 @@ export function LocationView({ deviceId }: { deviceId: string }) {
   let lat: number | undefined = undefined;
   let lon: number | undefined = undefined;
 
-  console.log('location: ', hardwareData)
-
   if (location && typeof location === "object") {
     const rawLat = (location as any).latitude ?? (location as any).lat;
     const rawLon = (location as any).longitude ?? (location as any).lng ?? (location as any).lon;

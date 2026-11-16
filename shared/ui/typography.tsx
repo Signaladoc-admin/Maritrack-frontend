@@ -7,8 +7,9 @@ import { cn } from "@/shared/lib/utils";
 const headingVariants = cva("", {
   variants: {
     variant: {
-      default: "text-slate-900 dark:text-slate-50",
-      primary: "text-[#003366]",
+      default: "text-foreground",
+      primary: "text-primary",
+      muted: "text-muted-foreground",
     },
   },
   defaultVariants: {

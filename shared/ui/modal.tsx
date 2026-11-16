@@ -34,13 +34,19 @@ export default function Modal({
 }) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={cn("z-99999 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl p-5 sm:max-w-md", className)}>
-        <DialogHeader className="flex flex-col items-start space-y-3">
-          <DialogTitle asChild className="mb-0! text-xl">
-            <H3 className="text-primary">{title}</H3>
-          </DialogTitle>
-          <p className="mt-3 text-sm opacity-70">{subtitle}</p>
-        </DialogHeader>
+      <DialogContent className={cn("z-[99999] max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl p-5", !className?.includes("max-w") && "sm:max-w-md", className)}>
+        {title || subtitle ? (
+          <DialogHeader className="flex flex-col items-start space-y-1.5">
+            {title && (
+              <DialogTitle asChild className="mb-0! text-xl font-bold text-[var(--text-1)]">
+                <H3 className="text-[var(--text-1)]">{title}</H3>
+              </DialogTitle>
+            )}
+            {subtitle && <p className="text-sm text-[var(--text-3)]">{subtitle}</p>}
+          </DialogHeader>
+        ) : (
+          <DialogTitle className="sr-only">Modal dialog</DialogTitle>
+        )}
 
         {/* Modal Body */}
         <>{children}</>

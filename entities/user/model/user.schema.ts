@@ -12,17 +12,67 @@ export const BUSINESS_ROLES = [
   "ORGANIZATION_ADMIN",
   "DEVICE_MANAGER",
   "DEPARTMENT_MANAGER",
+  "RETAILER_ADMIN",
+  "RETAILER_STAFF",
+  "DEVICE_FINANCE_ADMIN",
+  "DEVICE_FINANCE_USER",
+  "DEVICE_FINANCING_ADMIN",
+  "DEVICE_FINANCING_USER",
 ] as const;
 
 export const BusinessRoleEnum = {
   ORGANIZATION_ADMIN: "ORGANIZATION_ADMIN",
   DEVICE_MANAGER: "DEVICE_MANAGER",
   DEPARTMENT_MANAGER: "DEPARTMENT_MANAGER",
+  RETAILER_ADMIN: "RETAILER_ADMIN",
+  RETAILER_STAFF: "RETAILER_STAFF",
+  DEVICE_FINANCE_ADMIN: "DEVICE_FINANCE_ADMIN",
+  DEVICE_FINANCE_USER: "DEVICE_FINANCE_USER",
+  DEVICE_FINANCING_ADMIN: "DEVICE_FINANCING_ADMIN",
+  DEVICE_FINANCING_USER: "DEVICE_FINANCING_USER",
 } as const;
 
 export type BusinessRoleEnum = (typeof BusinessRoleEnum)[keyof typeof BusinessRoleEnum];
 
 export type BusinessRole = (typeof BUSINESS_ROLES)[number];
+
+export const DEVICE_FINANCING_ROLES = [
+  "RETAILER_ADMIN",
+  "RETAILER_STAFF",
+  "DEVICE_FINANCE_ADMIN",
+  "DEVICE_FINANCE_USER",
+  "DEVICE_FINANCING_ADMIN",
+  "DEVICE_FINANCING_USER",
+] as const;
+
+export function isRetailerRole(role?: string | null): boolean {
+  if (!role) return false;
+  const upper = role.toUpperCase();
+  return (
+    upper === "RETAILER_ADMIN" ||
+    upper === "RETAILER_STAFF" ||
+    upper === "RETAILER_USER" ||
+    upper.includes("RETAILER")
+  );
+}
+
+export function isDeviceFinancingOrRetailerRole(role?: string | null): boolean {
+  if (!role) return false;
+  const upper = role.toUpperCase();
+  return (
+    upper === "RETAILER_ADMIN" ||
+    upper === "RETAILER_STAFF" ||
+    upper === "RETAILER_USER" ||
+    upper === "DEVICE_FINANCE_USER" ||
+    upper === "DEVICE_FINANCE_ADMIN" ||
+    upper === "DEVICE_FINANCING_USER" ||
+    upper === "DEVICE_FINANCING_ADMIN" ||
+    upper === "DEVICE_FINANCING" ||
+    upper.includes("RETAILER") ||
+    upper.includes("FINANCE") ||
+    upper.includes("FINANCING")
+  );
+}
 
 export const loginSchema = z.object({
   email: z.string().email("Invalid email address"),

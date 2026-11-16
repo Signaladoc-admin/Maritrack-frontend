@@ -4,40 +4,46 @@ import { Skeleton } from "@/shared/ui/skeleton";
 
 export function ChildDevicesSkeleton() {
   return (
-    <div>
-      <div className="">
-        {/* Back button skeleton */}
-        <Skeleton className="h-6 w-24" />
+    <div className="content">
+      {/* Back button skeleton */}
+      <Skeleton className="mb-5 h-5 w-28 rounded-md" />
 
-        <div className="my-12 flex items-center justify-between">
-          <div className="flex items-center gap-5">
-            {/* Avatar skeleton */}
-            <Skeleton className="h-[80px] w-[80px] rounded-full" />
-
+      {/* Hero skeleton */}
+      <div className="surface dd-hero mb-6 rounded-[var(--radius-lg)] p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-14 w-14 rounded-2xl" />
             <div className="space-y-2">
-              {/* Name skeleton */}
-              <Skeleton className="h-8 w-32" />
-              {/* Date skeleton */}
-              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-6 w-36" />
+              <Skeleton className="h-3.5 w-52" />
             </div>
           </div>
-
-          <div className="flex gap-4">
-            {/* Action buttons skeletons */}
-            <Skeleton className="h-10 w-10 rounded-full" />
-            <Skeleton className="h-10 w-10 rounded-full" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-9 w-9 rounded-lg" />
+            <Skeleton className="h-9 w-9 rounded-lg" />
           </div>
         </div>
+      </div>
 
-        {/* Section title skeleton */}
-        <Skeleton className="mb-4 h-5 w-48" />
+      {/* Metrics skeleton */}
+      <div className="mb-6 grid gap-6 md:grid-cols-2">
+        <Skeleton className="h-36 rounded-[var(--radius-lg)]" />
+        <Skeleton className="h-36 rounded-[var(--radius-lg)]" />
+      </div>
 
-        <div className="grid w-full grid-cols-2 gap-4">
-          {/* Device cards skeletons */}
-          <Skeleton className="h-[200px] w-full rounded-xl" />
-          <Skeleton className="h-[200px] w-full rounded-xl" />
-          <Skeleton className="h-[200px] w-full rounded-xl" />
-          <Skeleton className="h-[200px] w-full rounded-xl" />
+      {/* Main grid skeleton */}
+      <div className="mb-6 grid gap-6 lg:grid-cols-2">
+        <Skeleton className="h-72 rounded-[var(--radius-lg)]" />
+        <Skeleton className="h-72 rounded-[var(--radius-lg)]" />
+      </div>
+
+      {/* Quick controls skeleton */}
+      <div className="surface space-y-4 rounded-[var(--radius-lg)] p-6">
+        <Skeleton className="h-5 w-36" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-[104px] rounded-2xl" />
+          ))}
         </div>
       </div>
     </div>

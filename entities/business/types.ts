@@ -64,18 +64,132 @@ interface StaffUserProfile extends BaseEntity {
   zone: Zone;
 }
 
+export interface DeviceFinanceInstallment {
+  id: string;
+  financingId: string;
+  installmentNumber: number;
+  amountInKobo: string;
+  amountPaidInKobo: string;
+  lateFeeInKobo: string;
+  dueDate: string;
+  status: "PENDING" | "PAID" | "OVERDUE" | string;
+  paidAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OnDeviceFinancing {
+  id: string;
+  currency: string;
+  gracePeriodInDays: number;
+  devicePriceInKobo: string;
+  downPaymentInKobo: string;
+  monthlyPaymentInKobo: string;
+  totalPaymentInKobo: string;
+  remainingPaymentInKobo: string;
+  paymentPlan: string;
+  paymentPlanDuration: number;
+  interestRate: string;
+  interestModel: string;
+  interestAmountInKobo: string;
+  latePaymentSurcharge: string;
+  paymentStatus: "PENDING" | "PAID" | "ACTIVE" | "DEFAULTED" | string;
+  paymentStartDate: string;
+  paymentEndDate: string;
+  paymentSchedule: string;
+  deviceType: string;
+  deviceBrand: string;
+  deviceModel: string;
+  deviceColour: string;
+  deviceMemory: string;
+  deviceRam: string;
+  createdAt: string;
+  updatedAt: string;
+  deleted: boolean;
+  deletedAt: string | null;
+  installments?: DeviceFinanceInstallment[];
+}
+
+export interface DeviceFinanceRetailer {
+  id: string;
+  referenceNumber: string;
+  businessId: string;
+  contactPersonId: string;
+  legalName: string;
+  branchName: string;
+  rcNumber: string;
+  country: string;
+  state: string;
+  city: string;
+  address: string;
+  phone: string;
+  email: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  deleted: boolean;
+  deletedAt: string | null;
+}
+
+export interface DeviceFinanceActivationCode {
+  id: string;
+  deviceFinanceUserId: string;
+  code: string;
+  status: string;
+  revokedByUserId: string | null;
+  revokedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DeviceFinanceUser extends BaseEntity {
+  id: string;
+  userId: string;
+  location: string | null;
+  businessId: string;
+  retailerId: string;
+  onboardingCode: string;
+  isDeviceFinanced: boolean;
+  transFer: boolean;
+  onDeviceFinancingId: string | null;
+  gender: "MALE" | "FEMALE" | string | null;
+  state: string | null;
+  country: string | null;
+  address: string | null;
+  user: StaffUserProfile;
+  business?: Business | StaffBusiness;
+  activationCode?: DeviceFinanceActivationCode | null;
+  retailer?: DeviceFinanceRetailer | null;
+  onDeviceFinancing?: OnDeviceFinancing | null;
+  deviceFinancing?: OnDeviceFinancing | null;
+  device?: StaffDevice | null;
+}
+
 export interface BusinessStaff extends BaseEntity {
   id: string;
   userId: string;
   user: StaffUserProfile;
-  staffDepartmentId: string | null;
+  staffDepartmentId?: string | null;
   businessId: string;
   business: Business;
-  businessRole: BusinessRoleEnum;
-  location: string;
-  position: string;
-  onboardingCode: string;
-  device: StaffDevice | null;
+  businessRole?: BusinessRoleEnum;
+  location?: string | null;
+  position?: string | null;
+  onboardingCode?: string | null;
+  device?: StaffDevice | null;
+  // Device finance properties (populated when business profile is DEVICE_FINANCING)
+  retailerId?: string;
+  isDeviceFinanced?: boolean;
+  transFer?: boolean;
+  onDeviceFinancingId?: string | null;
+  gender?: "MALE" | "FEMALE" | string | null;
+  state?: string | null;
+  country?: string | null;
+  address?: string | null;
+  activationCode?: DeviceFinanceActivationCode | null;
+  retailer?: DeviceFinanceRetailer | null;
+  onDeviceFinancing?: OnDeviceFinancing | null;
+  deviceFinancing?: OnDeviceFinancing | null;
 }
 
 export interface Business extends BaseEntity {
@@ -131,13 +245,16 @@ export interface StaffMembersPaginatedResponse {
   status: boolean;
   statusCode: number;
   message: string;
-  data: {
-    limit: number;
-    page: number;
-    staff: BusinessStaff[];
-    total: number;
-    totalPages: number;
-  };
+  data:
+    | {
+        limit: number;
+        page: number;
+        staff: BusinessStaff[];
+        total: number;
+        totalPages: number;
+      }
+    | DeviceFinanceUser[]
+    | BusinessStaff[];
 }
 interface NewStaffMemberResult {
   email: string;

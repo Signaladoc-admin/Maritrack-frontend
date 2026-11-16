@@ -40,7 +40,7 @@ export default function ChangePasswordModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md gap-6">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-[#1B3C73]">
+          <DialogTitle className="text-xl font-semibold text-[var(--text-1)]">
             Change password
           </DialogTitle>
         </DialogHeader>
@@ -117,10 +117,10 @@ export function ChangePasswordForm({
 
       <Button
         type="submit"
-        className="h-12 w-full rounded-xl bg-[#1B3C73] text-base font-semibold text-white hover:bg-[#1B3C73]/90"
+        className="h-12 w-full rounded-xl text-base font-semibold"
         disabled={isSubmitting}
       >
-        {isSubmitting ? <Loader size="sm" className="[&_svg]:text-white" /> : "Save"}
+        {isSubmitting ? <Loader size="sm" className="[&_svg]:text-background" /> : "Save"}
       </Button>
     </form>
   );

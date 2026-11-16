@@ -1,10 +1,11 @@
 "use client";
 
-import { Home, Plus, User } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "../Tooltip/Tooltip";
+import { useState, useMemo } from "react";
 import Link from "next/link";
-import { SidebarSkeleton } from "./SidebarSkeleton";
+import { usePathname } from "next/navigation";
+import { cn } from "@/shared/lib/utils";
 import { ProfilePopover } from "./ProfilePopover";
+import { SidebarSkeleton } from "./SidebarSkeleton";
 import { useParentChildren } from "@/entities/children/model/useChildren";
 import { Child } from "@/features/child-profile/model/types";
 import { useRecentChildren } from "@/shared/hooks/useRecentChildren";
@@ -13,23 +14,20 @@ import { usePathname, useRouter } from "next/navigation";
 import { useMemo } from "react";
 import { cn } from "@/shared/lib/utils";
 
-export function Sidebar() {
   const { data: parentChildren, isLoading: isFetchingChildren } = useParentChildren();
   const { recentIds, push: pushRecentChild } = useRecentChildren();
   const { selectedChildId, setSelectedChildId } = useParentStore();
   const pathname = usePathname();
   const router = useRouter();
 
+  const childrenList: Child[] = parentChildren?.data ?? [];
   const visibleChildren = useMemo(() => {
-    const all: Child[] = parentChildren?.data ?? [];
     const recent = recentIds
-      .map((id) => all.find((c) => c.id === id))
+      .map((id) => childrenList.find((c) => c.id === id))
       .filter(Boolean) as Child[];
-    const rest = all.filter((c) => !recentIds.includes(c.id));
-    return [...recent, ...rest].slice(0, 5);
-  }, [parentChildren?.data, recentIds]);
-
-  const hasMore = (parentChildren?.data?.length ?? 0) > 5;
+    const rest = childrenList.filter((c) => !recentIds.includes(c.id));
+    return [...recent, ...rest];
+  }, [childrenList, recentIds]);
 
   const handleChildClick = (e: React.MouseEvent, childId: string) => {
     setSelectedChildId(childId);
@@ -61,13 +59,33 @@ export function Sidebar() {
                     : "bg-[#EEEEEE] text-[#1B3C73] hover:bg-[#1B3C73] hover:text-white"
                 )}
               >
-                <Home className="h-6 w-6" />
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="right" className="ml-2">
-              <p>Dashboard</p>
-            </TooltipContent>
-          </Tooltip>
+                <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+                  <path
+                    d="M18 6L6 18M6 6l12 12"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            )}
+          </div>
+          <button
+            className="collapse-btn hidden md:flex"
+            aria-label="Collapse sidebar"
+            onClick={() => setIsAppCollapsed(!isAppCollapsed)}
+          >
+            <svg viewBox="0 0 24 24" fill="none">
+              <path
+                d="M15 6l-6 6 6 6"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
         </div>
 
         <div className="flex w-full flex-1 flex-col items-center justify-center gap-8">
@@ -117,13 +135,8 @@ export function Sidebar() {
                   >
                     +{(parentChildren?.data?.length ?? 0) - 5}
                   </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right" className="ml-2">
-                  <p>View all children</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
-          </div>
+                );
+              })}
 
           <Tooltip>
             <TooltipTrigger asChild>
@@ -136,17 +149,17 @@ export function Sidebar() {
                   <Plus className="h-5 w-5 transition-transform group-hover:scale-110" />
                 </button>
               </Link>
-            </TooltipTrigger>
-            <TooltipContent side="right" className="ml-2">
-              <p>Add a new child</p>
-            </TooltipContent>
-          </Tooltip>
+            </div>
+          )}
         </div>
 
-        <div className="mt-auto mb-10 flex flex-col items-center">
-          <ProfilePopover />
+        {/* Footer */}
+        <div className="sidebar-footer">
+          <div className="account-row flex w-full items-center gap-2">
+            <ProfilePopover />
+          </div>
         </div>
-      </div>
-    </TooltipProvider>
+      </aside>
+    </>
   );
 }

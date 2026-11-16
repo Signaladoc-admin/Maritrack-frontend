@@ -70,6 +70,7 @@ export function MapCard({ deviceId, className, resolvedAddress }: MapCardProps) 
   const [showPopup, setShowPopup] = useState(false);
   const mapRef = useRef<MapRef>(null);
 
+export function MapCard({ deviceId, className, resolvedAddress }: MapCardProps) {
   const { data: hardwareData, isPending: isHardwarePending } = useDeviceDetail(
     deviceId,
     "hardware",
@@ -151,6 +152,12 @@ export function MapCard({ deviceId, className, resolvedAddress }: MapCardProps) 
       popupText={displayAddress}
     />
   );
+
+  const displayAddress =
+    resolvedAddress ||
+    (location as any)?.address ||
+    (typeof location === "string" ? location : null) ||
+    (hasValidLocation ? `${lat!.toFixed(5)}, ${lng!.toFixed(5)}` : "No GPS data reported");
 
   return (
     <Card className={`flex h-full w-full min-h-[460px] flex-col overflow-hidden ${className || ""}`}>
@@ -246,7 +253,7 @@ export function MapCard({ deviceId, className, resolvedAddress }: MapCardProps) 
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

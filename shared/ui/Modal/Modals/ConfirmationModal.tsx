@@ -40,14 +40,14 @@ export function ConfirmationModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="p-8 text-center sm:max-w-[400px]">
         {/* Icon Section */}
-        <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-          <AlertTriangle className="h-6 w-6 text-[#D95D55]" />
+        <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+          <AlertTriangle className="h-6 w-6 text-destructive" />
         </div>
 
         <DialogHeader className="space-y-2">
-          <DialogTitle className="text-center text-xl text-[#1B3C73]">{title}</DialogTitle>
+          <DialogTitle className="text-center text-xl text-[var(--text-1)]">{title}</DialogTitle>
           {description && (
-            <DialogDescription className="text-center text-gray-500">
+            <DialogDescription className="text-center text-[var(--text-2)]">
               {description}
             </DialogDescription>
           )}

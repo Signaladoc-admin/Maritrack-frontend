@@ -7,12 +7,12 @@ export interface LoginResponse extends BaseEntity {
   refresh_token: string;
   date: string;
   isFirstLogin: boolean;
-  // Sourced from /users/{id} (UserDetails.isInvited) and attached to the login response
-  // server-side so the client can route first-login invited staff to /change-password.
   isInvited?: boolean;
   isEmailVerified: boolean;
   role: "USER" | "ADMIN";
   businessRole: BusinessRole | null;
+  businessType?: string | null;
+  isDefaultPasswordChanged?: boolean;
   email: string;
   parentId: string | null;
   businessId: string | null;
@@ -29,6 +29,9 @@ export interface User {
   isFirstLogin: boolean;
   role: "USER" | "ADMIN";
   businessRole: BusinessRole;
+  businessType?: string | null;
+  isDefaultPasswordChanged?: boolean;
+  isInvited?: boolean;
   parentId: string | null;
   businessId: string | null;
   imageUrl: string | null;
@@ -38,10 +41,16 @@ export interface User {
 export interface UserTokenPayload {
   role: "USER" | "ADMIN";
   businessRole: BusinessRole | null;
+  businessType?: string | null;
+  isDefaultPasswordChanged?: boolean;
+  isInvited?: boolean;
+  isEmailVerified?: boolean;
   email: string;
   id: string;
   parentId: string | null;
   businessId: string | null;
+  imageUrl?: string | null;
+  zoneId?: string | null;
   iat: number;
   exp: number;
 }

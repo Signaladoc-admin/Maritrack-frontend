@@ -36,6 +36,7 @@ export function useStaffMembersInfinite({
   limit = 10,
   ...params
 }: {
+  businessId?: string;
   search?: string;
   limit?: number;
 } = {}) {
@@ -48,7 +49,11 @@ export function useStaffMembersInfinite({
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
-      const { page, totalPages } = lastPage?.data ?? {};
+      const payload = lastPage?.data as any;
+      if (Array.isArray(payload)) {
+        return undefined;
+      }
+      const { page, totalPages } = payload ?? {};
       return page && totalPages && page < totalPages ? page + 1 : undefined;
     },
   });
@@ -73,6 +78,7 @@ export function useOtherStaffMembersExceptStaff({
   ...params
 }: {
   excludeUserId: string;
+  businessId?: string;
   search?: string;
   limit?: number;
 }) {
@@ -87,7 +93,11 @@ export function useOtherStaffMembersExceptStaff({
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
-      const { page, totalPages } = lastPage?.data ?? {};
+      const payload = lastPage?.data as any;
+      if (Array.isArray(payload)) {
+        return undefined;
+      }
+      const { page, totalPages } = payload ?? {};
       return page && totalPages && page < totalPages ? page + 1 : undefined;
     },
   });
@@ -96,7 +106,7 @@ export function useOtherStaffMembersExceptStaff({
     const payload = page?.data as any;
     return Array.isArray(payload) ? payload : (payload?.staff || payload?.deviceFinanceUsers || []);
   }) ?? [];
-  const otherTeamMembers = staffMembers.filter((member: any) => member?.user?.id !== excludeUserId);
+  const otherTeamMembers = staffMembers.filter((member: any) => (member?.userId || member?.user?.id) !== excludeUserId);
 
   return {
     otherTeamMembers,

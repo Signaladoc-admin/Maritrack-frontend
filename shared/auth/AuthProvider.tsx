@@ -19,6 +19,9 @@ type UserPayload = {
   exp: number;
   role: "USER" | "ADMIN" | undefined;
   businessRole: BusinessRole | null;
+  businessType?: string | null;
+  isDefaultPasswordChanged?: boolean;
+  isInvited?: boolean;
   email: string;
   id: string;
   parentId: string | null;
@@ -77,6 +80,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: userPayload.email,
         role: userPayload.role ?? "USER",
         businessRole: userPayload.businessRole,
+        businessType: userPayload.businessType,
+        isDefaultPasswordChanged: userPayload.isDefaultPasswordChanged,
+        isInvited: userPayload.isInvited,
         parentId: userPayload.parentId,
         businessId: userPayload.businessId,
         zoneId: userPayload.zoneId || fetchedZone?.data?.[0]?.id || "",

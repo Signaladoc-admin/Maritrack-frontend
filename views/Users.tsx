@@ -24,12 +24,16 @@ import AddEditLocationModal from "@/features/business-users/locations/ui/AddEdit
 import { useDeleteLocation } from "@/features/business-users/locations/model/useLocations";
 import { useDebounce } from "use-debounce";
 import AssociatedDevicesTable from "@/features/business-users/users/ui/AssociatedDevicesTable";
+import InstallmentsTable from "@/features/business-users/users/ui/InstallmentsTable";
 import { useSearchParams } from "next/navigation";
 import BusinessUserPairingQR from "@/features/business-users/users/ui/BusinessUserPairingQR";
 import { Dialog, DialogContent } from "@/shared/ui/Modal/dialog";
 import { useIsOrganizationAdmin } from "@/features/business-users/users/model/useIsOrganizationAdmin";
 import Pagination from "@/shared/ui/Table/Pagination";
 import { useGetFullBusinessDetails } from "@/features/onboarding/business/model/useGetBusinessDetails";
+import { useAuth } from "@/shared/auth/AuthProvider";
+import { isDeviceFinancingOrRetailerRole } from "@/entities/user/model/user.schema";
+import { useGetStaffMember } from "@/entities/business/model/useStaffMembers";
 
 function ActionButtons({
   onOpenQrPairing,
@@ -42,6 +46,17 @@ function ActionButtons({
 }) {
   return (
     <div className="flex items-center gap-3">
+      {onOpenQrPairing && (
+        <Button
+          onClick={onOpenQrPairing}
+          variant="secondary"
+          size="icon"
+          className="rounded-full p-5"
+          title="Pair device QR code"
+        >
+          <QrCode className="text-primary size-4.5" />
+        </Button>
+      )}
       <Button onClick={onEdit} variant="secondary" size="icon" className="rounded-full p-5">
         <SquarePen className="text-primary size-4.5" />
       </Button>
@@ -55,6 +70,8 @@ function ActionButtons({
 }
 
 export default function Users() {
+  const { user } = useAuth();
+  const isRetailerAdmin = user?.businessRole === "RETAILER_ADMIN";
   const [search, setSearch] = useQueryState("search", { defaultValue: "" });
   const [currentPage, setCurrentPage] = useQueryState("currentPage", {
     defaultValue: 1,
@@ -75,17 +92,36 @@ export default function Users() {
   const [showQrPairing, setShowQrPairing] = useState(false);
 
   const { business, isLoadingBusiness, isLoadingBusinessProfile } = useGetFullBusinessDetails();
+  const { data: selectedStaffMember } = useGetStaffMember(selectedId, {
+    enabled: !!selectedId && selectedTab === "users",
+  });
+  const hasAssignedDevice = Boolean(
+    (selectedStaffMember?.device &&
+      selectedStaffMember.device.assignmentStatus !== "UNASSIGNED" &&
+      selectedStaffMember.device.assignmentStatus !== "RETURNED" &&
+      (selectedStaffMember.device.id ||
+        selectedStaffMember.device.mdmDeviceId ||
+        selectedStaffMember.device.serialNumber ||
+        Object.keys(selectedStaffMember.device).length > 0)) ||
+      (selectedStaffMember as any)?.deviceId ||
+      (Array.isArray((selectedStaffMember as any)?.devices) &&
+        (selectedStaffMember as any).devices.some(
+          (d: any) => d.assignmentStatus !== "UNASSIGNED" && d.assignmentStatus !== "RETURNED"
+        )) ||
+      selectedStaffMember?.activationCode?.status === "USED"
+  );
+
   // Reset QR view whenever the selected user or sub-tab changes
   useEffect(() => {
     setShowQrPairing(false);
   }, [selectedId, selectedUserSubTab]);
 
-  const isDeviceFinance = (business?.profile as any)?.type === "DEVICE_FINANCING";
+  const isDeviceFinance =
+    isDeviceFinancingOrRetailerRole(user?.businessRole) ||
+    (business?.profile as any)?.type === "DEVICE_FINANCING";
 
   const availableTabs = isDeviceFinance
-    ? [
-        { label: "Users", value: "users" },
-      ]
+    ? [{ label: "Users", value: "users" }]
     : [
         { label: "Users", value: "users" },
         { label: "Departments", value: "departments" },
@@ -144,82 +180,145 @@ export default function Users() {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-[auto_1fr]">
-      <CardWrapper className="bg-[#f7f7f7]">
-        <div className="space-y-5">
-          <TabNavigation
-            className="bg-[#eee]"
-            tabs={availableTabs}
-            activeTab={selectedTab}
-            onTabChange={handleSelectTab}
-            itemClassName="px-4"
-          />
-          <div className="flex items-center gap-2">
-            <Input className="h-10!" placeholder="Search" value={search} onChange={handleSearch} />
-            <Button
-              className="h-10 w-10 shrink-0 rounded-xl"
-              onClick={() => {
-                setIsAddEditModalOpen(true);
-                setSelectedId("");
-              }}
-            >
-              <PlusIcon color="white" className="size-5" />
-            </Button>
+    <section className="page active" id="page-users">
+      <div className="page-head">
+        <div className="page-head-row">
+          <div>
+            <h1>Device users</h1>
+            <p>Assign devices to staff, departments, or specific locations.</p>
           </div>
-          {selectedTab === "users" && (
-            <UsersList
-              searchTerm={debouncedSearchTerm.trim()}
-              currentPage={currentPage}
-              setSelectedTabTotalPages={setSelectedTabTotalPages}
-            />
+          {!isRetailerAdmin && (
+            <div className="actions">
+              <button className="btn-secondary cursor-pointer">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                Import
+              </button>
+              <button
+                className="btn-primary cursor-pointer"
+                onClick={() => {
+                  setIsAddEditModalOpen(true);
+                  setSelectedId("");
+                }}
+              >
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 5v14M5 12h14"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                New user
+              </button>
+            </div>
           )}
-          {selectedTab === "departments" && (
-            <DepartmentsList
-              searchTerm={debouncedSearchTerm.trim()}
-              currentPage={currentPage}
-              setSelectedTabTotalPages={setSelectedTabTotalPages}
-            />
-          )}
-          {selectedTab === "locations" && (
-            <LocationsList
-              searchTerm={debouncedSearchTerm.trim()}
-              currentPage={currentPage}
-              setSelectedTabTotalPages={setSelectedTabTotalPages}
-            />
-          )}
-          <Pagination
-            className="border-none p-0!"
-            currentPage={currentPage}
-            totalPages={selectedTabTotalPages}
-            onPageChange={setCurrentPage}
-          />
         </div>
-      </CardWrapper>
-      <CardWrapper className={cn(selectedId ? "" : "hidden md:block")}>
-        {selectedId && (
+      </div>
+
+      {!selectedId ? (
+        <div className="surface table-panel">
+          <div className="table-head-row">
+            <div className="tabs">
+              {availableTabs.map((tab) => (
+                <button
+                  key={tab.value}
+                  className={cn("tab cursor-pointer", selectedTab === tab.value && "active")}
+                  onClick={() => handleSelectTab(tab.value)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            <div className="toolbar-right">
+              <div className="search-wrap toolbar-search">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8" />
+                  <path
+                    d="M21 21l-4.3-4.3"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <input type="text" placeholder="Search" value={search} onChange={handleSearch} />
+              </div>
+            </div>
+          </div>
+
+          <div className={selectedTab !== "users" ? "p-4" : ""}>
+            {selectedTab === "users" && (
+              <UsersList
+                searchTerm={debouncedSearchTerm.trim()}
+                currentPage={currentPage}
+                setSelectedTabTotalPages={setSelectedTabTotalPages}
+                onRowClick={setSelectedId}
+              />
+            )}
+            {selectedTab === "departments" && (
+              <DepartmentsList
+                searchTerm={debouncedSearchTerm.trim()}
+                currentPage={currentPage}
+                setSelectedTabTotalPages={setSelectedTabTotalPages}
+              />
+            )}
+            {selectedTab === "locations" && (
+              <LocationsList
+                searchTerm={debouncedSearchTerm.trim()}
+                currentPage={currentPage}
+                setSelectedTabTotalPages={setSelectedTabTotalPages}
+              />
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="surface p-6">
+          <Button variant="secondary" className="mb-6" onClick={() => setSelectedId("")}>
+            &larr; Back to list
+          </Button>
           <>
             {selectedTab === "users" && (
               <div className="space-y-5">
                 <div className="flex items-center justify-between">
                   <TabNavigation
-                    className="w-fit bg-[#eee]"
-                    tabs={[
-                      { label: "User details", value: "user-details" },
-                      { label: "Associated device", value: "associated-device" },
-                    ]}
+                    className="w-fit"
+                    tabs={
+                      isDeviceFinance
+                        ? [
+                            { label: "User details", value: "user-details" },
+                            { label: "Installment schedule", value: "installments" },
+                            { label: "Associated device", value: "associated-device" },
+                          ]
+                        : [
+                            { label: "User details", value: "user-details" },
+                            { label: "Associated device", value: "associated-device" },
+                          ]
+                    }
                     activeTab={selectedUserSubTab}
                     onTabChange={setSelectedUserSubTab}
                     itemClassName="px-4"
                   />
-                  <ActionButtons
-                    onOpenQrPairing={() => setShowQrPairing(true)}
-                    onEdit={() => setIsAddEditModalOpen(true)}
-                    onDelete={() => setIsConfirmationModalOpen(true)}
-                  />
+                  {!isRetailerAdmin && (
+                    <ActionButtons
+                      onOpenQrPairing={!hasAssignedDevice ? () => setShowQrPairing(true) : undefined}
+                      onEdit={() => setIsAddEditModalOpen(true)}
+                      onDelete={() => setIsConfirmationModalOpen(true)}
+                    />
+                  )}
                 </div>
                 <div>
                   {selectedUserSubTab === "user-details" && (
                     <UserDetails selectedId={selectedId!} />
+                  )}
+                  {selectedUserSubTab === "installments" && (
+                    <InstallmentsTable staffId={selectedId!} />
                   )}
                   {selectedUserSubTab === "associated-device" && (
                     <AssociatedDevicesTable staffId={selectedId!} />
@@ -229,47 +328,51 @@ export default function Users() {
             )}
             {selectedTab === "departments" && (
               <div className="space-y-4">
-                <div className="flex justify-end">
-                  <ActionButtons
-                    onEdit={() => setIsAddEditModalOpen(true)}
-                    onDelete={() => setIsConfirmationModalOpen(true)}
-                  />
-                </div>
+                {!isRetailerAdmin && (
+                  <div className="flex justify-end">
+                    <ActionButtons
+                      onEdit={() => setIsAddEditModalOpen(true)}
+                      onDelete={() => setIsConfirmationModalOpen(true)}
+                    />
+                  </div>
+                )}
                 <DepartmentDetails departmentId={selectedId} />
               </div>
             )}
             {selectedTab === "locations" && (
               <div className="space-y-4">
-                <div className="flex justify-end">
-                  <ActionButtons
-                    onEdit={() => setIsAddEditModalOpen(true)}
-                    onDelete={() => setIsConfirmationModalOpen(true)}
-                  />
-                </div>
+                {!isRetailerAdmin && (
+                  <div className="flex justify-end">
+                    <ActionButtons
+                      onEdit={() => setIsAddEditModalOpen(true)}
+                      onDelete={() => setIsConfirmationModalOpen(true)}
+                    />
+                  </div>
+                )}
                 <LocationDetails locationId={selectedId!} />
               </div>
             )}
           </>
-        )}
-      </CardWrapper>
+        </div>
+      )}
 
       <AddEditUserDetailsModal
-        open={selectedTab === "users" && isAddEditModalOpen}
+        open={!isRetailerAdmin && selectedTab === "users" && isAddEditModalOpen}
         onOpenChange={setIsAddEditModalOpen}
         selectedId={selectedId}
       />
       <AddEditDepartmentModal
-        open={selectedTab === "departments" && isAddEditModalOpen}
+        open={!isRetailerAdmin && selectedTab === "departments" && isAddEditModalOpen}
         onOpenChange={setIsAddEditModalOpen}
         selectedId={selectedId}
       />
       <AddEditLocationModal
-        open={selectedTab === "locations" && isAddEditModalOpen}
+        open={!isRetailerAdmin && selectedTab === "locations" && isAddEditModalOpen}
         onOpenChange={setIsAddEditModalOpen}
         selectedId={selectedId}
       />
       <Dialog open={showQrPairing} onOpenChange={setShowQrPairing}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="w-full max-w-[1050px] sm:max-w-[1050px] md:max-w-[1050px] p-6 sm:p-8 md:p-10 rounded-3xl bg-[var(--surface)] border border-[var(--card-line-strong)]">
           {selectedId && (
             <BusinessUserPairingQR
               staffId={selectedId}
@@ -298,6 +401,6 @@ export default function Users() {
                 : false
         }
       />
-    </div>
+    </section>
   );
 }

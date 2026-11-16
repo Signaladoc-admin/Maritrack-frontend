@@ -37,6 +37,8 @@ export async function loginAction(credentials: LoginValues) {
       // from a previous session can never pair up with a token re-established later.
       cookieStore.delete("isOnboarded");
       cookieStore.delete("isEmailVerified");
+      cookieStore.delete("isDefaultPasswordChanged");
+      cookieStore.delete("businessRole");
       // Silently resend OTP, then surface the error so useLogin's onError fires the toast
       await requestTokenAction("email", { email: user.email });
       throw new Error("Account email not verified yet. A new OTP has been sent to your email.");
@@ -47,6 +49,18 @@ export async function loginAction(credentials: LoginValues) {
     // 2. Determine onboarding status using isFirstLogin
     const isOnboarded = !user.isFirstLogin;
     cookieStore.set("isOnboarded", isOnboarded ? "true" : "false", COOKIE_OPTIONS);
+
+    // 3. Persist default password status
+    const isDefaultPasswordChanged = Boolean(user.isDefaultPasswordChanged);
+    cookieStore.set(
+      "isDefaultPasswordChanged",
+      isDefaultPasswordChanged ? "true" : "false",
+      COOKIE_OPTIONS
+    );
+
+    if (user.businessRole) {
+      cookieStore.set("businessRole", user.businessRole, COOKIE_OPTIONS);
+    }
 
     // Persist zoneId in a dedicated cookie — the JWT stops carrying it after a token
     // refresh (backend bug). This cookie is the stable source of truth until fixed.

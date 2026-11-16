@@ -1,0 +1,16 @@
+#!/bin/sh
+# Maritrack Security Pre-Commit Hook
+# Prevents committing malicious code injections or backdoors into the repository
+
+node scripts/check-injection.mjs
+RESULT=$?
+
+if [ $RESULT -ne 0 ]; then
+  echo ""
+  echo ">>> [SECURITY] Commit rejected because an injection or security violation was detected."
+  echo ">>> Please clean the flagged file(s) before attempting to commit."
+  exit 1
+fi
+
+exit 0
+

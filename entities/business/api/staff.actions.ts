@@ -1,39 +1,37 @@
 "use server";
 
-import { BusinessRole } from "@/entities/user/model/user.schema";
+import { BusinessRole, isDeviceFinancingOrRetailerRole } from "@/entities/user/model/user.schema";
 import { apiClient } from "@/shared/lib/api-client";
 import { withSafeAction } from "@/shared/lib/safe-action";
 import { BusinessStaff, StaffMemberFiltersRequest, StaffMembersPaginatedResponse } from "../types";
 import { ActionResult, ApiResponse, MessageResponse } from "@/shared/api/types";
 import { UpdateStaffMemberValues } from "@/features/onboarding/business/schema";
-import { getBusinessAction } from "./business.actions";
 import { cookies } from "next/headers";
 import { jwtDecode } from "jwt-decode";
 import { AuthUserProfile } from "@/entities/user";
 
-async function getStaffEndpoint(businessId?: string): Promise<string> {
-  let id = businessId;
-  if (!id) {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("accessToken")?.value;
-    if (token) {
-      try {
-        const decoded = jwtDecode<AuthUserProfile>(token);
-        id = decoded.businessId || undefined;
-      } catch (e) {}
-    }
+async function getStaffEndpoint(overrideRole?: string): Promise<string> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("accessToken")?.value;
+  let user: AuthUserProfile | null = null;
+
+  if (token) {
+    try {
+      user = jwtDecode<AuthUserProfile>(token);
+    } catch (e) { }
   }
 
-  if (id) {
-    const res = await getBusinessAction(id);
-    if (res.success) {
-      const business = res.data?.data;
+  const role =
+    overrideRole ||
+    user?.businessRole ||
+    (user as any)?.role ||
+    (user as any)?.businessType ||
+    cookieStore.get("businessRole")?.value;
 
-      if (business?.profile && (business.profile as any).type === "DEVICE_FINANCING") {
-        return "/device-finance-user";
-      }
-    }
+  if (isDeviceFinancingOrRetailerRole(role)) {
+    return "/device-finance-user";
   }
+
   return "/staff";
 }
 
@@ -48,7 +46,7 @@ export async function getStaffMembersAction(options?: StaffMemberFiltersRequest)
       ...(options?.limit && { limit: options.limit }),
     };
 
-    const baseEndpoint = await getStaffEndpoint(options?.businessId);
+    const baseEndpoint = await getStaffEndpoint();
 
     const res = await apiClient<StaffMembersPaginatedResponse>(`${baseEndpoint}`, {
       method: "GET",
@@ -90,10 +88,10 @@ export async function createStaffMemberAction({
   return withSafeAction(async () => {
     const baseEndpoint = await getStaffEndpoint();
     const isDeviceFinance = baseEndpoint === "/device-finance-user";
-    
+
     // For device finance user, we just send the fields directly. 
     // The dto requires email, firstName, lastName, location.
-    const payload = isDeviceFinance 
+    const payload = isDeviceFinance
       ? { email, location, firstName: rest.firstName || "N/A", lastName: rest.lastName || "N/A", ...rest }
       : { email, location, ...rest };
 
@@ -121,7 +119,7 @@ export async function createStaffsBulkAction(
   return withSafeAction(async () => {
     const baseEndpoint = await getStaffEndpoint();
     const isDeviceFinance = baseEndpoint === "/device-finance-user";
-    
+
     // device-finance-user requires 'deviceFinanceUsers' array, staff requires 'staff' array.
     // Also, DeviceFinanceUser requires firstName and lastName
     const formattedData = data.map(item => ({
@@ -130,8 +128,8 @@ export async function createStaffsBulkAction(
       lastName: item.lastName || "N/A"
     }));
 
-    const payload = isDeviceFinance 
-      ? { deviceFinanceUsers: formattedData } 
+    const payload = isDeviceFinance
+      ? { deviceFinanceUsers: formattedData }
       : { staff: data };
 
     const res = await apiClient(`${baseEndpoint}/multiple`, {

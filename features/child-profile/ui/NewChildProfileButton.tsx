@@ -3,8 +3,8 @@ import { Plus } from "lucide-react";
 
 export default function NewChildProfileButton({
   onClick,
-  text = "Add a profile",
-  variant = "horizontal",
+  text = "Add a child profile",
+  variant = "vertical",
   className,
 }: {
   onClick: () => void;
@@ -14,16 +14,23 @@ export default function NewChildProfileButton({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className={cn(
-        "border-muted-foreground/20 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed bg-neutral-50/50 transition-colors hover:bg-neutral-100/50",
-        variant === "horizontal" && "flex-row py-12",
-        variant === "vertical" && "flex-col py-6",
+        "surface group flex w-full cursor-pointer items-center justify-center gap-3 rounded-[var(--radius-lg)] border-dashed border-[var(--card-line-strong)] p-6 text-center transition-all hover:border-[var(--accent)] hover:bg-[var(--card-hover)]",
+        variant === "horizontal" ? "flex-row py-8" : "min-h-[190px] flex-col",
         className
       )}
     >
-      <Plus className="h-5 w-5" color="#FF8C00" />
-      <span className="font-semibold text-slate-500">{text}</span>
+      <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--card-line)] bg-[var(--card-fill)] text-[var(--accent)] transition-transform group-hover:scale-105">
+        <Plus className="h-5 w-5" />
+      </div>
+      <div className="space-y-0.5">
+        <span className="block text-sm font-bold text-[var(--text-1)]">{text}</span>
+        <span className="block text-xs text-[var(--text-3)]">
+          Set up monitoring & parental controls
+        </span>
+      </div>
     </button>
   );
 }

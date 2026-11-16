@@ -193,6 +193,19 @@ export default function MapComponent({ locations = [] }: MapComponentProps) {
           No location data has been reported for any device yet.
         </div>
       )}
+
+      <style jsx global>{`
+        .leaflet-control-attribution {
+          font-size: 8px !important;
+          color: #64748b !important;
+          background: rgba(255, 255, 255, 0.75) !important;
+          padding: 1px 4px !important;
+        }
+        .leaflet-control-attribution a {
+          color: #64748b !important;
+          text-decoration: none !important;
+        }
+      `}</style>
     </div>
   );
 }

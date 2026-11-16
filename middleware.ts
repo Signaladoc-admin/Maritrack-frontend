@@ -22,6 +22,10 @@ const roleAccessMap: Record<string, string[]> = {
     "/devices/*",
     "/plans",
     "/plans/*",
+    "/reports",
+    "/reports/*",
+    "/logs",
+    "/logs/*",
   ],
   PARENT: [
     "/dashboard",
@@ -47,6 +51,10 @@ const publicRoutes = [
   "/",
   "/landing",
   "/about",
+  "/company",
+  "/book-a-demo",
+  "/family",
+  "/sign-in",
   "/unauthorized",
   "/privacy-policy",
   "/terms-of-service",
@@ -64,7 +72,21 @@ const publicRoutes = [
   "/components-showcase",
 ];
 
+// Public route *sections*: the base path AND everything beneath it (e.g. /blog and /blog/<slug>).
+// `publicRoutes` above is exact-match only, so dynamic pages must be listed here instead.
+const publicRoutePrefixes = ["/blog", "/platform", "/solutions", "/resources"];
+
+function isPublicRoute(pathname: string): boolean {
+  if (publicRoutes.includes(pathname)) return true;
+
+  // Match on a path-segment boundary so "/blog" allows "/blog/x" but not "/blogger".
+  return publicRoutePrefixes.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+}
+
 const authRoutes = [
+  "/sign-in",
   // Personal auth routes
   "/login",
   "/register",
@@ -125,6 +147,20 @@ export async function middleware(req: NextRequest) {
         const isEmailVerified = req.cookies.get("isEmailVerified")?.value === "true";
         if (!isEmailVerified) return NextResponse.next();
 
+        // Check if RETAILER_ADMIN must change default password
+        const businessRole =
+          ((payload as any).businessRole as string | null | undefined) ||
+          req.cookies.get("businessRole")?.value;
+        const cookiePasswordChanged = req.cookies.get("isDefaultPasswordChanged")?.value;
+        const isDefaultPasswordChanged =
+          cookiePasswordChanged !== undefined
+            ? cookiePasswordChanged === "true"
+            : Boolean((payload as any).isDefaultPasswordChanged);
+
+        if (businessRole === "RETAILER_ADMIN" && !isDefaultPasswordChanged) {
+          return NextResponse.redirect(new URL("/change-password", req.url));
+        }
+
         // Redirect back to the page the user came from, if it's a safe same-origin route
         const referer = req.headers.get("referer");
         if (referer) {
@@ -132,8 +168,7 @@ export async function middleware(req: NextRequest) {
             const refererUrl = new URL(referer);
             const refererPath = refererUrl.pathname;
             const isSameOrigin = refererUrl.origin === req.nextUrl.origin;
-            const isAuthOrPublic =
-              authRoutes.includes(refererPath) || publicRoutes.includes(refererPath);
+            const isAuthOrPublic = authRoutes.includes(refererPath) || isPublicRoute(refererPath);
 
             if (isSameOrigin && !isAuthOrPublic) {
               return NextResponse.redirect(new URL(refererPath, req.url));
@@ -143,7 +178,8 @@ export async function middleware(req: NextRequest) {
           }
         }
 
-        return NextResponse.redirect(new URL("/dashboard", req.url));
+        const targetDashboard = businessRole === "RETAILER_ADMIN" ? "/devices" : "/dashboard";
+        return NextResponse.redirect(new URL(targetDashboard, req.url));
       } catch {
         // Invalid/expired token — let the user through to the auth page
         return NextResponse.next();
@@ -153,13 +189,13 @@ export async function middleware(req: NextRequest) {
   }
 
   // 3. Handle public routes
-  if (publicRoutes.includes(pathname)) {
+  if (isPublicRoute(pathname)) {
     return NextResponse.next();
   }
 
   // 4. Protect all other routes
   if (!token) {
-    const loginUrl = new URL("/login", req.url);
+    const loginUrl = new URL("/sign-in", req.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
   }
@@ -167,7 +203,9 @@ export async function middleware(req: NextRequest) {
   try {
     const payload = decodeJwt(token);
     const userRole = (payload as any).role as string | undefined;
-    const businessRole = (payload as any).businessRole as string | null | undefined;
+    const businessRole =
+      ((payload as any).businessRole as string | null | undefined) ||
+      req.cookies.get("businessRole")?.value;
     const appRole = businessRole ? "BUSINESS" : "PARENT";
     const isOnboarded = req.cookies.get("isOnboarded")?.value === "true";
     const isEmailVerified = req.cookies.get("isEmailVerified")?.value === "true";
@@ -187,6 +225,20 @@ export async function middleware(req: NextRequest) {
       }
 
       return NextResponse.redirect(new URL(confirmEmailPath, req.url));
+    }
+
+    // 5b. Default password change gate for RETAILER_ADMIN
+    const cookiePasswordChanged = req.cookies.get("isDefaultPasswordChanged")?.value;
+    const isDefaultPasswordChanged =
+      cookiePasswordChanged !== undefined
+        ? cookiePasswordChanged === "true"
+        : Boolean((payload as any).isDefaultPasswordChanged);
+
+    if (businessRole === "RETAILER_ADMIN" && !isDefaultPasswordChanged) {
+      if (pathname === "/change-password") {
+        return NextResponse.next();
+      }
+      return NextResponse.redirect(new URL("/change-password", req.url));
     }
 
     // 5. Onboarding routing — skip entirely for invited business staff
@@ -210,7 +262,8 @@ export async function middleware(req: NextRequest) {
     }
 
     if (isOnboarded && pathname.startsWith("/onboarding")) {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
+      const targetDashboard = businessRole === "RETAILER_ADMIN" ? "/devices" : "/dashboard";
+      return NextResponse.redirect(new URL(targetDashboard, req.url));
     }
 
     // 6. Business-only route guard
@@ -222,6 +275,37 @@ export async function middleware(req: NextRequest) {
     }
 
     // 7. Role-based access
+    const isRetailer =
+      businessRole === "RETAILER_ADMIN" ||
+      businessRole === "RETAILER_STAFF" ||
+      (businessRole ? businessRole.includes("RETAILER") : false);
+
+    if (isRetailer) {
+      const retailerAdminAllowedRoutes = [
+        "/devices",
+        "/reports",
+        "/reports/*",
+        "/users",
+        "/users/*",
+        "/change-password",
+        "/profile",
+      ];
+
+      const isAllowed = retailerAdminAllowedRoutes.some((route) => {
+        if (route.endsWith("/*")) {
+          const baseRoute = route.slice(0, -2);
+          return pathname === baseRoute || pathname.startsWith(baseRoute + "/");
+        }
+        return pathname === route;
+      });
+
+      if (!isAllowed) {
+        return NextResponse.redirect(new URL("/devices", req.url));
+      }
+
+      return NextResponse.next();
+    }
+
     if (!canAccess(appRole, pathname)) {
       const otherRole = appRole === "BUSINESS" ? "PARENT" : "BUSINESS";
       if (canAccess(otherRole, pathname)) {
