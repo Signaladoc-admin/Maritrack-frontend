@@ -64,6 +64,12 @@ const ChildDevices = () => {
   const { data: appsData, isPending: isAppsPending } = useDeviceDetail(deviceId, "apps", {
     enabled: !!deviceId,
   });
+  const batteryLevel = hardwareData?.data?.realTimeStats?.batteryLevel ?? 0;
+  const osType =
+    hardwareData?.data?.osType ||
+    (hardwareData?.deviceDetails as any)?.osType ||
+    (device as any)?.osType ||
+    device?.operatingSystem;
 
   const handleDelete = async () => {
     if (!childId) return;
@@ -201,12 +207,17 @@ const ChildDevices = () => {
               onPairDevice={() => setIsPairNewDeviceModalOpen(true)}
             />
 
-            {/* Top Apps Section */}
-            <ParentAppsSection
-              appsData={appsData}
-              isPending={isAppsPending && !!deviceId}
-              deviceId={deviceId}
-              childId={typedChild.id}
+        <P className="mb-4 font-medium">Select a device to view</P>
+        <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
+          {device ? (
+            <DeviceUsageCard
+              deviceName={device.manufacturer || "Device"}
+              status={device.deviceStatus === "ACTIVE" ? "active" : "locked"}
+              percentage={batteryLevel}
+              device={device.model || device.mdmId}
+              isRow={false}
+              osType={osType}
+              onClick={() => router.push(`/devices/${device.mdmId}?childId=${typedChild?.id}`)}
             />
           </div>
 

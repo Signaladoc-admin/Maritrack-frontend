@@ -8,6 +8,7 @@ import type {
   RestrictionsRequest,
   SetRestrictionsResponse,
 } from "../types";
+import { DEFAULT_MAPBOX_TOKEN } from "@/shared/lib/mapbox";
 
 export async function getRestrictionsAction(mdmDeviceId: string) {
   return withSafeAction(
@@ -76,7 +77,7 @@ export async function reverseGeocodeAction(
   locations: ReverseGeocodeInput[]
 ): Promise<ActionResult<string[]>> {
   return withSafeAction(async () => {
-    const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "";
+    const accessToken = DEFAULT_MAPBOX_TOKEN;
 
     const names = await Promise.all(
       locations.map(async ({ lat, lng }) => {

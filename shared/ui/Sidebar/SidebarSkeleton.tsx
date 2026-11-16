@@ -16,12 +16,9 @@ export function SidebarSkeleton() {
         ))}
       </div>
 
-      {/* Section skeleton */}
-      <div className="border-card-line bg-card-fill mt-4 flex flex-col gap-2 rounded-xl border p-2">
-        <Skeleton className="h-4 w-20 rounded bg-white/5" />
-        {[1, 2].map((i) => (
-          <Skeleton key={i} className="h-9 w-full rounded-full bg-white/5" />
-        ))}
+      {/* Bottom: Profile popover skeleton */}
+      <div className="mt-auto mb-10 flex flex-col items-center">
+        <Skeleton className="h-10 w-10 rounded-full" />
       </div>
 
       {/* Footer skeleton */}

@@ -4,31 +4,39 @@ import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 import { Smartphone, BatteryCharging, ArrowRight } from "lucide-react";
 import React from "react";
 
-export interface DeviceCardProps {
+const DeviceCard = ({
+  device,
+  childName,
+  onClick,
+  hardwareData: initialHardwareData,
+}: {
   device: any;
   childName?: string;
-  childId?: string;
   onClick: () => void;
-}
-
-const DeviceCard = ({ device, childName, onClick }: DeviceCardProps) => {
-  const deviceId = device?.deviceId || device?.mdmId || device?.id || "";
-  const { data: hardwareData } = useDeviceDetail(deviceId, "hardware", {
-    enabled: !!deviceId,
+  hardwareData?: any;
+}) => {
+  const { data: fetchedHardwareData } = useDeviceDetail(device.deviceId || "", "hardware", {
+    enabled: !!device.deviceId && !initialHardwareData,
   });
 
-  const batteryLevel =
-    hardwareData?.realTimeStats?.batteryLevel ??
-    hardwareData?.data?.realTimeStats?.batteryLevel ??
-    0;
+  const hardwareData = initialHardwareData || fetchedHardwareData;
+  const batteryLevel = hardwareData?.data?.realTimeStats?.batteryLevel ?? 0;
 
-  const deviceStatus = (device?.deviceStatus || "ACTIVE").toUpperCase();
-  const isOnline = deviceStatus === "ACTIVE";
-  const modelName = device?.model || hardwareData?.deviceDetails?.model || "Device";
-  const manufacturer = device?.manufacturer || hardwareData?.deviceDetails?.manufacturer || "";
+  // Extract osType from hardwareData or device details
+  const osType =
+    hardwareData?.data?.osType ||
+    (hardwareData?.deviceDetails as any)?.osType ||
+    device?.osType ||
+    device?.operatingSystem;
 
   return (
-    <div
+    <DeviceUsageCard
+      deviceName={childName ? `${childName}'s phone` : device.manufacturer}
+      status="active"
+      percentage={batteryLevel}
+      device={device.model || "N/A"}
+      isRow={false}
+      osType={osType}
       onClick={onClick}
       className="surface group flex h-full cursor-pointer flex-col justify-between rounded-[var(--radius-lg)] p-6 transition-all hover:border-[var(--card-line-strong)]"
     >

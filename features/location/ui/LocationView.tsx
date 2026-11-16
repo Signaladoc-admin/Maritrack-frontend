@@ -49,7 +49,7 @@ export function LocationView({ deviceId }: { deviceId: string }) {
       const rawLon = parsed.longitude ?? parsed.lng ?? parsed.lon;
       if (typeof rawLat === "number" && !isNaN(rawLat)) lat = rawLat;
       if (typeof rawLon === "number" && !isNaN(rawLon)) lon = rawLon;
-    } catch {}
+    } catch { }
   }
 
   // organizationName: business name for business accounts, child's name for parent accounts.
