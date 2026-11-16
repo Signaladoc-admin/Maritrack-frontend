@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState, Component } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Map, { Marker, Popup, NavigationControl, MapRef } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -9,7 +9,6 @@ import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
 import { DEFAULT_MAPBOX_TOKEN, checkWebGLSupport } from "@/shared/lib/mapbox";
 import { MapPin } from "lucide-react";
 
-// Fallback map for environments where WebGL is disabled or unsupported (e.g. Brave shields, hardware acceleration off)
 const LeafletFallbackMap = dynamic(() => import("./LeafletFallbackMap"), {
   ssr: false,
   loading: () => (
@@ -20,40 +19,9 @@ const LeafletFallbackMap = dynamic(() => import("./LeafletFallbackMap"), {
   ),
 });
 
-interface ErrorBoundaryProps {
-  fallback: React.ReactNode;
-  children: React.ReactNode;
-}
-
-interface ErrorBoundaryState {
-  hasError: boolean;
-}
-
-class WebGLErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error) {
-    console.warn("Mapbox WebGL initialization failed, activating 2D map fallback:", error.message);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return this.props.fallback;
-    }
-    return this.props.children;
-  }
-}
-
 const DEFAULT_CENTER = {
   latitude: 6.4281,
-  longitude: 3.4219, // Victoria Island, Lagos
+  longitude: 3.4219,
 };
 
 interface MapCardProps {
@@ -64,7 +32,8 @@ interface MapCardProps {
 
 export function MapCard({ deviceId, className, resolvedAddress }: MapCardProps) {
   const [isClient, setIsClient] = useState(false);
-  const [isWebGLAvailable, setIsWebGLAvailable] = useState<boolean | null>(null);
+  const [isWebGLAvailable, setIsWebGLAvailable] = useState<boolean>(false);
+  const [mapError, setMapError] = useState<boolean>(false);
   const [showPopup, setShowPopup] = useState(false);
   const mapRef = useRef<MapRef>(null);
 
@@ -81,7 +50,6 @@ export function MapCard({ deviceId, className, resolvedAddress }: MapCardProps) 
 
   const location = hardwareData?.deviceDetails?.lastKnownLocation;
 
-  // Safely extract coordinates from object or stringified JSON
   let lat: number | null = null;
   let lng: number | null = null;
 
@@ -106,7 +74,6 @@ export function MapCard({ deviceId, className, resolvedAddress }: MapCardProps) 
     ? { latitude: lat!, longitude: lng! }
     : DEFAULT_CENTER;
 
-  // Fly to location when coordinates become available
   useEffect(() => {
     if (hasValidLocation && mapRef.current) {
       try {
@@ -141,14 +108,7 @@ export function MapCard({ deviceId, className, resolvedAddress }: MapCardProps) 
     );
   }
 
-  const renderFallback = (
-    <LeafletFallbackMap
-      center={[center.latitude, center.longitude]}
-      zoom={hasValidLocation ? 14 : 12}
-      hasValidLocation={hasValidLocation}
-      popupText={displayAddress}
-    />
-  );
+  const useFallback = !isWebGLAvailable || mapError;
 
   return (
     <Card className={`flex h-full w-full min-h-[460px] flex-col overflow-hidden ${className || ""}`}>
@@ -175,56 +135,68 @@ export function MapCard({ deviceId, className, resolvedAddress }: MapCardProps) 
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#1B3C73] border-t-transparent" />
               <span>Loading device telemetry...</span>
             </div>
-          ) : isWebGLAvailable === false ? (
-            renderFallback
+          ) : useFallback ? (
+            <LeafletFallbackMap
+              center={[center.latitude, center.longitude]}
+              zoom={hasValidLocation ? 14 : 12}
+              hasValidLocation={hasValidLocation}
+              popupText={displayAddress}
+            />
           ) : (
-            <WebGLErrorBoundary fallback={renderFallback}>
-                <NavigationControl position="bottom-right" />
+             setMapError(true)}
+              initialViewState={{
+                longitude: center.longitude,
+                latitude: center.latitude,
+                zoom: hasValidLocation ? 14 : 12,
+              }}
+              style={{ width: "100%", height: "100%", minHeight: "400px" }}
+              mapStyle="mapbox://styles/mapbox/streets-v12"
+            >
+              <NavigationControl position="bottom-right" />
 
-                <Marker
-                  longitude={center.longitude}
-                  latitude={center.latitude}
-                  anchor="bottom"
-                  onClick={(e) => {
-                    e.originalEvent.stopPropagation();
-                    setShowPopup(true);
-                  }}
-                >
-                  <div className="group relative flex cursor-pointer flex-col items-center">
-                    <div className="relative flex h-8 w-8 items-center justify-center">
-                      <span className="absolute h-8 w-8 animate-ping rounded-full bg-[#1B3C73] opacity-25" />
-                      <span className="absolute h-5 w-5 rounded-full bg-[#1B3C73] opacity-40" />
-                      <div className="relative flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-[#1B3C73] shadow-lg">
-                        <MapPin className="h-4 w-4 text-white" />
-                      </div>
+              <Marker
+                longitude={center.longitude}
+                latitude={center.latitude}
+                anchor="bottom"
+                onClick={(e) => {
+                  e.originalEvent.stopPropagation();
+                  setShowPopup(true);
+                }}
+              >
+                <div className="group relative flex cursor-pointer flex-col items-center">
+                  <div className="relative flex h-8 w-8 items-center justify-center">
+                    <span className="absolute h-8 w-8 animate-ping rounded-full bg-[#1B3C73] opacity-25" />
+                    <span className="absolute h-5 w-5 rounded-full bg-[#1B3C73] opacity-40" />
+                    <div className="relative flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-[#1B3C73] shadow-lg">
+                      <MapPin className="h-4 w-4 text-white" />
                     </div>
                   </div>
-                </Marker>
+                </div>
+              </Marker>
 
-                {showPopup && (
-                  <Popup
-                    longitude={center.longitude}
-                    latitude={center.latitude}
-                    anchor="top"
-                    offset={[0, 10]}
-                    onClose={() => setShowPopup(false)}
-                    closeButton={true}
-                    closeOnClick={false}
-                    className="rounded-lg shadow-xl"
-                  >
-                    <div className="p-1 text-xs">
-                      <div className="font-semibold text-slate-900">
-                        {hasValidLocation ? "Last Known Location" : "Default Location (No GPS)"}
-                      </div>
-                      <div className="mt-1 text-slate-600">{displayAddress}</div>
-                      <div className="mt-1 font-mono text-[10px] text-slate-400">
-                        {center.latitude.toFixed(6)}, {center.longitude.toFixed(6)}
-                      </div>
+              {showPopup && (
+                <Popup
+                  longitude={center.longitude}
+                  latitude={center.latitude}
+                  anchor="top"
+                  offset={[0, 10]}
+                  onClose={() => setShowPopup(false)}
+                  closeButton={true}
+                  closeOnClick={false}
+                  className="rounded-lg shadow-xl"
+                >
+                  <div className="p-1 text-xs">
+                    <div className="font-semibold text-slate-900">
+                      {hasValidLocation ? "Last Known Location" : "Default Location (No GPS)"}
                     </div>
-                  </Popup>
-                )}
-              </Map>
-            </WebGLErrorBoundary>
+                    <div className="mt-1 text-slate-600">{displayAddress}</div>
+                    <div className="mt-1 font-mono text-[10px] text-slate-400">
+                      {center.latitude.toFixed(6)}, {center.longitude.toFixed(6)}
+                    </div>
+                  </div>
+                </Popup>
+              )}
+            </Map>
           )}
 
           {!isHardwarePending && !hasValidLocation && (
@@ -237,3 +209,5 @@ export function MapCard({ deviceId, className, resolvedAddress }: MapCardProps) 
     </Card>
   );
 }
+
+export default MapCard;
