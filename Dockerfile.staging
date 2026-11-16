@@ -3,7 +3,7 @@ FROM node:22-slim AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
 COPY patches ./patches
-RUN npm ci
+RUN npm install --no-audit --no-fund || (cat /root/.npm/_logs/*-debug-0.log && exit 1)
 
 # ─── Builder ─────────────────────────────────────────────────────────────────
 FROM node:22-slim AS builder

@@ -253,7 +253,7 @@ export function MapCard({ deviceId, className, resolvedAddress }: MapCardProps) 
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
