@@ -3,7 +3,7 @@ FROM node:22-slim AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
 COPY patches ./patches
-RUN npm ci
+RUN npm install --no-audit --no-fund || (cat /root/.npm/_logs/*-debug-0.log && exit 1)
 
 # ─── Builder ─────────────────────────────────────────────────────────────────
 FROM node:22-slim AS builder
@@ -31,6 +31,7 @@ ENV NEXT_PUBLIC_FLENTRA_SUPPORT_EMAIL=$NEXT_PUBLIC_FLENTRA_SUPPORT_EMAIL
 
 RUN npx patch-package || true
 RUN mkdir -p /app/.next/cache
+RUN find . -maxdepth 5 -type f \( -name "*.ts" -o -name "*.tsx" \) -not -path "./node_modules/*" -exec sed -i 's/\xc2\xa0/ /g' {} +
 RUN npm run build
 
 # ─── Runner ──────────────────────────────────────────────────────────────────
@@ -44,13 +45,13 @@ ENV HOSTNAME=0.0.0.0
 RUN addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 nextjs
 
-# Set the correct permission for prerender cache
-RUN mkdir -p /app/.next/cache && chown -R nextjs:nodejs /app/.next
-
 # Copy standalone server + static assets
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/.next/cache ./.next/cache
+
+RUN chown -R nextjs:nodejs /app/.next
 
 USER nextjs
 EXPOSE 3000
