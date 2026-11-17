@@ -1,12 +1,13 @@
-import type { Metadata } from "next";
-import SignInV2 from "@/views/SignInV2";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Sign in",
-  description: "Sign in to your Flentra portal.",
-  alternates: { canonical: "/sign-in" },
-};
-
-export default function SignInPage() {
-  return <SignInV2 />;
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string }>;
+}) {
+  const { callbackUrl } = await searchParams;
+  const target = callbackUrl
+    ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`
+    : "/login";
+  redirect(target);
 }

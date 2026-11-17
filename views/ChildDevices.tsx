@@ -207,17 +207,12 @@ const ChildDevices = () => {
               onPairDevice={() => setIsPairNewDeviceModalOpen(true)}
             />
 
-        <P className="mb-4 font-medium">Select a device to view</P>
-        <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
-          {device ? (
-            <DeviceUsageCard
-              deviceName={device.manufacturer || "Device"}
-              status={device.deviceStatus === "ACTIVE" ? "active" : "locked"}
-              percentage={batteryLevel}
-              device={device.model || device.mdmId}
-              isRow={false}
-              osType={osType}
-              onClick={() => router.push(`/devices/${device.mdmId}?childId=${typedChild?.id}`)}
+            {/* Top Apps Section */}
+            <ParentAppsSection
+              appsData={appsData}
+              isPending={isAppsPending && !!deviceId}
+              deviceId={deviceId}
+              childId={typedChild.id}
             />
           </div>
 

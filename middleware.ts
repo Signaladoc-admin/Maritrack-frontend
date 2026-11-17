@@ -54,7 +54,6 @@ const publicRoutes = [
   "/company",
   "/book-a-demo",
   "/family",
-  "/sign-in",
   "/unauthorized",
   "/privacy-policy",
   "/terms-of-service",
@@ -86,7 +85,6 @@ function isPublicRoute(pathname: string): boolean {
 }
 
 const authRoutes = [
-  "/sign-in",
   // Personal auth routes
   "/login",
   "/register",
@@ -195,7 +193,7 @@ export async function middleware(req: NextRequest) {
 
   // 4. Protect all other routes
   if (!token) {
-    const loginUrl = new URL("/sign-in", req.url);
+    const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
   }

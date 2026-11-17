@@ -162,7 +162,7 @@ export default function ParentDashboard() {
         </div>
       )}
 
-      {typedChild && !device ? (
+      {typedChild && !device && (
         <div className="pt-4">
           <EmptyDeviceCard
             onClick={() => setIsPairNewDeviceModalOpen(true)}
