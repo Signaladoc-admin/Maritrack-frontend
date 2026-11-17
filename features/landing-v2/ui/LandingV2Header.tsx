@@ -290,7 +290,7 @@ export default function LandingV2Header() {
             ) : (
               <>
                 <LandingV2Button
-                  href="/sign-in"
+                  href="/login"
                   onClick={closeMenu}
                   variant="ghost"
                   size="sm"
@@ -503,7 +503,7 @@ export default function LandingV2Header() {
                 Book a demo
               </LandingV2Button>
               <LandingV2Button
-                href="/sign-in"
+                href="/login"
                 onClick={closeMenu}
                 variant="secondary"
                 size="block"

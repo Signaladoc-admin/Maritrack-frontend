@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { cookies } from "next/headers";
 import { decodeJwt } from "jose";
 import { Header } from "@/shared/ui/layout/header";
@@ -45,16 +46,21 @@ export default async function ChangePasswordPage() {
   }, change your password from the default now`;
 
   return (
-    <div className="mx-auto max-w-xl p-5">
-      <div className="mb-6 flex justify-end">
-        <SignOutButton />
-      </div>
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="mx-auto max-w-xl p-5">
+        <div className="mb-6 flex items-center justify-between">
+          <Link href="/" aria-label="Flentra home" className="inline-flex items-center">
+            <img src="/assets/FlentraLogo.svg" alt="Flentra Logo" className="h-8 w-auto" />
+          </Link>
+          <SignOutButton />
+        </div>
 
-      <div className="flex justify-center">
-        <Header className="text-center" title="Change your password" subtitle={subtitle} />
-      </div>
+        <div className="flex justify-center">
+          <Header className="text-center" title="Change your password" subtitle={subtitle} />
+        </div>
 
-      <ChangePasswordView />
+        <ChangePasswordView />
+      </div>
     </div>
   );
 }
