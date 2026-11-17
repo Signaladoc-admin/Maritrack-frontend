@@ -158,6 +158,18 @@ export function MapCard({ deviceId, className, resolvedAddress }: MapCardProps) 
               popupText={displayAddress}
             />
           ) : (
+            <Map
+              ref={mapRef}
+              mapboxAccessToken={DEFAULT_MAPBOX_TOKEN}
+              initialViewState={{
+                longitude: center.longitude,
+                latitude: center.latitude,
+                zoom: hasValidLocation ? 14 : 12,
+              }}
+              style={{ width: "100%", height: "100%", minHeight: "400px" }}
+              mapStyle="mapbox://styles/mapbox/streets-v12"
+              onError={handleMapError}
+            >
               <NavigationControl position="bottom-right" />
 
               <Marker
