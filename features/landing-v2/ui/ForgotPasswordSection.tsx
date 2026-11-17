@@ -198,7 +198,7 @@ export default function ForgotPasswordSection() {
         type: "success",
       });
 
-      router.push("/sign-in");
+      router.push("/login");
     } catch (err: any) {
       setErrorMessage(err?.message || "Failed to reset password. Please check your code.");
     } finally {
@@ -464,7 +464,7 @@ export default function ForgotPasswordSection() {
         <p className="m-0 text-center text-[14.5px] text-text-muted">
           Remember your password?{" "}
           <Link
-            href="/sign-in"
+            href="/login"
             className="font-semibold text-cyan no-underline transition-colors hover:text-cyan-light"
           >
             Sign in

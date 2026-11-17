@@ -1,13 +1,14 @@
+import Link from "next/link";
 import { ThemeToggle } from "@/shared/ui/ThemeToggle/ThemeToggle";
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2 bg-background">
+    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2 bg-background text-foreground">
       {/* BRAND PANEL */}
       <div className="relative hidden flex-col overflow-hidden border-r border-border bg-background p-11 lg:flex">
-        <div className="flex h-5 w-auto items-center text-xl font-bold">
-          Flentra
-        </div>
+        <Link href="/" aria-label="Flentra home" className="inline-flex w-fit items-center">
+          <img src="/assets/FlentraLogo.svg" alt="Flentra Logo" className="h-8 w-auto" />
+        </Link>
 
         <div className="relative my-auto max-w-[460px] py-16">
           <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-accent-border bg-accent-tint px-3.5 py-1.5 text-xs font-bold tracking-wide text-accent">
@@ -46,8 +47,10 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
           <ThemeToggle variant="icon" />
         </div>
         <div className="w-full max-w-[400px]">
-          <div className="mb-7 flex justify-center lg:hidden text-xl font-bold">
-            Flentra
+          <div className="mb-7 flex justify-center lg:hidden">
+            <Link href="/" aria-label="Flentra home" className="inline-flex items-center">
+              <img src="/assets/FlentraLogo.svg" alt="Flentra Logo" className="h-8 w-auto" />
+            </Link>
           </div>
           {children}
         </div>

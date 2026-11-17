@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { useGetChild, useDeleteChild } from "@/features/child-profile/model/useGetChildrenProfile";
 import { Child } from "@/features/child-profile/model/types";
 import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
@@ -22,6 +23,11 @@ import {
   Smartphone,
   Plus,
   ArrowLeft,
+  ShieldAlert,
+  Globe,
+  MapPin,
+  Sliders,
+  ChevronRight,
 } from "lucide-react";
 
 const ChildDevices = () => {
@@ -58,6 +64,12 @@ const ChildDevices = () => {
   const { data: appsData, isPending: isAppsPending } = useDeviceDetail(deviceId, "apps", {
     enabled: !!deviceId,
   });
+  const batteryLevel = hardwareData?.data?.realTimeStats?.batteryLevel ?? 0;
+  const osType =
+    hardwareData?.data?.osType ||
+    (hardwareData?.deviceDetails as any)?.osType ||
+    (device as any)?.osType ||
+    device?.operatingSystem;
 
   const handleDelete = async () => {
     if (!childId) return;
@@ -195,6 +207,7 @@ const ChildDevices = () => {
               onPairDevice={() => setIsPairNewDeviceModalOpen(true)}
             />
 
+            {/* Top Apps Section */}
             <ParentAppsSection
               appsData={appsData}
               isPending={isAppsPending && !!deviceId}

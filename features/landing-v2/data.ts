@@ -323,7 +323,7 @@ export const footerColumns: FooterLinkGroup[][] = [
       links: [
         { label: "About us", href: "/company" },
         { label: "Book a demo", href: "/book-a-demo" },
-        { label: "Sign in", href: "/sign-in" },
+        { label: "Sign in", href: "/login" },
         { label: "Privacy policy", href: "/privacy-policy" },
         { label: "Terms of service", href: "/terms-of-service" },
       ],

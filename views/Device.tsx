@@ -1,8 +1,12 @@
 "use client";
 
+import IconWrapper from "@/features/child-profile/ui/IconWrapper";
+import DateDropdown from "@/features/device/ui/date-dropdown";
+import { TABS } from "@/shared/lib/constants";
 import Back from "@/shared/ui/go-back";
 import { ConfirmationModal } from "@/shared/ui/Modal/Modals/ConfirmationModal";
-import { Trash2Icon, X } from "lucide-react";
+import { TabNavigation } from "@/shared/ui/tab-navigation";
+import { Smartphone, Trash2Icon, X } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { isRetailerRole } from "@/entities/user/model/user.schema";
@@ -12,7 +16,8 @@ import AppControl from "./AppControl";
 import { MarkAsReturnedModal } from "@/features/device/ui/MarkAsReturnedModal";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { useAuth } from "@/shared/auth/AuthProvider";
-import { useDeviceMessages } from "@/entities/device";
+import { Button } from "@/shared/ui/button";
+import { useDevice, useDeviceMessages } from "@/entities/device";
 import LocationPage from "./Location";
 import DevicesConfigurationSetup from "@/features/parents/ui/DeviceConfigurationSetup";
 import { useDeviceDetail } from "@/features/device/model/useDeviceDetail";
@@ -34,13 +39,16 @@ const Device = () => {
   const params = useParams<{ device: string }>();
   const searchParams = useSearchParams();
   const { user } = useAuth();
-  const { selectedChildId } = useParentStore();
+  const isRetailer = isRetailerRole(user?.businessRole);
 
-  const isRetailer = isRetailerRole(user?.role);
-  const isRetailerAdmin = user?.role === "RETAILER_ADMIN";
+  useEffect(() => {
+    if (isRetailer) {
+      router.replace("/devices");
+    }
+  }, [isRetailer, router]);
+
   const isParent = !isRetailer && user?.appRole === "PARENT";
   const mdmDeviceId = params.device;
-
   const { data: parentChildrenRes } = useParentChildren({
     enabled: isParent,
   });
@@ -55,6 +63,20 @@ const Device = () => {
         c.device?.id === mdmDeviceId
     ) || null;
 
+  const handleBack = () => {
+    if (isParent) {
+      if (linkedChild?.id) {
+        router.push(`/child/${linkedChild.id}`);
+      } else if (queryChildId) {
+        router.push(`/child/${queryChildId}`);
+      } else {
+        router.push("/children");
+      }
+    } else {
+      router.push("/devices");
+    }
+  };
+
   const { data: hardwareData, isLoading: isLoadingHardwareData } = useDeviceDetail(
     mdmDeviceId,
     "hardware",
@@ -65,38 +87,23 @@ const Device = () => {
   const deviceResponse: MDMDeviceDetailsResponse = hardwareData;
   const deviceDetails = deviceResponse?.deviceDetails;
 
-  const { data: businessZoneData } = useBusinessZone({
+  const { data: messagesData } = useDeviceMessages(deviceDetails?.id || mdmDeviceId || "", {
+    limit: 1,
+  });
+  const messageCount =
+    (messagesData as any)?.total ??
+    (Array.isArray((messagesData as any)?.messages) ? (messagesData as any).messages.length : 0);
+
+  const { data: businessZone } = useBusinessZone({
     enabled: user?.appRole === "BUSINESS",
   });
-  const zoneName =
-    (deviceDetails as any)?.zoneName ||
-    (businessZoneData as any)?.data?.name ||
-    (businessZoneData as any)?.name ||
-    "Default";
+  const zoneName = (deviceDetails as any)?.zone?.name || businessZone?.name || "-";
 
-  const { data: messagesData } = useDeviceMessages(deviceDetails?.id || mdmDeviceId);
-  const messageCount = Array.isArray((messagesData as any)?.data)
-    ? (messagesData as any).data.length
-    : Array.isArray(messagesData)
-      ? messagesData.length
-      : 0;
-
-  const childId =
-    searchParams?.get("childId") ||
-    linkedChild?.id ||
-    deviceDetails?.childId ||
-    (selectedChildId && selectedChildId !== "all" ? selectedChildId : "");
-
-  const backLabel = isParent ? "Back to Child" : "Back to devices";
-  const backHref = isParent ? (childId ? `/child/${childId}` : "/dashboard") : "/devices";
-
-  const tabFromUrl = searchParams?.get("tab") || "general";
-  const [activeTab, setActiveTab] = useState(tabFromUrl);
-
-  useEffect(() => {
-    setActiveTab(tabFromUrl);
-  }, [tabFromUrl]);
-
+  const isRetailerAdmin = user?.businessRole === "RETAILER_ADMIN";
+  const initialTab = searchParams?.get("tab") || "general";
+  const rawInitialTab = initialTab === "app-control" ? "appcontrol" : initialTab;
+  const normalizedInitialTab = isRetailerAdmin && rawInitialTab === "actions" ? "general" : rawInitialTab;
+  const [activeTab, setActiveTab] = useState(normalizedInitialTab);
   const [showDelete, setShowDelete] = useState(false);
   const [showMarkAsReturned, setShowMarkAsReturned] = useState(false);
   const [showReassign, setShowReassign] = useState(false);
@@ -105,8 +112,11 @@ const Device = () => {
     if (isRetailerAdmin && tab === "actions") return;
     setActiveTab(tab);
     const deviceId = params?.device || "device-id";
-    const childIdParam = searchParams?.get("childId") || (isParent && childId ? childId : "");
-    router.push(`/devices/${deviceId}?tab=${tab}${childIdParam ? `&childId=${childIdParam}` : ""}`);
+    try {
+      window.history.replaceState(null, "", `/devices/${deviceId}?tab=${tab}`);
+    } catch (e) {
+      router.push(`/devices/${deviceId}?tab=${tab}`);
+    }
   };
 
   const isMobile = useIsMobile();
@@ -123,7 +133,7 @@ const Device = () => {
     if (!dateStr) return "-";
     try {
       return format(new Date(dateStr), "dd MMM yyyy, h:mm a");
-    } catch {
+    } catch (e) {
       return "-";
     }
   };
@@ -135,10 +145,20 @@ const Device = () => {
   const isStatusPending = deviceStatus === "PENDING" || deviceStatus === "UNASSIGNED";
 
   return (
-    <div className="mb-10 flex w-full flex-col gap-6">
-      <div className="flex justify-start">
-        <Back label={backLabel} href={backHref} />
-      </div>
+    <div className="flex min-h-[500px] w-full flex-col">
+      <button className="dd-back-link" onClick={handleBack}>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+        {isParent ? "Back" : "Back to devices"}
+      </button>
 
       <div className="surface dd-hero">
         <div className="dd-hero-top">
