@@ -19,7 +19,6 @@ export default function TopNavbar({ onMenuClick }: { onMenuClick?: () => void })
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
   const { user } = useAuth();
-  const isParent = user?.appRole === "PARENT";
   const userInitials = user
     ? getInitials(`${user.firstName || ""} ${user.lastName || ""}`) || "U"
     : "U";
@@ -85,15 +84,6 @@ export default function TopNavbar({ onMenuClick }: { onMenuClick?: () => void })
               />
             </svg>
           </button>
-        )}
-
-        {/* OS Filters (Business accounts only) */}
-        {!isParent && (
-          <div className={cn("os-pills hidden sm:flex")}>
-            <button className="os-pill active">Android</button>
-            <button className="os-pill">Windows</button>
-            <button className="os-pill">iOS</button>
-          </div>
         )}
 
         {/* Theme Toggle */}

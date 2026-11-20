@@ -82,6 +82,15 @@ export function getDevicesColumns(
       ),
     },
     {
+      key: "operatingSystem",
+      label: "OS",
+      render: (item) => (
+        <span className="inline-flex items-center rounded-full border border-[var(--card-line)] bg-[var(--card-fill)] px-2.5 py-0.5 text-xs font-medium text-[var(--text-1)]">
+          {item.operatingSystem || "-"}
+        </span>
+      ),
+    },
+    {
       key: "serialNumber",
       label: "Serial number",
       className: "mono",

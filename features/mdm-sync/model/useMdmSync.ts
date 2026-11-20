@@ -20,6 +20,7 @@ import {
   lockDeviceAction,
   unlockDeviceAction,
   wipeDeviceAction,
+  addIosDeviceAction,
 } from "../api/mdm-sync.actions";
 import { useToast } from "@/shared/ui/toast";
 import { AppRole } from "@/features/parents/ui/DeviceConfigurationSetup";
@@ -53,6 +54,31 @@ export function useCreateZone() {
       toast({
         title: "Error",
         message: error.message || "Failed to create zone",
+        type: "error",
+      });
+    },
+  });
+}
+
+export function useAddIosDevice() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useServerActionMutation(addIosDeviceAction, {
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["devices"] });
+      queryClient.invalidateQueries({ queryKey: mdmSyncKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["staff-members"] });
+      toast({
+        title: "iOS Device Onboarded",
+        message: "The iOS device has been enrolled and linked to the user.",
+        type: "success",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Onboarding Failed",
+        message: error.message || "Failed to onboard iOS device",
         type: "error",
       });
     },

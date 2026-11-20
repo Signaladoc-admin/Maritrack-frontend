@@ -13,6 +13,7 @@ export type UpdateDepartmentValues = z.infer<typeof updateDepartmentValues>;
 export const assignDeviceToUserSchema = z
   .object({
     staffId: z.string().min(1, "Staff member not selected"),
+    deviceType: z.enum(["ANDROID", "IOS"]).optional(),
     underPaymentPlan: z.boolean().optional(),
     devicePriceInKobo: z.string().optional(),
     downPaymentInKobo: z.string().optional(),

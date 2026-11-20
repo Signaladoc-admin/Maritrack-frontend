@@ -11,6 +11,34 @@ export interface CreateZoneDto {
   name?: string;
 }
 
+export interface AddIosDeviceDto {
+  deviceSerial: string;
+  userId: string;
+}
+
+export async function addIosDeviceAction({
+  deviceSerial,
+  userId,
+}: AddIosDeviceDto): Promise<ActionResult<any>> {
+  const normalizedSerial = deviceSerial.trim().toUpperCase();
+  return withSafeAction(
+    async () =>
+      await apiClient(
+        `/mdm-sync/add-ios-device/${encodeURIComponent(normalizedSerial)}/${encodeURIComponent(userId)}`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            deviceSerial: normalizedSerial,
+            userId,
+            type: "APX",
+          }),
+          headers: { "Content-Type": "application/json" },
+        }
+      ),
+    "Failed to onboard iOS device"
+  );
+}
+
 export async function createZoneAction(data?: CreateZoneDto): Promise<ActionResult<any>> {
   return withSafeAction(
     async () =>

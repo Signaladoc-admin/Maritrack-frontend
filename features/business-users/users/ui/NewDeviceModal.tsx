@@ -10,6 +10,7 @@ import { useStaffMembersInfinite } from "@/entities/business/model/useTeamMember
 import { useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 import BusinessPairingQR from "@/entities/business/ui/PairingQRBusinessModal";
+import IosDeviceOnboarding from "@/entities/business/ui/IosDeviceOnboarding";
 import { useGetFullBusinessDetails } from "@/features/onboarding/business/model/useGetBusinessDetails";
 import { useCreateDeviceFinance } from "@/entities/device/model/useDeviceFinance";
 import { Input } from "@/shared/ui/input";
@@ -100,7 +101,7 @@ export default function NewDeviceModal({
   }
 
   const { formState, handleSubmit, reset, control, watch, setValue } = useForm<AssignDeviceToUserValues>({
-    defaultValues: { staffId: "", underPaymentPlan: false, transFer: false },
+    defaultValues: { staffId: "", deviceType: "ANDROID", underPaymentPlan: false, transFer: false },
     resolver: zodResolver(assignDeviceToUserSchema),
   });
 
@@ -108,6 +109,7 @@ export default function NewDeviceModal({
   const transFer = watch("transFer");
   const watchCountry = watch("country");
   const watchStaffId = watch("staffId");
+  const watchDeviceType = watch("deviceType") ?? "ANDROID";
 
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
@@ -262,6 +264,32 @@ export default function NewDeviceModal({
                     return staff ? <StaffOptionContent staff={staff} /> : option.label;
                   }}
                 />
+              </InputGroup>
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="deviceType"
+            render={({ field }) => (
+              <InputGroup
+                label="Device type"
+                helpText={
+                  watchDeviceType === "IOS"
+                    ? "iOS devices are enrolled using the Apple device serial number."
+                    : "Android devices are enrolled by scanning a QR code."
+                }
+                error={formState.errors.deviceType?.message}
+              >
+                <Select onValueChange={field.onChange} value={field.value ?? "ANDROID"}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select device type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ANDROID">Android</SelectItem>
+                    <SelectItem value="IOS">iOS</SelectItem>
+                  </SelectContent>
+                </Select>
               </InputGroup>
             )}
           />
@@ -472,11 +500,19 @@ export default function NewDeviceModal({
       )}
 
       {isPairStep && !!selectedStaff && (
-        <BusinessPairingQR
-          staffMember={selectedStaff}
-          onBack={() => setStep("select-staff")}
-          onComplete={handleClose}
-        />
+        watchDeviceType === "IOS" ? (
+          <IosDeviceOnboarding
+            staffMember={selectedStaff}
+            onBack={() => setStep("select-staff")}
+            onComplete={handleClose}
+          />
+        ) : (
+          <BusinessPairingQR
+            staffMember={selectedStaff}
+            onBack={() => setStep("select-staff")}
+            onComplete={handleClose}
+          />
+        )
       )}
     </Modal>
   );
